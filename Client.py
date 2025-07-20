@@ -2,9 +2,9 @@ import httpx
 import time
 import os
 import json
+from .ram import last
 from typing import Optional
 from colorama import Fore
-
 
 class Client:
     def __init__(
@@ -48,23 +48,30 @@ class Client:
 
         if display_welcome:
             k = ""
-            for text in "Welcome to fast_rub":
+            for text in "Welcome to FastRub":
                 k += text
                 print(Fore.GREEN, f"""{k}""", end="\r")
                 time.sleep(0.07)
             print(Fore.WHITE, "")
 
-    async def send_requests(self, method, data: Optional[dict] = {}, type_send="get"):
+    async def send_requests(self, method, data_: Optional[dict] = None, type_send="get"):
         url = f"https://botapi.rubika.ir/v3/{self.token}/{method}"
         if self.user_agent != None:
-            headers = {"'User-Agent'": self.user_agent}
+            headers = {"'User-Agent'": self.user_agent,'Content-Type': 'application/json'}
         else:
-            headers = None
+            headers = {'Content-Type': 'application/json'}
         if type_send == "post":
-            async with httpx.AsyncClient() as cl:
-                result = await cl.post(url, headers=headers)
-                return result.json()
-
+            try:
+                async with httpx.AsyncClient() as cl:
+                    if data_==None:
+                        result = await cl.post(url, headers=headers)
+                        return result.json()
+                    else:
+                        result = await cl.post(url, headers=headers,json=data_)
+                        return result.json()
+            except TimeoutError:
+                raise TimeoutError("Please check the internet !")
+    
     async def get_me(self):
         result = await self.send_requests(method="getMe", type_send="post")
         return result
@@ -74,17 +81,17 @@ class Client:
         text: str,
         chat_id: str,
         disable_notification: Optional[bool] = False,
-        reply_to_message_id=None,
+        reply_to_message_id:Optional[str]=None,
     ):
         data = {
             "chat_id": chat_id,
             "text": text,
             "disable_notification": disable_notification,
-            "reply_to_message_id": reply_to_message_id,
+            "reply_to_message_id": reply_to_message_id
         }
         result = await self.send_requests("sendMessage", data, type_send="post")
         return result
-
+    
     async def send_poll(self, chat_id: str, question: str, options: list):
         data = {"chat_id": chat_id, "question": question, "options": options}
         result = await self.send_requests("sendPoll", data, type_send="post")
@@ -297,3 +304,16 @@ class Client:
     #     }
     #     result=await self.send_requests("sendMessage",data,type_send="post")
     #     return result
+    async def on_message_updatas(self,time_updata_sleep:float=0.5):
+        while True:
+            mes=(await self.get_updates(limit=100))
+            for message in mes['data']['updates']:
+                time_sended_mes=int(message['new_message']['time'])
+                now=int(time.time())
+                time_=time_updata_sleep+1
+                if (now-time_sended_mes<time_) and (not message['new_message']['message_id'] in last):
+                    last.append(message['new_message']['message_id'])
+                    if len(last)>500:
+                        last.pop(-1)
+                    return message
+            time.sleep(time_updata_sleep)
