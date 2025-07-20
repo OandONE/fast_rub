@@ -122,7 +122,7 @@ class Client:
         chat_keypad_type: str,
         inline_keypad,
         reply_to_message_id: Optional[str] = None,
-        disable_notificatio: bool = False,
+        disable_notification: bool = False,
     ):
         data = {
             "chat_id": chat_id,
@@ -130,7 +130,7 @@ class Client:
             "last_name": last_name,
             "phone_number": phone_number,
             "chat_keypad": chat_keypad,
-            "disable_notificatio": disable_notificatio,
+            "disable_notification": disable_notification,
             "chat_keypad_type": chat_keypad_type,
             "inline_keypad": inline_keypad,
             "reply_to_message_id": reply_to_message_id,
