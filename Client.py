@@ -3,8 +3,35 @@ import time
 import os
 import json
 from .ram import last
-from typing import Optional
+from typing import Optional,Callable,Awaitable
 from colorama import Fore
+import asyncio
+
+class Update:
+    def __init__(self, update_data: dict):
+        self._data = update_data
+    @property
+    def text(self) -> str:
+        return self._data['new_message']['text']
+    @property
+    def message_id(self) -> int:
+        return self._data['new_message']['message_id']
+    @property
+    def chat_id(self) -> str:
+        return self._data['chat_id']
+    @property
+    def time(self) -> int:
+        return int(self._data['new_message']['time'])
+    @property
+    def sender_type(self) -> str:
+        return self._data['new_message']['sender_type']
+    @property
+    def sender_id(self) -> str:
+        return self._data['new_message']['sender_id']
+    def __str__(self) -> str:
+        return str(self._data)
+    def __repr__(self) -> str:
+        return self.__str__()
 
 class Client:
     def __init__(
@@ -19,6 +46,8 @@ class Client:
         self.token = token
         self.time_out = time_out
         self.user_agent = user_agent
+        self._message_handlers = []
+        self._running = False
         if os.path.isfile(name):
             with open(name, "r", encoding="utf-8") as file:
                 text_json_fast_rub_session = json.load(file)
@@ -62,7 +91,7 @@ class Client:
             headers = {'Content-Type': 'application/json'}
         if type_send == "post":
             try:
-                async with httpx.AsyncClient() as cl:
+                async with httpx.AsyncClient(timeout=self.time_out) as cl:
                     if data_==None:
                         result = await cl.post(url, headers=headers)
                         return result.json()
@@ -125,9 +154,9 @@ class Client:
         first_name: str,
         last_name: str,
         phone_number: str,
-        chat_keypad: str,
-        chat_keypad_type: str,
-        inline_keypad,
+        chat_keypad: str=None,
+        chat_keypad_type: str=None,
+        inline_keypad:str=None,
         reply_to_message_id: str = None,
         disable_notificatio: bool = False,
     ):
@@ -304,16 +333,32 @@ class Client:
     #     }
     #     result=await self.send_requests("sendMessage",data,type_send="post")
     #     return result
-    async def on_message_updatas(self,time_updata_sleep:float=0.5):
-        while True:
-            mes=(await self.get_updates(limit=100))
+    def on_message_updates(self):
+        def decorator(handler: Callable[[Update], Awaitable[None]]):
+            self._message_handlers.append(handler)
+            return handler
+        return decorator
+    async def _process_messages(self, time_updata_sleep: float = 0.5):
+        while self._running:
+            mes = (await self.get_updates(limit=100))
             for message in mes['data']['updates']:
-                time_sended_mes=int(message['new_message']['time'])
-                now=int(time.time())
-                time_=time_updata_sleep+1
-                if (now-time_sended_mes<time_) and (not message['new_message']['message_id'] in last):
+                time_sended_mes = int(message['new_message']['time'])
+                now = int(time.time())
+                time_ = time_updata_sleep + 1
+                if (now - time_sended_mes < time_) and (not message['new_message']['message_id'] in last):
                     last.append(message['new_message']['message_id'])
-                    if len(last)>500:
+                    if len(last) > 500:
                         last.pop(-1)
-                    return message
-            time.sleep(time_updata_sleep)
+                    update_obj = Update(message)
+                    for handler in self._message_handlers:
+                        await handler(update_obj)
+            
+            await asyncio.sleep(time_updata_sleep)
+    def run(self):
+        self._running = True
+        loop = asyncio.get_event_loop()
+        try:
+            loop.run_until_complete(self._process_messages())
+        except KeyboardInterrupt:
+            self._running = False
+            print("Bot stopped")
