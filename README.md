@@ -1,7 +1,5 @@
 # fast rub
 
-![لوگو یا بنر پروژه (اختیاری)](مسیر/به/عکس.png)
-
 This Python library is for Rubika bots and is currently being updated.
 
 ## fast rub
