@@ -2,36 +2,13 @@ import httpx
 import time
 import os
 import json
-from .ram import last
-from typing import Optional,Callable,Awaitable
+from typing import Optional,Callable
 from colorama import Fore
 import asyncio
+from .filters import Filter
+from functools import wraps
 
-class Update:
-    def __init__(self, update_data: dict):
-        self._data = update_data
-    @property
-    def text(self) -> str:
-        return self._data['new_message']['text']
-    @property
-    def message_id(self) -> int:
-        return self._data['new_message']['message_id']
-    @property
-    def chat_id(self) -> str:
-        return self._data['chat_id']
-    @property
-    def time(self) -> int:
-        return int(self._data['new_message']['time'])
-    @property
-    def sender_type(self) -> str:
-        return self._data['new_message']['sender_type']
-    @property
-    def sender_id(self) -> str:
-        return self._data['new_message']['sender_id']
-    def __str__(self) -> str:
-        return str(self._data)
-    def __repr__(self) -> str:
-        return self.__str__()
+last=[]
 
 class Client:
     def __init__(
@@ -48,6 +25,9 @@ class Client:
         self.user_agent = user_agent
         self._message_handlers = []
         self._running = False
+        self.list_=[]
+        self.data_keypad=[]
+        self.data_keypad2=[]
         if os.path.isfile(name):
             with open(name, "r", encoding="utf-8") as file:
                 text_json_fast_rub_session = json.load(file)
@@ -131,7 +111,7 @@ class Client:
         chat_id: str,
         latitude: str,
         longitude: str,
-        chat_keypad: str,
+        chat_keypad: str=None,
         disable_notification: Optional[bool] = False,
         reply_to_message_id: Optional[str] = None,
         chat_keypad_type: Optional[str] = None,
@@ -179,7 +159,7 @@ class Client:
         result = await self.send_requests("getChat", data, type_send="post")
         return result
 
-    async def get_updates(self, limit: int, offset_id: str = None):
+    async def get_updates(self, limit: int=100, offset_id: str = None):
         data = {"offset_id": offset_id, "limit": limit}
         result = await self.send_requests("getUpdates", data, type_send="post")
         return result
@@ -245,97 +225,76 @@ class Client:
         result = await self.send_requests("deleteMessage", data, type_send="post")
         return result
 
-    async def set_commands(self, bot_commands: list):
-        """مثال bot_commands :
-        [{
-                    "command": "command1",
-                    "description": "description1"
-                },
-                {
-                    "command": "command2",
-                    "description": "description2"
-                }
+    def add_commands(self,command,description):
+            """مثال list_commands :
+        [
+            "help","this is a help"
         ]"""
-        data = {"bot_commands": [bot_commands]}
-        result = await self.send_requests("setCommands", data, type_send="post")
+            self.list_.append({"command": command, "description": description})
+
+    async def set_commands(self):
+        result = await self.send_requests("setCommands", self.list_, type_send="post")
+        return result
+    
+    async def delete_commands(self):
+        self.list_=[]
+        result = await self.send_requests("setCommands", self.list_, type_send="post")
+        return result
+    
+    async def add_listkeypad_InlineKeypad(self,id:str,type:str,button_text:str):
+        self.data_keypad.append({"buttons":[{"id": id,"type": type,"button_text": button_text}]})
+    
+    async def add_listkeypad_InlineKeypad2vs2(self,id:str,type:str,button_text:str,id2:str,type2:str,button_text2:str):
+        self.data_keypad.append({"buttons":[{"id": id,"type": type,"button_text": button_text},{"id": id2,"type": type2,"button_text": button_text2}]})
+
+    async def delete_listkeypad_InlineKeypad(self):
+        self.data_keypad=[]
+
+    async def send_message_keypad_InlineKeypad(self,chat_id:str,text:str,disable_notification:bool=False,reply_to_message_id:Optional[str]=None):
+        data = {
+            "disable_notification":disable_notification,
+            "reply_to_message_id":reply_to_message_id,
+            "chat_id": chat_id,
+            "text": text,
+            "inline_keypad": {
+                "rows": self.data_keypad
+            }
+        }
+        result=await self.send_requests("sendMessage",data,type_send="post")
+        return result
+    
+    async def add_listkeypad(self,id:str,type:str,button_text:str):
+        self.data_keypad.append({"buttons":[{"id": id,"type": type,"button_text": button_text}]})
+    
+    async def add_listkeypad2vs2(self,id:str,type:str,button_text:str,id2:str,type2:str,button_text2:str):
+        self.data_keypad.append({"buttons":[{"id": id,"type": type,"button_text": button_text},{"id": id2,"type": type2,"button_text": button_text2}]})
+
+    async def delete_listkeypad(self):
+        self.data_keypad=[]
+
+    async def send_message_keypad(self,chat_id:str,text:str,disable_notification:bool=False,reply_to_message_id:Optional[str]=None,resize_keyboard:bool=True,on_time_keyboard:bool=False):
+        data = {
+            "chat_id": chat_id,
+            "disable_notification":disable_notification,
+            "reply_to_message_id":reply_to_message_id,
+            "text": text,
+            "chat_keypad_type": "New",
+            "chat_keypad": {
+                "rows": self.data_keypad2,
+                "resize_keyboard": resize_keyboard,
+                "on_time_keyboard": on_time_keyboard
+            }
+        }
+        result=await self.send_requests("sendMessage",data,type_send="post")
         return result
 
-    # async def send_message_keypad_InlineKeypad(self,chat_id:str,text:str,chat_keypad,inline_keypad,chat_keypad_type,disable_notification:bool=False,reply_to_message_id:Optional[str]=None):
-    #     """مثال :
-    #     {
-    #                     "buttons": [
-    #                         {
-    #                             "id": "100",
-    #                             "type": "Simple",
-    #                             "button_text": "Add Account"
-    #                         }
-    #                     ]
-    #                 },
-    #                 {
-    #                     "buttons": [
-    #                         {
-    #                             "id": "101",
-    #                             "type": "Simple",
-    #                             "button_text": "Edit Account"
-    #                         },
-    #                         {
-    #                             "id": "102",
-    #                             "type": "Simple",
-    #                             "button_text": "Remove Account"
-    #                         }
-    #                     ]
-    #                 }"""
-    #     data = {
-    #         "chat_id": chat_id,
-    #         "text": "Welcome",
-    #         "inline_keypad": {
-    #             "rows": [
-    #                 rows
-    #             ]
-    #         }
-    #     }
-    #     result=await self.send_requests("sendMessage",data,type_send="post")
-    #     return result
-    # async def send_message_keypad(self,chat_id:str,text:str,chat_keypad_type,chat_keypad,disable_notification:bool=False,reply_to_message_id:Optional[str]=None):
-    #     data = {
-    #         "chat_id": chat_id,
-    #         "text": "Welcome",
-    #         "chat_keypad_type": "New",
-    #         "chat_keypad": {
-    #             "rows": [
-    #                 {
-    #                     "buttons": [
-    #                         {
-    #                             "id": "100",
-    #                             "type": "Simple",
-    #                             "button_text": "Add Account"
-    #                         }
-    #                     ]
-    #                 },
-    #                 {
-    #                     "buttons": [
-    #                         {
-    #                             "id": "101",
-    #                             "type": "Simple",
-    #                             "button_text": "Edit Account"
-    #                         },
-    #                         {
-    #                             "id": "102",
-    #                             "type": "Simple",
-    #                             "button_text": "Remove Account"
-    #                         }
-    #                     ]
-    #                 }
-    #             ],
-    #             "resize_keyboard": True,
-    #             "on_time_keyboard": False
-    #         }
-    #     }
-    #     result=await self.send_requests("sendMessage",data,type_send="post")
-    #     return result
-    def on_message_updates(self):
-        def decorator(handler: Callable[[Update], Awaitable[None]]):
-            self._message_handlers.append(handler)
+    def on_message_updates(self, filters: Optional[Filter] = None):
+        def decorator(handler):
+            @wraps(handler)
+            async def wrapped(update):
+                if filters is None or filters(update):
+                    return await handler(update)
+            self._message_handlers.append(wrapped)
             return handler
         return decorator
     async def _process_messages(self, time_updata_sleep: float = 0.5):
@@ -349,10 +308,9 @@ class Client:
                     last.append(message['new_message']['message_id'])
                     if len(last) > 500:
                         last.pop(-1)
-                    update_obj = Update(message)
+                    update_obj = Update(message,self)
                     for handler in self._message_handlers:
                         await handler(update_obj)
-            
             await asyncio.sleep(time_updata_sleep)
     def run(self):
         self._running = True
@@ -362,3 +320,37 @@ class Client:
         except KeyboardInterrupt:
             self._running = False
             print("Bot stopped")
+
+class Update:
+    def __init__(self, update_data: dict,client:'Client'):
+        self._data = update_data
+        self._client=client
+        self.message = update_data.get('new_message', {})
+    @property
+    def text(self) -> str:
+        return self._data['new_message']['text']
+    @property
+    def message_id(self) -> int:
+        return self._data['new_message']['message_id']
+    @property
+    def chat_id(self) -> str:
+        return self._data['chat_id']
+    @property
+    def time(self) -> int:
+        return int(self._data['new_message']['time'])
+    @property
+    def sender_type(self) -> str:
+        return self._data['new_message']['sender_type']
+    @property
+    def sender_id(self) -> str:
+        return self._data['new_message']['sender_id']
+    async def reply(self, text: str) -> None:
+        await self._client.send_text(text,self.chat_id,reply_to_message_id=self.message_id)
+    async def reply_poll(self, question: str,options : list) -> None:
+        await self._client.send_poll(self.chat_id,question,options)
+    async def reply_contact(self, first_name: str,phone_number:str,last_name : str = None) -> None:
+        await self._client.send_contact(self.chat_id,first_name,last_name,phone_number)
+    def __str__(self) -> str:
+        return str(self._data)
+    def __repr__(self) -> str:
+        return self.__str__()
