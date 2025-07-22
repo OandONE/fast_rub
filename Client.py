@@ -2,7 +2,7 @@ import httpx
 import time
 import os
 import json
-from typing import Optional,Callable
+from typing import Optional,Callable,Awaitable
 from colorama import Fore
 import asyncio
 from .filters import Filter
@@ -311,15 +311,11 @@ class Client:
                     update_obj = Update(message,self)
                     for handler in self._message_handlers:
                         await handler(update_obj)
+            
             await asyncio.sleep(time_updata_sleep)
     def run(self):
         self._running = True
-        loop = asyncio.get_event_loop()
-        try:
-            loop.run_until_complete(self._process_messages())
-        except KeyboardInterrupt:
-            self._running = False
-            print("Bot stopped")
+        asyncio.run(self._process_messages())
 
 class Update:
     def __init__(self, update_data: dict,client:'Client'):
