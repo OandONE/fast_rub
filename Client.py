@@ -177,7 +177,7 @@ class Client:
             "to_chat_id": to_chat_id,
             "disable_notification": disable_notification,
         }
-        result = await self.send_requests("frowardMessage", data, type_send="post")
+        result = await self.send_requests("forwardMessage", data, type_send="post")
         return result
 
     async def edit_message_text(self, chat_id: str, message_id: str, text: str):
@@ -233,7 +233,7 @@ class Client:
             self.list_.append({"command": command, "description": description})
 
     async def set_commands(self):
-        result = await self.send_requests("setCommands", self.list_, type_send="post")
+        result = await self.send_requests("setCommands", {"bot_commands":self.list_}, type_send="post")
         return result
     
     async def delete_commands(self):
@@ -264,13 +264,13 @@ class Client:
         return result
     
     async def add_listkeypad(self,id:str,type:str,button_text:str):
-        self.data_keypad.append({"buttons":[{"id": id,"type": type,"button_text": button_text}]})
+        self.data_keypad2.append({"buttons":[{"id": id,"type": type,"button_text": button_text}]})
     
     async def add_listkeypad2vs2(self,id:str,type:str,button_text:str,id2:str,type2:str,button_text2:str):
-        self.data_keypad.append({"buttons":[{"id": id,"type": type,"button_text": button_text},{"id": id2,"type": type2,"button_text": button_text2}]})
+        self.data_keypad2.append({"buttons":[{"id": id,"type": type,"button_text": button_text},{"id": id2,"type": type2,"button_text": button_text2}]})
 
     async def delete_listkeypad(self):
-        self.data_keypad=[]
+        self.data_keypad2=[]
 
     async def send_message_keypad(self,chat_id:str,text:str,disable_notification:bool=False,reply_to_message_id:Optional[str]=None,resize_keyboard:bool=True,on_time_keyboard:bool=False):
         data = {
@@ -297,8 +297,14 @@ class Client:
             self._message_handlers.append(wrapped)
             return handler
         return decorator
+    
     async def _process_messages(self, time_updata_sleep: float = 0.5):
         while self._running:
+            try:
+                async with httpx.AsyncClient() as cl:
+                    await cl.get("https://rubika.ir/",timeout=self.time_out)
+            except:
+                raise TimeoutError("please check the your internet .")
             mes = (await self.get_updates(limit=100))
             for message in mes['data']['updates']:
                 time_sended_mes = int(message['new_message']['time'])
