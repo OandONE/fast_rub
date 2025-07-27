@@ -7,7 +7,6 @@ from colorama import Fore
 import asyncio
 from .filters import Filter
 from functools import wraps
-import mimetypes
 
 last=[]
 
@@ -29,6 +28,9 @@ class Client:
         self.list_=[]
         self.data_keypad=[]
         self.data_keypad2=[]
+        self._button_handlers = []
+        self._running_ = False
+        self._loop = None
         if os.path.isfile(name):
             with open(name, "r", encoding="utf-8") as file:
                 text_json_fast_rub_session = json.load(file)
@@ -63,7 +65,7 @@ class Client:
                 print(Fore.GREEN, f"""{k}""", end="\r")
                 time.sleep(0.07)
             print(Fore.WHITE, "")
-
+        self._button_url = f"https://fast-rub.ParsSource.ir/geting_button_updates/get?token={self.token}"
     async def send_requests(self, method, data_: Optional[dict] = None, type_send="get"):
         url = f"https://botapi.rubika.ir/v3/{self.token}/{method}"
         if self.user_agent != None:
@@ -81,7 +83,7 @@ class Client:
                         return result.json()
             except TimeoutError:
                 raise TimeoutError("Please check the internet !")
-
+    
     async def get_me(self):
         result = await self.send_requests(method="getMe", type_send="post")
         return result
@@ -101,7 +103,7 @@ class Client:
         }
         result = await self.send_requests("sendMessage", data, type_send="post")
         return result
-
+    
     async def send_poll(self, chat_id: str, question: str, options: list):
         data = {"chat_id": chat_id, "question": question, "options": options}
         result = await self.send_requests("sendPoll", data, type_send="post")
@@ -226,7 +228,7 @@ class Client:
         result = await self.send_requests("deleteMessage", data, type_send="post")
         return result
 
-    def add_commands(self,command:str,description:str):
+    async def add_commands(self,command:str,description:str):
             """مثال list_commands :
         [
             "help","this is a help"
@@ -247,6 +249,12 @@ class Client:
 
     async def add_listkeypad_InlineKeypad2vs2(self,id:str,type:str,button_text:str,id2:str,type2:str,button_text2:str):
         self.data_keypad.append({"buttons":[{"id": id,"type": type,"button_text": button_text},{"id": id2,"type": type2,"button_text": button_text2}]})
+    
+    async def add_listkeypad_InlineKeypad3vs3(self,id:str,type:str,button_text:str,id2:str,type2:str,button_text2:str,id3:str,type3:str,button_text3:str):
+        self.data_keypad.append({"buttons":[{"id": id,"type": type,"button_text": button_text},{"id": id2,"type": type2,"button_text": button_text2},{"id": id3,"type": type3,"button_text": button_text3}]})
+    
+    async def add_listkeypad_InlineKeypad4vs4(self,id:str,type:str,button_text:str,id2:str,type2:str,button_text2:str,id3:str,type3:str,button_text3:str,id4:str,type4:str,button_text4:str):
+        self.data_keypad.append({"buttons":[{"id": id,"type": type,"button_text": button_text},{"id": id2,"type": type2,"button_text": button_text2},{"id": id3,"type": type3,"button_text": button_text3},{"id": id4,"type": type4,"button_text": button_text4}]})
 
     async def delete_listkeypad_InlineKeypad(self):
         self.data_keypad=[]
@@ -263,11 +271,18 @@ class Client:
         }
         result=await self.send_requests("sendMessage",data,type_send="post")
         return result
-
-    async def add_listkeypad(self,id:str,type:str,button_text:str):        self.data_keypad2.append({"buttons":[{"id": id,"type": type,"button_text": button_text}]})
+    
+    async def add_listkeypad(self,id:str,type:str,button_text:str):
+        self.data_keypad2.append({"buttons":[{"id": id,"type": type,"button_text": button_text}]})
 
     async def add_listkeypad2vs2(self,id:str,type:str,button_text:str,id2:str,type2:str,button_text2:str):
         self.data_keypad2.append({"buttons":[{"id": id,"type": type,"button_text": button_text},{"id": id2,"type": type2,"button_text": button_text2}]})
+    
+    async def add_listkeypad3vs3(self,id:str,type:str,button_text:str,id2:str,type2:str,button_text2:str,id3:str,type3:str,button_text3:str):
+        self.data_keypad2.append({"buttons":[{"id": id,"type": type,"button_text": button_text},{"id": id2,"type": type2,"button_text": button_text2},{"id": id3,"type": type3,"button_text": button_text3}]})
+    
+    async def add_listkeypad4vs4(self,id:str,type:str,button_text:str,id2:str,type2:str,button_text2:str,id3:str,type3:str,button_text3:str,id4:str,type4:str,button_text4:str):
+        self.data_keypad2.append({"buttons":[{"id": id,"type": type,"button_text": button_text},{"id": id2,"type": type2,"button_text": button_text2},{"id": id3,"type": type3,"button_text": button_text3},{"id": id4,"type": type4,"button_text": button_text4}]})
 
     async def delete_listkeypad(self):
         self.data_keypad2=[]
@@ -287,8 +302,21 @@ class Client:
         }
         result=await self.send_requests("sendMessage",data,type_send="post")
         return result
+    
+    async def set_token_button(self):
+        async with httpx.AsyncClient() as cl:
+            r=(await cl.get(f"https://fast-rub.ParsSource.ir/set_token?token={self.token}")).json()
+        if r['status']==True:
+            print(f"endpoint url you : {r['url_endpoint']} . please set in the bot father")
+            return r['url_endpoint']
+        else:
+            if r['error']=="This token exists":
+                print(f"endpoint url you : {r['url_endpoint']} . please set in the bot father")
+                return r['url_endpoint']
+        return False
 
-    def on_message_updates(self, filters: Optional[Filter] = None):        def decorator(handler):
+    def on_message_updates(self, filters: Optional[Filter] = None):
+        def decorator(handler):
             @wraps(handler)
             async def wrapped(update):
                 if filters is None or filters(update):
@@ -306,7 +334,8 @@ class Client:
                 raise TimeoutError("please check the your internet .")
             mes = (await self.get_updates(limit=100))
             if mes['status']=="INVALID_ACCESS":
-                raise PermissionError("Due to Rubika's restrictions, access to retrieve messages has been blocked. Please try again.")            for message in mes['data']['updates']:
+                raise PermissionError("Due to Rubika's restrictions, access to retrieve messages has been blocked. Please try again.")
+            for message in mes['data']['updates']:
                 time_sended_mes = int(message['new_message']['time'])
                 now = int(time.time())
                 time_ = time_updata_sleep + 4
@@ -322,6 +351,33 @@ class Client:
     def run(self):
         self._running = True
         asyncio.run(self._process_messages())
+
+    async def _fetch_button_updates(self):
+        while self._running_:
+            try:
+                async with httpx.AsyncClient() as cl:
+                    response=(await cl.get(self._button_url,timeout=self.time_out)).json()
+                if response and response.get('status') is True:
+                    results = response.get('updates',[])
+                    if results:
+                        for result in results:
+                            update = UpdateButton(result)
+                            for handler in self._button_handlers:
+                                await handler(update)
+            except:
+                print("""خطا ! صورتی که توکن خود را در فست روب ثبت نکردید , آن را از طریق متود زیر آن را ثبت کنید و در بات فادر ادرس را ثبت کنید
+set_token_button()""")
+            await asyncio.sleep(1)
+
+    def on_button(self):
+        def decorator(handler: Callable[[UpdateButton], Awaitable[None]]):
+            self._button_handlers.append(handler)
+            return handler
+        return decorator
+
+    def run_on_button(self):
+        self._running_ = True
+        asyncio.run(self._fetch_button_updates())
 
 class Update:
     def __init__(self, update_data: dict,client:'Client'):
@@ -358,3 +414,27 @@ class Update:
         return str(self._data)
     def __repr__(self) -> str:
         return self.__str__()
+
+class UpdateButton:
+    def __init__(self, data: dict):
+        self._data = data
+    @property
+    def raw_data(self) -> dict:
+        return self._data
+    @property
+    def button_id(self) -> str:
+        return self._data['inline_message']['aux_data']['button_id']
+    @property
+    def chat_id(self) -> str:
+        return self._data['inline_message']['chat_id']
+    @property
+    def message_id(self) -> str:
+        return self._data['inline_message']['message_id']
+    @property
+    def sender_id(self) -> str:
+        return self._data['inline_message']['sender_id']
+    @property
+    def text(self) -> str:
+        return self._data['inline_message']['text']
+    def __str__(self):
+        return str(self._data)
