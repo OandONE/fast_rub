@@ -2,11 +2,12 @@ import httpx
 import time
 import os
 import json
-from typing import Optional,Callable,Awaitable
+from typing import Optional,Callable,Awaitable,Literal
 from colorama import Fore
 import asyncio
 from .filters import Filter
 from functools import wraps
+from pathlib import Path
 
 last=[]
 
@@ -68,7 +69,7 @@ class Client:
             print(Fore.WHITE, "")
         self._button_url = f"https://fast-rub.ParsSource.ir/geting_button_updates/get?token={self.token}"
         self._on_url = f"https://fast-rub.ParsSource.ir/geting_button_updates/get_on?token={self.token}"
-    async def send_requests(self, method, data_: Optional[dict] = None, type_send="get"):
+    async def send_requests(self, method, data_: Optional[dict] = None, type_send="post"):
         url = f"https://botapi.rubika.ir/v3/{self.token}/{method}"
         if self.user_agent != None:
             headers = {"'User-Agent'": self.user_agent,'Content-Type': 'application/json'}
@@ -88,7 +89,7 @@ class Client:
     
     async def get_me(self) -> dict:
         """geting info accont bot / گرفتن اطلاعات اکانت ربات"""
-        result = await self.send_requests(method="getMe", type_send="post")
+        result = await self.send_requests(method="getMe", )
         return result
 
     async def send_text(
@@ -105,13 +106,13 @@ class Client:
             "disable_notification": disable_notification,
             "reply_to_message_id": reply_to_message_id
         }
-        result = await self.send_requests("sendMessage", data, type_send="post")
+        result = await self.send_requests("sendMessage", data, )
         return result
     
     async def send_poll(self, chat_id: str, question: str, options: list) -> dict:
         """sending poll to chat id / ارسال نظرسنجی به یک چت آیدی"""
         data = {"chat_id": chat_id, "question": question, "options": options}
-        result = await self.send_requests("sendPoll", data, type_send="post")
+        result = await self.send_requests("sendPoll", data, )
         return result
 
     async def send_location(
@@ -134,7 +135,7 @@ class Client:
             "reply_to_message_id": reply_to_message_id,
             "chat_keypad_type": chat_keypad_type,
         }
-        result = await self.send_requests("sendLocation", data, type_send="post")
+        result = await self.send_requests("sendLocation", data, )
         return result
 
     async def send_contact(
@@ -161,19 +162,19 @@ class Client:
             "inline_keypad": inline_keypad,
             "reply_to_message_id": reply_to_message_id,
         }
-        result = await self.send_requests("sendContact", data, type_send="post")
+        result = await self.send_requests("sendContact", data, )
         return result
 
     async def get_chat(self, chat_id: str) -> dict:
         """geting info chat id info / گرفتن اطلاعات های یک چت"""
         data = {"chat_id": chat_id}
-        result = await self.send_requests("getChat", data, type_send="post")
+        result = await self.send_requests("getChat", data, )
         return result
 
     async def get_updates(self, limit: int = None, offset_id: str = None) -> dict:
         """getting messages chats / گرفتن پیام های چت ها"""
         data = {"offset_id": offset_id, "limit": limit}
-        result = await self.send_requests("getUpdates", data, type_send="post")
+        result = await self.send_requests("getUpdates", data, )
         return result
 
     async def forward_message(
@@ -190,54 +191,19 @@ class Client:
             "to_chat_id": to_chat_id,
             "disable_notification": disable_notification,
         }
-        result = await self.send_requests("forwardMessage", data, type_send="post")
+        result = await self.send_requests("forwardMessage", data, )
         return result
 
     async def edit_message_text(self, chat_id: str, message_id: str, text: str) -> dict:
         """editing message / ویرایش پیام"""
         data = {"chat_id": chat_id, "message_id": message_id, "text": text}
-        result = await self.send_requests("editMessageText", data, type_send="post")
-        return result
-
-    async def edit_message_keypad(self, chat_id: str, message_id: str, rows: list) -> dict:
-        """مثال rows :
-        "rows": [
-                {
-                    "buttons": [
-                    {
-                        "id": "100",
-                        "type": "Simple",
-                        "button_text": "Add Account"
-                    }
-                    ]
-                },
-                {
-                    "buttons": [
-                    {
-                        "id": "101",
-                        "type": "Simple",
-                        "button_text": "Edit Account"
-                    },
-                    {
-                        "id": "102",
-                        "type": "Simple",
-                        "button_text": "Remove Account"
-                    }
-                    ]
-                }
-                ]"""
-        data = {
-            "chat_id": chat_id,
-            "message_id": message_id,
-            "inline_keypad": {"rows": rows},
-        }
-        result = await self.send_requests("editMessageText", data, type_send="post")
+        result = await self.send_requests("editMessageText", data, )
         return result
 
     async def delete_message(self, chat_id: str, message_id: str) -> dict:
         """delete message / پاکسازی(حذف) یک پیام"""
         data = {"chat_id": chat_id, "message_id": message_id}
-        result = await self.send_requests("deleteMessage", data, type_send="post")
+        result = await self.send_requests("deleteMessage", data, )
         return result
 
     async def add_commands(self,command:str,description:str) -> None:
@@ -246,13 +212,13 @@ class Client:
 
     async def set_commands(self) -> dict:
         """set the commands for robot / تنظیم دستورات برای ربات"""
-        result = await self.send_requests("setCommands", {"bot_commands":self.list_}, type_send="post")
+        result = await self.send_requests("setCommands", {"bot_commands":self.list_}, )
         return result
 
     async def delete_commands(self) -> None:
         """clear the commands list / پاکسازی لیست دستورات"""
         self.list_=[]
-        result = await self.send_requests("setCommands", self.list_, type_send="post")
+        result = await self.send_requests("setCommands", self.list_, )
         return result
 
     async def add_listkeypad_InlineKeypad(self,id:str,type:str,button_text:str) -> None:
@@ -290,9 +256,23 @@ class Client:
                 "rows": self.data_keypad
             }
         }
-        result=await self.send_requests("sendMessage",data,type_send="post")
+        result=await self.send_requests("sendMessage",data,)
         return result
-    
+
+    async def edit_message_keypad_Inline(self,chat_id:str,text:str,disable_notification:bool=False,reply_to_message_id:Optional[str]=None) -> dict:
+        """editing the text key pad inline / ویرایش متن پیام شیشه ای"""
+        data = {
+            "disable_notification":disable_notification,
+            "reply_to_message_id":reply_to_message_id,
+            "chat_id": chat_id,
+            "text": text,
+            "inline_keypad": {
+                "rows": self.data_keypad
+            }
+        }
+        result = await self.send_requests("editMessageText", data, )
+        return result
+
     async def add_listkeypad(self,id:str,type:str,button_text:str) -> None:
         """add the key pad texti list 1 by 1 / افزودن لیست دکمه متنی به صورت تکی"""
         self.data_keypad2.append({"buttons":[{"id": id,"type": type,"button_text": button_text}]})
@@ -331,8 +311,39 @@ class Client:
                 "on_time_keyboard": on_time_keyboard
             }
         }
-        result=await self.send_requests("sendMessage",data,type_send="post")
+        result=await self.send_requests("sendMessage",data,)
         return result
+    
+    async def _upload_file(self,url:str,file_name:str,file:str):
+        d_file={
+        'file': (file_name, open(file, 'rb'), 'application/octet-stream')
+    }
+        async with httpx.AsyncClient(verify=False) as cl:
+            response = await cl.post(url, files=d_file)
+            if response.status_code != 200:
+                raise httpx.HTTPStatusError(f"Request failed with status code {response.status_code}",request=response.request,response=response)
+            data = response.json()
+            return data
+
+    async def send_file(self,chat_id:str,file:str | Path | bytes,name_file:str,text:str=None,reply_to_message_id:str=None,type_file:Literal['File','Image','Voice','Music','Gif']='File',disable_notification:bool=False) -> dict:
+        """sending file with types ['File', 'Image', 'Voice', 'Music', 'Gif'] / ارسال فایل با نوع های فایل و عکس و پیغام صوتی و موزیک و گیف"""
+        up_url_file=(await self.send_requests("requestSendFile",{"type":type_file},))['data']['upload_url']
+        file_id=(await self._upload_file(up_url_file,name_file,file))['data']['file_id']
+        data={"chat_id":chat_id,"text":text,"file_id":file_id,"reply_to_message_id":reply_to_message_id,"disable_notification":disable_notification}
+        uploader=await self.send_requests("sendFile",data)
+        uploader['file_id']=file_id
+        return uploader
+    
+    async def send_sticker(self,chat_id:str,id_sticker:str,reply_to_message_id:str=None,disable_notification:bool=False):
+        """sending sticker by id / ارسال استیکر با آیدی"""
+        data = {
+            'chat_id': chat_id,
+            'sticker_id': id_sticker,
+            "reply_to_message_id":reply_to_message_id,
+            "disable_notification":disable_notification
+        }
+        sender=await self.send_requests("sendSticker",data)
+        return sender
 
     async def set_token_button(self) -> str | bool:
         """seting token in fast_rub for getting click glass messages / تنظیم توکن در فست روب برای گرفتن کلیک های روی پیام شیشه ای"""
@@ -360,7 +371,6 @@ class Client:
             self._message_handlers.append(wrapped)
             return handler
         return decorator
-
 
     async def _process_messages(self):
         while self._running:
