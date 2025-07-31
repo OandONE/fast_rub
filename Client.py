@@ -29,6 +29,7 @@ class Client:
         self.data_keypad=[]
         self.data_keypad2=[]
         self._button_handlers = []
+        self._button_handlers2 = []
         self._running_ = False
         self._loop = None
         if os.path.isfile(name):
@@ -66,6 +67,7 @@ class Client:
                 time.sleep(0.07)
             print(Fore.WHITE, "")
         self._button_url = f"https://fast-rub.ParsSource.ir/geting_button_updates/get?token={self.token}"
+        self._on_url = f"https://fast-rub.ParsSource.ir/geting_button_updates/get_on?token={self.token}"
     async def send_requests(self, method, data_: Optional[dict] = None, type_send="get"):
         url = f"https://botapi.rubika.ir/v3/{self.token}/{method}"
         if self.user_agent != None:
@@ -84,7 +86,8 @@ class Client:
             except TimeoutError:
                 raise TimeoutError("Please check the internet !")
     
-    async def get_me(self):
+    async def get_me(self) -> dict:
+        """geting info accont bot / گرفتن اطلاعات اکانت ربات"""
         result = await self.send_requests(method="getMe", type_send="post")
         return result
 
@@ -94,7 +97,8 @@ class Client:
         chat_id: str,
         disable_notification: Optional[bool] = False,
         reply_to_message_id:Optional[str]=None,
-    ):
+    ) -> dict:
+        """sending text to chat id / ارسال متنی به یک چت آیدی"""
         data = {
             "chat_id": chat_id,
             "text": text,
@@ -104,7 +108,8 @@ class Client:
         result = await self.send_requests("sendMessage", data, type_send="post")
         return result
     
-    async def send_poll(self, chat_id: str, question: str, options: list):
+    async def send_poll(self, chat_id: str, question: str, options: list) -> dict:
+        """sending poll to chat id / ارسال نظرسنجی به یک چت آیدی"""
         data = {"chat_id": chat_id, "question": question, "options": options}
         result = await self.send_requests("sendPoll", data, type_send="post")
         return result
@@ -118,7 +123,8 @@ class Client:
         disable_notification: Optional[bool] = False,
         reply_to_message_id: Optional[str] = None,
         chat_keypad_type: Optional[str] = None,
-    ):
+    ) -> dict:
+        """sending location to chat id / ارسال لوکیشن(موقعیت مکانی) به یک چت آیدی"""
         data = {
             "chat_id": chat_id,
             "latitude": latitude,
@@ -142,7 +148,8 @@ class Client:
         inline_keypad:str=None,
         reply_to_message_id: str = None,
         disable_notificatio: bool = False,
-    ):
+    ) -> dict:
+        """sending contact to chat id / ارسال مخاطب به یک چت آیدی"""
         data = {
             "chat_id": chat_id,
             "first_name": first_name,
@@ -157,12 +164,14 @@ class Client:
         result = await self.send_requests("sendContact", data, type_send="post")
         return result
 
-    async def get_chat(self, chat_id: str):
+    async def get_chat(self, chat_id: str) -> dict:
+        """geting info chat id info / گرفتن اطلاعات های یک چت"""
         data = {"chat_id": chat_id}
         result = await self.send_requests("getChat", data, type_send="post")
         return result
 
-    async def get_updates(self, limit: int=100, offset_id: str = None):
+    async def get_updates(self, limit: int = None, offset_id: str = None) -> dict:
+        """getting messages chats / گرفتن پیام های چت ها"""
         data = {"offset_id": offset_id, "limit": limit}
         result = await self.send_requests("getUpdates", data, type_send="post")
         return result
@@ -173,7 +182,8 @@ class Client:
         message_id: str,
         to_chat_id: str,
         disable_notification: bool = False,
-    ):
+    ) -> dict:
+        """forwarding message to chat id / فوروارد پیام به یک چت آیدی"""
         data = {
             "from_chat_id": from_chat_id,
             "message_id": message_id,
@@ -183,12 +193,13 @@ class Client:
         result = await self.send_requests("forwardMessage", data, type_send="post")
         return result
 
-    async def edit_message_text(self, chat_id: str, message_id: str, text: str):
+    async def edit_message_text(self, chat_id: str, message_id: str, text: str) -> dict:
+        """editing message / ویرایش پیام"""
         data = {"chat_id": chat_id, "message_id": message_id, "text": text}
         result = await self.send_requests("editMessageText", data, type_send="post")
         return result
 
-    async def edit_message_keypad(self, chat_id: str, message_id: str, rows: list):
+    async def edit_message_keypad(self, chat_id: str, message_id: str, rows: list) -> dict:
         """مثال rows :
         "rows": [
                 {
@@ -223,43 +234,53 @@ class Client:
         result = await self.send_requests("editMessageText", data, type_send="post")
         return result
 
-    async def delete_message(self, chat_id: str, message_id: str):
+    async def delete_message(self, chat_id: str, message_id: str) -> dict:
+        """delete message / پاکسازی(حذف) یک پیام"""
         data = {"chat_id": chat_id, "message_id": message_id}
         result = await self.send_requests("deleteMessage", data, type_send="post")
         return result
 
-    async def add_commands(self,command:str,description:str):
-            """مثال list_commands :
-        [
-            "help","this is a help"
-        ]"""
+    async def add_commands(self,command:str,description:str) -> None:
+            """add command to commands list / افزودن دستور به لیست دستورات"""
             self.list_.append({"command": command.replace("/",""), "description": description})
 
-    async def set_commands(self):
+    async def set_commands(self) -> dict:
+        """set the commands for robot / تنظیم دستورات برای ربات"""
         result = await self.send_requests("setCommands", {"bot_commands":self.list_}, type_send="post")
         return result
 
-    async def delete_commands(self):
+    async def delete_commands(self) -> None:
+        """clear the commands list / پاکسازی لیست دستورات"""
         self.list_=[]
         result = await self.send_requests("setCommands", self.list_, type_send="post")
         return result
 
-    async def add_listkeypad_InlineKeypad(self,id:str,type:str,button_text:str):
+    async def add_listkeypad_InlineKeypad(self,id:str,type:str,button_text:str) -> None:
+        """add the key pad inline list 1 by 1 / افزودن لیست دکمه های شیشه ای به صورت تکی"""
         self.data_keypad.append({"buttons":[{"id": id,"type": type,"button_text": button_text}]})
 
-    async def add_listkeypad_InlineKeypad2vs2(self,id:str,type:str,button_text:str,id2:str,type2:str,button_text2:str):
+    async def add_listkeypad_InlineKeypad2vs2(self,id:str,type:str,button_text:str,id2:str,type2:str,button_text2:str) -> None:
+        """add the key pad inline list 2 by 2 / افزودن لیست دکمه های شیشه ای به صورت دوتایی"""
         self.data_keypad.append({"buttons":[{"id": id,"type": type,"button_text": button_text},{"id": id2,"type": type2,"button_text": button_text2}]})
     
-    async def add_listkeypad_InlineKeypad3vs3(self,id:str,type:str,button_text:str,id2:str,type2:str,button_text2:str,id3:str,type3:str,button_text3:str):
+    async def add_listkeypad_InlineKeypad3vs3(self,id:str,type:str,button_text:str,id2:str,type2:str,button_text2:str,id3:str,type3:str,button_text3:str) -> None:
+        """add the key pad inline list 3 by 3 / افزودن لیست دکمه های شیشه ای به صورت سه تایی"""
         self.data_keypad.append({"buttons":[{"id": id,"type": type,"button_text": button_text},{"id": id2,"type": type2,"button_text": button_text2},{"id": id3,"type": type3,"button_text": button_text3}]})
     
-    async def add_listkeypad_InlineKeypad4vs4(self,id:str,type:str,button_text:str,id2:str,type2:str,button_text2:str,id3:str,type3:str,button_text3:str,id4:str,type4:str,button_text4:str):
+    async def add_listkeypad_InlineKeypad4vs4(self,id:str,type:str,button_text:str,id2:str,type2:str,button_text2:str,id3:str,type3:str,button_text3:str,id4:str,type4:str,button_text4:str) -> None:
+        """add the key pad inline list 4 by 4 / افزودن لیست دکمه های شیشه ای به صورت چهار تایی"""
         self.data_keypad.append({"buttons":[{"id": id,"type": type,"button_text": button_text},{"id": id2,"type": type2,"button_text": button_text2},{"id": id3,"type": type3,"button_text": button_text3},{"id": id4,"type": type4,"button_text": button_text4}]})
+    
+    async def add_listkeypad_InlineKeypad_(self,datas) -> None:
+        """add datas for glass messages / افزودن اطلاعات به صورت دستی برای لیست دکمه های شیشه ای"""
+        self.data_keypad.append(datas)
 
-    async def delete_listkeypad_InlineKeypad(self):
+    async def delete_listkeypad_InlineKeypad(self) -> None:
+        """clear key pad inline list / پاکسازی لیست دکمه های شیشه ای"""
         self.data_keypad=[]
 
-    async def send_message_keypad_InlineKeypad(self,chat_id:str,text:str,disable_notification:bool=False,reply_to_message_id:Optional[str]=None):
+    async def send_message_keypad_InlineKeypad(self,chat_id:str,text:str,disable_notification:bool=False,reply_to_message_id:Optional[str]=None) -> dict:
+        """sending message key pad inline / ارسال پیام با دکمه شیشه ای"""
         data = {
             "disable_notification":disable_notification,
             "reply_to_message_id":reply_to_message_id,
@@ -272,22 +293,32 @@ class Client:
         result=await self.send_requests("sendMessage",data,type_send="post")
         return result
     
-    async def add_listkeypad(self,id:str,type:str,button_text:str):
+    async def add_listkeypad(self,id:str,type:str,button_text:str) -> None:
+        """add the key pad texti list 1 by 1 / افزودن لیست دکمه متنی به صورت تکی"""
         self.data_keypad2.append({"buttons":[{"id": id,"type": type,"button_text": button_text}]})
 
-    async def add_listkeypad2vs2(self,id:str,type:str,button_text:str,id2:str,type2:str,button_text2:str):
+    async def add_listkeypad2vs2(self,id:str,type:str,button_text:str,id2:str,type2:str,button_text2:str) -> None:
+        """add the key pad texti list 2 by 2 / افزودن لیست دکمه متنی به صورت دوتایی"""
         self.data_keypad2.append({"buttons":[{"id": id,"type": type,"button_text": button_text},{"id": id2,"type": type2,"button_text": button_text2}]})
     
-    async def add_listkeypad3vs3(self,id:str,type:str,button_text:str,id2:str,type2:str,button_text2:str,id3:str,type3:str,button_text3:str):
+    async def add_listkeypad3vs3(self,id:str,type:str,button_text:str,id2:str,type2:str,button_text2:str,id3:str,type3:str,button_text3:str) -> None:
+        """add the key pad texti list 3 by 3 / افزودن لیست دکمه متنی به صورت سه تایی"""
         self.data_keypad2.append({"buttons":[{"id": id,"type": type,"button_text": button_text},{"id": id2,"type": type2,"button_text": button_text2},{"id": id3,"type": type3,"button_text": button_text3}]})
     
-    async def add_listkeypad4vs4(self,id:str,type:str,button_text:str,id2:str,type2:str,button_text2:str,id3:str,type3:str,button_text3:str,id4:str,type4:str,button_text4:str):
+    async def add_listkeypad4vs4(self,id:str,type:str,button_text:str,id2:str,type2:str,button_text2:str,id3:str,type3:str,button_text3:str,id4:str,type4:str,button_text4:str) -> None:
+        """add the key pad texti list 4 by 4 / افزودن لیست دکمه متنی به صورت چهارتایی"""
         self.data_keypad2.append({"buttons":[{"id": id,"type": type,"button_text": button_text},{"id": id2,"type": type2,"button_text": button_text2},{"id": id3,"type": type3,"button_text": button_text3},{"id": id4,"type": type4,"button_text": button_text4}]})
 
-    async def delete_listkeypad(self):
+    async def add_listkeypad_(self,datas) -> None:
+        """add datas for texti messages / افزودن اطلاعات به صورت دستی برای لیست دکمه های متنی"""
+        self.data_keypad2.append(datas)
+
+    async def delete_listkeypad(self) -> None:
+        """clear key pad texti list / پاکسازی لیست دکمه های متنی"""
         self.data_keypad2=[]
 
-    async def send_message_keypad(self,chat_id:str,text:str,disable_notification:bool=False,reply_to_message_id:Optional[str]=None,resize_keyboard:bool=True,on_time_keyboard:bool=False):
+    async def send_message_keypad(self,chat_id:str,text:str,disable_notification:bool=False,reply_to_message_id:Optional[str]=None,resize_keyboard:bool=True,on_time_keyboard:bool=False) -> dict:
+        """sending message key pad texti / ارسال پیام با دکمه متنی"""
         data = {
             "chat_id": chat_id,
             "disable_notification":disable_notification,
@@ -302,11 +333,12 @@ class Client:
         }
         result=await self.send_requests("sendMessage",data,type_send="post")
         return result
-    
-    async def set_token_button(self):
+
+    async def set_token_button(self) -> str | bool:
+        """seting token in fast_rub for getting click glass messages / تنظیم توکن در فست روب برای گرفتن کلیک های روی پیام شیشه ای"""
         async with httpx.AsyncClient() as cl:
             r=(await cl.get(f"https://fast-rub.ParsSource.ir/set_token?token={self.token}")).json()
-        if r['status']==True:
+        if r['status']:
             print(f"endpoint url you : {r['url_endpoint']} . please set in the bot father")
             return r['url_endpoint']
         else:
@@ -316,41 +348,68 @@ class Client:
         return False
 
     def on_message_updates(self, filters: Optional[Filter] = None):
-        def decorator(handler):
+        """دکوراتور برای ثبت هندلر پیام‌ها"""
+        def decorator(handler: Callable[[Update], Awaitable[None]]):
             @wraps(handler)
             async def wrapped(update):
-                if filters is None or filters(update):
-                    return await handler(update)
+                if filters == None or filters(update):
+                    try:
+                        await handler(update)
+                    except Exception as e:
+                        print(f"Error in message handler: {e}")
             self._message_handlers.append(wrapped)
             return handler
         return decorator
 
-    async def _process_messages(self, time_updata_sleep: int = 1):
+
+    async def _process_messages(self):
         while self._running:
             try:
                 async with httpx.AsyncClient() as cl:
-                    await cl.get("https://rubika.ir/",timeout=self.time_out)
+                    response=(await cl.get(self._on_url,timeout=self.time_out)).json()
             except:
-                raise TimeoutError("please check the your internet .")
-            mes = (await self.get_updates(limit=100))
-            if mes['status']=="INVALID_ACCESS":
-                raise PermissionError("Due to Rubika's restrictions, access to retrieve messages has been blocked. Please try again.")
-            for message in mes['data']['updates']:
-                time_sended_mes = int(message['new_message']['time'])
-                now = int(time.time())
-                time_ = time_updata_sleep + 4
-                if (now - time_sended_mes < time_) and (not message['new_message']['message_id'] in last):
-                    last.append(message['new_message']['message_id'])
-                    if len(last) > 500:
-                        last.pop(-1)
-                    update_obj = Update(message,self)
-                    for handler in self._message_handlers:
-                        await handler(update_obj)
-            await asyncio.sleep(time_updata_sleep)
+                print("""خطا ! صورتی که توکن خود را در فست روب ثبت نکردید , آن را از طریق متود زیر آن را ثبت کنید و در بات فادر ادرس را ثبت کنید
+set_token_button()""")
+                return
+            if response and response.get('status') is True:
+                results = response.get('updates',[])
+                if results:
+                    for result in results:
+                        update = Update(result,self)
+                        for handler in self._message_handlers:
+                            await handler(update)
+        #     mes = (await self.get_updates())
+        #     if mes['status']=="INVALID_ACCESS":
+        #         raise PermissionError("Due to Rubika's restrictions, access to retrieve messages has been blocked. Please try again.")
+        #     for message in mes['data']['updates']:
+        #         time_sended_mes = int(message['new_message']['time'])
+        #         now = int(time.time())
+        #         time_ = 10
+        #         if (now - time_sended_mes < time_) and (not message['new_message']['message_id'] in last):
+        #             last.append(message['new_message']['message_id'])
+        #             if len(last) > 500:
+        #                 last.pop(-1)
+        #             update_obj = Update(message,self)
+        #             for handler in self._message_handlers:
+        #                 await handler(update_obj)
+        # while self._running_:
+        #     try:
+        #         async with httpx.AsyncClient() as cl:
+        #             response=(await cl.get(self._button_url,timeout=self.time_out)).json()
+        #         if response and response.get('status') is True:
+        #             results = response.get('updates',[])
+        #             if results:
+        #                 for result in results:
+        #                     update = UpdateButton(result)
+        #                     for handler in self._button_handlers:
+        #                         await handler(update)
+            await asyncio.sleep(0.5)
 
     def run(self):
+        """running on message updates / اجرا گرفتن پیام ها"""
         self._running = True
-        asyncio.run(self._process_messages())
+        loop = asyncio.get_event_loop()
+        loop.run_until_complete(self._process_messages())
 
     async def _fetch_button_updates(self):
         while self._running_:
@@ -358,24 +417,25 @@ class Client:
                 async with httpx.AsyncClient() as cl:
                     response=(await cl.get(self._button_url,timeout=self.time_out)).json()
                 if response and response.get('status') is True:
-                    results = response.get('updates',[])
-                    if results:
-                        for result in results:
-                            update = UpdateButton(result)
-                            for handler in self._button_handlers:
-                                await handler(update)
+                    results = response.get('updates', [])
+                    for result in results:
+                        update = Update(result, self)
+                        for handler in self._message_handlers:
+                            await handler(update)
             except:
                 print("""خطا ! صورتی که توکن خود را در فست روب ثبت نکردید , آن را از طریق متود زیر آن را ثبت کنید و در بات فادر ادرس را ثبت کنید
 set_token_button()""")
             await asyncio.sleep(1)
 
     def on_button(self):
+        """getting clicks on buttons class / گرفتن کلیک های روی دکمه های شیشه ای"""
         def decorator(handler: Callable[[UpdateButton], Awaitable[None]]):
             self._button_handlers.append(handler)
             return handler
         return decorator
 
     def run_on_button(self):
+        """اجرا گرفتن کلیک های روی پیام های شیشه ای"""
         self._running_ = True
         asyncio.run(self._fetch_button_updates())
 
@@ -386,29 +446,39 @@ class Update:
         self.message = update_data.get('new_message', {})
     @property
     def text(self) -> str:
-        return self._data['new_message']['text']
+        """text for message / متن پیام"""
+        return self._data['update']['new_message']['text']
     @property
     def message_id(self) -> int:
-        return self._data['new_message']['message_id']
+        """message id for message / آیدی پیام ارسال شده"""
+        return self._data['update']['new_message']['message_id']
     @property
     def chat_id(self) -> str:
-        return self._data['chat_id']
+        """chat id for message / چت آیدی پیام ارسال شده"""
+        return self._data['update']['chat_id']
     @property
     def time(self) -> int:
-        return int(self._data['new_message']['time'])
+        """time sended message / زمان پیام ارسال شده"""
+        return int(self._data['update']['new_message']['time'])
     @property
     def sender_type(self) -> str:
-        return self._data['new_message']['sender_type']
+        """type for chat / نوع پیام ارسال شده چت"""
+        return self._data['update']['new_message']['sender_type']
     @property
     def sender_id(self) -> str:
-        return self._data['new_message']['sender_id']
+        """guid user sended / شناسه گوید ارسال کننده پیام"""
+        return self._data['update']['new_message']['sender_id']
     async def reply(self, text: str) -> None:
+        """reply text / ریپلای متن"""
         return await self._client.send_text(text,self.chat_id,reply_to_message_id=self.message_id)
     async def reply_poll(self, question: str,options : list) -> None:
+        """reply poll / ریپلای نظرسنجی"""
         return await self._client.send_poll(self.chat_id,question,options)
     async def reply_contact(self, first_name: str,phone_number:str,last_name : str = None) -> None:
+        """reply contact / ریپلای مخاطب"""
         return await self._client.send_contact(self.chat_id,first_name,last_name,phone_number,reply_to_message_id=self.message_id)
     async def reply_location(self,latitude:str,longitude:str):
+        """reply location / ریپلای موقعیت مکانی"""
         return await self._client.send_location(self.chat_id,latitude,longitude,reply_to_message_id=self.message_id)
     def __str__(self) -> str:
         return str(self._data)
@@ -423,18 +493,23 @@ class UpdateButton:
         return self._data
     @property
     def button_id(self) -> str:
+        """button id clicked / آیدی دکمه کلیک شده"""
         return self._data['inline_message']['aux_data']['button_id']
     @property
     def chat_id(self) -> str:
+        """chat id clicked / چت آیدی کلیک شده"""
         return self._data['inline_message']['chat_id']
     @property
     def message_id(self) -> str:
+        """message id for message clicked glass button / آیدی پیام کلیک شده روی دکمه شیشه ای"""
         return self._data['inline_message']['message_id']
     @property
     def sender_id(self) -> str:
+        """guid for clicked button glass / شناسه گوید کاربر کلیک کرده روی دکمه شیشه ای"""
         return self._data['inline_message']['sender_id']
     @property
     def text(self) -> str:
+        """text for button clicked / متن دکمه شیشه ای که روی آن کلیک شده"""
         return self._data['inline_message']['text']
     def __str__(self):
         return str(self._data)
