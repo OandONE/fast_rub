@@ -14,6 +14,8 @@ class Client:
         user_agent: str = None,
         time_out: Optional[int] = 60,
         display_welcome=True,
+        use_to_fastrub_webhook_on_message:str|bool=True,
+        use_to_fastrub_webhook_on_button:str|bool=True
     ):
         name = name_session + ".faru"
         self.token = token
@@ -62,8 +64,16 @@ class Client:
                 print(Fore.GREEN, f"""{k}""", end="\r")
                 time.sleep(0.07)
             print(Fore.WHITE, "")
-        self._button_url = f"https://fast-rub.ParsSource.ir/geting_button_updates/get?token={self.token}"
-        self._on_url = f"https://fast-rub.ParsSource.ir/geting_button_updates/get_on?token={self.token}"
+        self.use_to_fastrub_webhook_on_message=use_to_fastrub_webhook_on_message
+        self.use_to_fastrub_webhook_on_button = use_to_fastrub_webhook_on_button
+        if type(use_to_fastrub_webhook_on_message)==str:
+            self._on_url = use_to_fastrub_webhook_on_message
+        else:
+            self._on_url = f"https://fast-rub.ParsSource.ir/geting_button_updates/get_on?token={self.token}"
+        if type(use_to_fastrub_webhook_on_button)=="str":
+            self._button_url = use_to_fastrub_webhook_on_button
+        else:
+            self._button_url = f"https://fast-rub.ParsSource.ir/geting_button_updates/get?token={self.token}"
 
     async def send_requests(
         self, method, data_: Optional[dict] = None, type_send="post"
@@ -664,7 +674,6 @@ class Client:
 
     def on_message_updates(self, filters: Optional[Filter] = None):
         """دکوراتور برای ثبت هندلر پیام‌ها"""
-
         def decorator(handler: Callable[[Update], Awaitable[None]]):
             @wraps(handler)
             async def wrapped(update):
