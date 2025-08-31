@@ -1,22 +1,23 @@
-import httpx,time,os,json,asyncio
+import httpx,time,os,json,asyncio,inspect
 from typing import Optional, Callable, Awaitable, Literal
 from colorama import Fore
 from .filters import Filter
 from functools import wraps
 from pathlib import Path
 from .type import Update,UpdateButton
+from .async_sync import *
 
 
 class Client:
     def __init__(
         self,
         name_session: str,
-        token: str = None,
-        user_agent: str = None,
+        token: Optional[str] = None,
+        user_agent: Optional[str] = None,
         time_out: Optional[int] = 60,
         display_welcome=True,
-        use_to_fastrub_webhook_on_message:str|bool=True,
-        use_to_fastrub_webhook_on_button:str|bool=True
+        use_to_fastrub_webhook_on_message : Optional[str|bool]=True,
+        use_to_fastrub_webhook_on_button : Optional[str|bool]=True
     ):
         """Client for login and setting robot / کلاینت برای لوگین و تنظیمات ربات"""
         name = name_session + ".faru"
@@ -87,6 +88,8 @@ class Client:
     @property
     def TOKEN(self):
         return self.token
+
+    @async_to_sync
     async def send_requests(
         self, method, data_: Optional[dict] = None, type_send="post"
     ):
@@ -113,16 +116,18 @@ class Client:
             except TimeoutError:
                 raise TimeoutError("Please check the internet !")
 
+    @async_to_sync
     async def get_me(self) -> dict:
         """geting info accont bot / گرفتن اطلاعات اکانت ربات"""
         result = await self.send_requests(method="getMe")
         return result
 
+    @async_to_sync
     async def send_text(
         self,
         text: str,
         chat_id: str,
-        inline_keypad,
+        inline_keypad = None,
         disable_notification: Optional[bool] = False,
         reply_to_message_id: Optional[str] = None,
     ) -> dict:
@@ -148,6 +153,7 @@ class Client:
         )
         return result
 
+    @async_to_sync
     async def send_poll(self, chat_id: str, question: str, options: list) -> dict:
         """sending poll to chat id / ارسال نظرسنجی به یک چت آیدی"""
         data = {"chat_id": chat_id, "question": question, "options": options}
@@ -157,12 +163,13 @@ class Client:
         )
         return result
 
+    @async_to_sync
     async def send_location(
         self,
         chat_id: str,
         latitude: str,
         longitude: str,
-        chat_keypad: str = None,
+        chat_keypad : Optional[str] = None,
         disable_notification: Optional[bool] = False,
         reply_to_message_id: Optional[str] = None,
         chat_keypad_type: Optional[str] = None,
@@ -183,17 +190,18 @@ class Client:
         )
         return result
 
+    @async_to_sync
     async def send_contact(
         self,
         chat_id: str,
         first_name: str,
         last_name: str,
         phone_number: str,
-        chat_keypad: str = None,
-        chat_keypad_type: str = None,
-        inline_keypad: str = None,
-        reply_to_message_id: str = None,
-        disable_notificatio: bool = False
+        chat_keypad : Optional[str] = None,
+        chat_keypad_type: Optional[str] = None,
+        inline_keypad: Optional[str] = None,
+        reply_to_message_id: Optional[str] = None,
+        disable_notificatio: Optional[bool] = False
     ) -> dict:
         """sending contact to chat id / ارسال مخاطب به یک چت آیدی"""
         data = {
@@ -213,6 +221,7 @@ class Client:
         )
         return result
 
+    @async_to_sync
     async def get_chat(self, chat_id: str) -> dict:
         """geting info chat id info / گرفتن اطلاعات های یک چت"""
         data = {"chat_id": chat_id}
@@ -222,7 +231,8 @@ class Client:
         )
         return result
 
-    async def get_updates(self, limit: int = None, offset_id: str = None) -> dict:
+    @async_to_sync
+    async def get_updates(self, limit : Optional[int] = None, offset_id : Optional[str] = None) -> dict:
         """getting messages chats / گرفتن پیام های چت ها"""
         data = {"offset_id": offset_id, "limit": limit}
         result = await self.send_requests(
@@ -231,12 +241,13 @@ class Client:
         )
         return result
 
+    @async_to_sync
     async def forward_message(
         self,
         from_chat_id: str,
         message_id: str,
         to_chat_id: str,
-        disable_notification: bool = False,
+        disable_notification : Optional[bool] = False,
     ) -> dict:
         """forwarding message to chat id / فوروارد پیام به یک چت آیدی"""
         data = {
@@ -251,6 +262,7 @@ class Client:
         )
         return result
 
+    @async_to_sync
     async def edit_message_text(self, chat_id: str, message_id: str, text: str) -> dict:
         """editing message text / ویرایش متن پیام"""
         data = {"chat_id": chat_id, "message_id": message_id, "text": text}
@@ -260,6 +272,7 @@ class Client:
         )
         return result
 
+    @async_to_sync
     async def delete_message(self, chat_id: str, message_id: str) -> dict:
         """delete message / پاکسازی(حذف) یک پیام"""
         data = {"chat_id": chat_id, "message_id": message_id}
@@ -269,12 +282,14 @@ class Client:
         )
         return result
 
+    @async_to_sync
     async def add_commands(self, command: str, description: str) -> None:
         """add command to commands list / افزودن دستور به لیست دستورات"""
         self.list_.append(
             {"command": command.replace("/", ""), "description": description}
         )
 
+    @async_to_sync
     async def set_commands(self) -> dict:
         """set the commands for robot / تنظیم دستورات برای ربات"""
         result = await self.send_requests(
@@ -283,6 +298,7 @@ class Client:
         )
         return result
 
+    @async_to_sync
     async def delete_commands(self) -> None:
         """clear the commands list / پاکسازی لیست دستورات"""
         self.list_ = []
@@ -292,12 +308,13 @@ class Client:
         )
         return result
 
+    @async_to_sync
     async def edit_message_keypad_Inline(
         self,
         chat_id: str,
         text: str,
         inline_keypad,
-        disable_notification: bool = False,
+        disable_notification : Optional[bool] = False,
         reply_to_message_id: Optional[str] = None,
     ) -> dict:
         """editing the text key pad inline / ویرایش پیام شیشه ای"""
@@ -314,15 +331,16 @@ class Client:
         )
         return result
 
+    @async_to_sync
     async def send_message_keypad(
         self,
         chat_id: str,
         text: str,
         Keypad,
-        disable_notification: bool = False,
+        disable_notification : Optional[bool] = False,
         reply_to_message_id: Optional[str] = None,
-        resize_keyboard: bool = True,
-        on_time_keyboard: bool = False,
+        resize_keyboard : Optional[bool] = True,
+        on_time_keyboard: Optional[bool] = False,
     ) -> dict:
         """sending message key pad texti / ارسال پیام با دکمه متنی"""
         data = {
@@ -356,15 +374,16 @@ class Client:
             data = response.json()
             return data
 
+    @async_to_sync
     async def send_file(
         self,
         chat_id: str,
         file: str | Path | bytes,
         name_file: str,
-        text: str = None,
-        reply_to_message_id: str = None,
+        text : Optional[str] = None,
+        reply_to_message_id : Optional[str] = None,
         type_file: Literal["File", "Image", "Voice", "Music", "Gif" , "Video"] = "File",
-        disable_notification: bool = False,
+        disable_notification : Optional[bool] = False,
     ) -> dict:
         """sending file with types ['File', 'Image', 'Voice', 'Music', 'Gif' , 'Video'] / ارسال فایل با نوع های فایل و عکس و پیغام صوتی و موزیک و گیف و ویدیو"""
         up_url_file = (
@@ -387,14 +406,15 @@ class Client:
         uploader["file_id"] = file_id
         return uploader
 
+    @async_to_sync
     async def send_image(
         self,
         chat_id: str,
         image: str | Path | bytes,
         name_file: str,
-        text: str = None,
-        reply_to_message_id: str = None,
-        disable_notification: bool = False,
+        text : Optional[str] = None,
+        reply_to_message_id : Optional[str] = None,
+        disable_notification: Optional[bool] = False,
     ) -> dict:
         """sending image / ارسال تصویر"""
         return await self.send_file(
@@ -407,14 +427,15 @@ class Client:
             disable_notification,
         )
 
+    @async_to_sync
     async def send_video(
         self,
         chat_id: str,
         video: str | Path | bytes,
         name_file: str,
-        text: str = None,
-        reply_to_message_id: str = None,
-        disable_notification: bool = False,
+        text : Optional[str] = None,
+        reply_to_message_id : Optional[str] = None,
+        disable_notification : Optional[bool] = False,
     ) -> dict:
         """sending video / ارسال ویدیو"""
         return await self.send_file(
@@ -427,14 +448,15 @@ class Client:
             disable_notification,
         )
 
+    @async_to_sync
     async def send_voice(
         self,
         chat_id: str,
         voice: str | Path | bytes,
         name_file: str,
-        text: str = None,
-        reply_to_message_id: str = None,
-        disable_notification: bool = False,
+        text : Optional[str] = None,
+        reply_to_message_id: Optional[str] = None,
+        disable_notification: Optional[bool] = False,
     ) -> dict:
         """sending voice / ارسال ویس"""
         return await self.send_file(
@@ -447,14 +469,15 @@ class Client:
             disable_notification,
         )
 
+    @async_to_sync
     async def send_music(
         self,
         chat_id: str,
         music: str | Path | bytes,
         name_file: str,
-        text: str = None,
-        reply_to_message_id: str = None,
-        disable_notification: bool = False,
+        text : Optional[str] = None,
+        reply_to_message_id : Optional[str] = None,
+        disable_notification : Optional[bool] = False,
     ) -> dict:
         """sending music / ارسال موزیک"""
         return await self.send_file(
@@ -467,14 +490,15 @@ class Client:
             disable_notification,
         )
 
+    @async_to_sync
     async def send_gif(
         self,
         chat_id: str,
         gif: str | Path | bytes,
         name_file: str,
-        text: str = None,
-        reply_to_message_id: str = None,
-        disable_notification: bool = False,
+        text : Optional[str] = None,
+        reply_to_message_id : Optional[str] = None,
+        disable_notification : Optional[bool] = False,
     ) -> dict:
         """sending gif / ارسال گیف"""
         return await self.send_file(
@@ -487,12 +511,13 @@ class Client:
             disable_notification,
         )
 
+    @async_to_sync
     async def send_sticker(
         self,
         chat_id: str,
         id_sticker: str,
-        reply_to_message_id: str = None,
-        disable_notification: bool = False,
+        reply_to_message_id : Optional[str] = None,
+        disable_notification : Optional[bool] = False,
     ):
         """sending sticker by id / ارسال استیکر با آیدی"""
         data = {
@@ -504,13 +529,15 @@ class Client:
         sender = await self.send_requests("sendSticker", data)
         return sender
 
+    @async_to_sync
     async def get_download_file_url(self,id_file : str) -> str:
         """get download url file / گرفتن آدرس دانلود فایل"""
         data = {"file_id": id_file}
         url = (await self.send_requests("getFile",data))["download_url"]
         return url
 
-    async def download_file(self,id_file : str , path : str = "file") -> str:
+    @async_to_sync
+    async def download_file(self,id_file : str , path : Optional[str] = "file") -> str:
         """download file / دانلود فایل"""
         url = self.get_download_file_url(id_file)
         async with httpx.AsyncClient() as client:
@@ -519,12 +546,14 @@ class Client:
                     async for chunk in response.aiter_bytes():
                         file.write(chunk)
 
+    @async_to_sync
     async def set_endpoint(self, url: str, type: Literal["ReceiveUpdate", "GetSelectionItem", "ReceiveInlineMessage", "ReceiveQuery", "SearchSelectionItems"]) -> dict:
         """set endpoint url / تنظیم ادرس اند پوینت"""
         return await self.send_requests(
             "updateBotEndpoints", {"url": url, "type": type}
         )
 
+    @async_to_sync
     async def set_token_fast_rub(self) -> bool:
         """seting token in fast_rub for getting click glass messages and updata messges / تنظیم توکن در فست روب برای گرفتن کلیک های روی پیام شیشه ای و آپدیت پیام ها"""
         async with httpx.AsyncClient() as cl:
@@ -549,12 +578,16 @@ class Client:
             @wraps(handler)
             async def wrapped(update):
                 if filters is None or filters(update):
-                    return await handler(update)
+                    if inspect.iscoroutinefunction(handler):
+                        return await handler(update)
+                    else:
+                        return handler(update)
             self._message_handlers_.append(wrapped)
             return handler
         return decorator
 
-    async def _process_messages_(self, time_updata_sleep: float = 0.5):
+    @async_to_sync
+    async def _process_messages_(self, time_updata_sleep : Optional[float] = 0.5):
         while self._running:
             try:
                 async with httpx.AsyncClient() as cl:
@@ -596,7 +629,8 @@ class Client:
             return handler
         return decorator
 
-    async def _process_messages(self, time_updata_sleep: int = 1):
+    @async_to_sync
+    async def _process_messages(self, time_updata_sleep : Optional[int] = 1):
         while self._running:
             try:
                 async with httpx.AsyncClient() as cl:
@@ -620,6 +654,7 @@ class Client:
                         await handler(update_obj)
             await asyncio.sleep(time_updata_sleep)
 
+    @async_to_sync
     async def _fetch_button_updates(self):
         while self._running:
             try:
@@ -637,6 +672,7 @@ class Client:
 set_token_button()""")
             await asyncio.sleep(1)
 
+    @async_to_sync
     async def _run_all(self):
         tasks = []
         if self._fetch_messages and self._message_handlers:
