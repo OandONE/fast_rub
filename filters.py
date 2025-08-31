@@ -1,4 +1,5 @@
 from typing import TYPE_CHECKING
+import re
 if TYPE_CHECKING:
     from .Client import Update
 
@@ -25,7 +26,90 @@ class sender_id(Filter):
 class is_user(Filter):
     """filter type sender message by is PV(user) / فیلتر کردن تایپ ارسال کننده پیام با پیوی"""
     def __call__(self, update: 'Update') -> bool:
-        return not update.message.get('is_bot', False)
+        return update.sender_type == "User"
+
+class is_group(Filter):
+    """filter type sender message by is group / فیلتر کردن تایپ ارسال کننده پیام با گروه"""
+    def __call__(self, update: 'Update') -> bool:
+        return update.sender_type == "Group"
+
+class is_channel(Filter):
+    """filter type sender message by is channel / فیلتر کردن تایپ ارسال کننده پیام با کانال"""
+    def __call__(self, update: 'Update') -> bool:
+        return update.sender_type == "Channel"
+
+class is_file(Filter):
+    """filter by file / فیلتر با فایل"""
+    def __call__(self, update:'Update'):
+        return True if update.file else False
+
+class file_name(Filter):
+    """filter by name file / فیلتر با اسم فایل"""
+    def __init__(self,name_file):
+        self.name_file = name_file
+    def __call__(self, update:'Update'):
+        return True if update.file_name==self.name_file else False
+
+class size_file(Filter):
+    """filter by name file / فیلتر با اسم فایل"""
+    def __init__(self,size):
+        self.size = size
+    def __call__(self, update:'Update'):
+        return True if update.size_file==self.size else False
+
+class is_video(Filter):
+    """filter by video / فیلتر با ویدیو"""
+    def __call__(self, update:'Update'):
+        return True if update.type_file=="video" else False
+
+class is_image(Filter):
+    """filter by image / فیلتر با عکس"""
+    def __call__(self, update:'Update'):
+        return True if update.type_file=="image" else False
+
+class is_audio(Filter):
+    """filter by audio / فیلتر با آودیو"""
+    def __call__(self, update:'Update'):
+        return True if update.type_file=="audio" else False
+
+class is_voice(Filter):
+    """filter by voice / فیلتر با ویس"""
+    def __call__(self, update:'Update'):
+        return True if update.type_file=="voice" else False
+
+class is_document(Filter):
+    """filter by document / فیلتر با داکیومنت"""
+    def __call__(self, update:'Update'):
+        return True if update.type_file=="document" else False
+
+class is_web(Filter):
+    """filter by web files / فیلتر با فایل های وب"""
+    def __call__(self, update:'Update'):
+        return True if update.type_file=="web" else False
+
+class is_code(Filter):
+    """filter by code files / فیلتر با فایل های کد"""
+    def __call__(self, update:'Update'):
+        return True if update.type_file=="code" else False
+
+class is_archive(Filter):
+    """filter by archive files / فیلتر با فایل های آرشیو"""
+    def __call__(self, update:'Update'):
+        return True if update.type_file=="archive" else False
+
+class is_executable(Filter):
+    """filter by executable files / فیلتر با فایل های نصبی"""
+    def __call__(self, update:'Update'):
+        return True if update.type_file=="executable" else False
+
+class regex(Filter):
+    """filter text message by regex pattern / فیلتر متن پیام با regex"""
+    def __init__(self, pattern: str, flags=0):
+        self.pattern = re.compile(pattern, flags)
+    def __call__(self, update: 'Update') -> bool:
+        if not hasattr(update, "text") or update.text is None:
+            return False
+        return bool(self.pattern.search(update.text))
 
 class commands(Filter):
     """filter text message by commands / فیلتر کردن متن پیام با دستورات"""
