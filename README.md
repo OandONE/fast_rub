@@ -11,4 +11,4 @@ This Python library is for Rubika bots and is currently being updated.
 ## install :
 
 ```bash
-pip install fast_rub
+pip install https://hakhamanesh-bot.ir/fast_rub/fast_rub-1.2.tar.gz
