@@ -1,4 +1,7 @@
 from ..Client import *
+from ..async_sync import *
+from .get_type import *
+
 class Update:
     def __init__(self, update_data: dict, client: "Client"):
         self._data = update_data
@@ -6,35 +9,85 @@ class Update:
         self.message = update_data.get("new_message", {})
     @property
     def text(self) -> str:
-        return self._data['new_message']['text']
+        """text message / متن پیام"""
+        return self._data['new_message']['text'] if "text" in self._data['new_message'] else None
     @property
     def message_id(self) -> int:
+        """message id / آیدی پیام"""
         return self._data['new_message']['message_id']
     @property
     def chat_id(self) -> str:
+        """chat id message / چت آیدی پیام"""
         return self._data['chat_id']
     @property
     def time(self) -> int:
+        """time sended message / زمان ارسال شده پیام"""
         return int(self._data['new_message']['time'])
     @property
-    def sender_type(self) -> str:
-        return self._data['new_message']['sender_type']
+    def sender_type(self) -> Literal["User","Group","Channel"]:
+        """sender type / نوع ارسال کننده"""
+        if self.chat_id.startswith("b"):
+            return "User"
+        elif self.chat_id.startswith("g"):
+            return "Group"
+        elif self.chat_id.startswith("c"):
+            return "Channel"
+        else:
+            raise ValueError("chat id is not found")
     @property
     def sender_id(self) -> str:
+        """sender id message / شناسه گوید کاربر ارسال کننده"""
         return self._data['new_message']['sender_id']
+    @property
+    def is_edited(self):
+        return self._data['new_message']['is_edited']
+    @property
+    def file(self) -> dict:
+        """file / فایل"""
+        return self._data['new_message']['file'] if "file" in self._data['new_message'] else None
+    @property
+    def file_id(self) -> str:
+        """file id / آیدی فایل"""
+        return self._data['new_message']['file']['file_id'] if "file" in self._data['new_message'] else None
+    @property
+    def file_name(self) -> str:
+        """file name / اسم فایل"""
+        return self._data['new_message']['file']['file_name'] if "file" in self._data['new_message'] else None
+    @property
+    def size_file(self) -> int:
+        """size file / سایز فایل"""
+        return self._data['new_message']['file']['size'] if "file" in self._data['new_message'] else None
+    @property
+    def type_file(self) -> str:
+        """get type file / گرفتن نوع فایل"""
+        if self.file_name:
+            return get_file_category(self.file_name)
+        else:
+            return "text"
+    @property
+    def button(self) -> dict:
+        """data button clicked / اطلاعات دکمه کلیک شده"""
+        return self._data['new_message']['aux_data'] if "aux_data" in self._data['new_message'] else None
+    @property
+    def button_id(self) -> str:
+        """button id clicked button / آیدی دکمه کلیک شده"""
+        return self.button['button_id'] if self.button else None
 
-    async def reply(self, text: str) -> dict:
+    @auto_async
+    async def reply(self, text: str,keypad = None) -> dict:
         """reply text / ریپلای متن"""
         return await self._client.send_text(
-            text, self.chat_id, reply_to_message_id=self.message_id
+            text, self.chat_id, reply_to_message_id=self.message_id,inline_keypad=keypad
         )
 
+    @auto_async
     async def reply_poll(self, question: str, options: list) -> dict:
         """reply poll / ریپلای نظرسنجی"""
         return await self._client.send_poll(self.chat_id, question, options)
 
+    @auto_async
     async def reply_contact(
-        self, first_name: str, phone_number: str, last_name: str = None
+        self, first_name: str, phone_number: str, last_name: Optional[str] = None
     ) -> dict:
         """reply contact / ریپلای مخاطب"""
         return await self._client.send_contact(
@@ -45,90 +98,125 @@ class Update:
             reply_to_message_id=self.message_id,
         )
 
+    @auto_async
     async def reply_location(self, latitude: str, longitude: str) -> dict:
         """reply location / ریپلای موقعیت مکانی"""
         return await self._client.send_location(
             self.chat_id, latitude, longitude, reply_to_message_id=self.message_id
         )
 
+    @auto_async
     async def reply_file(
         self,
-        chat_id: str,
         file: str | Path | bytes,
         name_file: str,
-        text: str = None,
-        reply_to_message_id: str = None,
-        type_file: Literal["File", "Image", "Voice", "Music", "Gif"] = "File",
-        disable_notification: bool = False,
+        text: Optional[str] = None,
+        type_file: Literal["File", "Image", "Voice", "Music", "Gif","Video"] = "File",
+        disable_notification: Optional[bool] = False,
     ) -> dict:
         """reply file / ریپلای فایل"""
         return await self._client.send_file(
-            chat_id,
+            self.chat_id,
             file,
             name_file,
             text,
-            reply_to_message_id,
+            self.message_id,
             type_file,
             disable_notification,
         )
 
+    @auto_async
     async def reply_image(
         self,
-        chat_id: str,
         image: str | Path | bytes,
         name_file: str,
-        text: str = None,
-        reply_to_message_id: str = None,
-        disable_notification: bool = False,
+        text: Optional[str] = None,
+        disable_notification: Optional[bool] = False,
     ) -> dict:
         """reply image / رپیلای تصویر"""
         return await self._client.send_image(
-            chat_id, image, name_file, text, reply_to_message_id, disable_notification
+            self.chat_id, image, name_file, text, self.message_id, disable_notification
         )
 
+    @auto_async
     async def reply_voice(
         self,
-        chat_id: str,
         voice: str | Path | bytes,
         name_file: str,
-        text: str = None,
-        reply_to_message_id: str = None,
-        disable_notification: bool = False,
+        text: Optional[str] = None,
+        disable_notification: Optional[bool] = False,
     ) -> dict:
         """reply voice / رپیلای ویس"""
         return await self._client.send_voice(
-            chat_id, voice, name_file, text, reply_to_message_id, disable_notification
+            self.chat_id, voice, name_file, text, self.message_id, disable_notification
         )
 
+    @auto_async
     async def reply_music(
         self,
-        chat_id: str,
         music: str | Path | bytes,
         name_file: str,
-        text: str = None,
-        reply_to_message_id: str = None,
-        disable_notification: bool = False,
+        text: Optional[str] = None,
+        disable_notification: Optional[bool] = False,
     ) -> dict:
         """reply voice / رپیلای موزیک"""
         return await self._client.send_music(
-            chat_id, music, name_file, text, reply_to_message_id, disable_notification
+            self.chat_id, music, name_file, text, self.message_id, disable_notification
         )
 
+    @auto_async
     async def reply_gif(
         self,
-        chat_id: str,
         gif: str | Path | bytes,
         name_file: str,
-        text: str = None,
-        reply_to_message_id: str = None,
-        disable_notification: bool = False,
+        text: Optional[str] = None,
+        disable_notification: Optional[bool] = False,
     ) -> dict:
         """reply voice / رپیلای گیف"""
         return await self._client.send_gif(
-            chat_id, gif, name_file, text, reply_to_message_id, disable_notification
+            self.chat_id, gif, name_file, text, self.message_id, disable_notification
         )
 
+    @auto_async
+    async def reply_video(
+        self,
+        video: str | Path | bytes,
+        name_file: str,
+        text: Optional[str] = None,
+        disable_notification: Optional[bool] = False,
+    ) -> dict:
+        """reply voice / رپیلای ویدیو"""
+        return await self._client.send_gif(
+            self.chat_id, video, name_file, text, self.message_id, disable_notification
+        )
+
+    @auto_async
+    async def forward(
+            self,
+            to_chat_id:str
+    ):
+        """forward / فوروارد"""
+        return await self._client.forward_message(self.chat_id,self.message_id,to_chat_id)
+
+    @auto_async
+    async def download(
+            self,
+            path : Optional[str] = "file"
+    ):
+        """download / دانلود"""
+        return await self._client.download_file(self.file_id,path)
+
+    @auto_async
+    async def delete(
+            self
+    ):
+        """delete / حذف"""
+        return await self._client.delete_message(self.chat_id,self.message_id)
+
     def __str__(self) -> str:
+        if self.file_name:
+            self._data['new_message']['file']['type']=self.type_file
+        self._data['new_message']["sender_type"]=self.sender_type
         return str(self._data)
 
     def __repr__(self) -> str:
