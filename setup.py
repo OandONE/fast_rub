@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="fast_rub",
-    version="1.0",
+    version="1.2",
     author="seyyed mohamad hosein moosavi raja(01)",
     author_email="mohamadhosein159159@gmail.com",
     description="the library for rubika bots.",
@@ -14,3 +14,4 @@ setup(
     install_requires=["httpx==0.28.1","colorama==0.4.6"],
     license="MIT"
 )
+
