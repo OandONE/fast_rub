@@ -12,14 +12,14 @@ class KeyPad:
         self.list_KeyPads = []
 
     @property
-    def list_types(self) -> Literal[
-        "Simple", "Selection", "Calendar", "NumberPicker", "StringPicker", 
-        "Location", "Payment", "CameraImage", "CameraVideo", "GalleryImage", 
-        "GalleryVideo", "File", "Audio", "RecordAudio", "MyPhoneNumber", 
-        "MyLocation", "Textbox", "Link", "AskMyPhoneNumber", "AskLocation", "Barcode"
-    ]:
-        return ButtonType
-    
+    def list_types(self) -> list:
+        return [
+    "Simple", "Selection", "Calendar", "NumberPicker", "StringPicker", 
+    "Location", "Payment", "CameraImage", "CameraVideo", "GalleryImage", 
+    "GalleryVideo", "File", "Audio", "RecordAudio", "MyPhoneNumber", 
+    "MyLocation", "Textbox", "Link", "AskMyPhoneNumber", "AskLocation", "Barcode"
+]
+
     def _create_button(self, id: str, button_text: str, type: ButtonType) -> dict:
         """ایجاد دیکشنری دکمه به صورت متمرکز"""
         return {"id": id, "type": type, "button_text": button_text}
