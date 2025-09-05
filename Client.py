@@ -1,5 +1,5 @@
 import httpx,time,os,json,asyncio,inspect
-from typing import Optional, Callable, Awaitable, Literal
+from typing import Optional, Callable, Awaitable, Literal,Union,Dict,List,Any
 from colorama import Fore
 from .filters import Filter
 from functools import wraps
@@ -40,6 +40,7 @@ class Client:
         self._button_handlers = []
         self.last = []
         self._message_handlers_ = []
+        self.next_offset_id = ""
         if os.path.isfile(name):
             with open(name, "r", encoding="utf-8") as file:
                 text_json_fast_rub_session = json.load(file)
@@ -76,11 +77,11 @@ class Client:
             print(Fore.WHITE, "")
         self.use_to_fastrub_webhook_on_message=use_to_fastrub_webhook_on_message
         self.use_to_fastrub_webhook_on_button = use_to_fastrub_webhook_on_button
-        if type(use_to_fastrub_webhook_on_message)==str:
+        if type(use_to_fastrub_webhook_on_message) is str:
             self._on_url = use_to_fastrub_webhook_on_message
         else:
             self._on_url = f"https://fast-rub.ParsSource.ir/geting_button_updates/get_on?token={self.token}"
-        if type(use_to_fastrub_webhook_on_button)=="str":
+        if type(use_to_fastrub_webhook_on_button) is str:
             self._button_url = use_to_fastrub_webhook_on_button
         else:
             self._button_url = f"https://fast-rub.ParsSource.ir/geting_button_updates/get?token={self.token}"
@@ -91,8 +92,8 @@ class Client:
 
     @async_to_sync
     async def send_requests(
-        self, method, data_: Optional[dict] = None, type_send="post"
-    ):
+        self, method, data_: Optional[Union[Dict[str, Any], List[Any]]] = None, type_send="post"
+    ) -> dict:
         url = f"https://botapi.rubika.ir/v3/{self.token}/{method}"
         if self.user_agent != None:
             headers = {
@@ -115,6 +116,7 @@ class Client:
                         return result.json()
             except TimeoutError:
                 raise TimeoutError("Please check the internet !")
+        return {}
 
     @async_to_sync
     async def get_me(self) -> dict:
@@ -299,7 +301,7 @@ class Client:
         return result
 
     @async_to_sync
-    async def delete_commands(self) -> None:
+    async def delete_commands(self) -> dict:
         """clear the commands list / پاکسازی لیست دستورات"""
         self.list_ = []
         result = await self.send_requests(
@@ -361,8 +363,11 @@ class Client:
         )
         return result
 
-    async def _upload_file(self, url: str, file_name: str, file: str):
-        d_file = {"file": (file_name, open(file, "rb"), "application/octet-stream")}
+    async def _upload_file(self, url: str, file_name: str, file: str | Path | bytes):
+        if type(file) is bytes:
+            d_file = {"file": (file_name, file, "application/octet-stream")}
+        else:
+            d_file = {"file": (file_name, open(file, "rb"), "application/octet-stream")}
         async with httpx.AsyncClient(verify=False) as cl:
             response = await cl.post(url, files=d_file)
             if response.status_code != 200:
@@ -537,9 +542,9 @@ class Client:
         return url
 
     @async_to_sync
-    async def download_file(self,id_file : str , path : Optional[str] = "file") -> str:
+    async def download_file(self,id_file : str , path : str = "file") -> None:
         """download file / دانلود فایل"""
-        url = self.get_download_file_url(id_file)
+        url = await self.get_download_file_url(id_file)
         async with httpx.AsyncClient() as client:
             async with client.stream('GET', url) as response:
                 with open(path, 'wb') as file:
@@ -562,12 +567,18 @@ class Client:
                     f"https://fast-rub.ParsSource.ir/set_token?token={self.token}"
                 )
             ).json()
+        list_up:List[Literal["ReceiveUpdate", "ReceiveInlineMessage"]]= [
+    "ReceiveUpdate", 
+    "ReceiveInlineMessage"
+]
         if r["status"]:
-            await self.set_endpoint(r["url_endpoint"], "GetSelectionItem")
+            for it in list_up:
+                await self.set_endpoint(f"https://fast-rub.ParsSource.ir/geting_button_updates/{self.token}/{it}", it)
             return True
         else:
             if r["error"] == "This token exists":
-                await self.set_endpoint(r["url_endpoint"], "GetSelectionItem")
+                for it in list_up:
+                    await self.set_endpoint(f"https://fast-rub.ParsSource.ir/geting_button_updates/{self.token}/{it}", it)
                 return True
         return False
 
@@ -587,27 +598,32 @@ class Client:
         return decorator
 
     @async_to_sync
-    async def _process_messages_(self, time_updata_sleep : Optional[float] = 0.5):
+    async def _process_messages_(self, time_updata_sleep : Union[float,float] = 0.5):
         while self._running:
             try:
                 async with httpx.AsyncClient() as cl:
                     await cl.get("https://rubika.ir/",timeout=self.time_out)
             except:
                 raise TimeoutError("please check the your internet .")
-            mes = (await self.get_updates(limit=100))
+            mes = (await self.get_updates(limit=100,offset_id=self.next_offset_id))
             if mes['status']=="INVALID_ACCESS":
                 raise PermissionError("Due to Rubika's restrictions, access to retrieve messages has been blocked. Please try again.")
+            try:
+                self.next_offset_id = mes["data"]["next_offset_id"]
+            except:
+                pass
             for message in mes['data']['updates']:
-                time_sended_mes = int(message['new_message']['time'])
-                now = int(time.time())
-                time_ = time_updata_sleep + 4
-                if (now - time_sended_mes < time_) and (not message['new_message']['message_id'] in self.last):
-                    self.last.append(message['new_message']['message_id'])
-                    if len(self.last) > 500:
-                        self.last.pop(-1)
-                    update_obj = Update(message,self)
-                    for handler in self._message_handlers_:
-                        await handler(update_obj)
+                if message["type"]=="NewMessage":
+                    time_sended_mes = int(message['new_message']['time'])
+                    now = int(time.time())
+                    time_ = time_updata_sleep + 4
+                    if (now - time_sended_mes < time_) and (not message['new_message']['message_id'] in self.last):
+                        self.last.append(message['new_message']['message_id'])
+                        if len(self.last) > 500:
+                            self.last.pop(-1)
+                        update_obj = Update(message,self)
+                        for handler in self._message_handlers_:
+                            await handler(update_obj)
             await asyncio.sleep(time_updata_sleep)
 
     def on_message_updates(self, filters: Optional[Filter] = None):
@@ -630,7 +646,7 @@ class Client:
         return decorator
 
     @async_to_sync
-    async def _process_messages(self, time_updata_sleep : Optional[int] = 1):
+    async def _process_messages(self, time_updata_sleep : Union[int,int] = 1):
         while self._running:
             try:
                 async with httpx.AsyncClient() as cl:
@@ -657,20 +673,18 @@ class Client:
     @async_to_sync
     async def _fetch_button_updates(self):
         while self._running:
-            try:
-                async with httpx.AsyncClient() as cl:
-                    response = (await cl.get(self._button_url, timeout=self.time_out)).json()
-                if response and response.get('status') is True:
-                    results = response.get('updates', [])
-                    if results:
-                        for result in results:
-                            update = UpdateButton(result)
-                            for handler in self._button_handlers:
-                                await handler(update)
-            except:
-                print("""خطا ! صورتی که توکن خود را در فست روب ثبت نکردید , آن را از طریق متود زیر آن را ثبت کنید و در بات فادر ادرس را ثبت کنید
-set_token_button()""")
-            await asyncio.sleep(1)
+            async with httpx.AsyncClient() as cl:
+                response = (await cl.get(self._button_url, timeout=self.time_out)).json()
+            if response and response.get('status') is True:
+                results = response.get('updates', [])
+                if results:
+                    for result in results:
+                        update = UpdateButton(result)
+                        for handler in self._button_handlers:
+                            await handler(update)
+            else:
+                await self.set_token_fast_rub()
+            await asyncio.sleep(0.1)
 
     @async_to_sync
     async def _run_all(self):
