@@ -4,25 +4,29 @@ from .get_type import *
 
 class Update:
     def __init__(self, update_data: dict, client: "Client"):
-        self._data = update_data
+        try:
+            self._data = update_data["new_message"]
+        except:
+            self._data = update_data["updated_message"]
         self._client = client
+        self.raw_data_=update_data
         self.message = update_data.get("new_message", {})
     @property
-    def text(self) -> str:
+    def text(self) -> str | None:
         """text message / متن پیام"""
-        return self._data['new_message']['text'] if "text" in self._data['new_message'] else None
+        return self._data['text'] if "text" in self._data else None
     @property
-    def message_id(self) -> int:
+    def message_id(self) -> str:
         """message id / آیدی پیام"""
-        return self._data['new_message']['message_id']
+        return self._data['message_id']
     @property
     def chat_id(self) -> str:
         """chat id message / چت آیدی پیام"""
-        return self._data['chat_id']
+        return self.raw_data_['chat_id']
     @property
     def time(self) -> int:
         """time sended message / زمان ارسال شده پیام"""
-        return int(self._data['new_message']['time'])
+        return int(self._data['time'])
     @property
     def sender_type(self) -> Literal["User","Group","Channel"]:
         """sender type / نوع ارسال کننده"""
@@ -37,26 +41,26 @@ class Update:
     @property
     def sender_id(self) -> str:
         """sender id message / شناسه گوید کاربر ارسال کننده"""
-        return self._data['new_message']['sender_id']
+        return self._data['sender_id']
     @property
     def is_edited(self):
-        return self._data['new_message']['is_edited']
+        return self._data['is_edited']
     @property
-    def file(self) -> dict:
+    def file(self) -> dict | None:
         """file / فایل"""
-        return self._data['new_message']['file'] if "file" in self._data['new_message'] else None
+        return self._data['file'] if "file" in self._data else None
     @property
-    def file_id(self) -> str:
+    def file_id(self) -> str | None:
         """file id / آیدی فایل"""
-        return self._data['new_message']['file']['file_id'] if "file" in self._data['new_message'] else None
+        return self._data['file']['file_id'] if "file" in self._data else None
     @property
-    def file_name(self) -> str:
+    def file_name(self) -> str | None:
         """file name / اسم فایل"""
-        return self._data['new_message']['file']['file_name'] if "file" in self._data['new_message'] else None
+        return self._data['file']['file_name'] if "file" in self._data else None
     @property
-    def size_file(self) -> int:
+    def size_file(self) -> int | None:
         """size file / سایز فایل"""
-        return self._data['new_message']['file']['size'] if "file" in self._data['new_message'] else None
+        return self._data['file']['size'] if "file" in self._data else None
     @property
     def type_file(self) -> str:
         """get type file / گرفتن نوع فایل"""
@@ -65,13 +69,19 @@ class Update:
         else:
             return "text"
     @property
-    def button(self) -> dict:
+    def button(self) -> dict | None:
         """data button clicked / اطلاعات دکمه کلیک شده"""
-        return self._data['new_message']['aux_data'] if "aux_data" in self._data['new_message'] else None
+        return self._data['aux_data'] if "aux_data" in self._data else None
     @property
-    def button_id(self) -> str:
+    def button_id(self) -> str | None:
         """button id clicked button / آیدی دکمه کلیک شده"""
         return self.button['button_id'] if self.button else None
+
+
+    @auto_async
+    async def get_chat_id_info(self) -> dict:
+        """get info the chat id / گرفتن درباره چت آیدی"""
+        return await self._client.get_chat(self.chat_id)
 
     @auto_async
     async def reply(self, text: str,keypad = None) -> dict:
@@ -87,7 +97,7 @@ class Update:
 
     @auto_async
     async def reply_contact(
-        self, first_name: str, phone_number: str, last_name: Optional[str] = None
+        self, first_name: str, phone_number: str, last_name: Union[str,str] = ""
     ) -> dict:
         """reply contact / ریپلای مخاطب"""
         return await self._client.send_contact(
@@ -194,29 +204,31 @@ class Update:
     async def forward(
             self,
             to_chat_id:str
-    ):
+    ) -> dict:
         """forward / فوروارد"""
         return await self._client.forward_message(self.chat_id,self.message_id,to_chat_id)
 
     @auto_async
     async def download(
             self,
-            path : Optional[str] = "file"
-    ):
+            path : Union[str,str] = "file"
+    ) -> dict | None:
         """download / دانلود"""
-        return await self._client.download_file(self.file_id,path)
+        if self.file_id:
+            return await self._client.download_file(self.file_id,path)
+        return None
 
     @auto_async
     async def delete(
             self
-    ):
+    ) -> dict:
         """delete / حذف"""
         return await self._client.delete_message(self.chat_id,self.message_id)
 
     def __str__(self) -> str:
         if self.file_name:
-            self._data['new_message']['file']['type']=self.type_file
-        self._data['new_message']["sender_type"]=self.sender_type
+            self._data['file']['type']=self.type_file
+        self._data["sender_type"]=self.sender_type
         return str(self._data)
 
     def __repr__(self) -> str:
