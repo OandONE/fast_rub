@@ -17,6 +17,7 @@ def async_to_sync(func):
 
 
 def auto_async(func):
+    """دکوراتور برای تبدیل تابع async به sync"""
     @wraps(func)
     def wrapper(*args, **kwargs):
         coro = func(*args, **kwargs)
