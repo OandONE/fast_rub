@@ -102,6 +102,11 @@ class is_executable(Filter):
     def __call__(self, update:'Update'):
         return True if update.type_file=="executable" else False
 
+class is_text(Filter):
+    """filter by had text / فیلتر با داشتن متن"""
+    def __call__(self, update:'Update'):
+        return True if update.text!=None else False
+
 class regex(Filter):
     """filter text message by regex pattern / فیلتر متن پیام با regex"""
     def __init__(self, pattern: str, flags=0):
@@ -118,7 +123,7 @@ class commands(Filter):
 
     def __call__(self, update: 'Update') -> bool:
         for txt in self.coms:
-            if update.text==txt or update.text.replace("/","")==txt:
+            if (update.text!=None) and (update.text==txt or update.text.replace("/","")==txt):
                 return True
         return False
 
