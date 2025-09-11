@@ -3,6 +3,7 @@ from .filters import Filter
 from .type.Update import *
 from .iniline.KeyPad import *
 from .version import v
+from .colors import *
 
 __author__="Seyyed Mohamad Hosein Moosavi Raja"
 __version__=v
