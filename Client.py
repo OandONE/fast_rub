@@ -1,11 +1,14 @@
 import httpx,time,os,json,asyncio,inspect
 from typing import Optional, Callable, Awaitable, Literal,Union,Dict,List,Any
-from colorama import Fore
+from .colors import *
 from .filters import Filter
 from functools import wraps
 from pathlib import Path
 from .type import Update,UpdateButton
 from .async_sync import *
+from .type.get_type import get_file_category
+from .logger import *
+from .props import *
 
 
 class Client:
@@ -36,11 +39,15 @@ class Client:
         self._fetch_messages = False
         self._fetch_messages_ = False
         self._fetch_buttons = False
+        self._fetch_edit = False
         self._message_handlers = []
         self._button_handlers = []
+        self._edit_handlers = []
         self.last = []
         self._message_handlers_ = []
         self.next_offset_id = ""
+        self.next_offset_id_ = ""
+        self.last_ = []
         if os.path.isfile(name):
             with open(name, "r", encoding="utf-8") as file:
                 text_json_fast_rub_session = json.load(file)
@@ -51,7 +58,7 @@ class Client:
             if token == None:
                 token = input("Enter your token : ")
                 while token in ["", " ", None]:
-                    print(Fore.RED, "Enter the token valid !")
+                    cprint("Enter the token valid !",Colors.RED)
                     token = input("Enter your token : ")
             text_json_fast_rub_session = {
                 "name_session": name_session,
@@ -72,9 +79,9 @@ class Client:
             k = ""
             for text in "Welcome to FastRub":
                 k += text
-                print(Fore.GREEN, f"""{k}""", end="\r")
+                print(f"{Colors.GREEN}{k}{Colors.RESET}", end="\r")
                 time.sleep(0.07)
-            print(Fore.WHITE, "")
+            cprint("",Colors.WHITE)
         self.use_to_fastrub_webhook_on_message=use_to_fastrub_webhook_on_message
         self.use_to_fastrub_webhook_on_button = use_to_fastrub_webhook_on_button
         if type(use_to_fastrub_webhook_on_message) is str:
@@ -85,15 +92,18 @@ class Client:
             self._button_url = use_to_fastrub_webhook_on_button
         else:
             self._button_url = f"https://fast-rub.ParsSource.ir/geting_button_updates/get?token={self.token}"
+        client_logger.info("سشن اماده است")
 
     @property
     def TOKEN(self):
+        logger.info("توکن دریافت شد")
         return self.token
 
     @async_to_sync
     async def send_requests(
-        self, method, data_: Optional[Union[Dict[str, Any], List[Any]]] = None, type_send="post"
+        self, method, data_: Optional[Union[Dict[str, Any], List[Any]]] = None
     ) -> dict:
+        logger.info("در حال ارسال درخواست")
         url = f"https://botapi.rubika.ir/v3/{self.token}/{method}"
         if self.user_agent != None:
             headers = {
@@ -102,27 +112,33 @@ class Client:
             }
         else:
             headers = {"Content-Type": "application/json"}
-        if type_send == "post":
-            try:
-                async with httpx.AsyncClient(timeout=self.time_out) as cl:
-                    if data_ == None:
-                        result = await cl.post(url, headers=headers)
-                        json_result = result.json()
-                        if json_result["status"] != "OK":
-                            raise TypeError(f"Error for invalid status : {json_result}")
-                        return json_result
-                    else:
-                        result = await cl.post(url, headers=headers, json=data_)
-                        return result.json()
-            except TimeoutError:
-                raise TimeoutError("Please check the internet !")
+        try:
+            async with httpx.AsyncClient(timeout=self.time_out) as cl:
+                if data_ == None:
+                    result = await cl.post(url, headers=headers)
+                    result_ = result.json()
+                else:
+                    result = await cl.post(url, headers=headers, json=data_)
+                    result_ = result.json()
+                if result_["status"] != "OK":
+                    logger.error(f"خطایی از سمت سرور ! status : {result_['status']}")
+                    raise TypeError(f"Error for invalid status : {result_}")
+                logger.info("نتیجه درخواست موفق است")
+                return result_
+        except TimeoutError:
+            logger.error("خطا ! زمان ارسال درخواست به پایان رسیده است")
+            raise TimeoutError("Please check the internet !")
+        except Exception as e:
+            logger.error(f"خطایی ناشناخته : {e}")
+            raise e
         return {}
 
     @async_to_sync
-    async def get_me(self) -> dict:
+    async def get_me(self) -> props:
         """geting info accont bot / گرفتن اطلاعات اکانت ربات"""
+        logger.info("استفاده از متود get_me")
         result = await self.send_requests(method="getMe")
-        return result
+        return props(result)
 
     @async_to_sync
     async def send_text(
@@ -134,6 +150,7 @@ class Client:
         reply_to_message_id: Optional[str] = None,
     ) -> dict:
         """sending text to chat id / ارسال متنی به یک چت آیدی"""
+        logger.info("استفاده از متود send_message")
         if not inline_keypad:
             data = {
                 "chat_id": chat_id,
@@ -156,14 +173,15 @@ class Client:
         return result
 
     @async_to_sync
-    async def send_poll(self, chat_id: str, question: str, options: list) -> dict:
+    async def send_poll(self, chat_id: str, question: str, options: list) -> props:
         """sending poll to chat id / ارسال نظرسنجی به یک چت آیدی"""
+        logger.info("استفاده از متود send_poll")
         data = {"chat_id": chat_id, "question": question, "options": options}
         result = await self.send_requests(
             "sendPoll",
             data,
         )
-        return result
+        return props(result)
 
     @async_to_sync
     async def send_location(
@@ -175,8 +193,9 @@ class Client:
         disable_notification: Optional[bool] = False,
         reply_to_message_id: Optional[str] = None,
         chat_keypad_type: Optional[str] = None,
-    ) -> dict:
+    ) -> props:
         """sending location to chat id / ارسال لوکیشن(موقعیت مکانی) به یک چت آیدی"""
+        logger.info("استفاده از متود send_location")
         data = {
             "chat_id": chat_id,
             "latitude": latitude,
@@ -190,7 +209,7 @@ class Client:
             "sendLocation",
             data,
         )
-        return result
+        return props(result)
 
     @async_to_sync
     async def send_contact(
@@ -204,8 +223,9 @@ class Client:
         inline_keypad: Optional[str] = None,
         reply_to_message_id: Optional[str] = None,
         disable_notificatio: Optional[bool] = False
-    ) -> dict:
+    ) -> props:
         """sending contact to chat id / ارسال مخاطب به یک چت آیدی"""
+        logger.info("استفاده از متود send_contact")
         data = {
             "chat_id": chat_id,
             "first_name": first_name,
@@ -221,27 +241,29 @@ class Client:
             "sendContact",
             data,
         )
-        return result
+        return props(result)
 
     @async_to_sync
-    async def get_chat(self, chat_id: str) -> dict:
+    async def get_chat(self, chat_id: str) -> props:
         """geting info chat id info / گرفتن اطلاعات های یک چت"""
+        logger.info("استفاده از متود get_chat")
         data = {"chat_id": chat_id}
         result = await self.send_requests(
             "getChat",
             data,
         )
-        return result
+        return props(result)
 
     @async_to_sync
-    async def get_updates(self, limit : Optional[int] = None, offset_id : Optional[str] = None) -> dict:
+    async def get_updates(self, limit : Optional[int] = None, offset_id : Optional[str] = None) -> props:
         """getting messages chats / گرفتن پیام های چت ها"""
+        logger.info("استفاده از متود get_updates")
         data = {"offset_id": offset_id, "limit": limit}
         result = await self.send_requests(
             "getUpdates",
             data,
         )
-        return result
+        return props(result)
 
     @async_to_sync
     async def forward_message(
@@ -250,8 +272,9 @@ class Client:
         message_id: str,
         to_chat_id: str,
         disable_notification : Optional[bool] = False,
-    ) -> dict:
+    ) -> props:
         """forwarding message to chat id / فوروارد پیام به یک چت آیدی"""
+        logger.info("استفاده از متود forward_message")
         data = {
             "from_chat_id": from_chat_id,
             "message_id": message_id,
@@ -262,53 +285,58 @@ class Client:
             "forwardMessage",
             data,
         )
-        return result
+        return props(result)
 
     @async_to_sync
-    async def edit_message_text(self, chat_id: str, message_id: str, text: str) -> dict:
+    async def edit_message_text(self, chat_id: str, message_id: str, text: str) -> props:
         """editing message text / ویرایش متن پیام"""
+        logger.info("استفاده از متود edit_message_text")
         data = {"chat_id": chat_id, "message_id": message_id, "text": text}
         result = await self.send_requests(
             "editMessageText",
             data,
         )
-        return result
+        return props(result)
 
     @async_to_sync
-    async def delete_message(self, chat_id: str, message_id: str) -> dict:
+    async def delete_message(self, chat_id: str, message_id: str) -> props:
         """delete message / پاکسازی(حذف) یک پیام"""
+        logger.info("استفاده از متود delete_message")
         data = {"chat_id": chat_id, "message_id": message_id}
         result = await self.send_requests(
             "deleteMessage",
             data,
         )
-        return result
+        return props(result)
 
     @async_to_sync
     async def add_commands(self, command: str, description: str) -> None:
         """add command to commands list / افزودن دستور به لیست دستورات"""
+        logger.info("استفاده از متود add_commands")
         self.list_.append(
             {"command": command.replace("/", ""), "description": description}
         )
 
     @async_to_sync
-    async def set_commands(self) -> dict:
+    async def set_commands(self) -> props:
         """set the commands for robot / تنظیم دستورات برای ربات"""
+        logger.info("استفاده از متود set_commands")
         result = await self.send_requests(
             "setCommands",
             {"bot_commands": self.list_},
         )
-        return result
+        return props(result)
 
     @async_to_sync
-    async def delete_commands(self) -> dict:
+    async def delete_commands(self) -> props:
         """clear the commands list / پاکسازی لیست دستورات"""
+        logger.info("استفاده از متود delete_commands")
         self.list_ = []
         result = await self.send_requests(
             "setCommands",
             self.list_,
         )
-        return result
+        return props(result)
 
     @async_to_sync
     async def edit_message_keypad_Inline(
@@ -318,8 +346,9 @@ class Client:
         inline_keypad,
         disable_notification : Optional[bool] = False,
         reply_to_message_id: Optional[str] = None,
-    ) -> dict:
+    ) -> props:
         """editing the text key pad inline / ویرایش پیام شیشه ای"""
+        logger.info("استفاده از متود edit_message_keypad_Inline")
         data = {
             "disable_notification": disable_notification,
             "reply_to_message_id": reply_to_message_id,
@@ -331,7 +360,7 @@ class Client:
             "editMessageText",
             data,
         )
-        return result
+        return props(result)
 
     @async_to_sync
     async def send_message_keypad(
@@ -343,8 +372,9 @@ class Client:
         reply_to_message_id: Optional[str] = None,
         resize_keyboard : Optional[bool] = True,
         on_time_keyboard: Optional[bool] = False,
-    ) -> dict:
+    ) -> props:
         """sending message key pad texti / ارسال پیام با دکمه متنی"""
+        logger.info("استفاده از متود send_message_keypad")
         data = {
             "chat_id": chat_id,
             "disable_notification": disable_notification,
@@ -361,9 +391,10 @@ class Client:
             "sendMessage",
             data,
         )
-        return result
+        return props(result)
 
     async def _upload_file(self, url: str, file_name: str, file: str | Path | bytes):
+        logger.info("استفاده از متود _upload_file")
         if type(file) is bytes:
             d_file = {"file": (file_name, file, "application/octet-stream")}
         else:
@@ -371,6 +402,7 @@ class Client:
         async with httpx.AsyncClient(verify=False) as cl:
             response = await cl.post(url, files=d_file)
             if response.status_code != 200:
+                logger.error("خطا در آپلود فایل !")
                 raise httpx.HTTPStatusError(
                     f"Request failed with status code {response.status_code}",
                     request=response.request,
@@ -389,8 +421,9 @@ class Client:
         reply_to_message_id : Optional[str] = None,
         type_file: Literal["File", "Image", "Voice", "Music", "Gif" , "Video"] = "File",
         disable_notification : Optional[bool] = False,
-    ) -> dict:
+    ) -> props:
         """sending file with types ['File', 'Image', 'Voice', 'Music', 'Gif' , 'Video'] / ارسال فایل با نوع های فایل و عکس و پیغام صوتی و موزیک و گیف و ویدیو"""
+        logger.info("استفاده از متود send_file")
         up_url_file = (
             await self.send_requests(
                 "requestSendFile",
@@ -409,7 +442,16 @@ class Client:
         }
         uploader = await self.send_requests("sendFile", data)
         uploader["file_id"] = file_id
-        return uploader
+        uploader["type_file"] = type_file
+        if isinstance(file, (bytes, bytearray, memoryview)):
+            uploader["size_file"] = len(file)
+        elif isinstance(file, (str, Path)):
+            path = Path(file) if isinstance(file, str) else file
+            if path.exists() and path.is_file():
+                uploader["size_file"] = path.stat().st_size
+            else:
+                raise FileExistsError("file not found !")
+        return props(uploader)
 
     @async_to_sync
     async def send_image(
@@ -420,8 +462,9 @@ class Client:
         text : Optional[str] = None,
         reply_to_message_id : Optional[str] = None,
         disable_notification: Optional[bool] = False,
-    ) -> dict:
+    ) -> props:
         """sending image / ارسال تصویر"""
+        logger.info("استفاده از متود send_image")
         return await self.send_file(
             chat_id,
             image,
@@ -441,8 +484,9 @@ class Client:
         text : Optional[str] = None,
         reply_to_message_id : Optional[str] = None,
         disable_notification : Optional[bool] = False,
-    ) -> dict:
+    ) -> props:
         """sending video / ارسال ویدیو"""
+        logger.info("استفاده از متود send_video")
         return await self.send_file(
             chat_id,
             video,
@@ -462,8 +506,9 @@ class Client:
         text : Optional[str] = None,
         reply_to_message_id: Optional[str] = None,
         disable_notification: Optional[bool] = False,
-    ) -> dict:
+    ) -> props:
         """sending voice / ارسال ویس"""
+        logger.info("استفاده از متود send_voice")
         return await self.send_file(
             chat_id,
             voice,
@@ -483,8 +528,9 @@ class Client:
         text : Optional[str] = None,
         reply_to_message_id : Optional[str] = None,
         disable_notification : Optional[bool] = False,
-    ) -> dict:
+    ) -> props:
         """sending music / ارسال موزیک"""
+        logger.info("استفاده از متود send_music")
         return await self.send_file(
             chat_id,
             music,
@@ -504,8 +550,9 @@ class Client:
         text : Optional[str] = None,
         reply_to_message_id : Optional[str] = None,
         disable_notification : Optional[bool] = False,
-    ) -> dict:
+    ) -> props:
         """sending gif / ارسال گیف"""
+        logger.info("استفاده از متود send_gif")
         return await self.send_file(
             chat_id,
             gif,
@@ -523,8 +570,9 @@ class Client:
         id_sticker: str,
         reply_to_message_id : Optional[str] = None,
         disable_notification : Optional[bool] = False,
-    ):
+    ) -> props:
         """sending sticker by id / ارسال استیکر با آیدی"""
+        logger.info("استفاده از متود send_sticker")
         data = {
             "chat_id": chat_id,
             "sticker_id": id_sticker,
@@ -532,11 +580,12 @@ class Client:
             "disable_notification": disable_notification,
         }
         sender = await self.send_requests("sendSticker", data)
-        return sender
+        return props(sender)
 
     @async_to_sync
     async def get_download_file_url(self,id_file : str) -> str:
         """get download url file / گرفتن آدرس دانلود فایل"""
+        logger.info("استفاده از متود get_download_file_url")
         data = {"file_id": id_file}
         url = (await self.send_requests("getFile",data))["download_url"]
         return url
@@ -544,23 +593,27 @@ class Client:
     @async_to_sync
     async def download_file(self,id_file : str , path : str = "file") -> None:
         """download file / دانلود فایل"""
+        logger.info("استفاده از متود download_file")
         url = await self.get_download_file_url(id_file)
         async with httpx.AsyncClient() as client:
             async with client.stream('GET', url) as response:
                 with open(path, 'wb') as file:
                     async for chunk in response.aiter_bytes():
+                        logger.info("فایل دانلود شد")
                         file.write(chunk)
 
     @async_to_sync
-    async def set_endpoint(self, url: str, type: Literal["ReceiveUpdate", "GetSelectionItem", "ReceiveInlineMessage", "ReceiveQuery", "SearchSelectionItems"]) -> dict:
+    async def set_endpoint(self, url: str, type: Literal["ReceiveUpdate", "GetSelectionItem", "ReceiveInlineMessage", "ReceiveQuery", "SearchSelectionItems"]) -> props:
         """set endpoint url / تنظیم ادرس اند پوینت"""
-        return await self.send_requests(
+        logger.info("استفاده از متود set_endpoint")
+        return props(await self.send_requests(
             "updateBotEndpoints", {"url": url, "type": type}
-        )
+        ))
 
     @async_to_sync
     async def set_token_fast_rub(self) -> bool:
         """seting token in fast_rub for getting click glass messages and updata messges / تنظیم توکن در فست روب برای گرفتن کلیک های روی پیام شیشه ای و آپدیت پیام ها"""
+        logger.info("استفاده از متود set_token_fast_rub")
         async with httpx.AsyncClient() as cl:
             r = (
                 await cl.get(
@@ -568,9 +621,9 @@ class Client:
                 )
             ).json()
         list_up:List[Literal["ReceiveUpdate", "ReceiveInlineMessage"]]= [
-    "ReceiveUpdate", 
-    "ReceiveInlineMessage"
-]
+            "ReceiveUpdate", 
+            "ReceiveInlineMessage"
+        ]
         if r["status"]:
             for it in list_up:
                 await self.set_endpoint(f"https://fast-rub.ParsSource.ir/geting_button_updates/{self.token}/{it}", it)
@@ -606,13 +659,13 @@ class Client:
             except:
                 raise TimeoutError("please check the your internet .")
             mes = (await self.get_updates(limit=100,offset_id=self.next_offset_id))
-            if mes['status']=="INVALID_ACCESS":
+            if mes.status=="INVALID_ACCESS":
                 raise PermissionError("Due to Rubika's restrictions, access to retrieve messages has been blocked. Please try again.")
             try:
                 self.next_offset_id = mes["data"]["next_offset_id"]
             except:
                 pass
-            for message in mes['data']['updates']:
+            for message in mes["data"]["updates"]:
                 if message["type"]=="NewMessage":
                     time_sended_mes = int(message['new_message']['time'])
                     now = int(time.time())
@@ -645,6 +698,14 @@ class Client:
             return handler
         return decorator
 
+    def on_edit(self):
+        """برای دریافت ویرایش شدن پیام ها"""
+        self._fetch_edit = True
+        def decorator(handler: Callable[[Update], Awaitable[None]]):
+            self._edit_handlers.append(handler)
+            return handler
+        return decorator
+
     @async_to_sync
     async def _process_messages(self, time_updata_sleep : Union[int,int] = 1):
         while self._running:
@@ -668,6 +729,35 @@ class Client:
                     update_obj = Update(message, self)
                     for handler in self._message_handlers:
                         await handler(update_obj)
+            await asyncio.sleep(time_updata_sleep)
+
+    @async_to_sync
+    async def _process_edit(self, time_updata_sleep : Union[int,int] = 1):
+        while self._running:
+            try:
+                async with httpx.AsyncClient() as cl:
+                    await cl.get("https://rubika.ir/",timeout=self.time_out)
+            except:
+                raise TimeoutError("please check the your internet .")
+            mes = (await self.get_updates(limit=100,offset_id=self.next_offset_id_))
+            if mes['status']=="INVALID_ACCESS":
+                raise PermissionError("Due to Rubika's restrictions, access to retrieve messages has been blocked. Please try again.")
+            try:
+                self.next_offset_id_ = mes["data"]["next_offset_id"]
+            except:
+                pass
+            for message in mes['data']['updates']:
+                if message["type"]=="UpdatedMessage":
+                    time_sended_mes = int(message['updated_message']['time'])
+                    now = int(time.time())
+                    time_ = time_updata_sleep + 4
+                    if (now - time_sended_mes < time_) and (not message['updated_message']['message_id'] in self.last_):
+                        self.last_.append(message['updated_message']['message_id'])
+                        if len(self.last_) > 500:
+                            self.last_.pop(-1)
+                        update_obj = Update(message,self)
+                        for handler in self._message_handlers_:
+                            await handler(update_obj)
             await asyncio.sleep(time_updata_sleep)
 
     @async_to_sync
@@ -695,20 +785,26 @@ class Client:
             tasks.append(self._fetch_button_updates())
         if self._fetch_messages_ and self._message_handlers_:
             tasks.append(self._process_messages_())
+        if self._fetch_edit and self._edit_handlers:
+            tasks.append(self._process_edit())
         if not tasks:
-            raise ValueError("No handlers registered. Use on_message() or on_message_updates() or on_button() first.")
+            raise ValueError("No handlers registered. Use on_message() or on_message_updates() or on_button() or on_edit() first.")
         await asyncio.gather(*tasks)
 
     def run(self):
         """اجرای اصلی بات - فقط اگر هندلرهای مربوطه ثبت شده باشند"""
-        if not (self._fetch_messages or self._fetch_buttons or self._fetch_messages_):
-            raise ValueError("No update types selected. Use on_message() or on_message_updates() or on_button() first.")
+        if not (self._fetch_messages or self._fetch_buttons or self._fetch_messages_ or self._fetch_edit):
+            raise ValueError("No update types selected. Use on_message() or on_message_updates() or on_button() or on_edit() first.")
         
         if (self._fetch_messages and not self._message_handlers) or (self._fetch_messages_ and not self._message_handlers_):
             raise ValueError("Message handlers registered but no message callbacks defined.")
         
         if self._fetch_buttons and not self._button_handlers:
             raise ValueError("Button handlers registered but no button callbacks defined.")
-        
+
+        if self._fetch_edit and not self._edit_handlers:
+            raise ValueError("Edit handlers registered but no message callbacks defined.")
+
         self._running = True
+        logger.info("ربات در حال دریافت پیام ها")
         asyncio.run(self._run_all())
