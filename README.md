@@ -11,4 +11,4 @@ This Python library is for Rubika bots and is currently being updated.
 ## install :
 
 ```bash
-pip install https://parssource.ir/fast_rub/fast_rub-1.3.tar.gz
+pip install https://ParsSource.ir/fast_rub/fast_rub-1.4.tar.gz```
