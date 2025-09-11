@@ -1,5 +1,7 @@
 from typing import TYPE_CHECKING
 import re
+import time as ti
+
 if TYPE_CHECKING:
     from .Client import Update
 
@@ -116,6 +118,18 @@ class regex(Filter):
             return False
         return bool(self.pattern.search(update.text))
 
+class time(Filter):
+    """filter by time / فیلتر با زمان"""
+    def __init__(self,from_time:float=0,end_time=float("inf")):
+        self.from_time = from_time
+        self.end_time = end_time
+    def __call__(self,update:'Update'):
+        if ti.time()>self.from_time and ti.time()<self.end_time:
+            return True
+        return False
+
+
+
 class commands(Filter):
     """filter text message by commands / فیلتر کردن متن پیام با دستورات"""
     def __init__(self, coms: list):
@@ -165,3 +179,4 @@ class or_filter(Filter):
 
     def __call__(self, update: 'Update') -> bool:
         return any(f(update) for f in self.filters)
+
