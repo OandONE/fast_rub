@@ -11,8 +11,9 @@ setup(
     url="https://github.com/OandONE/fast_rub",
     packages=find_packages(),
     python_requires='>=3.8',
-    install_requires=["httpx==0.28.1","colorama==0.4.6"],
+    install_requires=["httpx==0.28.1"],
     license="MIT"
 )
+
 
 
