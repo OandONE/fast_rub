@@ -1,3 +1,5 @@
+<img src="https://fast-rub.ParsSource.ir/icon.jpg">
+
 # fast rub
 
 This Python library is for Rubika bots and is currently being updated.
@@ -15,5 +17,6 @@ pip install https://ParsSource.ir/fast_rub/fast_rub-1.4.tar.gz
 ```
 
 [Documents](https://fast-rub.ParsSource.ir/index.html)
+
 
 
