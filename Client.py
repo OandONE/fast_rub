@@ -10,7 +10,6 @@ from .type.get_type import get_file_category
 from .logger import *
 from .props import *
 
-
 class Client:
     def __init__(
         self,
@@ -135,7 +134,18 @@ class Client:
 
     @async_to_sync
     async def get_me(self) -> props:
-        """geting info accont bot / گرفتن اطلاعات اکانت ربات"""
+        """geting info accont bot / گرفتن اطلاعات اکانت ربات
+        Returns:
+        dict: 
+            - status (str): وضعیت درخواست (مثلا "OK")
+            - data (dict): شامل اطلاعات ربات
+                - bot (dict):
+                    - bot_id (str): شناسه گوید ربات
+                    - bot_title (str): نام نمایشی ربات
+                    - description (str): توضیحات ربات
+                    - username (str): نام کاربری ربات
+                    - start_message (str): پیام شروع
+                    - share_url (str): لینک اشتراک ربات"""
         logger.info("استفاده از متود get_me")
         result = await self.send_requests(method="getMe")
         return props(result)
@@ -398,9 +408,15 @@ class Client:
         if type(file) is bytes:
             d_file = {"file": (file_name, file, "application/octet-stream")}
         else:
-            d_file = {"file": (file_name, open(file, "rb"), "application/octet-stream")}
+            try:
+                with open(file, "rb") as fi:
+                    d_file = {"file": (file_name,fi , "application/octet-stream")}
+            except:
+                async with httpx.AsyncClient() as client:
+                    file_ = (await client.get(file)).content
+                d_file = {"file":file_}
         async with httpx.AsyncClient(verify=False) as cl:
-            response = await cl.post(url, files=d_file)
+            response = await cl.post(url, files=d_file,timeout=9999)
             if response.status_code != 200:
                 logger.error("خطا در آپلود فایل !")
                 raise httpx.HTTPStatusError(
@@ -446,9 +462,13 @@ class Client:
         if isinstance(file, (bytes, bytearray, memoryview)):
             uploader["size_file"] = len(file)
         elif isinstance(file, (str, Path)):
-            path = Path(file) if isinstance(file, str) else file
-            if path.exists() and path.is_file():
-                uploader["size_file"] = path.stat().st_size
+            try:
+                with open(file, "rb") as fi:
+                    size_file = len(fi)
+            except:
+                async with httpx.AsyncClient() as client:
+                    size_file = len((await client.get(file)).content)
+                uploader["size_file"] = size_file
             else:
                 raise FileExistsError("file not found !")
         return props(uploader)
@@ -606,9 +626,10 @@ class Client:
     async def set_endpoint(self, url: str, type: Literal["ReceiveUpdate", "GetSelectionItem", "ReceiveInlineMessage", "ReceiveQuery", "SearchSelectionItems"]) -> props:
         """set endpoint url / تنظیم ادرس اند پوینت"""
         logger.info("استفاده از متود set_endpoint")
-        return props(await self.send_requests(
+        result = await self.send_requests(
             "updateBotEndpoints", {"url": url, "type": type}
-        ))
+        )
+        return props(result)
 
     @async_to_sync
     async def set_token_fast_rub(self) -> bool:
@@ -725,7 +746,6 @@ class Client:
                     self.last.append(message['new_message']['message_id'])
                     if len(self.last) > 500:
                         self.last.pop(-1)
-                    print(message)
                     update_obj = Update(message, self)
                     for handler in self._message_handlers:
                         await handler(update_obj)
