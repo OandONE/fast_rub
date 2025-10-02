@@ -4,16 +4,32 @@ from urllib3 import PoolManager, ProxyManager
 from ..utils import Configs
 from ..exceptions import *
 from .helper import Helper
+from typing import Any,Protocol,Optional,Union,Dict,Coroutine
+import asyncio
+from ..utils import *
+
+
+class MethodsProtocol(Protocol):
+    sessionData: Any
+    crypto: Any
+    proxy: Optional[str]
+    platform: str
+    apiVersion: int
+    timeOut: int
+    showProgressBar: bool
+    def requestSendFile(
+        self, fileName: str, mime: str, size: int
+    ) -> Coroutine[Any, Any, Dict[str, Any]]: ...
+
 
 class Network:
-
-    def __init__(self, methods:object) -> None:
+    def __init__(self, methods:MethodsProtocol) -> None:
         self.methods = methods
         self.sessionData = methods.sessionData
         self.crypto = methods.crypto
         self.http = ProxyManager(methods.proxy) if methods.proxy else PoolManager()
 
-    def request(self, method:str, input:dict={}, tmpSession:bool=False, attempt:int = 0, maxAttempt:int=2):
+    def request(self, method:str, input:dict={}, tmpSession:bool=False, attempt:int = 0, maxAttempt:int=2) -> dict:
         url:str = Helper.getApiServer()
         platform:str = self.methods.platform.lower()
         apiVersion:int = self.methods.apiVersion
@@ -84,24 +100,30 @@ class Network:
                     "TOO_REQUESTS": TooRequests()
                 }[result["status_det"]]
 
-    def upload(self, file:str, fileName:str=None, chunkSize:int=131072):
-        from ..utils import Utils
-
+    def upload(
+        self, 
+        file: Union[str, bytes], 
+        fileName: Optional[str] = None, 
+        chunkSize: int = 131072
+    ):
         if isinstance(file, str):
             if Utils.checkLink(url=file):
-                file:bytes = self.http.request(method="GET", url=file).data
-                mime:str = Utils.getMimeFromByte(bytes=file)
+                file_bytes: bytes = self.http.request(method="GET", url=file).data
+                mime: str = Utils.getMimeFromByte(file_bytes)
                 fileName = fileName or Utils.generateFileName(mime=mime)
+                file = file_bytes
             else:
                 fileName = fileName or file
-                mime = file.split(".")[-1]
-                file = open(file, "rb").read()
+                with open(file, "rb") as fh:
+                    file = fh.read()
+                
+                mime = Utils.getMimeFromByte(data=file)
 
-        elif not isinstance(file, bytes):
-            raise FileNotFoundError("Enter a valid path or url or bytes of file.")
-        else:
-            mime = Utils.getMimeFromByte(bytes=file)
+        elif isinstance(file, bytes):
+            mime = Utils.getMimeFromByte(data=file)
             fileName = fileName or Utils.generateFileName(mime=mime)
+        else:
+            raise FileNotFoundError("Enter a valid path or url or bytes of file.")
 
         def send_chunk(data, maxAttempts=2):
             for attempt in range(maxAttempts):
@@ -118,11 +140,11 @@ class Network:
             
             print("\nFailed to upload the file!")
 
-        requestSendFileData:dict = self.methods.requestSendFile(
+        requestSendFileData:dict = asyncio.run(self.methods.requestSendFile(
             fileName = fileName,
             mime = mime,
             size = len(file)
-        )
+        ))
 
         header = {
             "auth": self.sessionData["auth"],
@@ -131,6 +153,8 @@ class Network:
         }
 
         totalParts = (len(file) + chunkSize - 1) // chunkSize
+
+        processBar: Optional[tqdm] = None
 
         if self.methods.showProgressBar:
             processBar = tqdm(
@@ -150,7 +174,7 @@ class Network:
             data = file[startIdx:endIdx]
             hashFileReceive = send_chunk(data)
             
-            if self.methods.showProgressBar:
+            if processBar is not None:
                 processBar.update(len(data))
 
             if not hashFileReceive:
@@ -194,6 +218,8 @@ class Network:
 
         data:bytes = b""
 
+        processBar: Optional[tqdm] = None
+
         if self.methods.showProgressBar:
             processBar = tqdm(
                 desc=f"Downloading {fileName}",
@@ -207,7 +233,7 @@ class Network:
             try:
                 if downloadedData:
                     data += downloadedData
-                    if self.methods.showProgressBar:
+                    if processBar is not None:
                         processBar.update(len(downloadedData))
 
                 if len(data) >= size:
