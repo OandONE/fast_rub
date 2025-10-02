@@ -1,14 +1,34 @@
-import httpx,time,os,json,asyncio,inspect
-from typing import Optional, Callable, Awaitable, Literal,Union,Dict,List,Any
+import httpx
+import random
+import os
+import time
+import json
+import asyncio
+import inspect
+from typing import (
+    Optional,
+    Callable,
+    Awaitable,
+    Literal,
+    Union,
+    Dict,
+    List,
+    Any
+)
+from .button import KeyPad
+import aiofiles
 from .colors import *
 from .filters import Filter
 from functools import wraps
 from pathlib import Path
-from .type import Update,UpdateButton
+from .type import (
+    Update,
+    UpdateButton
+)
 from .async_sync import *
-from .type.get_type import get_file_category
 from .logger import *
 from .props import *
+
 
 class Client:
     def __init__(
@@ -18,8 +38,8 @@ class Client:
         user_agent: Optional[str] = None,
         time_out: Optional[int] = 60,
         display_welcome=True,
-        use_to_fastrub_webhook_on_message : Optional[str|bool]=True,
-        use_to_fastrub_webhook_on_button : Optional[str|bool]=True
+        use_to_fastrub_webhook_on_message : Union[str,bool]=True,
+        use_to_fastrub_webhook_on_button : Union[str,bool]=True
     ):
         """Client for login and setting robot / کلاینت برای لوگین و تنظیمات ربات"""
         name = name_session + ".faru"
@@ -100,10 +120,14 @@ class Client:
 
     @async_to_sync
     async def send_requests(
-        self, method, data_: Optional[Union[Dict[str, Any], List[Any]]] = None
+        self, method, data_: Optional[Union[Dict[str, Any], List[Any]]] = None,url_op:Optional[int] = None
     ) -> dict:
         logger.info("در حال ارسال درخواست")
-        url = f"https://botapi.rubika.ir/v3/{self.token}/{method}"
+        urls = ["https://botapi.rubika.ir/v3/","https://messengerg2b1.iranlms.ir/v3/"]
+        main_url = urls[0]
+        if url_op:
+            main_url = urls[url_op]
+        url = f"{main_url}{self.token}/{method}"
         if self.user_agent != None:
             headers = {
                 "User-Agent": self.user_agent,
@@ -115,10 +139,16 @@ class Client:
             async with httpx.AsyncClient(timeout=self.time_out) as cl:
                 if data_ == None:
                     result = await cl.post(url, headers=headers)
-                    result_ = result.json()
+                    try:
+                        result_ = result.json()
+                    except:
+                        result_ = await self.send_requests(method,data_,random.randint(0,1))
                 else:
                     result = await cl.post(url, headers=headers, json=data_)
-                    result_ = result.json()
+                    try:
+                        result_ = result.json()
+                    except:
+                        result_ = await self.send_requests(method,data_,random.randint(0,1))
                 if result_["status"] != "OK":
                     logger.error(f"خطایی از سمت سرور ! status : {result_['status']}")
                     raise TypeError(f"Error for invalid status : {result_}")
@@ -131,6 +161,13 @@ class Client:
             logger.error(f"خطایی ناشناخته : {e}")
             raise e
         return {}
+
+    @async_to_sync
+    async def _auto_delete(self,chat_id:str,message_id:str,time_sleep:float) -> props:
+        """auto delete message next {time_sleep} time s / حذف خودکار پیام بعد از فلان مقدار ثانیه"""
+        await asyncio.sleep(time_sleep)
+        result = await self.delete_message(chat_id,message_id)
+        return props(result)
 
     @async_to_sync
     async def get_me(self) -> props:
@@ -155,10 +192,11 @@ class Client:
         self,
         text: str,
         chat_id: str,
-        inline_keypad = None,
+        inline_keypad = KeyPad,
         disable_notification: Optional[bool] = False,
         reply_to_message_id: Optional[str] = None,
-    ) -> dict:
+        auto_delete: Optional[int] = None
+    ) -> props:
         """sending text to chat id / ارسال متنی به یک چت آیدی"""
         logger.info("استفاده از متود send_message")
         if not inline_keypad:
@@ -180,10 +218,16 @@ class Client:
             "sendMessage",
             data,
         )
-        return result
+        if auto_delete:
+            message_id = result["data"]["message_id"]
+            try:
+                return props(result)
+            finally:
+                await self._auto_delete(chat_id,message_id,auto_delete)
+        return props(result)
 
     @async_to_sync
-    async def send_poll(self, chat_id: str, question: str, options: list) -> props:
+    async def send_poll(self, chat_id: str, question: str, options: list,auto_delete: Optional[int] = None) -> props:
         """sending poll to chat id / ارسال نظرسنجی به یک چت آیدی"""
         logger.info("استفاده از متود send_poll")
         data = {"chat_id": chat_id, "question": question, "options": options}
@@ -191,6 +235,12 @@ class Client:
             "sendPoll",
             data,
         )
+        if auto_delete:
+            message_id = result["data"]["message_id"]
+            try:
+                return props(result)
+            finally:
+                await self._auto_delete(chat_id,message_id,auto_delete)
         return props(result)
 
     @async_to_sync
@@ -203,6 +253,7 @@ class Client:
         disable_notification: Optional[bool] = False,
         reply_to_message_id: Optional[str] = None,
         chat_keypad_type: Optional[str] = None,
+        auto_delete: Optional[int] = None
     ) -> props:
         """sending location to chat id / ارسال لوکیشن(موقعیت مکانی) به یک چت آیدی"""
         logger.info("استفاده از متود send_location")
@@ -219,6 +270,12 @@ class Client:
             "sendLocation",
             data,
         )
+        if auto_delete:
+            message_id = result["data"]["message_id"]
+            try:
+                return props(result)
+            finally:
+                await self._auto_delete(chat_id,message_id,auto_delete)
         return props(result)
 
     @async_to_sync
@@ -232,7 +289,8 @@ class Client:
         chat_keypad_type: Optional[str] = None,
         inline_keypad: Optional[str] = None,
         reply_to_message_id: Optional[str] = None,
-        disable_notificatio: Optional[bool] = False
+        disable_notificatio: Optional[bool] = False,
+        auto_delete: Optional[int] = None
     ) -> props:
         """sending contact to chat id / ارسال مخاطب به یک چت آیدی"""
         logger.info("استفاده از متود send_contact")
@@ -251,6 +309,12 @@ class Client:
             "sendContact",
             data,
         )
+        if auto_delete:
+            message_id = result["data"]["message_id"]
+            try:
+                return props(result)
+            finally:
+                await self._auto_delete(chat_id,message_id,auto_delete)
         return props(result)
 
     @async_to_sync
@@ -282,6 +346,7 @@ class Client:
         message_id: str,
         to_chat_id: str,
         disable_notification : Optional[bool] = False,
+        auto_delete: Optional[int] = None
     ) -> props:
         """forwarding message to chat id / فوروارد پیام به یک چت آیدی"""
         logger.info("استفاده از متود forward_message")
@@ -295,6 +360,12 @@ class Client:
             "forwardMessage",
             data,
         )
+        if auto_delete:
+            message_id = result["data"]["message_id"]
+            try:
+                return props(result)
+            finally:
+                await self._auto_delete(to_chat_id,message_id,auto_delete)
         return props(result)
 
     @async_to_sync
@@ -377,11 +448,12 @@ class Client:
         self,
         chat_id: str,
         text: str,
-        Keypad,
+        Keypad:KeyPad,
         disable_notification : Optional[bool] = False,
         reply_to_message_id: Optional[str] = None,
         resize_keyboard : Optional[bool] = True,
         on_time_keyboard: Optional[bool] = False,
+        auto_delete: Optional[int] = None
     ) -> props:
         """sending message key pad texti / ارسال پیام با دکمه متنی"""
         logger.info("استفاده از متود send_message_keypad")
@@ -401,19 +473,26 @@ class Client:
             "sendMessage",
             data,
         )
+        if auto_delete:
+            message_id = result["data"]["message_id"]
+            try:
+                return props(result)
+            finally:
+                await self._auto_delete(chat_id,message_id,auto_delete)
         return props(result)
 
-    async def _upload_file(self, url: str, file_name: str, file: str | Path | bytes):
+    async def _upload_file(self, url: str, file_name: str, file: Union[str , Path , bytes]):
         logger.info("استفاده از متود _upload_file")
         if type(file) is bytes:
             d_file = {"file": (file_name, file, "application/octet-stream")}
         else:
             try:
-                with open(file, "rb") as fi:
-                    d_file = {"file": (file_name,fi , "application/octet-stream")}
+                async with aiofiles.open(file, "rb") as fi:
+                    fil = await fi.read()
+                    d_file = {"file": (file_name, fil , "application/octet-stream")}
             except:
                 async with httpx.AsyncClient() as client:
-                    file_ = (await client.get(file)).content
+                    file_ = (await client.get(str(file))).content
                 d_file = {"file":file_}
         async with httpx.AsyncClient(verify=False) as cl:
             response = await cl.post(url, files=d_file,timeout=9999)
@@ -431,12 +510,13 @@ class Client:
     async def send_file(
         self,
         chat_id: str,
-        file: str | Path | bytes,
-        name_file: str,
+        file: Union[str , Path , bytes],
+        name_file: Optional[str] = None,
         text : Optional[str] = None,
         reply_to_message_id : Optional[str] = None,
         type_file: Literal["File", "Image", "Voice", "Music", "Gif" , "Video"] = "File",
         disable_notification : Optional[bool] = False,
+        auto_delete: Optional[int] = None
     ) -> props:
         """sending file with types ['File', 'Image', 'Voice', 'Music', 'Gif' , 'Video'] / ارسال فایل با نوع های فایل و عکس و پیغام صوتی و موزیک و گیف و ویدیو"""
         logger.info("استفاده از متود send_file")
@@ -446,6 +526,13 @@ class Client:
                 {"type": type_file},
             )
         )["data"]["upload_url"]
+        if not name_file:
+            for type_,pass_ in {"File":"", "Image":".png", "Voice":".mp3", "Music":".mp3", "Gif":".png" , "Video":".mp4"}.items():
+                if type_ == type_file:
+                    name_file = f"{type_+pass_}"
+                    break
+        if not name_file:
+            raise ValueError("type file is invalud !")
         file_id = (await self._upload_file(up_url_file, name_file, file))["data"][
             "file_id"
         ]
@@ -463,29 +550,38 @@ class Client:
             uploader["size_file"] = len(file)
         elif isinstance(file, (str, Path)):
             try:
-                with open(file, "rb") as fi:
-                    size_file = len(fi)
+                async with aiofiles.open(file, "rb") as fi:
+                    fil = await fi.read()
+                    size_file = len(fil)
             except:
                 async with httpx.AsyncClient() as client:
-                    size_file = len((await client.get(file)).content)
+                    size_file = len((await client.get(str(file))).content)
                 uploader["size_file"] = size_file
-            else:
-                raise FileExistsError("file not found !")
-        return props(uploader)
+        else:
+            raise FileExistsError("file not found !")
+        result = uploader
+        if auto_delete:
+            message_id = result["data"]["message_id"]
+            try:
+                return props(result)
+            finally:
+                await self._auto_delete(chat_id,message_id,auto_delete)
+        return props(result)
 
     @async_to_sync
     async def send_image(
         self,
         chat_id: str,
-        image: str | Path | bytes,
-        name_file: str,
+        image: Union[str , Path , bytes],
+        name_file: Optional[str] = None,
         text : Optional[str] = None,
         reply_to_message_id : Optional[str] = None,
         disable_notification: Optional[bool] = False,
+        auto_delete: Optional[int] = None
     ) -> props:
         """sending image / ارسال تصویر"""
         logger.info("استفاده از متود send_image")
-        return await self.send_file(
+        result = await self.send_file(
             chat_id,
             image,
             name_file,
@@ -493,21 +589,24 @@ class Client:
             reply_to_message_id,
             "Image",
             disable_notification,
+            auto_delete
         )
+        return props(result)
 
     @async_to_sync
     async def send_video(
         self,
         chat_id: str,
-        video: str | Path | bytes,
-        name_file: str,
+        video: Union[str , Path , bytes],
+        name_file: Optional[str] = None,
         text : Optional[str] = None,
         reply_to_message_id : Optional[str] = None,
         disable_notification : Optional[bool] = False,
+        auto_delete: Optional[int] = None
     ) -> props:
         """sending video / ارسال ویدیو"""
         logger.info("استفاده از متود send_video")
-        return await self.send_file(
+        result = await self.send_file(
             chat_id,
             video,
             name_file,
@@ -515,21 +614,24 @@ class Client:
             reply_to_message_id,
             "Video",
             disable_notification,
+            auto_delete
         )
+        return props(result)
 
     @async_to_sync
     async def send_voice(
         self,
         chat_id: str,
-        voice: str | Path | bytes,
-        name_file: str,
+        voice: Union[str , Path , bytes],
+        name_file: Optional[str] = None,
         text : Optional[str] = None,
         reply_to_message_id: Optional[str] = None,
         disable_notification: Optional[bool] = False,
+        auto_delete: Optional[int] = None
     ) -> props:
         """sending voice / ارسال ویس"""
         logger.info("استفاده از متود send_voice")
-        return await self.send_file(
+        result = await self.send_file(
             chat_id,
             voice,
             name_file,
@@ -537,21 +639,24 @@ class Client:
             reply_to_message_id,
             "Voice",
             disable_notification,
+            auto_delete
         )
+        return props(result)
 
     @async_to_sync
     async def send_music(
         self,
         chat_id: str,
-        music: str | Path | bytes,
-        name_file: str,
+        music: Union[str , Path , bytes],
+        name_file: Optional[str] = None,
         text : Optional[str] = None,
         reply_to_message_id : Optional[str] = None,
         disable_notification : Optional[bool] = False,
+        auto_delete: Optional[int] = None
     ) -> props:
         """sending music / ارسال موزیک"""
         logger.info("استفاده از متود send_music")
-        return await self.send_file(
+        result = await self.send_file(
             chat_id,
             music,
             name_file,
@@ -559,21 +664,24 @@ class Client:
             reply_to_message_id,
             "Music",
             disable_notification,
+            auto_delete
         )
+        return props(result)
 
     @async_to_sync
     async def send_gif(
         self,
         chat_id: str,
-        gif: str | Path | bytes,
-        name_file: str,
+        gif: Union[str , Path , bytes],
+        name_file: Optional[str] = None,
         text : Optional[str] = None,
         reply_to_message_id : Optional[str] = None,
         disable_notification : Optional[bool] = False,
+        auto_delete: Optional[int] = None
     ) -> props:
         """sending gif / ارسال گیف"""
         logger.info("استفاده از متود send_gif")
-        return await self.send_file(
+        result = await self.send_file(
             chat_id,
             gif,
             name_file,
@@ -581,7 +689,9 @@ class Client:
             reply_to_message_id,
             "Gif",
             disable_notification,
+            auto_delete
         )
+        return props(result)
 
     @async_to_sync
     async def send_sticker(
@@ -590,6 +700,7 @@ class Client:
         id_sticker: str,
         reply_to_message_id : Optional[str] = None,
         disable_notification : Optional[bool] = False,
+        auto_delete: Optional[int] = None
     ) -> props:
         """sending sticker by id / ارسال استیکر با آیدی"""
         logger.info("استفاده از متود send_sticker")
@@ -597,9 +708,15 @@ class Client:
             "chat_id": chat_id,
             "sticker_id": id_sticker,
             "reply_to_message_id": reply_to_message_id,
-            "disable_notification": disable_notification,
+            "disable_notification": disable_notification
         }
         sender = await self.send_requests("sendSticker", data)
+        if auto_delete:
+            message_id = sender["data"]["message_id"]
+            try:
+                return props(sender)
+            finally:
+                await self._auto_delete(chat_id,message_id,auto_delete)
         return props(sender)
 
     @async_to_sync
@@ -617,10 +734,10 @@ class Client:
         url = await self.get_download_file_url(id_file)
         async with httpx.AsyncClient() as client:
             async with client.stream('GET', url) as response:
-                with open(path, 'wb') as file:
+                async with aiofiles.open(path, 'wb') as file:
                     async for chunk in response.aiter_bytes():
                         logger.info("فایل دانلود شد")
-                        file.write(chunk)
+                        await file.write(chunk)
 
     @async_to_sync
     async def set_endpoint(self, url: str, type: Literal["ReceiveUpdate", "GetSelectionItem", "ReceiveInlineMessage", "ReceiveQuery", "SearchSelectionItems"]) -> props:
@@ -630,6 +747,15 @@ class Client:
             "updateBotEndpoints", {"url": url, "type": type}
         )
         return props(result)
+
+    
+    def _schedule_handler(self, handler, update):
+        async def _wrapped():
+            try:
+                await handler(update)
+            except Exception:
+                logger.exception("Error in handler")
+        asyncio.create_task(_wrapped())
 
     @async_to_sync
     async def set_token_fast_rub(self) -> bool:
@@ -697,7 +823,7 @@ class Client:
                             self.last.pop(-1)
                         update_obj = Update(message,self)
                         for handler in self._message_handlers_:
-                            await handler(update_obj)
+                            self._schedule_handler(handler,update_obj)
             await asyncio.sleep(time_updata_sleep)
 
     def on_message_updates(self, filters: Optional[Filter] = None):
@@ -728,28 +854,20 @@ class Client:
         return decorator
 
     @async_to_sync
-    async def _process_messages(self, time_updata_sleep : Union[int,int] = 1):
+    async def _process_messages(self):
         while self._running:
-            try:
-                async with httpx.AsyncClient() as cl:
-                    await cl.get("https://rubika.ir/", timeout=self.time_out)
-            except:
-                raise TimeoutError("please check the your internet .")
-            mes = (await self.get_updates(limit=100))
-            if mes['status'] == "INVALID_ACCESS":
-                raise PermissionError("Due to Rubika's restrictions, access to retrieve messages has been blocked. Please try again.")
-            for message in mes['data']['updates']:
-                time_sended_mes = int(message['new_message']['time'])
-                now = int(time.time())
-                time_ = time_updata_sleep + 4
-                if (now - time_sended_mes < time_) and (not message['new_message']['message_id'] in self.last):
-                    self.last.append(message['new_message']['message_id'])
-                    if len(self.last) > 500:
-                        self.last.pop(-1)
-                    update_obj = Update(message, self)
-                    for handler in self._message_handlers:
-                        await handler(update_obj)
-            await asyncio.sleep(time_updata_sleep)
+            async with httpx.AsyncClient() as cl:
+                response = (await cl.get(self._on_url, timeout=self.time_out)).json()
+            if response and response.get('status') is True:
+                results = response.get('updates', [])
+                if results:
+                    for result in results:
+                        update = Update(result,self)
+                        for handler in self._message_handlers:
+                            self._schedule_handler(handler,update)
+            else:
+                await self.set_token_fast_rub()
+            await asyncio.sleep(0.1)
 
     @async_to_sync
     async def _process_edit(self, time_updata_sleep : Union[int,int] = 1):
@@ -777,7 +895,7 @@ class Client:
                             self.last_.pop(-1)
                         update_obj = Update(message,self)
                         for handler in self._message_handlers_:
-                            await handler(update_obj)
+                            self._schedule_handler(handler,update_obj)
             await asyncio.sleep(time_updata_sleep)
 
     @async_to_sync
@@ -789,9 +907,9 @@ class Client:
                 results = response.get('updates', [])
                 if results:
                     for result in results:
-                        update = UpdateButton(result)
+                        update = UpdateButton(result,self)
                         for handler in self._button_handlers:
-                            await handler(update)
+                            self._schedule_handler(handler,update)
             else:
                 await self.set_token_fast_rub()
             await asyncio.sleep(0.1)
