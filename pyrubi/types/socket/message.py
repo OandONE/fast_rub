@@ -1,3 +1,6 @@
+from ....async_sync import *
+
+
 class ReplyInfo:
     def __init__(self, text, author_guid) -> None:
         self.text = text
@@ -159,29 +162,38 @@ class Message:
         
         return ReplyInfo.from_json(self.methods.getMessagesById(self.object_guid, [self.reply_message_id])["messages"][0])
     
-    def reply(self, text:str) -> dict:
-        return self.methods.sendText(objectGuid=self.object_guid, text=text, messageId=self.message_id)
+    @auto_async
+    async def reply(self, text:str) -> dict:
+        return await self.methods.sendText(objectGuid=self.object_guid, text=text, messageId=self.message_id)
     
-    def seen(self) -> dict:
-        return self.methods.seenChats(seenList={self.object_guid: self.message_id})
+    @auto_async
+    async def seen(self) -> dict:
+        return await self.methods.seenChats(seenList={self.object_guid: self.message_id})
     
-    def reaction(self, reaction:int) -> dict:
+    @auto_async
+    async def reaction(self, reaction:int) -> dict:
         return self.methods.actionOnMessageReaction(objectGuid=self.object_guid, messageId=self.message_id, reactionId=reaction, action="Add")
     
-    def delete(self, delete_for_all:bool=True) -> dict:
+    @auto_async
+    async def delete(self, delete_for_all:bool=True) -> dict:
         return self.methods.deleteMessages(objectGuid=self.object_guid, messageIds=[self.message_id], deleteForAll=delete_for_all)
     
-    def pin(self) -> dict:
+    @auto_async
+    async def pin(self) -> dict:
         return self.methods.pinMessage(objectGuid=self.object_guid, messageId=self.message_id)
     
-    def forward(self, to_object_guid:str) -> dict:
+    @auto_async
+    async def forward(self, to_object_guid:str) -> dict:
         return self.methods.forwardMessages(objectGuid=self.object_guid, message_ids=[self.message_id], toObjectGuid=to_object_guid)
     
-    def ban(self) -> dict:
+    @auto_async
+    async def ban(self) -> dict:
         return self.methods.banMember(objectGuid=self.object_guid, memberGuid=self.author_guid)
     
-    def check_join(self, object_guid:str) -> bool:
+    @auto_async
+    async def check_join(self, object_guid:str) -> bool:
         return self.methods.checkJoin(objectGuid=object_guid, userGuid=self.author_guid)
     
-    def download(self, save:bool=False, save_as:str=None) -> dict:
+    @auto_async
+    async def download(self, save:bool=False, save_as:str=None) -> dict:
         return self.methods.download(save=save, saveAs=save_as, fileInline=self.file_inline)
