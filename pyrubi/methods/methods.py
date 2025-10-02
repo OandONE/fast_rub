@@ -1,17 +1,26 @@
 from random import randint
-from ..network import Network, Socket
+from ..network import (
+    Network,
+    Socket
+)
 from ..crypto import Cryption
 from ..utils import Utils
 from random import choice
 from time import sleep
-from pyrubi.exceptions import InvalidAuth, InvalidInput
+from ..exceptions import (
+    InvalidAuth,
+    InvalidInput
+)
 import asyncio
-from typing import Optional
+from typing import (
+    Optional,
+    Union,
+    Literal
+)
 from ...async_sync import *
 
 class Methods:
-
-    def __init__(self, sessionData:dict, platform:str, apiVersion:int, proxy:str, timeOut:int, showProgressBar:bool) -> None:
+    def __init__(self, sessionData:dict, platform:str, apiVersion:int, proxy:Optional[str], timeOut:int, showProgressBar:bool) -> None:
         self.platform = platform.lower()
         if not self.platform in ["android", "web", "rubx", "rubikax", "rubino"]:
             print("The \"{}\" is not a valid platform. Choose these one -> (web, android, rubx)".format(platform))
@@ -46,7 +55,8 @@ class Methods:
             tmpSession=True
         )
     
-    def signIn(self, phoneNumber, phoneCodeHash, phoneCode) -> dict:
+    @async_to_sync
+    async def signIn(self, phoneNumber, phoneCodeHash, phoneCode) -> dict:
         publicKey, privateKey = self.crypto.rsaKeyGenrate()
 
         data = self.network.request(
@@ -64,7 +74,8 @@ class Methods:
 
         return data
     
-    def registerDevice(self, deviceModel) -> dict:
+    @async_to_sync
+    async def registerDevice(self, deviceModel) -> dict:
         return self.network.request(
             method="registerDevice",
             input={
@@ -79,27 +90,34 @@ class Methods:
             }
         )
     
-    def logout(self) -> dict:
+    @async_to_sync
+    async def logout(self) -> dict:
         return self.network.request(method="logout")
     
     # Chats methods
     
-    def getChats(self, startId:str) -> dict:
+    @async_to_sync
+    async def getChats(self, startId:Optional[str]) -> dict:
         return self.network.request(method="getChats", input={"start_id": startId})
     
-    def getTopChatUsers(self) -> dict:
+    @async_to_sync
+    async def getTopChatUsers(self) -> dict:
         return self.network.request(method="getTopChatUsers")
     
-    def removeFromTopChatUsers(self, objectGuid:str) -> dict:
+    @async_to_sync
+    async def removeFromTopChatUsers(self, objectGuid:str) -> dict:
         return self.network.request(method="removeFromTopChatUsers", input={"user_guid": objectGuid})
     
-    def getChatAds(self) -> dict:
+    @async_to_sync
+    async def getChatAds(self) -> dict:
         return self.network.request(method="getChatAds", input={"state": Utils.getState()})
 
-    def getChatsUpdates(self) -> dict:
+    @async_to_sync
+    async def getChatsUpdates(self) -> dict:
         return self.network.request(method="getChatsUpdates", input={"state": Utils.getState()})
     
-    def joinChat(self, guidOrLink:str) -> dict:
+    @async_to_sync
+    async def joinChat(self, guidOrLink:str) -> dict:
         if Utils.checkLink(guidOrLink):
             method:str = "joinGroup" if Utils.getChatTypeByLink(link=guidOrLink) == "Group" else "joinChannelByLink"
         else:
@@ -113,7 +131,8 @@ class Methods:
             }
         )
     
-    def leaveChat(self, objectGuid:str) -> dict:
+    @async_to_sync
+    async def leaveChat(self, objectGuid:str) -> dict:
         input:dict = {f"{Utils.getChatTypeByGuid(objectGuid=objectGuid).lower()}_guid": objectGuid}
 
         if Utils.getChatTypeByGuid(objectGuid=objectGuid) == "Group": method:str = "leaveGroup"
@@ -126,7 +145,8 @@ class Methods:
             input=input
         )
     
-    def removeChat(self, objectGuid:str) -> dict:
+    @async_to_sync
+    async def removeChat(self, objectGuid:str) -> dict:
         chatType:str = Utils.getChatTypeByGuid(objectGuid=objectGuid)
 
         return self.network.request(
@@ -134,7 +154,8 @@ class Methods:
             input={f"{chatType.lower()}_guid": objectGuid}
         )
     
-    def getChatInfo(self, objectGuid:str) -> dict:
+    @async_to_sync
+    async def getChatInfo(self, objectGuid:str) -> dict:
         chatType:str = Utils.getChatTypeByGuid(objectGuid=objectGuid)
 
         return self.network.request(
@@ -142,10 +163,12 @@ class Methods:
             input={f"{chatType.lower()}_guid": objectGuid}
         )
     
-    def getChatInfoByUsername(self, username:str) -> dict:
+    @async_to_sync
+    async def getChatInfoByUsername(self, username:str) -> dict:
         return self.network.request(method="getObjectInfoByUsername", input={"username": username.replace("@", "")})
     
-    def getChatLink(self, objectGuid:str) -> dict:
+    @async_to_sync
+    async def getChatLink(self, objectGuid:str) -> dict:
         chatType:str = Utils.getChatTypeByGuid(objectGuid=objectGuid)
 
         return self.network.request(
@@ -153,7 +176,8 @@ class Methods:
             input={f"{chatType.lower()}_guid": objectGuid}
         )
     
-    def setChatLink(self, objectGuid:str) -> dict:
+    @async_to_sync
+    async def setChatLink(self, objectGuid:str) -> dict:
         chatType:str = Utils.getChatTypeByGuid(objectGuid=objectGuid)
 
         return self.network.request(
@@ -161,7 +185,8 @@ class Methods:
             input={f"{chatType.lower()}_guid": objectGuid}
         )
     
-    def setChatAdmin(self, objectGuid:str, memberGuid:str, accessList:list, customTitle:str, action:str) -> dict:
+    @async_to_sync
+    async def setChatAdmin(self, objectGuid:str, memberGuid:str, accessList:Optional[list], customTitle:Optional[str], action:str) -> dict:
         chatType:str = Utils.getChatTypeByGuid(objectGuid=objectGuid)
 
         input:dict = {
@@ -178,7 +203,8 @@ class Methods:
             input=input
         )
     
-    def addChatMember(self, objectGuid:str, memberGuids:list) -> dict:
+    @async_to_sync
+    async def addChatMember(self, objectGuid:str, memberGuids:list) -> dict:
         chatType:str = Utils.getChatTypeByGuid(objectGuid=objectGuid)
 
         return self.network.request(
@@ -189,7 +215,8 @@ class Methods:
             }
         )
     
-    def banChatMember(self, objectGuid:str, memberGuid:str, action:str) -> dict:
+    @async_to_sync
+    async def banChatMember(self, objectGuid:str, memberGuid:str, action:str) -> dict:
         chatType:str = Utils.getChatTypeByGuid(objectGuid=objectGuid)
 
         return self.network.request(
@@ -201,7 +228,8 @@ class Methods:
             }
         )
     
-    def getBannedChatMembers(self, objectGuid:str, startId:str) -> dict:
+    @async_to_sync
+    async def getBannedChatMembers(self, objectGuid:str, startId:Optional[str]) -> dict:
         chatType:str = Utils.getChatTypeByGuid(objectGuid=objectGuid)
 
         return self.network.request(
@@ -212,7 +240,8 @@ class Methods:
             }
         )
     
-    def getChatAllMembers(self, objectGuid:str, searchText:str, startId:str, justGetGuids:bool=False) -> dict:
+    @async_to_sync
+    async def getChatAllMembers(self, objectGuid:str, searchText:Optional[str], startId:Optional[str], justGetGuids:bool=False) -> Union[dict,list]:
         chatType:str = Utils.getChatTypeByGuid(objectGuid=objectGuid)
 
         data = self.network.request(
@@ -228,7 +257,8 @@ class Methods:
 
         return data
     
-    def getChatAdminMembers(self, objectGuid:str, startId:str, justGetGuids:bool) -> dict:
+    @async_to_sync
+    async def getChatAdminMembers(self, objectGuid:str, startId:Optional[str], justGetGuids:bool) -> Union[dict,list]:
         chatType:str = Utils.getChatTypeByGuid(objectGuid=objectGuid)
 
         data = self.network.request(
@@ -244,7 +274,8 @@ class Methods:
         return data
 
     
-    def getChatAdminAccessList(self, objectGuid:str, memberGuid:str) -> dict:
+    @async_to_sync
+    async def getChatAdminAccessList(self, objectGuid:str, memberGuid:str) -> dict:
         chatType:str = Utils.getChatTypeByGuid(objectGuid=objectGuid)
 
         return self.network.request(
@@ -255,13 +286,15 @@ class Methods:
             }
         )
     
-    def chatPreviewByJoinLink(self, link:str) -> dict:
+    @async_to_sync
+    async def chatPreviewByJoinLink(self, link:str) -> dict:
         return self.network.request(
             method="groupPreviewByJoinLink" if "joing" in link else "channelPreviewByJoinLink",
             input={"hash_link": link.split("/")[-1]}
         )
     
-    def createChatVoiceChat(self, objectGuid:str) -> dict:
+    @async_to_sync
+    async def createChatVoiceChat(self, objectGuid:str) -> dict:
         chatType:str = Utils.getChatTypeByGuid(objectGuid=objectGuid)
 
         return self.network.request(
@@ -269,7 +302,8 @@ class Methods:
             input={f"{chatType.lower()}_guid": objectGuid}
         )
     
-    def joinVoiceChat(self, objectGuid:str, myGuid:str, voiceChatId:str, sdp_offer_data:str) -> dict:
+    @async_to_sync
+    async def joinVoiceChat(self, objectGuid:str, myGuid:str, voiceChatId:str, sdp_offer_data:str) -> dict:
         return self.network.request(
             method=f"join{Utils.getChatTypeByGuid(objectGuid=objectGuid)}VoiceChat",
             input={
@@ -280,7 +314,8 @@ class Methods:
             }
         )
 
-    def setChatVoiceChatSetting(self, objectGuid:str, voideChatId:str, title:str, joinMuted:bool) -> dict:
+    @async_to_sync
+    async def setChatVoiceChatSetting(self, objectGuid:str, voideChatId:str, title:Optional[str], joinMuted:Optional[bool]) -> dict:
         chatType:str = Utils.getChatTypeByGuid(objectGuid=objectGuid)
 
         input:dict = {
@@ -302,7 +337,8 @@ class Methods:
             input=input
         )
     
-    def getChatVoiceChatUpdates(self, objectGuid:str, voideChatId:str) -> dict:
+    @async_to_sync
+    async def getChatVoiceChatUpdates(self, objectGuid:str, voideChatId:str) -> dict:
         chatType:str = Utils.getChatTypeByGuid(objectGuid=objectGuid)
 
         return self.network.request(
@@ -314,7 +350,8 @@ class Methods:
             }
         )
     
-    def getChatVoiceChatParticipants(self, objectGuid:str, voideChatId:str) -> dict:
+    @async_to_sync
+    async def getChatVoiceChatParticipants(self, objectGuid:str, voideChatId:str) -> dict:
         chatType:str = Utils.getChatTypeByGuid(objectGuid=objectGuid)
 
         return self.network.request(
@@ -325,7 +362,8 @@ class Methods:
             }
         )
     
-    def setChatVoiceChatState(self, objectGuid:str, voideChatId:str, activity:str, participantObjectGuid:str) -> dict:
+    @async_to_sync
+    async def setChatVoiceChatState(self, objectGuid:str, voideChatId:str, activity:str, participantObjectGuid:str) -> dict:
         chatType:str = Utils.getChatTypeByGuid(objectGuid=objectGuid)
 
         return self.network.request(
@@ -338,7 +376,8 @@ class Methods:
             }
         )
     
-    def sendChatVoiceChatActivity(self, objectGuid:str, voideChatId:str, activity:str, participantObjectGuid:str) -> dict:
+    @async_to_sync
+    async def sendChatVoiceChatActivity(self, objectGuid:str, voideChatId:str, activity:str, participantObjectGuid:str) -> dict:
         chatType:str = Utils.getChatTypeByGuid(objectGuid=objectGuid)
 
         return self.network.request(
@@ -351,7 +390,8 @@ class Methods:
             }
         )
     
-    def leaveChatVoiceChat(self, objectGuid:str, voideChatId:str) -> dict:
+    @async_to_sync
+    async def leaveChatVoiceChat(self, objectGuid:str, voideChatId:str) -> dict:
         chatType:str = Utils.getChatTypeByGuid(objectGuid=objectGuid)
 
         return self.network.request(
@@ -362,7 +402,8 @@ class Methods:
             }
         )
     
-    def discardChatVoiceChat(self, objectGuid:str, voideChatId:str) -> dict:
+    @async_to_sync
+    async def discardChatVoiceChat(self, objectGuid:str, voideChatId:str) -> dict:
         chatType:str = Utils.getChatTypeByGuid(objectGuid=objectGuid)
 
         return self.network.request(
@@ -373,7 +414,8 @@ class Methods:
             }
         )
     
-    def setActionChat(self, objectGuid:str, action:str) -> dict:
+    @async_to_sync
+    async def setActionChat(self, objectGuid:str, action:str) -> dict:
         return self.network.request(
             method="setActionChat",
             input={
@@ -382,10 +424,12 @@ class Methods:
             }
         )
     
-    def seenChats(self, seenList:dict) -> dict:
+    @async_to_sync
+    async def seenChats(self, seenList:dict) -> dict:
         return self.network.request(method="seenChats", input={"seen_list": seenList})
     
-    def seenChatMessages(self, objectGuid:str, minId:str, maxId:str) -> dict:
+    @async_to_sync
+    async def seenChatMessages(self, objectGuid:str, minId:str, maxId:str) -> dict:
         chatType:str = Utils.getChatTypeByGuid(objectGuid=objectGuid)
 
         return self.network.request(
@@ -397,7 +441,8 @@ class Methods:
             }
         )
     
-    def sendChatActivity(self, objectGuid:str, activity:str) -> dict:
+    @async_to_sync
+    async def sendChatActivity(self, objectGuid:str, activity:str) -> dict:
         return self.network.request(
             method="sendChatActivity",
             input={
@@ -406,7 +451,8 @@ class Methods:
             }
         )
     
-    def searchChatMessages(self, objectGuid:str, searchText:str) -> dict:
+    @async_to_sync
+    async def searchChatMessages(self, objectGuid:str, searchText:str) -> dict:
         return self.network.request(
             method="searchChatMessages",
             input={
@@ -416,22 +462,29 @@ class Methods:
             }
         )
     
-    def uploadAvatar(self, objectGuid:str, mainFile:str, thumbnailFile:str) -> dict:
+    @async_to_sync
+    async def uploadAvatar(self, objectGuid:str, mainFile:str, thumbnailFile:Optional[str]) -> Optional[dict]:
         uploadMainFileData = self.network.upload(file=mainFile)
 
-        return self.network.request(
-            method="uploadAvatar",
-            input={
-                "object_guid": objectGuid,
-                "thumbnail_file_id": self.network.upload(file=thumbnailFile)["id"] if thumbnailFile else uploadMainFileData["id"],
-                "main_file_id": uploadMainFileData["id"]
-            }
-        )
+        if uploadMainFileData is not None and thumbnailFile is not None:
+            uplo_ = self.network.upload(file=thumbnailFile)
+            if isinstance(uplo_,dict):
+                return self.network.request(
+                    method="uploadAvatar",
+                    input={
+                        "object_guid": objectGuid,
+                        "thumbnail_file_id": uplo_["id"] if thumbnailFile else uploadMainFileData["id"],
+                        "main_file_id": uploadMainFileData["id"]
+                    }
+                )
+        raise ValueError("Error ! Value invalid")
     
-    def getAvatars(self, objectGuid:str) -> dict:
+    @async_to_sync
+    async def getAvatars(self, objectGuid:str) -> dict:
         return self.network.request(method="getAvatars", input={"object_guid": objectGuid})
     
-    def deleteAvatar(self, objectGuid:str, avatarId:str) -> dict:
+    @async_to_sync
+    async def deleteAvatar(self, objectGuid:str, avatarId:str) -> dict:
         return self.network.request(
             method="deleteAvatar",
             input={
@@ -440,7 +493,8 @@ class Methods:
             }
         )
     
-    def deleteChatHistory(self, objectGuid:str, lastMessageId:str) -> dict:
+    @async_to_sync
+    async def deleteChatHistory(self, objectGuid:str, lastMessageId:str) -> dict:
         return self.network.request(
             method="deleteChatHistory",
             input={
@@ -449,7 +503,8 @@ class Methods:
             }
         )
     
-    def deleteUserChat(self, userGuid:str, lastDeletedMessageId) -> dict:
+    @async_to_sync
+    async def deleteUserChat(self, userGuid:str, lastDeletedMessageId) -> dict:
         return self.network.request(
             method="deleteUserChat",
             input={
@@ -458,10 +513,12 @@ class Methods:
             }
         )
     
-    def getPendingObjectOwner(self, objectGuid:str) -> dict:
+    @async_to_sync
+    async def getPendingObjectOwner(self, objectGuid:str) -> dict:
         return self.network.request(method="getPendingObjectOwner", input={"object_guid": objectGuid})
     
-    def requestChangeObjectOwner(self, objectGuid:str, memberGuid:str) -> dict:
+    @async_to_sync
+    async def requestChangeObjectOwner(self, objectGuid:str, memberGuid:str) -> dict:
         return self.network.request(
             method="requestChangeObjectOwner",
             input={
@@ -470,7 +527,8 @@ class Methods:
             }
         )
     
-    def replyRequestObjectOwner(self, objectGuid:str, action:str) -> dict:
+    @async_to_sync
+    async def replyRequestObjectOwner(self, objectGuid:str, action:str) -> dict:
         return self.network.request(
             method="replyRequestObjectOwner",
             input={
@@ -479,10 +537,12 @@ class Methods:
             }
         )
     
-    def cancelChangeObjectOwner(self, objectGuid:str) -> dict:
+    @async_to_sync
+    async def cancelChangeObjectOwner(self, objectGuid:str) -> dict:
         return self.network.request(method="cancelChangeObjectOwner", input={"object_guid": objectGuid})
     
-    def getChatReaction(self, objectGuid:str, minId:str, maxId:str) -> dict:
+    @async_to_sync
+    async def getChatReaction(self, objectGuid:str, minId:str, maxId:str) -> dict:
         return self.network.request(
             method="getChatReaction",
             input={
@@ -492,7 +552,8 @@ class Methods:
             }
         )
     
-    def reportObject(self, objectGuid:str, description:str) -> dict:
+    @async_to_sync
+    async def reportObject(self, objectGuid:str, description:str) -> dict:
         return self.network.request(
             method="reportObject",
             input={
@@ -503,7 +564,8 @@ class Methods:
             }
         )
     
-    def setChatUseTime(self, objectGuid:str, time:int) -> dict:
+    @async_to_sync
+    async def setChatUseTime(self, objectGuid:str, time:int) -> dict:
         return self.network.request(
             method="setChatUseTime",
             input={
@@ -514,7 +576,8 @@ class Methods:
     
     # User methods
 
-    def setBlockUser(self, objectGuid:str, action:str) -> dict:
+    @async_to_sync
+    async def setBlockUser(self, objectGuid:str, action:str) -> dict:
         return self.network.request(
             method="setBlockUser",
             input={
@@ -523,7 +586,8 @@ class Methods:
             }
         )
     
-    def checkUserUsername(self, username:str) -> dict:
+    @async_to_sync
+    async def checkUserUsername(self, username:str) -> dict:
         return self.network.request(
             method="checkUserUsername",
             input={
@@ -533,7 +597,8 @@ class Methods:
     
     # Group methods
 
-    def addGroup(self, title:str, memberGuids:str) -> dict:
+    @async_to_sync
+    async def addGroup(self, title:str, memberGuids:list) -> dict:
         return self.network.request(
             method="addGroup",
             input={
@@ -542,13 +607,15 @@ class Methods:
             }
         )
     
-    def getGroupDefaultAccess(self, objectGuid:str) -> dict:
+    @async_to_sync
+    async def getGroupDefaultAccess(self, objectGuid:str) -> dict:
         return self.network.request(
             method=f"getGroupDefaultAccess",
             input={"group_guid": objectGuid}
         )
     
-    def setChatDefaultAccess(self, objectGuid:str, accessList:list) -> dict:
+    @async_to_sync
+    async def setChatDefaultAccess(self, objectGuid:str, accessList:list) -> dict:
         chatType:str = Utils.getChatTypeByGuid(objectGuid=objectGuid)
 
         return self.network.request(
@@ -559,7 +626,8 @@ class Methods:
             }
         )
     
-    def getGroupMentionList(self, objectGuid:str, searchMention:str) -> dict:
+    @async_to_sync
+    async def getGroupMentionList(self, objectGuid:str, searchMention:str) -> dict:
         return self.network.request(
             method="getGroupMentionList",
             input={
@@ -568,16 +636,17 @@ class Methods:
             }
         )
     
-    def editGroupInfo(
+    @async_to_sync
+    async def editGroupInfo(
             self,
             objectGuid:str,
-            title:str,
-            description:str,
-            slowMode:int,
-            eventMessages:bool,
-            chatHistoryForNewMembers:bool,
-            reactionType:str, #Selected Disabled All
-            selectedReactions:list
+            title:Optional[str],
+            description:Optional[str],
+            slowMode:Optional[int],
+            eventMessages:Optional[bool],
+            chatHistoryForNewMembers:Optional[bool],
+            reactionType:Optional[str], #Selected Disabled All
+            selectedReactions:Optional[list[str]]
         ) -> dict:
 
         input:dict = {
@@ -606,10 +675,11 @@ class Methods:
             input["updated_parameters"].append("chat_history_for_new_members")
 
         if reactionType:
-            input["chat_reaction_setting"] = {"reaction_type": reactionType}
+            if selectedReactions:
+                input["chat_reaction_setting"] = {"reaction_type": reactionType,"selected_reactions":selectedReactions}
+            else:
+                input["chat_reaction_setting"] = {"reaction_type": reactionType}
             input["updated_parameters"].append("chat_reaction_setting")
-
-            if selectedReactions: input["chat_reaction_setting"]["selected_reactions"] = selectedReactions
 
 
         return self.network.request(
@@ -619,7 +689,8 @@ class Methods:
     
     # Channel methods
 
-    def addChannel(self, title:str, description:str, memberGuids:list, private:bool) -> dict:
+    @async_to_sync
+    async def addChannel(self, title:str, description:Optional[str], memberGuids:Optional[list], private:bool) -> dict:
         input:dict = {
             "title": title,
             "description": description,
@@ -632,16 +703,17 @@ class Methods:
             input=input
         )
     
-    def editChannelInfo(
+    @async_to_sync
+    async def editChannelInfo(
             self,
             objectGuid:str,
-            title:str,
-            description:str,
-            username:str,
-            private:bool,
-            signMessages:bool,
-            reactionType:str, #Selected Disabled All
-            selectedReactions:list
+            title:Optional[str],
+            description:Optional[str],
+            username:Optional[str],
+            private:Optional[bool],
+            signMessages:Optional[bool],
+            reactionType:Optional[str], #Selected Disabled All
+            selectedReactions:Optional[list]
         ) -> dict:
 
         input:dict = {
@@ -668,13 +740,14 @@ class Methods:
             input["updated_parameters"].append("sign_messages")
         
         if reactionType:
-            input["chat_reaction_setting"] = {"reaction_type": reactionType}
+            if selectedReactions:
+                input["chat_reaction_setting"] = {"reaction_type": reactionType,"selected_reactions":selectedReactions}
+            else:
+                input["chat_reaction_setting"] = {"reaction_type": reactionType}
             input["updated_parameters"].append("chat_reaction_setting")
 
-            if selectedReactions: input["chat_reaction_setting"]["selected_reactions"] = selectedReactions
-
         if username:
-            self.updateChannelUsername(
+            await self.updateChannelUsername(
                 objectGuid=objectGuid,
                 username=username
             )
@@ -684,7 +757,8 @@ class Methods:
             input=input
         )
     
-    def checkChannelUsername(self, username:str) -> dict:
+    @async_to_sync
+    async def checkChannelUsername(self, username:str) -> dict:
         return self.network.request(
             method="checkChannelUsername",
             input={
@@ -692,7 +766,8 @@ class Methods:
             }
         )
     
-    def updateChannelUsername(self, objectGuid:str, username:str) -> dict:
+    @async_to_sync
+    async def updateChannelUsername(self, objectGuid:str, username:str) -> dict:
         return self.network.request(
             method="updateChannelUsername",
             input={
@@ -701,7 +776,8 @@ class Methods:
             }
         )
     
-    def getChannelSeenCount(self, objectGuid:str, minId:str, maxId:str) -> dict:
+    @async_to_sync
+    async def getChannelSeenCount(self, objectGuid:str, minId:str, maxId:str) -> dict:
         return self.network.request(
             method="getChannelSeenCount",
             input={
@@ -713,7 +789,7 @@ class Methods:
     
     # Message methods
     @async_to_sync
-    async def sendText(self, objectGuid:str, text:str, messageId:str) -> dict:
+    async def sendText(self, objectGuid:str, text:str, messageId:Optional[str]) -> dict:
         metadata = Utils.checkMetadata(text)
 
         input = {
@@ -727,79 +803,85 @@ class Methods:
 
         return self.network.request(method="sendMessage", input=input)
     
-    def baseSendFileInline(
-            self,
-            objectGuid:str,
-            file:str,
-            text:str,
-            messageId:str,
-            fileName:str,
-            type:dict,
-            isSpoil:bool=False,
-            customThumbInline:Optional[str] = None,
-            time:int=None,
-            performer:Optional[str] = None
-    ) -> dict:
-        uploadData:dict = self.network.upload(file=file, fileName=fileName)
-        if not uploadData: return
-        
-        input:dict = {
-            "file_inline": {
-                "dc_id": uploadData["dc_id"],
-                "file_id": uploadData["id"],
-                "file_name": uploadData["file_name"],
-                "size": uploadData["size"],
-                "mime": uploadData["mime"],
-                "access_hash_rec": uploadData["access_hash_rec"],
-                "type": type,
-                "is_spoil": isSpoil
-            },
-            "object_guid": objectGuid,
-            "rnd": Utils.randomRnd(),
-            "reply_to_message_id": messageId
-        }
+    @async_to_sync
+    async def baseSendFileInline(
+        self,
+        objectGuid:str,
+        file:str,
+        text:Optional[str],
+        messageId:Optional[str],
+        fileName:Optional[str],
+        type:Literal["Image", "Video", "Gif", "VideoMessage","Music", "Voice","File"],
+        isSpoil:bool=False,
+        customThumbInline:Optional[str] = None,
+        time:Optional[int]=None,
+        performer:Optional[str] = None
+    ) -> Optional[dict]:
+        upload_data = self.network.upload(file=file, fileName=fileName)
+        if isinstance(upload_data,dict):
+            uploadData:dict = dict(upload_data)
+            if not uploadData:
+                return
+            
+            input:dict = {
+                "file_inline": {
+                    "dc_id": uploadData["dc_id"],
+                    "file_id": uploadData["id"],
+                    "file_name": uploadData["file_name"],
+                    "size": uploadData["size"],
+                    "mime": uploadData["mime"],
+                    "access_hash_rec": uploadData["access_hash_rec"],
+                    "type": type,
+                    "is_spoil": isSpoil
+                },
+                "object_guid": objectGuid,
+                "rnd": Utils.randomRnd(),
+                "reply_to_message_id": messageId
+            }
 
-        if type in ["Image", "Video", "Gif", "VideoMessage"]:
-            customThumbInline = Utils.getImageThumbnail(
-                customThumbInline
-                if isinstance(customThumbInline, bytes)
-                else self.network.http.request("GET", customThumbInline).data
-                if Utils.checkLink(customThumbInline)
-                else open(customThumbInline, "rb").read()
-            ) if customThumbInline else None
+            if type in ["Image", "Video", "Gif", "VideoMessage"]:
+                customThumbInline = Utils.getImageThumbnail(
+                    customThumbInline
+                    if isinstance(customThumbInline, bytes)
+                    else self.network.http.request("GET", customThumbInline).data
+                    if Utils.checkLink(customThumbInline)
+                    else open(customThumbInline, "rb").read()
+                ) if customThumbInline else None
 
-            if not type == "Image":
-                videoData:list = Utils.getVideoData(uploadData["file"])
-                input["file_inline"]["time"] = videoData[2] * 1000
+                videoData=[]
+                if not type == "Image":
+                    videoData:list = list(Utils.getVideoData(uploadData["file"]))
+                    input["file_inline"]["time"] = videoData[2] * 1000
 
-            fileSize:list = Utils.getImageSize(uploadData["file"]) if type == "Image" else videoData[1]
-            input["file_inline"]["width"] = fileSize[0]
-            input["file_inline"]["height"] = fileSize[1]
+                fileSize:list = list(Utils.getImageSize(uploadData["file"])) if type == "Image" else videoData[1]
+                input["file_inline"]["width"] = fileSize[0]
+                input["file_inline"]["height"] = fileSize[1]
 
-            if type == "VideoMessage":
-                input["file_inline"]["type"] = "Video"
-                input["file_inline"]["is_round"] = True
+                if type == "VideoMessage":
+                    input["file_inline"]["type"] = "Video"
+                    input["file_inline"]["is_round"] = True
 
-            input["file_inline"]["thumb_inline"] = customThumbInline or (Utils.getImageThumbnail(uploadData["file"]) if type == "Image" else videoData[0])
+                input["file_inline"]["thumb_inline"] = customThumbInline or (Utils.getImageThumbnail(uploadData["file"]) if type == "Image" else videoData[0])
 
-        if type in ["Music", "Voice"]:
-            input["file_inline"]["time"] = (time or Utils.getVoiceDuration(uploadData["file"])) * (1000 if type == "Voice" else 1)
+            if type in ["Music", "Voice"]:
+                input["file_inline"]["time"] = (time or Utils.getVoiceDuration(uploadData["file"])) * (1000 if type == "Voice" else 1)
 
-            if type == "Music":
-                input["file_inline"]["music_performer"] = performer or Utils.getMusicArtist(uploadData["file"])
+                if type == "Music":
+                    input["file_inline"]["music_performer"] = performer or Utils.getMusicArtist(uploadData["file"])
 
-        metadata:list = Utils.checkMetadata(text)
-        if metadata[1]: input["text"] = metadata[1]
-        if metadata[0]: input["metadata"] = {"meta_data_parts": metadata[0]}
+            metadata:list = list(Utils.checkMetadata(text))
+            if metadata[1]: input["text"] = metadata[1]
+            if metadata[0]: input["metadata"] = {"meta_data_parts": metadata[0]}
 
-        return self.network.request(
-            method="sendMessage",
-            input=input
-        )
+            return self.network.request(
+                method="sendMessage",
+                input=input
+            )
 
     
-    def sendFile(self, objectGuid:str, file:str, messageId:str, text:str, fileName:str) -> dict:
-        return self.baseSendFileInline(
+    @async_to_sync
+    async def sendFile(self, objectGuid:str, file:str, messageId:Optional[str], text:Optional[str], fileName:Optional[str]) -> Optional[dict]:
+        return await self.baseSendFileInline(
             objectGuid=objectGuid,
             file=file,
             text=text,
@@ -808,8 +890,9 @@ class Methods:
             type="File"
         )
     
-    def sendImage(self, objectGuid:str, file:str, messageId:str, text:str, isSpoil:bool, thumbInline:str, fileName:str) -> dict:
-        return self.baseSendFileInline(
+    @async_to_sync
+    async def sendImage(self, objectGuid:str, file:str, messageId:Optional[str], text:Optional[str], isSpoil:bool, thumbInline:Optional[str], fileName:Optional[str]) -> Optional[dict]:
+        return await self.baseSendFileInline(
             objectGuid=objectGuid,
             file=file,
             text=text,
@@ -820,8 +903,9 @@ class Methods:
             customThumbInline=thumbInline
         )
     
-    def sendVideo(self, objectGuid:str, file:str, messageId:str, text:str, isSpoil:bool, thumbInline:str, fileName:str) -> dict:
-        return self.baseSendFileInline(
+    @async_to_sync
+    async def sendVideo(self, objectGuid:str, file:str, messageId:Optional[str], text:Optional[str], isSpoil:bool, thumbInline:Optional[str], fileName:Optional[str]) -> Optional[dict]:
+        return await self.baseSendFileInline(
             objectGuid=objectGuid,
             file=file,
             text=text,
@@ -832,8 +916,9 @@ class Methods:
             customThumbInline=thumbInline
         )
     
-    def sendVideoMessage(self, objectGuid:str, file:str, messageId:str, text:str, thumbInline:str, fileName:str) -> dict:
-        return self.baseSendFileInline(
+    @async_to_sync
+    async def sendVideoMessage(self, objectGuid:str, file:str, messageId:Optional[str], text:Optional[str], thumbInline:Optional[str], fileName:Optional[str]) -> Optional[dict]:
+        return await self.baseSendFileInline(
             objectGuid=objectGuid,
             file=file,
             text=text,
@@ -843,8 +928,9 @@ class Methods:
             customThumbInline=thumbInline
         )
     
-    def sendGif(self, objectGuid:str, file:str, messageId:str, text:str, thumbInline:str, fileName:str) -> dict:
-        return self.baseSendFileInline(
+    @async_to_sync
+    async def sendGif(self, objectGuid:str, file:str, messageId:Optional[str], text:Optional[str], thumbInline:Optional[str], fileName:Optional[str]) -> Optional[dict]:
+        return await self.baseSendFileInline(
             objectGuid=objectGuid,
             file=file,
             text=text,
@@ -854,8 +940,9 @@ class Methods:
             customThumbInline=thumbInline
         )
     
-    def sendMusic(self, objectGuid:str, file:str, messageId:str, text:str, fileName:str, performer:str) -> dict:
-        return self.baseSendFileInline(
+    @async_to_sync
+    async def sendMusic(self, objectGuid:str, file:str, messageId:Optional[str], text:Optional[str], fileName:Optional[str], performer:Optional[str]) -> Optional[dict]:
+        return await self.baseSendFileInline(
             objectGuid=objectGuid,
             file=file,
             text=text,
@@ -865,8 +952,9 @@ class Methods:
             performer=performer
         )
     
-    def sendVoice(self, objectGuid:str, file:str, messageId:str, text:str, fileName:str, time:int) -> dict:
-        return self.baseSendFileInline(
+    @async_to_sync
+    async def sendVoice(self, objectGuid:str, file:str, messageId:Optional[str], text:Optional[str], fileName:Optional[str], time:int) -> Optional[dict]:
+        return await self.baseSendFileInline(
             objectGuid=objectGuid,
             file=file,
             text=text,
@@ -876,7 +964,8 @@ class Methods:
             time=time
         )
     
-    def sendLocation(self, objectGuid:str, latitude:int, longitude:int, messageId:str) -> dict:
+    @async_to_sync
+    async def sendLocation(self, objectGuid:str, latitude:int, longitude:int, messageId:Optional[str]) -> dict:
         return self.network.request(
             method="sendMessage",
             input={
@@ -890,7 +979,8 @@ class Methods:
             }
         )
     
-    def sendMessageAPICall(self, objectGuid:str, text:str, messageId:str, buttonId:str) -> dict:
+    @async_to_sync
+    async def sendMessageAPICall(self, objectGuid:str, text:str, messageId:str, buttonId:str) -> dict:
         return self.network.request(
             method="sendMessageAPICall",
             input={
@@ -901,7 +991,8 @@ class Methods:
             }
         )
     
-    def editMessage(self, objectGuid, text, messageId) -> dict:
+    @async_to_sync
+    async def editMessage(self, objectGuid, text, messageId) -> dict:
         metadata = Utils.checkMetadata(text)
         data = {
             "object_guid": objectGuid,
@@ -912,7 +1003,8 @@ class Methods:
             data["metadata"] = {"meta_data_parts": metadata[0]}
         return self.network.request("editMessage", data)
     
-    def actionOnMessageReaction(self, objectGuid:str, messageId:str, reactionId:int, action:str) -> dict:
+    @async_to_sync
+    async def actionOnMessageReaction(self, objectGuid:str, messageId:str, reactionId:int, action:str) -> dict:
         return self.network.request(
             method="actionOnMessageReaction",
             input={
@@ -922,8 +1014,9 @@ class Methods:
                 "reaction_id": reactionId
             }
         )
-    
-    def setPinMessage(self, objectGuid:str, messageId:str, action:str) -> dict:
+
+    @async_to_sync
+    async def setPinMessage(self, objectGuid:str, messageId:str, action:str) -> dict:
         return self.network.request(
             method="setPinMessage",
             input={
@@ -932,13 +1025,14 @@ class Methods:
                 "action": action
             }
         )
-    
-    def resendMessage(self, objectGuid:str, messageId:str, toObjectGuid:str, replyToMessageId:str, text:str, fileInline:None) -> dict:
-        if not fileInline:
-            messageData:dict = self.getMessagesById(objectGuid=objectGuid, messageIds=[messageId])
 
-        text:str = text or messageData["messages"][0].get("text")
-        metadata = Utils.checkMetadata(text)
+    @async_to_sync
+    async def resendMessage(self, objectGuid:Optional[str], messageId:Optional[str], toObjectGuid:Optional[str], replyToMessageId:Optional[str], text:Optional[str], fileInline) -> dict:
+        if not fileInline:
+            messageData:dict = await self.getMessagesById(objectGuid=objectGuid, messageIds=[messageId])
+
+        text_:str = text or messageData["messages"][0]["text"]
+        metadata = Utils.checkMetadata(text_)
         input = {
             "is_mute": False,
             "object_guid": toObjectGuid,
@@ -947,11 +1041,11 @@ class Methods:
             "text": metadata[1]
         }
 
-        fileInline:dict = fileInline or messageData["messages"][0].get("file_inline")
-        if fileInline:
-            input["file_inline"] = fileInline
+        fileInline_:dict = fileInline or messageData["messages"][0]["file_inline"]
+        if fileInline_:
+            input["file_inline"] = fileInline_
 
-        if not fileInline:
+        if not fileInline_:
             location:dict = messageData["messages"][0].get("location")
             if location:
                 input["location"] = location
@@ -976,7 +1070,8 @@ class Methods:
 
         return self.network.request(method="sendMessage", input=input)
 
-    def forwardMessages(self, objectGuid:str, messageIds:list, toObjectGuid:str) -> dict:
+    @async_to_sync
+    async def forwardMessages(self, objectGuid:str, messageIds:list, toObjectGuid:str) -> dict:
         return self.network.request(
             method="forwardMessages",
             input={
@@ -987,7 +1082,8 @@ class Methods:
             }
         )
     
-    def deleteMessages(self, objectGuid:str, messageIds:list, deleteForAll:bool) -> dict:
+    @async_to_sync
+    async def deleteMessages(self, objectGuid:str, messageIds:list, deleteForAll:bool) -> dict:
         return self.network.request(
             method="deleteMessages",
             input={
@@ -997,7 +1093,8 @@ class Methods:
             }
         )
     
-    def getMessagesInterval(self, objectGuid:str, middleMessageId:str) -> dict:
+    @async_to_sync
+    async def getMessagesInterval(self, objectGuid:str, middleMessageId:str) -> dict:
         return self.network.request(
             method="getMessagesInterval",
             input={
@@ -1006,7 +1103,8 @@ class Methods:
             }
         )
     
-    def getMessages(self, objectGuid:str, maxId:str, filterType:str, limit:int) -> dict:
+    @async_to_sync
+    async def getMessages(self, objectGuid:str, maxId:Optional[str], filterType:Optional[str], limit:int) -> dict:
         input:dict = {
             "object_guid": objectGuid,
             "sort": "FromMax",
@@ -1021,7 +1119,8 @@ class Methods:
             input=input
         )
     
-    def getMessagesUpdates(self, objectGuid:str) -> dict:
+    @async_to_sync
+    async def getMessagesUpdates(self, objectGuid:str) -> dict:
         return self.network.request(
             method="getMessagesUpdates",
             input={
@@ -1030,7 +1129,8 @@ class Methods:
             }
         )
     
-    def getMessagesById(self, objectGuid:str, messageIds:list) -> dict:
+    @async_to_sync
+    async def getMessagesById(self, objectGuid:Optional[str], messageIds:list) -> dict:
         return self.network.request(
             method="getMessagesByID",
             input={
@@ -1039,7 +1139,8 @@ class Methods:
             }
         )
     
-    def getMessageShareUrl(self, objectGuid:str, messageId:str) -> dict:
+    @async_to_sync
+    async def getMessageShareUrl(self, objectGuid:str, messageId:str) -> dict:
         return self.network.request(
             method="getMessageShareUrl",
             input={
@@ -1048,7 +1149,8 @@ class Methods:
             }
         )
     
-    def clickMessageUrl(self, objectGuid:str, messageId:str, linkUrl:str) -> dict:
+    @async_to_sync
+    async def clickMessageUrl(self, objectGuid:str, messageId:str, linkUrl:str) -> dict:
         return self.network.request(
             method="clickMessageUrl",
             input={
@@ -1058,7 +1160,8 @@ class Methods:
             }
         )
     
-    def searchGlobalMessages(self, searchText:str) -> dict:
+    @async_to_sync
+    async def searchGlobalMessages(self, searchText:str) -> dict:
         return self.network.request(
             method="search_text",
             input={
@@ -1067,19 +1170,21 @@ class Methods:
             }
         )
     
-    def requestSendFile(self, fileName:str, mime:str, size:str) -> dict:
+    @async_to_sync
+    async def requestSendFile(self, fileName:str, mime:str, size:int) -> dict:
         return self.network.request(
             method="requestSendFile",
             input={
                 "file_name": fileName,
                 "mime": mime,
-                "size": size
+                "size": str(size)
             }
         )
     
     # Contact methods
     
-    def sendContact(self, objectGuid:str, firstName:str, lastName:str, phoneNumber:str, userGuid:str, messageId:str) -> dict:
+    @async_to_sync
+    async def sendContact(self, objectGuid:str, firstName:str, lastName:str, phoneNumber:str, userGuid:str, messageId:Optional[str]) -> dict:
         return self.network.request(
             method="sendMessage",
             input={
@@ -1095,13 +1200,16 @@ class Methods:
             }
         )
 
-    def getContacts(self, startId:str) -> dict:
+    @async_to_sync
+    async def getContacts(self, startId:Optional[str]) -> dict:
         return self.network.request(method="getContacts", input={"start_id": startId})
     
-    def getContactsLastOnline(self, userGuids:list) -> dict:
+    @async_to_sync
+    async def getContactsLastOnline(self, userGuids:list) -> dict:
         return self.network.request(method="getContactsLastOnline", input={"user_guids": userGuids})
 
-    def addAddressBook(self, phone:str, firstName:str, lastName:str) -> dict:
+    @async_to_sync
+    async def addAddressBook(self, phone:str, firstName:str, lastName:str) -> dict:
         return self.network.request(
             method="addAddressBook",
             input={
@@ -1111,17 +1219,20 @@ class Methods:
             }
         )
     
-    def deleteContact(self, objectGuid:str) -> dict:
+    @async_to_sync
+    async def deleteContact(self, objectGuid:str) -> dict:
         return self.network.request(method="deleteContact", input={"user_guid": objectGuid})
     
-    def getContactsUpdates(self) -> dict:
+    @async_to_sync
+    async def getContactsUpdates(self) -> dict:
         return self.network.request(method="getContactsUpdates", input={"state": Utils.getState()})
     
     # Sticker methods
 
-    def sendSticker(self, objectGuid:str, emoji:str, messageId:str, stickerData:str) -> dict:
+    @async_to_sync
+    async def sendSticker(self, objectGuid:str, emoji:Optional[str], messageId:Optional[str], stickerData:Optional[str]) -> dict:
         data = {
-            "sticker": stickerData or choice(self.getStickersByEmoji(emoji)["stickers"]),
+            "sticker": (stickerData or choice((await self.getStickersByEmoji(emoji))["stickers"])) if emoji else None,
             "object_guid": objectGuid,
             "rnd": Utils.randomRnd(),
             "reply_to_message_id": messageId,
@@ -1129,13 +1240,16 @@ class Methods:
         
         return self.network.request("sendMessage", data)
 
-    def getMyStickerSets(self) -> dict:
+    @async_to_sync
+    async def getMyStickerSets(self) -> dict:
         return self.network.request(method="getMyStickerSets")
     
-    def getTrendStickerSets(self, startId:str) -> dict:
+    @async_to_sync
+    async def getTrendStickerSets(self, startId:Optional[str]) -> dict:
         return self.network.request(method="getTrendStickerSets", input={"start_id": startId})
     
-    def searchStickers(self, searchText:str, startId:str) -> dict:
+    @async_to_sync
+    async def searchStickers(self, searchText:str, startId:Optional[str]) -> dict:
         return self.network.request(
             method="searchStickers",
             input={
@@ -1144,7 +1258,8 @@ class Methods:
             }
         )
     
-    def actionOnStickerSet(self, stickerSetId:str, action:str) -> dict:
+    @async_to_sync
+    async def actionOnStickerSet(self, stickerSetId:str, action:str) -> dict:
         return self.network.request(
             method="actionOnStickerSet",
             input={
@@ -1153,7 +1268,8 @@ class Methods:
             }
         )
     
-    def getStickersByEmoji(self, emoji:str) -> dict:
+    @async_to_sync
+    async def getStickersByEmoji(self, emoji:str) -> dict:
         return self.network.request(
             method="getStickersByEmoji",
             input={
@@ -1162,15 +1278,18 @@ class Methods:
             }
         )
     
-    def getStickersBySetIDs(self, stickerSetIds:list) -> dict:
+    @async_to_sync
+    async def getStickersBySetIDs(self, stickerSetIds:list) -> dict:
         return self.network.request(method="getStickersBySetIDs", input={"sticker_set_ids": stickerSetIds})
     
     # Gif methods
 
-    def getMyGifSet(self) -> dict:
+    @async_to_sync
+    async def getMyGifSet(self) -> dict:
         return self.network.request(method="getMyGifSet")
 
-    def addToMyGifSet(self, objectGuid:str, messageId:str) -> dict:
+    @async_to_sync
+    async def addToMyGifSet(self, objectGuid:str, messageId:str) -> dict:
         return self.network.request(
             method="addToMyGifSet",
             input={
@@ -1179,12 +1298,14 @@ class Methods:
             }
         )
     
-    def removeFromMyGifSet(self, fileId:str) -> dict:
+    @async_to_sync
+    async def removeFromMyGifSet(self, fileId:str) -> dict:
         return self.network.request(method="removeFromMyGifSet", input={"file_id": fileId})
     
     # Poll methods
 
-    def sendPoll(self, objectGuid:str, question:str, options:list, messageId:str = None, multipleAnswers:bool = False, anonymous:bool = True,  quiz:bool = False) -> dict:
+    @async_to_sync
+    async def sendPoll(self, objectGuid:str, question:str, options:list, messageId:Optional[str], multipleAnswers:Optional[bool] = False, anonymous:Optional[bool] = True,  quiz:Optional[bool] = False) -> dict:
         return self.network.request(
             method="createPoll",
             input={
@@ -1200,7 +1321,8 @@ class Methods:
             }
         )
     
-    def votePoll(self, pollId:str, selectionIndex:int) -> dict:
+    @async_to_sync
+    async def votePoll(self, pollId:str, selectionIndex:int) -> dict:
         return self.network.request(
             method="votePoll",
             input={
@@ -1209,10 +1331,12 @@ class Methods:
             }
         )
     
-    def getPollStatus(self, pollId:str) -> dict:
+    @async_to_sync
+    async def getPollStatus(self, pollId:str) -> dict:
         return self.network.request(method="getPollStatus", input={"poll_id": pollId})
     
-    def getPollOptionVoters(self, pollId:str, selectionIndex:int, startId:Optional[str] = None) -> dict:
+    @async_to_sync
+    async def getPollOptionVoters(self, pollId:str, selectionIndex:int, startId:Optional[str] = None) -> dict:
         return self.network.request(
             method="getPollOptionVoters",
             input={
@@ -1224,24 +1348,32 @@ class Methods:
     
     # Live methods
 
-    def sendLive(self, objectGuid:str, thumbInline:str) -> dict:
+    @async_to_sync
+    async def sendLive(self, objectGuid:str, thumbInline:Union[bytes,str]) -> dict:
+        if isinstance(thumbInline,bytes):
+            by = thumbInline
+        elif isinstance(thumbInline,str):
+            if Utils.checkLink(thumbInline):
+                by = self.network.http.request("GET", thumbInline)
+                if not isinstance(by,bytes):
+                    raise ValueError("Error !")
+            else:
+                with open(thumbInline,"rb") as file:
+                    by = file.read()
+        else:
+            raise ValueError("thumbInline is byte or str !")
         return self.network.request(
             method="sendLive",
             input={
-                "thumb_inline": Utils.getImageThumbnail(
-                    thumbInline
-                    if isinstance(thumbInline, bytes)
-                    else self.network.http.request("GET", thumbInline)
-                    if Utils.checkLink(thumbInline)
-                    else open(thumbInline, "rb").read()
-                ),
+                "thumb_inline": Utils.getImageThumbnail(by),
                 "device_type": "Software",
                 "object_guid": objectGuid,
                 "rnd": Utils.randomRnd()
             }
         )
     
-    def addLiveComment(self, accessToken:str, liveId:str, text:str) -> dict:
+    @async_to_sync
+    async def addLiveComment(self, accessToken:str, liveId:str, text:str) -> dict:
         return self.network.request(
             method="addLiveComment",
             input={
@@ -1251,7 +1383,8 @@ class Methods:
             }
         )
     
-    def getLiveStatus(self, accessToken:str, liveId:str) -> dict:
+    @async_to_sync
+    async def getLiveStatus(self, accessToken:str, liveId:str) -> dict:
         return self.network.request(
             method="getLiveStatus",
             input={
@@ -1261,7 +1394,8 @@ class Methods:
             }
         )
     
-    def getLiveComments(self, accessToken:str, liveId:str) -> dict:
+    @async_to_sync
+    async def getLiveComments(self, accessToken:str, liveId:str) -> dict:
         return self.network.request(
             method="getLiveComments",
             input={
@@ -1270,7 +1404,8 @@ class Methods:
             }
         )
     
-    def getLivePlayUrl(self, accessToken:str, liveId:str) -> dict:
+    @async_to_sync
+    async def getLivePlayUrl(self, accessToken:str, liveId:str) -> dict:
         return self.network.request(
             method="getLivePlayUrl",
             input={
@@ -1281,7 +1416,8 @@ class Methods:
     
     # Call methods
 
-    def requestCall(self, objectGuid:str, callType:str) -> dict:
+    @async_to_sync
+    async def requestCall(self, objectGuid:str, callType:str) -> dict:
         return self.network.request(
             method="requestCall",
             input={
@@ -1295,7 +1431,8 @@ class Methods:
             }
         )
     
-    def discardCall(self, callId:str, duration:int, reason:str) -> dict:
+    @async_to_sync
+    async def discardCall(self, callId:str, duration:int, reason:str) -> dict:
         return self.network.request(
             method="discardCall",
             input={
@@ -1307,13 +1444,14 @@ class Methods:
     
     # Setting methods
 
-    def setSetting(
+    @async_to_sync
+    async def setSetting(
             self,
-            showMyLastOnline:bool,
-            showMyPhoneNumber:bool,
-            showMyProfilePhoto:bool,
-            linkForwardMessage:bool,
-            canJoinChatBy:bool
+            showMyLastOnline:Optional[bool],
+            showMyPhoneNumber:Optional[bool],
+            showMyProfilePhoto:Optional[bool],
+            linkForwardMessage:Optional[bool],
+            canJoinChatBy:Optional[bool]
         ) -> dict:
 
         input:dict = {
@@ -1346,7 +1484,8 @@ class Methods:
             input=input
         )
     
-    def addFolder(
+    @async_to_sync
+    async def addFolder(
             self,
             folderName:str,
             folderId:str,
@@ -1369,16 +1508,20 @@ class Methods:
             }
         )
     
-    def getFolders(self, lastState:str) -> dict:
+    @async_to_sync
+    async def getFolders(self, lastState:Optional[str]) -> dict:
         return self.network.request(method="getFolders", input={"last_state": lastState})
     
-    def getSuggestedFolders(self) -> dict:
+    @async_to_sync
+    async def getSuggestedFolders(self) -> dict:
         return self.network.request(method="getSuggestedFolders")
     
-    def deleteFolder(self, folderId:str) -> dict:
+    @async_to_sync
+    async def deleteFolder(self, folderId:str) -> dict:
         return self.network.request(method="deleteFolder", input={"folder_id": folderId})
     
-    def updateProfile(self, firstName:str, lastname:str, bio:str, username:str) -> dict:
+    @async_to_sync
+    async def updateProfile(self, firstName:Optional[str], lastname:Optional[str], bio:Optional[str], username:Optional[str]) -> dict:
         input:dict = {
             "first_name": firstName,
             "last_name": lastname,
@@ -1400,19 +1543,24 @@ class Methods:
             input=input
         )
     
-    def getMySessions(self) -> dict:
+    @async_to_sync
+    async def getMySessions(self) -> dict:
         return self.network.request(method="getMySessions")
     
-    def terminateSession(self, sessionKey:str) -> dict:
+    @async_to_sync
+    async def terminateSession(self, sessionKey:str) -> dict:
         return self.network.request(method="terminateSession", input={"session_key": sessionKey})
     
-    def terminateOtherSessions(self):
+    @async_to_sync
+    async def terminateOtherSessions(self):
             return self.network.request("terminateOtherSessions")
     
-    def checkTwoStepPasscode(self, password:str) -> dict:
+    @async_to_sync
+    async def checkTwoStepPasscode(self, password:str) -> dict:
         return self.network.request(method="checkTwoStepPasscode", input={"password": password})
     
-    def setupTwoStepVerification(self, password:str, hint:str, recoveryEmail:str) -> dict:
+    @async_to_sync
+    async def setupTwoStepVerification(self, password:str, hint:str, recoveryEmail:str) -> dict:
         return self.network.request(
             method="setupTwoStepVerification",
             input={
@@ -1422,7 +1570,8 @@ class Methods:
             }
         )
     
-    def requestRecoveryEmail(self, password:str, recoveryEmail:str) -> dict:
+    @async_to_sync
+    async def requestRecoveryEmail(self, password:str, recoveryEmail:str) -> dict:
         return self.network.request(
             method="requestRecoveryEmail",
             input={
@@ -1431,7 +1580,8 @@ class Methods:
             }
         )
     
-    def verifyRecoveryEmail(self, password:str, code:str) -> dict:
+    @async_to_sync
+    async def verifyRecoveryEmail(self, password:str, code:str) -> dict:
         return self.network.request(
             method="verifyRecoveryEmail",
             input={
@@ -1440,10 +1590,12 @@ class Methods:
             }
         )
     
-    def turnOffTwoStep(self, password:str) -> dict:
+    @async_to_sync
+    async def turnOffTwoStep(self, password:str) -> dict:
         return self.network.request(method="turnOffTwoStep", input={"password": password})
     
-    def changePassword(self, password:str, newPassword:str, newHint:str) -> dict:
+    @async_to_sync
+    async def changePassword(self, password:str, newPassword:str, newHint:str) -> dict:
         return self.network.request(
             method="changePassword",
             input={
@@ -1453,23 +1605,28 @@ class Methods:
             }
         )
     
-    def getTwoPasscodeStatus(self) -> dict:
+    @async_to_sync
+    async def getTwoPasscodeStatus(self) -> dict:
         return self.network.request(method="getTwoPasscodeStatus")
     
-    def getPrivacySetting(self) -> dict:
+    @async_to_sync
+    async def getPrivacySetting(self) -> dict:
         return self.network.request(method="getPrivacySetting")
     
-    def getBlockedUsers(self, startId:str) -> dict:
+    @async_to_sync
+    async def getBlockedUsers(self, startId:Optional[str]) -> dict:
         return self.network.request(method="getBlockedUsers", input={"start_id": startId})
     
     # Other methods
 
-    def getMe(self) -> dict:
+    @async_to_sync
+    async def getMe(self) -> dict:
         data:dict = self.network.request(method="getUserInfo")
         data.update(self.sessionData)
         return data
     
-    def transcribeVoice(self, objectGuid:str, messageId:str) -> dict:
+    @async_to_sync
+    async def transcribeVoice(self, objectGuid:str, messageId:str) -> dict:
         response = self.network.request(
             method="transcribeVoice",
             input={
@@ -1496,28 +1653,34 @@ class Methods:
 
             return result
     
-    def resetContacts(self) -> dict:
+    @async_to_sync
+    async def resetContacts(self) -> dict:
         return self.network.request("resetContacts")
     
-    def getTime(self) -> dict:
+    @async_to_sync
+    async def getTime(self) -> dict:
         return self.network.request("getTime")
 
-    def getAbsObjects(self, objectGuids:list) -> dict:
+    @async_to_sync
+    async def getAbsObjects(self, objectGuids:list) -> dict:
         return self.network.request(method="getAbsObjects", input={"object_guids": objectGuids})
     
-    def getLinkFromAppUrl(self, url:str) -> dict:
+    @async_to_sync
+    async def getLinkFromAppUrl(self, url:str) -> dict:
         return self.network.request(method="getLinkFromAppUrl", input={"app_url": url})
     
-    def searchGlobalObjects(self, searchText:str, filters:list) -> dict:
+    @async_to_sync
+    async def searchGlobalObjects(self, searchText:str, filters:Optional[list]) -> dict:
         input:dict = {"search_text": searchText}
         if filters: input["filter_types"] = filters
 
         return self.network.request(method="searchGlobalObjects", input=input)
     
-    def checkJoin(self, objectGuid:str, userGuid:str) -> bool:
-        userUsername:dict = self.getChatInfo(userGuid)["user"].get("username")
+    @async_to_sync
+    async def checkJoin(self, objectGuid:str, userGuid:str) -> Optional[bool]:
+        userUsername:str = (await self.getChatInfo(userGuid))["user"].get("username")
 
-        if userGuid in self.getChatAllMembers(objectGuid=objectGuid, searchText=userUsername, startId=None, justGetGuids=True):
+        if userGuid in (await self.getChatAllMembers(objectGuid=objectGuid, searchText=userUsername, startId=None, justGetGuids=True)):
             return True
         
         if userUsername:
@@ -1525,44 +1688,50 @@ class Methods:
         
         return None
     
-    def getProfileLinkItems(self, objectGuid:str) -> dict:
+    @async_to_sync
+    async def getProfileLinkItems(self, objectGuid:str) -> dict:
         return self.network.request(method="getProfileLinkItems", input={"object_guid": objectGuid})
     
-    def getDownloadLink(self, objectGuid:str, messageId:str, fileInline:dict) -> str:
+    @async_to_sync
+    async def getDownloadLink(self, objectGuid:Optional[str], messageId:Optional[str], fileInline:Optional[dict]) -> Optional[str]:
         if not fileInline:
-            fileInline = self.getMessagesById(objectGuid=objectGuid, messageIds=[messageId])["messages"][0]["file_inline"]
-        
-        return f'https://messenger{fileInline["dc_id"]}.iranlms.ir/InternFile.ashx?id={fileInline["file_id"]}&ach={fileInline["access_hash_rec"]}'
+            fileInline = (await self.getMessagesById(objectGuid=objectGuid, messageIds=[messageId]))["messages"][0]["file_inline"]
+        if fileInline:
+            return f'https://messenger{fileInline["dc_id"]}.iranlms.ir/InternFile.ashx?id={fileInline["file_id"]}&ach={fileInline["access_hash_rec"]}'
     
-    def download(self, objectGuid:str, messageId:str, save:bool, saveAs:str, fileInline:dict) -> dict:
-        if not fileInline:
-            fileInline = self.getMessagesById(objectGuid=objectGuid, messageIds=[messageId])["messages"][0]["file_inline"]
+    @async_to_sync
+    async def download(self, objectGuid:Optional[str], messageId:Optional[str], save:bool, saveAs:Optional[str], fileInline:Optional[dict]) -> Optional[dict]:
+        if fileInline is None:
+            fileInline = (await self.getMessagesById(objectGuid=objectGuid, messageIds=[messageId]))["messages"][0]["file_inline"]
+        if not fileInline is None:
+            downloading = self.network.download(
+                accessHashRec=fileInline["access_hash_rec"],
+                fileId=fileInline["file_id"],
+                dcId=fileInline["dc_id"],
+                size=fileInline["size"], 
+                fileName=fileInline["file_name"]
+            )
 
-        downloadedData:bytes = self.network.download(
-            accessHashRec=fileInline["access_hash_rec"],
-            fileId=fileInline["file_id"],
-            dcId=fileInline["dc_id"],
-            size=fileInline["size"], 
-            fileName=fileInline["file_name"]
-        )
+            if downloading:
+                downloadedData:bytes = downloading
 
-        if save or saveAs:
-            with open(saveAs or fileInline["file_name"], "wb") as file:
-                file.write(downloadedData)
+                if save or saveAs:
+                    with open(saveAs or fileInline["file_name"], "wb") as file:
+                        file.write(downloadedData)
 
-        fileInline["file"] = downloadedData
+                fileInline["file"] = downloadedData
 
-        return fileInline
-    
+                return fileInline
+
+    @async_to_sync
     async def playVoice(self, objectGuid:str, file: str) -> None:
         try:
             from aiortc import RTCPeerConnection, RTCSessionDescription
             from aiortc.contrib.media import MediaPlayer
-                
-            voiceChatId: str = self.getChatInfo(objectGuid)["chat"].get("group_voice_chat_id")
+            voiceChatId: str = ((await self.getChatInfo(objectGuid))["chat"])["group_voice_chat_id"]
 
             if not voiceChatId:
-                voiceChatId:str = self.createChatVoiceChat(objectGuid=objectGuid)["group_voice_chat_update"]["voice_chat_id"]
+                voiceChatId:str = (await self.createChatVoiceChat(objectGuid=objectGuid))["group_voice_chat_update"]["voice_chat_id"]
 
             rtcConnection = RTCPeerConnection()
             player: MediaPlayer = MediaPlayer(file)
@@ -1570,14 +1739,14 @@ class Methods:
             spdOffer = await rtcConnection.createOffer()
             await rtcConnection.setLocalDescription(spdOffer)
 
-            answerSdp = self.joinVoiceChat(
+            answerSdp = (await self.joinVoiceChat(
                 objectGuid=objectGuid,
                 myGuid=self.sessionData["user"]["user_guid"],
                 voiceChatId=voiceChatId,
                 sdp_offer_data=spdOffer.sdp
-            )["sdp_answer_data"]
+            ))["sdp_answer_data"]
             
-            self.setChatVoiceChatState(
+            await self.setChatVoiceChatState(
                 objectGuid=objectGuid,
                 voideChatId=voiceChatId,
                 activity="Unmute",
@@ -1595,18 +1764,19 @@ class Methods:
             def keepAlive():
                 while rtcConnection.connectionState != "closed":
                     try:
-                        if self.sendChatVoiceChatActivity(
+                        sending_code = asyncio.run(self.sendChatVoiceChatActivity(
                             objectGuid=objectGuid,
                             voideChatId=voiceChatId,
                             activity="Speaking",
                             participantObjectGuid=self.sessionData["user"]["user_guid"]
-                        )["status"] != "OK":
+                        ))
+                        if sending_code["status"] != "OK":
                             break
                         
-                        if self.getChatVoiceChatUpdates(
+                        if asyncio.run(self.getChatVoiceChatUpdates(
                             objectGuid=objectGuid,
                             voideChatId=voiceChatId
-                        )["status"] != "OK":
+                        ))["status"] != "OK":
                             break
 
                         sleep(8)
@@ -1626,7 +1796,7 @@ class Methods:
         except ImportError:
             print("The aiortc library is not installed!")
 
-    def add_handler(self, func, filters:list, regexp:str) -> None:
+    def add_handler(self, func, filters:list, regexp:Optional[str]) -> None:
         self.socket.addHandler(
             func=func,
             filters=filters,
