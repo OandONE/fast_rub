@@ -1,3 +1,5 @@
+import json
+
 class props:
     def __init__(self,data):
         self._data_ = data
@@ -39,11 +41,16 @@ class props:
                     return None
         return None
     def __str__(self) -> str:
-        return str(self._data_)
+        return json.dumps(self._data_,indent=4,ensure_ascii=False)
     @property
     def status(self):
         """status for requests / وضعیت درخواست"""
         return self._data_["status"]
     @property
     def is_ok_status(self):
+        """is true status / درست بودن وضعیت"""
         return True if self.status == "OK" else False
+    @property
+    def data(self):
+        """data (if has) / اطلاعات (اگر وجود داشته باشد)"""
+        return self._data_["data"] if "data" in self._data_ else None
