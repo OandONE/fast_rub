@@ -38,11 +38,14 @@ class Client:
         user_agent: Optional[str] = None,
         time_out: Optional[int] = 60,
         display_welcome=True,
-        use_to_fastrub_webhook_on_message : Union[str,bool]=True,
-        use_to_fastrub_webhook_on_button : Union[str,bool]=True
+        use_to_fastrub_webhook_on_message: Union[str,bool] = True,
+        use_to_fastrub_webhook_on_button: Union[str,bool] = True,
+        save_logs: Optional[bool] = None,
+        view_logs: Optional[bool] = None
     ):
         """Client for login and setting robot / کلاینت برای لوگین و تنظیمات ربات"""
         name = name_session + ".faru"
+        self.name_session = name
         self.token = token
         self.time_out = time_out
         self.user_agent = user_agent
@@ -70,9 +73,15 @@ class Client:
         if os.path.isfile(name):
             with open(name, "r", encoding="utf-8") as file:
                 text_json_fast_rub_session = json.load(file)
+                self.text_json_fast_rub_session = text_json_fast_rub_session
                 self.token = text_json_fast_rub_session["token"]
                 self.time_out = text_json_fast_rub_session["time_out"]
                 self.user_agent = text_json_fast_rub_session["user_agent"]
+                try:
+                    self.log_to_file = text_json_fast_rub_session["setting_logs"]["save"]
+                    self.log_to_console = text_json_fast_rub_session["setting_logs"]["view"]
+                except:
+                    pass
         else:
             if token == None:
                 token = input("Enter your token : ")
@@ -85,7 +94,12 @@ class Client:
                 "user_agent": user_agent,
                 "time_out": time_out,
                 "display_welcome": display_welcome,
+                "setting_logs":{
+                    "view":view_logs,
+                    "save":save_logs
+                }
             }
+            self.text_json_fast_rub_session = text_json_fast_rub_session
             with open(name, "w", encoding="utf-8") as file:
                 json.dump(
                     text_json_fast_rub_session, file, ensure_ascii=False, indent=4
@@ -93,6 +107,13 @@ class Client:
             self.token = token
             self.time_out = time_out
             self.user_agent = user_agent
+
+        self.log_to_file = save_logs
+        self.log_to_console = view_logs
+        if self.log_to_file is None:
+            self.log_to_file = True
+        if self.log_to_console is None:
+            self.log_to_console = True
 
         if display_welcome:
             k = ""
@@ -111,18 +132,52 @@ class Client:
             self._button_url = use_to_fastrub_webhook_on_button
         else:
             self._button_url = f"https://fast-rub.ParsSource.ir/geting_button_updates/get?token={self.token}"
-        client_logger.info("سشن اماده است")
+        self.logger = logging.getLogger("fast_rub")
+        setup_logging(log_to_console=self.log_to_console,log_to_file=self.log_to_file)
+        self.logger.info("سشن اماده است")
 
     @property
     def TOKEN(self):
-        logger.info("توکن دریافت شد")
+        self.logger.info("توکن دریافت شد")
         return self.token
+
+    @async_to_sync
+    async def set_logging(
+        self,
+        saving: Optional[bool] = None,
+        viewing: Optional[bool] = None
+    ):
+        """on or off viewing and saveing logs / فعال یا غیرفعال کردن نمایش و ذخیره لاگ"""
+        self.logger.info("استفاده از متود set_logging")
+        if saving is None:
+            saving = self.log_to_file
+        if viewing is None:
+            viewing = self.log_to_console
+        try:
+            self.text_json_fast_rub_session["setting_logs"]["save"] = saving
+            self.text_json_fast_rub_session["setting_logs"]["view"] = viewing
+        except:
+            self.text_json_fast_rub_session["setting_logs"] = {
+                "save":saving,
+                "view":viewing
+            }
+        with open(self.name_session, "w") as fi:
+            json.dump(self.text_json_fast_rub_session, fi, ensure_ascii=False, indent=4)
+        if saving and viewing:
+            self.logger = setup_logging(log_to_file=saving, log_to_console=viewing)
+        self.logger.info(f"logging تنظیم شد | نمایش: {viewing} | ذخیره: {saving}")
+
+    @async_to_sync
+    async def set_timeout(self,time_out:int) -> None:
+        """setting time out / تنظیم تایم اوت"""
+        self.time_out = time_out
 
     @async_to_sync
     async def send_requests(
         self, method, data_: Optional[Union[Dict[str, Any], List[Any]]] = None,url_op:Optional[int] = None
     ) -> dict:
-        logger.info("در حال ارسال درخواست")
+        """send request to methods / ارسال درخواست به متود ها"""
+        self.logger.info("در حال ارسال درخواست")
         urls = ["https://botapi.rubika.ir/v3/","https://messengerg2b1.iranlms.ir/v3/"]
         main_url = urls[0]
         if url_op:
@@ -150,20 +205,20 @@ class Client:
                     except:
                         result_ = await self.send_requests(method,data_,random.randint(0,1))
                 if result_["status"] != "OK":
-                    logger.error(f"خطایی از سمت سرور ! status : {result_['status']}")
+                    self.logger.error(f"خطایی از سمت سرور ! status : {result_['status']}")
                     raise TypeError(f"Error for invalid status : {result_}")
-                logger.info("نتیجه درخواست موفق است")
+                self.logger.info("نتیجه درخواست موفق است")
                 return result_
         except TimeoutError:
-            logger.error("خطا ! زمان ارسال درخواست به پایان رسیده است")
+            self.logger.error("خطا ! زمان ارسال درخواست به پایان رسیده است")
             raise TimeoutError("Please check the internet !")
         except Exception as e:
-            logger.error(f"خطایی ناشناخته : {e}")
+            self.logger.error(f"خطایی ناشناخته : {e}")
             raise e
         return {}
 
     @async_to_sync
-    async def _auto_delete(self,chat_id:str,message_id:str,time_sleep:float) -> props:
+    async def auto_delete(self,chat_id:str,message_id:str,time_sleep:float) -> props:
         """auto delete message next {time_sleep} time s / حذف خودکار پیام بعد از فلان مقدار ثانیه"""
         await asyncio.sleep(time_sleep)
         result = await self.delete_message(chat_id,message_id)
@@ -183,7 +238,7 @@ class Client:
                     - username (str): نام کاربری ربات
                     - start_message (str): پیام شروع
                     - share_url (str): لینک اشتراک ربات"""
-        logger.info("استفاده از متود get_me")
+        self.logger.info("استفاده از متود get_me")
         result = await self.send_requests(method="getMe")
         return props(result)
 
@@ -198,7 +253,7 @@ class Client:
         auto_delete: Optional[int] = None
     ) -> props:
         """sending text to chat id / ارسال متنی به یک چت آیدی"""
-        logger.info("استفاده از متود send_message")
+        self.logger.info("استفاده از متود send_message")
         if not inline_keypad:
             data = {
                 "chat_id": chat_id,
@@ -223,13 +278,13 @@ class Client:
             try:
                 return props(result)
             finally:
-                await self._auto_delete(chat_id,message_id,auto_delete)
+                await self.auto_delete(chat_id,message_id,auto_delete)
         return props(result)
 
     @async_to_sync
     async def send_poll(self, chat_id: str, question: str, options: list,auto_delete: Optional[int] = None) -> props:
         """sending poll to chat id / ارسال نظرسنجی به یک چت آیدی"""
-        logger.info("استفاده از متود send_poll")
+        self.logger.info("استفاده از متود send_poll")
         data = {"chat_id": chat_id, "question": question, "options": options}
         result = await self.send_requests(
             "sendPoll",
@@ -240,7 +295,7 @@ class Client:
             try:
                 return props(result)
             finally:
-                await self._auto_delete(chat_id,message_id,auto_delete)
+                await self.auto_delete(chat_id,message_id,auto_delete)
         return props(result)
 
     @async_to_sync
@@ -256,7 +311,7 @@ class Client:
         auto_delete: Optional[int] = None
     ) -> props:
         """sending location to chat id / ارسال لوکیشن(موقعیت مکانی) به یک چت آیدی"""
-        logger.info("استفاده از متود send_location")
+        self.logger.info("استفاده از متود send_location")
         data = {
             "chat_id": chat_id,
             "latitude": latitude,
@@ -275,7 +330,7 @@ class Client:
             try:
                 return props(result)
             finally:
-                await self._auto_delete(chat_id,message_id,auto_delete)
+                await self.auto_delete(chat_id,message_id,auto_delete)
         return props(result)
 
     @async_to_sync
@@ -293,7 +348,7 @@ class Client:
         auto_delete: Optional[int] = None
     ) -> props:
         """sending contact to chat id / ارسال مخاطب به یک چت آیدی"""
-        logger.info("استفاده از متود send_contact")
+        self.logger.info("استفاده از متود send_contact")
         data = {
             "chat_id": chat_id,
             "first_name": first_name,
@@ -314,13 +369,13 @@ class Client:
             try:
                 return props(result)
             finally:
-                await self._auto_delete(chat_id,message_id,auto_delete)
+                await self.auto_delete(chat_id,message_id,auto_delete)
         return props(result)
 
     @async_to_sync
     async def get_chat(self, chat_id: str) -> props:
         """geting info chat id info / گرفتن اطلاعات های یک چت"""
-        logger.info("استفاده از متود get_chat")
+        self.logger.info("استفاده از متود get_chat")
         data = {"chat_id": chat_id}
         result = await self.send_requests(
             "getChat",
@@ -331,7 +386,7 @@ class Client:
     @async_to_sync
     async def get_updates(self, limit : Optional[int] = None, offset_id : Optional[str] = None) -> props:
         """getting messages chats / گرفتن پیام های چت ها"""
-        logger.info("استفاده از متود get_updates")
+        self.logger.info("استفاده از متود get_updates")
         data = {"offset_id": offset_id, "limit": limit}
         result = await self.send_requests(
             "getUpdates",
@@ -349,7 +404,7 @@ class Client:
         auto_delete: Optional[int] = None
     ) -> props:
         """forwarding message to chat id / فوروارد پیام به یک چت آیدی"""
-        logger.info("استفاده از متود forward_message")
+        self.logger.info("استفاده از متود forward_message")
         data = {
             "from_chat_id": from_chat_id,
             "message_id": message_id,
@@ -365,13 +420,13 @@ class Client:
             try:
                 return props(result)
             finally:
-                await self._auto_delete(to_chat_id,message_id,auto_delete)
+                await self.auto_delete(to_chat_id,message_id,auto_delete)
         return props(result)
 
     @async_to_sync
     async def edit_message_text(self, chat_id: str, message_id: str, text: str) -> props:
         """editing message text / ویرایش متن پیام"""
-        logger.info("استفاده از متود edit_message_text")
+        self.logger.info("استفاده از متود edit_message_text")
         data = {"chat_id": chat_id, "message_id": message_id, "text": text}
         result = await self.send_requests(
             "editMessageText",
@@ -382,7 +437,7 @@ class Client:
     @async_to_sync
     async def delete_message(self, chat_id: str, message_id: str) -> props:
         """delete message / پاکسازی(حذف) یک پیام"""
-        logger.info("استفاده از متود delete_message")
+        self.logger.info("استفاده از متود delete_message")
         data = {"chat_id": chat_id, "message_id": message_id}
         result = await self.send_requests(
             "deleteMessage",
@@ -393,7 +448,7 @@ class Client:
     @async_to_sync
     async def add_commands(self, command: str, description: str) -> None:
         """add command to commands list / افزودن دستور به لیست دستورات"""
-        logger.info("استفاده از متود add_commands")
+        self.logger.info("استفاده از متود add_commands")
         self.list_.append(
             {"command": command.replace("/", ""), "description": description}
         )
@@ -401,7 +456,7 @@ class Client:
     @async_to_sync
     async def set_commands(self) -> props:
         """set the commands for robot / تنظیم دستورات برای ربات"""
-        logger.info("استفاده از متود set_commands")
+        self.logger.info("استفاده از متود set_commands")
         result = await self.send_requests(
             "setCommands",
             {"bot_commands": self.list_},
@@ -411,7 +466,7 @@ class Client:
     @async_to_sync
     async def delete_commands(self) -> props:
         """clear the commands list / پاکسازی لیست دستورات"""
-        logger.info("استفاده از متود delete_commands")
+        self.logger.info("استفاده از متود delete_commands")
         self.list_ = []
         result = await self.send_requests(
             "setCommands",
@@ -429,7 +484,7 @@ class Client:
         reply_to_message_id: Optional[str] = None,
     ) -> props:
         """editing the text key pad inline / ویرایش پیام شیشه ای"""
-        logger.info("استفاده از متود edit_message_keypad_Inline")
+        self.logger.info("استفاده از متود edit_message_keypad_Inline")
         data = {
             "disable_notification": disable_notification,
             "reply_to_message_id": reply_to_message_id,
@@ -456,7 +511,7 @@ class Client:
         auto_delete: Optional[int] = None
     ) -> props:
         """sending message key pad texti / ارسال پیام با دکمه متنی"""
-        logger.info("استفاده از متود send_message_keypad")
+        self.logger.info("استفاده از متود send_message_keypad")
         data = {
             "chat_id": chat_id,
             "disable_notification": disable_notification,
@@ -478,11 +533,13 @@ class Client:
             try:
                 return props(result)
             finally:
-                await self._auto_delete(chat_id,message_id,auto_delete)
+                await self.auto_delete(chat_id,message_id,auto_delete)
         return props(result)
 
-    async def _upload_file(self, url: str, file_name: str, file: Union[str , Path , bytes]):
-        logger.info("استفاده از متود _upload_file")
+    @async_to_sync
+    async def upload_file(self, url: str, file_name: str, file: Union[str , Path , bytes]):
+        """upload file to rubika server / آپلود فایل در سرور روبیکا"""
+        self.logger.info("استفاده از متود upload_file")
         if type(file) is bytes:
             d_file = {"file": (file_name, file, "application/octet-stream")}
         else:
@@ -497,7 +554,7 @@ class Client:
         async with httpx.AsyncClient(verify=False) as cl:
             response = await cl.post(url, files=d_file,timeout=9999)
             if response.status_code != 200:
-                logger.error("خطا در آپلود فایل !")
+                self.logger.error("خطا در آپلود فایل !")
                 raise httpx.HTTPStatusError(
                     f"Request failed with status code {response.status_code}",
                     request=response.request,
@@ -505,6 +562,34 @@ class Client:
                 )
             data = response.json()
             return data
+
+    @async_to_sync
+    async def send_file_by_file_id(
+        self,
+        chat_id: str,
+        file_id: str,
+        text: Optional[str] = None,
+        reply_to_message_id: Optional[str] = None,
+        disable_notification: Optional[bool] = None,
+        auto_delete: Optional[int] = None
+    ) -> props:
+        """sending file by file id / ارسال فایل با آیدی فایل"""
+        self.logger.info("استفاده از متود send_file_by_file_id")
+        data = {
+            "chat_id": chat_id,
+            "text": text,
+            "file_id": file_id,
+            "reply_to_message_id": reply_to_message_id,
+            "disable_notification": disable_notification,
+        }
+        sending = await self.send_requests("sendFile", data)
+        if auto_delete:
+            message_id = sending["data"]["message_id"]
+            try:
+                return props(sending)
+            finally:
+                await self.auto_delete(chat_id,message_id,auto_delete)
+        return props(sending)
 
     @async_to_sync
     async def send_file(
@@ -519,7 +604,7 @@ class Client:
         auto_delete: Optional[int] = None
     ) -> props:
         """sending file with types ['File', 'Image', 'Voice', 'Music', 'Gif' , 'Video'] / ارسال فایل با نوع های فایل و عکس و پیغام صوتی و موزیک و گیف و ویدیو"""
-        logger.info("استفاده از متود send_file")
+        self.logger.info("استفاده از متود send_file")
         up_url_file = (
             await self.send_requests(
                 "requestSendFile",
@@ -533,17 +618,8 @@ class Client:
                     break
         if not name_file:
             raise ValueError("type file is invalud !")
-        file_id = (await self._upload_file(up_url_file, name_file, file))["data"][
-            "file_id"
-        ]
-        data = {
-            "chat_id": chat_id,
-            "text": text,
-            "file_id": file_id,
-            "reply_to_message_id": reply_to_message_id,
-            "disable_notification": disable_notification,
-        }
-        uploader = await self.send_requests("sendFile", data)
+        file_id = (await self.upload_file(up_url_file, name_file, file))["data"]["file_id"]
+        uploader = (await self.send_file_by_file_id(chat_id,file_id,text,reply_to_message_id,disable_notification))._data_
         uploader["file_id"] = file_id
         uploader["type_file"] = type_file
         if isinstance(file, (bytes, bytearray, memoryview)):
@@ -565,7 +641,7 @@ class Client:
             try:
                 return props(result)
             finally:
-                await self._auto_delete(chat_id,message_id,auto_delete)
+                await self.auto_delete(chat_id,message_id,auto_delete)
         return props(result)
 
     @async_to_sync
@@ -580,7 +656,7 @@ class Client:
         auto_delete: Optional[int] = None
     ) -> props:
         """sending image / ارسال تصویر"""
-        logger.info("استفاده از متود send_image")
+        self.logger.info("استفاده از متود send_image")
         result = await self.send_file(
             chat_id,
             image,
@@ -605,7 +681,7 @@ class Client:
         auto_delete: Optional[int] = None
     ) -> props:
         """sending video / ارسال ویدیو"""
-        logger.info("استفاده از متود send_video")
+        self.logger.info("استفاده از متود send_video")
         result = await self.send_file(
             chat_id,
             video,
@@ -630,7 +706,7 @@ class Client:
         auto_delete: Optional[int] = None
     ) -> props:
         """sending voice / ارسال ویس"""
-        logger.info("استفاده از متود send_voice")
+        self.logger.info("استفاده از متود send_voice")
         result = await self.send_file(
             chat_id,
             voice,
@@ -655,7 +731,7 @@ class Client:
         auto_delete: Optional[int] = None
     ) -> props:
         """sending music / ارسال موزیک"""
-        logger.info("استفاده از متود send_music")
+        self.logger.info("استفاده از متود send_music")
         result = await self.send_file(
             chat_id,
             music,
@@ -680,7 +756,7 @@ class Client:
         auto_delete: Optional[int] = None
     ) -> props:
         """sending gif / ارسال گیف"""
-        logger.info("استفاده از متود send_gif")
+        self.logger.info("استفاده از متود send_gif")
         result = await self.send_file(
             chat_id,
             gif,
@@ -703,7 +779,7 @@ class Client:
         auto_delete: Optional[int] = None
     ) -> props:
         """sending sticker by id / ارسال استیکر با آیدی"""
-        logger.info("استفاده از متود send_sticker")
+        self.logger.info("استفاده از متود send_sticker")
         data = {
             "chat_id": chat_id,
             "sticker_id": id_sticker,
@@ -716,13 +792,13 @@ class Client:
             try:
                 return props(sender)
             finally:
-                await self._auto_delete(chat_id,message_id,auto_delete)
+                await self.auto_delete(chat_id,message_id,auto_delete)
         return props(sender)
 
     @async_to_sync
     async def get_download_file_url(self,id_file : str) -> str:
         """get download url file / گرفتن آدرس دانلود فایل"""
-        logger.info("استفاده از متود get_download_file_url")
+        self.logger.info("استفاده از متود get_download_file_url")
         data = {"file_id": id_file}
         url = (await self.send_requests("getFile",data))["download_url"]
         return url
@@ -730,47 +806,39 @@ class Client:
     @async_to_sync
     async def download_file(self,id_file : str , path : str = "file") -> None:
         """download file / دانلود فایل"""
-        logger.info("استفاده از متود download_file")
+        self.logger.info("استفاده از متود download_file")
         url = await self.get_download_file_url(id_file)
         async with httpx.AsyncClient() as client:
             async with client.stream('GET', url) as response:
                 async with aiofiles.open(path, 'wb') as file:
                     async for chunk in response.aiter_bytes():
-                        logger.info("فایل دانلود شد")
+                        self.logger.info("فایل دانلود شد")
                         await file.write(chunk)
 
     @async_to_sync
     async def set_endpoint(self, url: str, type: Literal["ReceiveUpdate", "GetSelectionItem", "ReceiveInlineMessage", "ReceiveQuery", "SearchSelectionItems"]) -> props:
         """set endpoint url / تنظیم ادرس اند پوینت"""
-        logger.info("استفاده از متود set_endpoint")
+        self.logger.info("استفاده از متود set_endpoint")
         result = await self.send_requests(
             "updateBotEndpoints", {"url": url, "type": type}
         )
         return props(result)
 
-    
     def _schedule_handler(self, handler, update):
         async def _wrapped():
             try:
                 await handler(update)
             except Exception:
-                logger.exception("Error in handler")
+                self.logger.exception("Error in handler")
         asyncio.create_task(_wrapped())
 
     @async_to_sync
     async def set_token_fast_rub(self) -> bool:
         """seting token in fast_rub for getting click glass messages and updata messges / تنظیم توکن در فست روب برای گرفتن کلیک های روی پیام شیشه ای و آپدیت پیام ها"""
-        logger.info("استفاده از متود set_token_fast_rub")
+        self.logger.info("استفاده از متود set_token_fast_rub")
         async with httpx.AsyncClient() as cl:
-            r = (
-                await cl.get(
-                    f"https://fast-rub.ParsSource.ir/set_token?token={self.token}"
-                )
-            ).json()
-        list_up:List[Literal["ReceiveUpdate", "ReceiveInlineMessage"]]= [
-            "ReceiveUpdate", 
-            "ReceiveInlineMessage"
-        ]
+            r = (await cl.get(f"https://fast-rub.ParsSource.ir/set_token?token={self.token}")).json()
+        list_up:List[Literal["ReceiveUpdate", "ReceiveInlineMessage"]]= ["ReceiveUpdate", "ReceiveInlineMessage"]
         if r["status"]:
             for it in list_up:
                 await self.set_endpoint(f"https://fast-rub.ParsSource.ir/geting_button_updates/{self.token}/{it}", it)
@@ -894,7 +962,7 @@ class Client:
                         if len(self.last_) > 500:
                             self.last_.pop(-1)
                         update_obj = Update(message,self)
-                        for handler in self._message_handlers_:
+                        for handler in self._edit_handlers:
                             self._schedule_handler(handler,update_obj)
             await asyncio.sleep(time_updata_sleep)
 
@@ -944,5 +1012,5 @@ class Client:
             raise ValueError("Edit handlers registered but no message callbacks defined.")
 
         self._running = True
-        logger.info("ربات در حال دریافت پیام ها")
+        self.logger.info("ربات در حال دریافت پیام ها")
         asyncio.run(self._run_all())
