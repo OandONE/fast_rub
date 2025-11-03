@@ -27,7 +27,7 @@ from .type import (
 )
 from .async_sync import *
 from .logger import *
-from .props import *
+from .type.props import *
 
 
 class Client:
@@ -107,21 +107,13 @@ class Client:
             self.token = token
             self.time_out = time_out
             self.user_agent = user_agent
-
         self.log_to_file = save_logs
         self.log_to_console = view_logs
         if self.log_to_file is None:
             self.log_to_file = True
         if self.log_to_console is None:
             self.log_to_console = True
-
-        if display_welcome:
-            k = ""
-            for text in "Welcome to FastRub":
-                k += text
-                print(f"{Colors.GREEN}{k}{Colors.RESET}", end="\r")
-                time.sleep(0.07)
-            cprint("",Colors.WHITE)
+        self.httpx_client = httpx.AsyncClient(timeout=self.time_out)
         self.use_to_fastrub_webhook_on_message=use_to_fastrub_webhook_on_message
         self.use_to_fastrub_webhook_on_button = use_to_fastrub_webhook_on_button
         if type(use_to_fastrub_webhook_on_message) is str:
@@ -134,12 +126,26 @@ class Client:
             self._button_url = f"https://fast-rub.ParsSource.ir/geting_button_updates/get?token={self.token}"
         self.logger = logging.getLogger("fast_rub")
         setup_logging(log_to_console=self.log_to_console,log_to_file=self.log_to_file)
+        if display_welcome:
+            k = ""
+            for text in "Welcome to FastRub":
+                k += text
+                print(f"{Colors.GREEN}{k}{Colors.RESET}", end="\r")
+                time.sleep(0.07)
+            cprint("",Colors.WHITE)
         self.logger.info("سشن اماده است")
 
     @property
     def TOKEN(self):
         self.logger.info("توکن دریافت شد")
         return self.token
+
+    @async_to_sync
+    async def version_botapi(self) -> str:
+        """getting version botapi / گرفتن نسخه بات ای پی آی"""
+        response = await self.httpx_client.get("https://botapi.rubika.ir",timeout=self.time_out)
+        version = response.text
+        return version
 
     @async_to_sync
     async def set_logging(
@@ -191,24 +197,23 @@ class Client:
         else:
             headers = {"Content-Type": "application/json"}
         try:
-            async with httpx.AsyncClient(timeout=self.time_out) as cl:
-                if data_ == None:
-                    result = await cl.post(url, headers=headers)
-                    try:
-                        result_ = result.json()
-                    except:
-                        result_ = await self.send_requests(method,data_,random.randint(0,1))
-                else:
-                    result = await cl.post(url, headers=headers, json=data_)
-                    try:
-                        result_ = result.json()
-                    except:
-                        result_ = await self.send_requests(method,data_,random.randint(0,1))
-                if result_["status"] != "OK":
-                    self.logger.error(f"خطایی از سمت سرور ! status : {result_['status']}")
-                    raise TypeError(f"Error for invalid status : {result_}")
-                self.logger.info("نتیجه درخواست موفق است")
-                return result_
+            if data_ == None:
+                result = await self.httpx_client.post(url, headers=headers)
+                try:
+                    result_ = result.json()
+                except:
+                    result_ = await self.send_requests(method,data_,random.randint(0,1))
+            else:
+                result = await self.httpx_client.post(url, headers=headers, json=data_)
+                try:
+                    result_ = result.json()
+                except:
+                    result_ = await self.send_requests(method,data_,random.randint(0,1))
+            if result_["status"] != "OK":
+                self.logger.error(f"خطایی از سمت سرور ! status : {result_['status']}")
+                raise TypeError(f"Error for invalid status : {result_}")
+            self.logger.info("نتیجه درخواست موفق است")
+            return result_
         except TimeoutError:
             self.logger.error("خطا ! زمان ارسال درخواست به پایان رسیده است")
             raise TimeoutError("Please check the internet !")
@@ -548,8 +553,7 @@ class Client:
                     fil = await fi.read()
                     d_file = {"file": (file_name, fil , "application/octet-stream")}
             except:
-                async with httpx.AsyncClient() as client:
-                    file_ = (await client.get(str(file))).content
+                file_ = (await self.httpx_client.get(str(file))).content
                 d_file = {"file":file_}
         async with httpx.AsyncClient(verify=False) as cl:
             response = await cl.post(url, files=d_file,timeout=9999)
@@ -630,8 +634,7 @@ class Client:
                     fil = await fi.read()
                     size_file = len(fil)
             except:
-                async with httpx.AsyncClient() as client:
-                    size_file = len((await client.get(str(file))).content)
+                size_file = len((await self.httpx_client.get(str(file))).content)
                 uploader["size_file"] = size_file
         else:
             raise FileExistsError("file not found !")
@@ -836,8 +839,7 @@ class Client:
     async def set_token_fast_rub(self) -> bool:
         """seting token in fast_rub for getting click glass messages and updata messges / تنظیم توکن در فست روب برای گرفتن کلیک های روی پیام شیشه ای و آپدیت پیام ها"""
         self.logger.info("استفاده از متود set_token_fast_rub")
-        async with httpx.AsyncClient() as cl:
-            r = (await cl.get(f"https://fast-rub.ParsSource.ir/set_token?token={self.token}")).json()
+        r = (await self.httpx_client.get(f"https://fast-rub.ParsSource.ir/set_token?token={self.token}")).json()
         list_up:List[Literal["ReceiveUpdate", "ReceiveInlineMessage"]]= ["ReceiveUpdate", "ReceiveInlineMessage"]
         if r["status"]:
             for it in list_up:
@@ -869,8 +871,7 @@ class Client:
     async def _process_messages_(self, time_updata_sleep : Union[float,float] = 0.5):
         while self._running:
             try:
-                async with httpx.AsyncClient() as cl:
-                    await cl.get("https://rubika.ir/",timeout=self.time_out)
+                await self.httpx_client.get("https://rubika.ir/",timeout=self.time_out)
             except:
                 raise TimeoutError("please check the your internet .")
             mes = (await self.get_updates(limit=100,offset_id=self.next_offset_id))
@@ -924,8 +925,7 @@ class Client:
     @async_to_sync
     async def _process_messages(self):
         while self._running:
-            async with httpx.AsyncClient() as cl:
-                response = (await cl.get(self._on_url, timeout=self.time_out)).json()
+            response = (await self.httpx_client.get(self._on_url, timeout=self.time_out)).json()
             if response and response.get('status') is True:
                 results = response.get('updates', [])
                 if results:
@@ -941,8 +941,7 @@ class Client:
     async def _process_edit(self, time_updata_sleep : Union[int,int] = 1):
         while self._running:
             try:
-                async with httpx.AsyncClient() as cl:
-                    await cl.get("https://rubika.ir/",timeout=self.time_out)
+                await self.httpx_client.get("https://rubika.ir/",timeout=self.time_out)
             except:
                 raise TimeoutError("please check the your internet .")
             mes = (await self.get_updates(limit=100,offset_id=self.next_offset_id_))
@@ -969,8 +968,7 @@ class Client:
     @async_to_sync
     async def _fetch_button_updates(self):
         while self._running:
-            async with httpx.AsyncClient() as cl:
-                response = (await cl.get(self._button_url, timeout=self.time_out)).json()
+            response = (await self.httpx_client.get(self._button_url, timeout=self.time_out)).json()
             if response and response.get('status') is True:
                 results = response.get('updates', [])
                 if results:
