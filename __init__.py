@@ -1,10 +1,7 @@
-from .Client import Client, Update
+from .Client import Client
 from .filters import Filter
-from .type.Update import *
-from .iniline.KeyPad import *
 from .version import v
-from .colors import *
 
 __author__="Seyyed Mohamad Hosein Moosavi Raja"
 __version__=v
-__all__ = ['Client', 'Update', 'Filter', 'UpdateButton','KeyPad']
+__all__ = ['Client', 'Filter','version']
