@@ -73,7 +73,7 @@ class Methods:
         data["private_key"] = privateKey
 
         return data
-    
+
     @async_to_sync
     async def registerDevice(self, deviceModel) -> dict:
         return self.network.request(
@@ -89,7 +89,7 @@ class Methods:
                 "token_type": "Web" if self.platform == "web" else "Firebase"
             }
         )
-    
+
     @async_to_sync
     async def logout(self) -> dict:
         return self.network.request(method="logout")
@@ -1700,7 +1700,7 @@ class Methods:
             return f'https://messenger{fileInline["dc_id"]}.iranlms.ir/InternFile.ashx?id={fileInline["file_id"]}&ach={fileInline["access_hash_rec"]}'
     
     @async_to_sync
-    async def download(self, objectGuid:Optional[str], messageId:Optional[str], save:bool, saveAs:Optional[str], fileInline:Optional[dict]) -> Optional[dict]:
+    async def download(self,save:bool, objectGuid:Optional[str] = None, messageId:Optional[str] = None, saveAs:Optional[str] = None, fileInline:Optional[dict] = None) -> Optional[dict]:
         if fileInline is None:
             fileInline = (await self.getMessagesById(objectGuid=objectGuid, messageIds=[messageId]))["messages"][0]["file_inline"]
         if not fileInline is None:

@@ -4,7 +4,7 @@ from urllib3 import PoolManager, ProxyManager
 from ..utils import Configs
 from ..exceptions import *
 from .helper import Helper
-from typing import Any,Protocol,Optional,Union,Dict,Coroutine
+from typing import Any,Protocol,Optional,Union
 import asyncio
 from ..utils import *
 
@@ -17,9 +17,9 @@ class MethodsProtocol(Protocol):
     apiVersion: int
     timeOut: int
     showProgressBar: bool
-    def requestSendFile(
+    async def requestSendFile(
         self, fileName: str, mime: str, size: int
-    ) -> Coroutine[Any, Any, Dict[str, Any]]: ...
+    ) -> dict: ...
 
 
 class Network:
@@ -117,10 +117,10 @@ class Network:
                 with open(file, "rb") as fh:
                     file = fh.read()
                 
-                mime = Utils.getMimeFromByte(data=file)
+                mime = Utils.getMimeFromByte(file)
 
         elif isinstance(file, bytes):
-            mime = Utils.getMimeFromByte(data=file)
+            mime = Utils.getMimeFromByte(file)
             fileName = fileName or Utils.generateFileName(mime=mime)
         else:
             raise FileNotFoundError("Enter a valid path or url or bytes of file.")

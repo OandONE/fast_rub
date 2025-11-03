@@ -1,5 +1,6 @@
 from ....async_sync import *
-
+from typing import Optional
+from ...methods.methods import Methods
 
 class ReplyInfo:
     def __init__(self, text, author_guid) -> None:
@@ -12,7 +13,7 @@ class ReplyInfo:
         return cls(json["text"], json["author_object_guid"])
 
 class Message:
-    def __init__(self, data:dict, methods:object) -> None:
+    def __init__(self, data:dict, methods:'Methods') -> None:
         self.data = data
         self.methods = methods
 
@@ -96,7 +97,7 @@ class Message:
         return self.data["message_updates"][0].get("state")
     
     @property
-    def title(self) -> str:
+    def title(self) -> Optional[str]:
         if self.data['show_notifications']:
             return self.data['show_notifications'][0].get('title')
     
@@ -117,15 +118,15 @@ class Message:
         return "forwarded_from" in self.data["message_updates"][0]["message"].keys()
     
     @property
-    def forward_from(self) -> str:
+    def forward_from(self) -> Optional[str]:
         return self.data["message_updates"][0]["message"]["forwarded_from"].get("type_from") if self.is_forward else None
     
     @property
-    def forward_object_guid(self) -> str:
+    def forward_object_guid(self) -> Optional[str]:
         return self.data["message_updates"][0]["message"]["forwarded_from"].get("object_guid") if self.is_forward else None
     
     @property
-    def forward_message_id(self) -> str:
+    def forward_message_id(self) -> Optional[str]:
         return self.data["message_updates"][0]["message"]["forwarded_from"].get("message_id") if self.is_forward else None
 
     @property
@@ -133,15 +134,15 @@ class Message:
         return 'event_data' in self.data['message_updates'][0]['message'].keys()
     
     @property
-    def event_type(self) -> str:
+    def event_type(self) -> Optional[str]:
         return self.data['message_updates'][0]['message']['event_data'].get('type') if self.is_event else None
     
     @property
-    def event_object_guid(self) -> str:
+    def event_object_guid(self) -> Optional[str]:
         return self.data['message_updates'][0]['message']['event_data']['performer_object'].get('object_guid') if self.is_event else None
     
     @property
-    def pinned_message_id(self) -> str:
+    def pinned_message_id(self) -> Optional[str]:
         return self.data['message_updates'][0]['message']['event_data'].get('pinned_message_id') if self.is_event else None
     
     @property
@@ -156,11 +157,10 @@ class Message:
         return False
     
     @property
-    def reply_info(self) -> ReplyInfo:
+    def reply_info(self) -> Optional[ReplyInfo]:
         if not self.reply_message_id:
             return
-        
-        return ReplyInfo.from_json(self.methods.getMessagesById(self.object_guid, [self.reply_message_id])["messages"][0])
+        return ReplyInfo.from_json(asyncio.run(self.methods.getMessagesById(self.object_guid, [self.reply_message_id]))["messages"][0])
     
     @auto_async
     async def reply(self, text:str) -> dict:
@@ -172,28 +172,28 @@ class Message:
     
     @auto_async
     async def reaction(self, reaction:int) -> dict:
-        return self.methods.actionOnMessageReaction(objectGuid=self.object_guid, messageId=self.message_id, reactionId=reaction, action="Add")
+        return await self.methods.actionOnMessageReaction(objectGuid=self.object_guid, messageId=self.message_id, reactionId=reaction, action="Add")
     
     @auto_async
     async def delete(self, delete_for_all:bool=True) -> dict:
-        return self.methods.deleteMessages(objectGuid=self.object_guid, messageIds=[self.message_id], deleteForAll=delete_for_all)
+        return await self.methods.deleteMessages(objectGuid=self.object_guid, messageIds=[self.message_id], deleteForAll=delete_for_all)
     
     @auto_async
     async def pin(self) -> dict:
-        return self.methods.pinMessage(objectGuid=self.object_guid, messageId=self.message_id)
+        return await self.methods.setPinMessage(objectGuid=self.object_guid, messageId=self.message_id,action="Pin")
     
     @auto_async
     async def forward(self, to_object_guid:str) -> dict:
-        return self.methods.forwardMessages(objectGuid=self.object_guid, message_ids=[self.message_id], toObjectGuid=to_object_guid)
+        return await self.methods.forwardMessages(objectGuid=self.object_guid, messageIds=[self.message_id], toObjectGuid=to_object_guid)
     
     @auto_async
     async def ban(self) -> dict:
-        return self.methods.banMember(objectGuid=self.object_guid, memberGuid=self.author_guid)
+        return await self.methods.banChatMember(objectGuid=self.object_guid, memberGuid=self.author_guid,action="Set")
     
     @auto_async
-    async def check_join(self, object_guid:str) -> bool:
-        return self.methods.checkJoin(objectGuid=object_guid, userGuid=self.author_guid)
+    async def check_join(self, object_guid:str) -> Optional[bool]:
+        return await self.methods.checkJoin(objectGuid=object_guid, userGuid=self.author_guid)
     
     @auto_async
-    async def download(self, save:bool=False, save_as:str=None) -> dict:
-        return self.methods.download(save=save, saveAs=save_as, fileInline=self.file_inline)
+    async def download(self, save: bool = False, save_as: Optional[str] = None) -> Optional[dict]:
+        return await self.methods.download(save=save, saveAs=save_as, fileInline=self.file_inline)

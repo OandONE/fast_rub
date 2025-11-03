@@ -49,6 +49,16 @@ class Client(object):
             showProgressBar=show_progress_bar
         )
 
+    # propertys
+    
+    @property
+    def auth(self):
+        return self.sessionData["auth"]
+    
+    @property
+    def private_key(self):
+        return self.sessionData["private_key"]
+
     # Authentication methods
     
     @async_to_sync

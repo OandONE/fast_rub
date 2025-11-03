@@ -5,10 +5,11 @@ from Crypto.PublicKey import RSA
 from Crypto.Hash import SHA256
 from Crypto.Signature import pkcs1_15
 from Crypto.Cipher import PKCS1_OAEP
+from typing import Optional
 
 class Cryption:
 
-    def __init__(self, auth:str, private_key:str=None):
+    def __init__(self, auth:str, private_key: Optional[str] = None):
         self.auth = auth
         
         if auth:

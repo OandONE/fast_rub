@@ -7,6 +7,7 @@ from ..exceptions import NotRegistered, TooRequests
 from ..utils import Utils
 from re import match
 from time import sleep
+from typing import Optional
 
 class Socket:
     def __init__(self, methods) -> None:
@@ -117,6 +118,6 @@ class Socket:
             ).start()
                 
 
-    def addHandler(self, func, filters:list, regexp:str) -> None:
+    def addHandler(self, func, filters:list, regexp:Optional[str]) -> None:
         self.handlers[func] = (filters, regexp)
         return func
