@@ -8,6 +8,7 @@ from ..utils import Utils
 from re import match
 from time import sleep
 from typing import Optional
+import asyncio
 
 class Socket:
     def __init__(self, methods) -> None:
@@ -112,10 +113,8 @@ class Socket:
                 if not match(filters[1], message.text or ""):
                     return
 
-            Thread(
-                target=handler,
-                args=[message]
-            ).start()
+            Thread(target=lambda: asyncio.run(handler(message))).start()
+
                 
 
     def addHandler(self, func, filters:list, regexp:Optional[str]) -> None:

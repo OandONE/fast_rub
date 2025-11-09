@@ -1,6 +1,5 @@
 from ....async_sync import *
 from typing import Optional
-from ...methods.methods import Methods
 
 class ReplyInfo:
     def __init__(self, text, author_guid) -> None:
@@ -14,6 +13,7 @@ class ReplyInfo:
 
 class Message:
     def __init__(self, data:dict, methods:'Methods') -> None:
+        from ...methods.methods import Methods
         self.data = data
         self.methods = methods
 

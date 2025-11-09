@@ -1,5 +1,4 @@
 import httpx
-import random
 import os
 import time
 import json
@@ -41,7 +40,8 @@ class Client:
         use_to_fastrub_webhook_on_message: Union[str,bool] = True,
         use_to_fastrub_webhook_on_button: Union[str,bool] = True,
         save_logs: Optional[bool] = None,
-        view_logs: Optional[bool] = None
+        view_logs: Optional[bool] = None,
+        proxy: Optional[str] = None
     ):
         """Client for login and setting robot / کلاینت برای لوگین و تنظیمات ربات"""
         name = name_session + ".faru"
@@ -51,13 +51,13 @@ class Client:
         self.user_agent = user_agent
         self._running = False
         self.list_ = []
+        self.proxy = proxy
         self.data_keypad = []
         self.data_keypad2 = []
         self._button_handlers2 = []
         self._running_ = False
         self._loop = None
         self.last = []
-        self._running = False
         self._fetch_messages = False
         self._fetch_messages_ = False
         self._fetch_buttons = False
@@ -113,7 +113,7 @@ class Client:
             self.log_to_file = True
         if self.log_to_console is None:
             self.log_to_console = True
-        self.httpx_client = httpx.AsyncClient(timeout=self.time_out)
+        self.httpx_client = httpx.AsyncClient(timeout=self.time_out,proxy=self.proxy)
         self.use_to_fastrub_webhook_on_message=use_to_fastrub_webhook_on_message
         self.use_to_fastrub_webhook_on_button = use_to_fastrub_webhook_on_button
         if type(use_to_fastrub_webhook_on_message) is str:
@@ -124,6 +124,12 @@ class Client:
             self._button_url = use_to_fastrub_webhook_on_button
         else:
             self._button_url = f"https://fast-rub.ParsSource.ir/geting_button_updates/get?token={self.token}"
+        self.urls = ["https://botapi.rubika.ir/v3/","https://messengerg2b1.iranlms.ir/v3/"]
+        self.main_url = self.urls[0]
+        try:
+            asyncio.run(self.version_botapi())
+        except:
+            self.main_url = self.urls[1]
         self.logger = logging.getLogger("fast_rub")
         setup_logging(log_to_console=self.log_to_console,log_to_file=self.log_to_file)
         if display_welcome:
@@ -141,9 +147,15 @@ class Client:
         return self.token
 
     @async_to_sync
+    async def manage_closeing(self) -> None:
+        if self.httpx_client.is_closed:
+            self.httpx_client = httpx.AsyncClient(timeout=self.time_out,proxy=self.proxy)
+
+    @async_to_sync
     async def version_botapi(self) -> str:
         """getting version botapi / گرفتن نسخه بات ای پی آی"""
-        response = await self.httpx_client.get("https://botapi.rubika.ir",timeout=self.time_out)
+        await self.manage_closeing()
+        response = await self.httpx_client.get(self.main_url,timeout=self.time_out)
         version = response.text
         return version
 
@@ -180,35 +192,23 @@ class Client:
 
     @async_to_sync
     async def send_requests(
-        self, method, data_: Optional[Union[Dict[str, Any], List[Any]]] = None,url_op:Optional[int] = None
+        self, method, data_: Optional[Union[Dict[str, Any], List[Any]]] = None,url_op:Optional[str] = None
     ) -> dict:
         """send request to methods / ارسال درخواست به متود ها"""
         self.logger.info("در حال ارسال درخواست")
-        urls = ["https://botapi.rubika.ir/v3/","https://messengerg2b1.iranlms.ir/v3/"]
-        main_url = urls[0]
-        if url_op:
-            main_url = urls[url_op]
-        url = f"{main_url}{self.token}/{method}"
+        url_op = self.main_url
+        url = f"{url_op}{self.token}/{method}"
+        headers = {"Content-Type": "application/json"}
         if self.user_agent != None:
-            headers = {
-                "User-Agent": self.user_agent,
-                "Content-Type": "application/json",
-            }
-        else:
-            headers = {"Content-Type": "application/json"}
+            headers["User-Agent"] = self.user_agent
+        await self.manage_closeing()
         try:
             if data_ == None:
                 result = await self.httpx_client.post(url, headers=headers)
-                try:
-                    result_ = result.json()
-                except:
-                    result_ = await self.send_requests(method,data_,random.randint(0,1))
+                result_ = result.json()
             else:
                 result = await self.httpx_client.post(url, headers=headers, json=data_)
-                try:
-                    result_ = result.json()
-                except:
-                    result_ = await self.send_requests(method,data_,random.randint(0,1))
+                result_ = result.json()
             if result_["status"] != "OK":
                 self.logger.error(f"خطایی از سمت سرور ! status : {result_['status']}")
                 raise TypeError(f"Error for invalid status : {result_}")
@@ -220,7 +220,6 @@ class Client:
         except Exception as e:
             self.logger.error(f"خطایی ناشناخته : {e}")
             raise e
-        return {}
 
     @async_to_sync
     async def auto_delete(self,chat_id:str,message_id:str,time_sleep:float) -> props:
@@ -542,7 +541,7 @@ class Client:
         return props(result)
 
     @async_to_sync
-    async def upload_file(self, url: str, file_name: str, file: Union[str , Path , bytes]):
+    async def upload_file(self, url: str, file_name: str, file: Union[str , Path , bytes]) -> dict:
         """upload file to rubika server / آپلود فایل در سرور روبیکا"""
         self.logger.info("استفاده از متود upload_file")
         if type(file) is bytes:
@@ -555,7 +554,7 @@ class Client:
             except:
                 file_ = (await self.httpx_client.get(str(file))).content
                 d_file = {"file":file_}
-        async with httpx.AsyncClient(verify=False) as cl:
+        async with httpx.AsyncClient(verify=False,proxy=self.proxy) as cl:
             response = await cl.post(url, files=d_file,timeout=9999)
             if response.status_code != 200:
                 self.logger.error("خطا در آپلود فایل !")
@@ -811,7 +810,7 @@ class Client:
         """download file / دانلود فایل"""
         self.logger.info("استفاده از متود download_file")
         url = await self.get_download_file_url(id_file)
-        async with httpx.AsyncClient() as client:
+        async with httpx.AsyncClient(proxy=self.proxy) as client:
             async with client.stream('GET', url) as response:
                 async with aiofiles.open(path, 'wb') as file:
                     async for chunk in response.aiter_bytes():

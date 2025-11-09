@@ -29,7 +29,7 @@ class Network:
         self.crypto = methods.crypto
         self.http = ProxyManager(methods.proxy) if methods.proxy else PoolManager()
 
-    def request(self, method:str, input:dict={}, tmpSession:bool=False, attempt:int = 0, maxAttempt:int=2) -> dict:
+    async def request(self, method:str, input:dict={}, tmpSession:bool=False, attempt:int = 0, maxAttempt:int=2) -> dict:
         url:str = Helper.getApiServer()
         platform:str = self.methods.platform.lower()
         apiVersion:int = self.methods.apiVersion
