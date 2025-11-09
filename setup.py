@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="fastrub",
-    version="2.0",
+    version="2.1",
     author="seyyed mohamad hosein moosavi raja(01)",
     author_email="mohamadhosein159159@gmail.com",
     description="the library for rubika bots.",
@@ -23,4 +23,5 @@ setup(
     ],
     license="MIT"
 )
+
 
