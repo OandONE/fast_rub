@@ -1,6 +1,7 @@
 from typing import TYPE_CHECKING
 import re
 import time as ti
+from .type.metadata import metadata
 
 if TYPE_CHECKING:
     from .Client import Update
@@ -163,6 +164,50 @@ class chat_ids(Filter):
                 return True
         return False
 
+class has_metadata_type(Filter):
+    def __init__(self,type) -> None:
+        self.type = type
+    def __call__(self, update: 'Update') -> bool:
+        if update.meta_data_parts:
+            for mata_data in update.meta_data_parts.data:
+                if mata_data["type"].lower() == self.type.lower():
+                    return True
+        return False
+
+class has_bold(Filter):
+    """check for has bold text / چک وجود داشتن متن بولد"""
+    def __call__(self, update: 'Update') -> bool:
+        return has_metadata_type("bold")(update)
+
+class has_italic(Filter):
+    """check for has italic text / چک وجود داشتن متن ایتالیک"""
+    def __call__(self, update: 'Update') -> bool:
+        return has_metadata_type("italic")(update)
+
+class has_underline(Filter):
+    """check for has underline text / چک وجود داشتن متن آندرلایبن"""
+    def __call__(self, update: 'Update') -> bool:
+        return has_metadata_type("underline")(update)
+
+class has_strike(Filter):
+    """check for has strike text / چک وجود داشتن متن خط خورده"""
+    def __call__(self, update: 'Update') -> bool:
+        return has_metadata_type("strike")(update)
+
+class has_mono(Filter):
+    """check for has mono text / چک وجود داشتن متن کپی"""
+    def __call__(self, update: 'Update') -> bool:
+        return has_metadata_type("mono")(update)
+
+class has_spoiler(Filter):
+    """check for has spoiler text / چک وجود داشتن متن اسپویلر"""
+    def __call__(self, update: 'Update') -> bool:
+        return has_metadata_type("spoiler")(update)
+
+class has_link(Filter):
+    """check for has link text / چک وجود داشتن متن هایپر لینک"""
+    def __call__(self, update: 'Update') -> bool:
+        return has_metadata_type("link")(update)
 
 class and_filter(Filter):
     """filters {and} for if all filters is True : run code ... / فیلتر های ورودی {and} که اگر تمامی فیلتر های ورودی برابر True بود اجرا شود"""
@@ -179,4 +224,3 @@ class or_filter(Filter):
 
     def __call__(self, update: 'Update') -> bool:
         return any(f(update) for f in self.filters)
-

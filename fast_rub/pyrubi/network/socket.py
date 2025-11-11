@@ -7,8 +7,9 @@ from ..exceptions import NotRegistered, TooRequests
 from ..utils import Utils
 from re import match
 from time import sleep
-from typing import Optional
+from typing import Optional , List, Union
 import asyncio
+from ..filters import Filter,legacy_filter
 
 class Socket:
     def __init__(self, methods) -> None:
@@ -53,70 +54,39 @@ class Socket:
         self.handShake(ws)
         print("Connected.")
 
-    def onMessage(self, _, message:str) -> None:
+    def onMessage(self, _, message: str) -> None:
         if not message:
             return
         
-        message:dict = loads(message)
+        message: dict = loads(message)
 
         if not message.get("type") == "messenger":
             return
         
-        message:dict = loads(self.methods.crypto.decrypt(message["data_enc"]))
+        message: dict = loads(self.methods.crypto.decrypt(message["data_enc"]))
 
         if not message.get("message_updates"):
             return
 
         for handler in self.handlers:
-            filters:list = self.handlers[handler]
-            message:Message = Message(
-                message,
-                self.methods
-            )
+            filters: List[Filter] = self.handlers[handler]
+            message_obj: Message = Message(message, self.methods)
+            should_process = True
+            for filter_obj in filters:
+                if not filter_obj(message_obj):
+                    should_process = False
+                    break
 
-            if filters[0]:
-                chatFilters:list = list(
-                    map(
-                        lambda x: x.lower() if Utils.isChatType(x) else x,
-                        list(
-                            filter(
-                                lambda x: Utils.isChatType(x) or Utils.getChatTypeByGuid(x),
-                                filters[0]
-                            )
-                        )
-                    )
-                )
+            if should_process:
+                Thread(target=lambda: asyncio.run(handler(message_obj))).start()
 
-                if chatFilters:
-                    if message.object_guid in chatFilters:
-                        pass
 
-                    elif not message.chat_type.lower() in chatFilters:
-                        return
-                
-                messageFilters:list = list(
-                    map(
-                        lambda x: x.lower(),
-                        list(
-                            filter(
-                                lambda x: Utils.isMessageType(x),
-                                filters[0]
-                            )
-                        )
-                    )
-                )
-                
-                if messageFilters and not message.message_type.lower() in messageFilters:
-                    return
-                
-            if filters[1]:
-                if not match(filters[1], message.text or ""):
-                    return
-
-            Thread(target=lambda: asyncio.run(handler(message))).start()
-
-                
-
-    def addHandler(self, func, filters:list, regexp:Optional[str]) -> None:
-        self.handlers[func] = (filters, regexp)
+    def addHandler(self, func, filters: Union[List[Filter], List[str], Filter]) -> None:
+        if filters and isinstance(filters, list) and all(isinstance(f, str) for f in filters):
+            filters = [legacy_filter(filters)]
+        elif isinstance(filters, Filter):
+            filters = [filters]
+        elif not filters:
+            filters = []
+        self.handlers[func] = filters
         return func

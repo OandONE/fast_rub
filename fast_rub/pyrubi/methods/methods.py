@@ -18,6 +18,8 @@ from typing import (
     Literal
 )
 from ...async_sync import *
+from typing import Optional, Union, List
+from ..filters import Filter
 
 class Methods:
     def __init__(self, sessionData:dict, platform:str, apiVersion:int, proxy:Optional[str], timeOut:int, showProgressBar:bool) -> None:
@@ -1796,13 +1798,12 @@ class Methods:
         except ImportError:
             print("The aiortc library is not installed!")
 
-    def add_handler(self, func, filters:list, regexp:Optional[str]) -> None:
+    def add_handler(self, func, filters: Union[List[Filter], List[str], Filter]) -> None:
         self.socket.addHandler(
             func=func,
-            filters=filters,
-            regexp=regexp
+            filters=filters
         )
         return func
-    
+        
     def run(self) -> None:
         self.socket.connect()

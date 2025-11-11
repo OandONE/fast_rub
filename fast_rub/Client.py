@@ -27,6 +27,7 @@ from .type import (
 from .async_sync import *
 from .logger import *
 from .type.props import *
+from .pyrubi.utils.utils import Utils
 
 
 class Client:
@@ -41,7 +42,8 @@ class Client:
         use_to_fastrub_webhook_on_button: Union[str,bool] = True,
         save_logs: Optional[bool] = None,
         view_logs: Optional[bool] = None,
-        proxy: Optional[str] = None
+        proxy: Optional[str] = None,
+        main_parse_mode: Literal['Markdown', 'HTML', None] = None
     ):
         """Client for login and setting robot / کلاینت برای لوگین و تنظیمات ربات"""
         name = name_session + ".faru"
@@ -70,6 +72,7 @@ class Client:
         self.next_offset_id = ""
         self.next_offset_id_ = ""
         self.last_ = []
+        self.main_parse_mode:Literal['Markdown', 'HTML', None] = main_parse_mode
         if os.path.isfile(name):
             with open(name, "r", encoding="utf-8") as file:
                 text_json_fast_rub_session = json.load(file)
@@ -110,9 +113,9 @@ class Client:
         self.log_to_file = save_logs
         self.log_to_console = view_logs
         if self.log_to_file is None:
-            self.log_to_file = True
+            self.log_to_file = False
         if self.log_to_console is None:
-            self.log_to_console = True
+            self.log_to_console = False
         self.httpx_client = httpx.AsyncClient(timeout=self.time_out,proxy=self.proxy)
         self.use_to_fastrub_webhook_on_message=use_to_fastrub_webhook_on_message
         self.use_to_fastrub_webhook_on_button = use_to_fastrub_webhook_on_button
@@ -147,9 +150,28 @@ class Client:
         return self.token
 
     @async_to_sync
-    async def manage_closeing(self) -> None:
+    async def check_closing(self) -> bool:
+        """چک کردن وضعیت کلاینت"""
         if self.httpx_client.is_closed:
-            self.httpx_client = httpx.AsyncClient(timeout=self.time_out,proxy=self.proxy)
+            try:
+                await self.httpx_client.get(self.main_url)
+            except httpx.CloseError:
+                return False
+        return True
+
+    @async_to_sync
+    async def manage_closeing(self) -> None:
+        """مدیریت اتصال کلاینت"""
+        if await self.check_closing():
+            try:
+                await self.httpx_client.aclose()
+            except:
+                pass
+            self.httpx_client = httpx.AsyncClient(
+                timeout=self.time_out, 
+                proxy=self.proxy,
+                limits=httpx.Limits(max_connections=100, max_keepalive_connections=20)
+            )
 
     @async_to_sync
     async def version_botapi(self) -> str:
@@ -247,6 +269,24 @@ class Client:
         return props(result)
 
     @async_to_sync
+    async def set_main_parse_mode(self,parse_mode: Literal['Markdown', 'HTML', None]) -> None:
+        """setting parse mode main / تنظیم کردن مقدار اصلی پارس مود"""
+        self.main_parse_mode = parse_mode
+
+    @async_to_sync
+    async def parse_mode_text(self, text: str,parse_mode: Literal["Markdown","HTML",None] = "Markdown") -> tuple:
+        """setting parse mode text / تنظیم پارس مود متن"""
+        if self.main_parse_mode:
+            parse_mode = self.main_parse_mode
+        if parse_mode == "Markdown":
+            data = Utils.checkMarkdown(text)
+            return data
+        elif parse_mode == "HTML":
+            data = Utils.checkHTML(text)
+            return data
+        return [], text
+
+    @async_to_sync
     async def send_text(
         self,
         text: str,
@@ -254,25 +294,22 @@ class Client:
         inline_keypad = KeyPad,
         disable_notification: Optional[bool] = False,
         reply_to_message_id: Optional[str] = None,
-        auto_delete: Optional[int] = None
+        auto_delete: Optional[int] = None,
+        parse_mode: Literal["Markdown","HTML",None] = "Markdown"
     ) -> props:
         """sending text to chat id / ارسال متنی به یک چت آیدی"""
-        self.logger.info("استفاده از متود send_message")
-        if not inline_keypad:
-            data = {
-                "chat_id": chat_id,
-                "text": text,
-                "disable_notification": disable_notification,
-                "reply_to_message_id": reply_to_message_id,
-            }
-        else:
-            data = {
-                "chat_id": chat_id,
-                "text": text,
-                "disable_notification": disable_notification,
-                "reply_to_message_id": reply_to_message_id,
-                "inline_keypad": {"rows": inline_keypad}
-            }
+        self.logger.info("استفاده از متود send_text")
+        metadata, text  = await self.parse_mode_text(text, parse_mode)
+        data = {
+            "chat_id": chat_id,
+            "text": text,
+            "disable_notification": disable_notification,
+            "reply_to_message_id": reply_to_message_id
+        }
+        if inline_keypad:
+            data["inline_keypad"] = {"rows": inline_keypad}
+        if metadata:
+            data["metadata"] = {"meta_data_parts": metadata}
         result = await self.send_requests(
             "sendMessage",
             data,
@@ -286,7 +323,13 @@ class Client:
         return props(result)
 
     @async_to_sync
-    async def send_poll(self, chat_id: str, question: str, options: list,auto_delete: Optional[int] = None) -> props:
+    async def send_poll(
+        self,
+        chat_id: str,
+        question: str,
+        options: list,
+        auto_delete: Optional[int] = None
+    ) -> props:
         """sending poll to chat id / ارسال نظرسنجی به یک چت آیدی"""
         self.logger.info("استفاده از متود send_poll")
         data = {"chat_id": chat_id, "question": question, "options": options}
@@ -377,7 +420,10 @@ class Client:
         return props(result)
 
     @async_to_sync
-    async def get_chat(self, chat_id: str) -> props:
+    async def get_chat(
+        self,
+        chat_id: str
+    ) -> props:
         """geting info chat id info / گرفتن اطلاعات های یک چت"""
         self.logger.info("استفاده از متود get_chat")
         data = {"chat_id": chat_id}
@@ -428,10 +474,19 @@ class Client:
         return props(result)
 
     @async_to_sync
-    async def edit_message_text(self, chat_id: str, message_id: str, text: str) -> props:
+    async def edit_message_text(
+        self,
+        chat_id: str,
+        message_id: str,
+        text: str,
+        parse_mode: Literal["Markdown","HTML",None] = "Markdown"
+    ) -> props:
         """editing message text / ویرایش متن پیام"""
         self.logger.info("استفاده از متود edit_message_text")
+        metadata, text  = await self.parse_mode_text(text, parse_mode)
         data = {"chat_id": chat_id, "message_id": message_id, "text": text}
+        if metadata:
+            data["metadata"] = {"meta_data_parts": metadata}
         result = await self.send_requests(
             "editMessageText",
             data,
@@ -439,7 +494,11 @@ class Client:
         return props(result)
 
     @async_to_sync
-    async def delete_message(self, chat_id: str, message_id: str) -> props:
+    async def delete_message(
+        self,
+        chat_id: str,
+        message_id: str
+    ) -> props:
         """delete message / پاکسازی(حذف) یک پیام"""
         self.logger.info("استفاده از متود delete_message")
         data = {"chat_id": chat_id, "message_id": message_id}
@@ -486,9 +545,11 @@ class Client:
         inline_keypad,
         disable_notification : Optional[bool] = False,
         reply_to_message_id: Optional[str] = None,
+        parse_mode: Literal["Markdown","HTML",None] = "Markdown"
     ) -> props:
         """editing the text key pad inline / ویرایش پیام شیشه ای"""
         self.logger.info("استفاده از متود edit_message_keypad_Inline")
+        metadata, text  = await self.parse_mode_text(text, parse_mode)
         data = {
             "disable_notification": disable_notification,
             "reply_to_message_id": reply_to_message_id,
@@ -496,6 +557,8 @@ class Client:
             "text": text,
             "inline_keypad": {"rows": inline_keypad},
         }
+        if metadata:
+            data["metadata"] = {"meta_data_parts": metadata}
         result = await self.send_requests(
             "editMessageText",
             data,
@@ -512,10 +575,12 @@ class Client:
         reply_to_message_id: Optional[str] = None,
         resize_keyboard : Optional[bool] = True,
         on_time_keyboard: Optional[bool] = False,
-        auto_delete: Optional[int] = None
+        auto_delete: Optional[int] = None,
+        parse_mode: Literal["Markdown","HTML",None] = "Markdown"
     ) -> props:
         """sending message key pad texti / ارسال پیام با دکمه متنی"""
         self.logger.info("استفاده از متود send_message_keypad")
+        metadata, text  = await self.parse_mode_text(text, parse_mode)
         data = {
             "chat_id": chat_id,
             "disable_notification": disable_notification,
@@ -528,6 +593,8 @@ class Client:
                 "on_time_keyboard": on_time_keyboard,
             },
         }
+        if metadata:
+            data["metadata"] = {"meta_data_parts": metadata}
         result = await self.send_requests(
             "sendMessage",
             data,
@@ -574,10 +641,14 @@ class Client:
         text: Optional[str] = None,
         reply_to_message_id: Optional[str] = None,
         disable_notification: Optional[bool] = None,
-        auto_delete: Optional[int] = None
+        auto_delete: Optional[int] = None,
+        parse_mode: Literal["Markdown","HTML",None] = "Markdown"
     ) -> props:
         """sending file by file id / ارسال فایل با آیدی فایل"""
         self.logger.info("استفاده از متود send_file_by_file_id")
+        metadata = []
+        if text:
+            metadata, text  = await self.parse_mode_text(text, parse_mode)
         data = {
             "chat_id": chat_id,
             "text": text,
@@ -585,6 +656,8 @@ class Client:
             "reply_to_message_id": reply_to_message_id,
             "disable_notification": disable_notification,
         }
+        if metadata:
+            data["metadata"] = {"meta_data_parts": metadata}
         sending = await self.send_requests("sendFile", data)
         if auto_delete:
             message_id = sending["data"]["message_id"]
@@ -604,7 +677,8 @@ class Client:
         reply_to_message_id : Optional[str] = None,
         type_file: Literal["File", "Image", "Voice", "Music", "Gif" , "Video"] = "File",
         disable_notification : Optional[bool] = False,
-        auto_delete: Optional[int] = None
+        auto_delete: Optional[int] = None,
+        parse_mode: Literal["Markdown","HTML",None] = "Markdown"
     ) -> props:
         """sending file with types ['File', 'Image', 'Voice', 'Music', 'Gif' , 'Video'] / ارسال فایل با نوع های فایل و عکس و پیغام صوتی و موزیک و گیف و ویدیو"""
         self.logger.info("استفاده از متود send_file")
@@ -622,7 +696,7 @@ class Client:
         if not name_file:
             raise ValueError("type file is invalud !")
         file_id = (await self.upload_file(up_url_file, name_file, file))["data"]["file_id"]
-        uploader = (await self.send_file_by_file_id(chat_id,file_id,text,reply_to_message_id,disable_notification))._data_
+        uploader = (await self.send_file_by_file_id(chat_id,file_id,text,reply_to_message_id,disable_notification,parse_mode=parse_mode))._data_
         uploader["file_id"] = file_id
         uploader["type_file"] = type_file
         if isinstance(file, (bytes, bytearray, memoryview)):
@@ -655,10 +729,12 @@ class Client:
         text : Optional[str] = None,
         reply_to_message_id : Optional[str] = None,
         disable_notification: Optional[bool] = False,
-        auto_delete: Optional[int] = None
+        auto_delete: Optional[int] = None,
+        parse_mode: Literal["Markdown","HTML",None] = "Markdown"
     ) -> props:
         """sending image / ارسال تصویر"""
         self.logger.info("استفاده از متود send_image")
+        
         result = await self.send_file(
             chat_id,
             image,
@@ -667,7 +743,8 @@ class Client:
             reply_to_message_id,
             "Image",
             disable_notification,
-            auto_delete
+            auto_delete,
+            parse_mode
         )
         return props(result)
 
@@ -680,7 +757,8 @@ class Client:
         text : Optional[str] = None,
         reply_to_message_id : Optional[str] = None,
         disable_notification : Optional[bool] = False,
-        auto_delete: Optional[int] = None
+        auto_delete: Optional[int] = None,
+        parse_mode: Literal["Markdown","HTML",None] = "Markdown"
     ) -> props:
         """sending video / ارسال ویدیو"""
         self.logger.info("استفاده از متود send_video")
@@ -692,7 +770,8 @@ class Client:
             reply_to_message_id,
             "Video",
             disable_notification,
-            auto_delete
+            auto_delete,
+            parse_mode
         )
         return props(result)
 
@@ -705,7 +784,8 @@ class Client:
         text : Optional[str] = None,
         reply_to_message_id: Optional[str] = None,
         disable_notification: Optional[bool] = False,
-        auto_delete: Optional[int] = None
+        auto_delete: Optional[int] = None,
+        parse_mode: Literal["Markdown","HTML",None] = "Markdown"
     ) -> props:
         """sending voice / ارسال ویس"""
         self.logger.info("استفاده از متود send_voice")
@@ -717,7 +797,8 @@ class Client:
             reply_to_message_id,
             "Voice",
             disable_notification,
-            auto_delete
+            auto_delete,
+            parse_mode
         )
         return props(result)
 
@@ -730,7 +811,8 @@ class Client:
         text : Optional[str] = None,
         reply_to_message_id : Optional[str] = None,
         disable_notification : Optional[bool] = False,
-        auto_delete: Optional[int] = None
+        auto_delete: Optional[int] = None,
+        parse_mode: Literal["Markdown","HTML",None] = "Markdown"
     ) -> props:
         """sending music / ارسال موزیک"""
         self.logger.info("استفاده از متود send_music")
@@ -742,7 +824,8 @@ class Client:
             reply_to_message_id,
             "Music",
             disable_notification,
-            auto_delete
+            auto_delete,
+            parse_mode
         )
         return props(result)
 
@@ -755,7 +838,8 @@ class Client:
         text : Optional[str] = None,
         reply_to_message_id : Optional[str] = None,
         disable_notification : Optional[bool] = False,
-        auto_delete: Optional[int] = None
+        auto_delete: Optional[int] = None,
+        parse_mode: Literal["Markdown","HTML",None] = "Markdown"
     ) -> props:
         """sending gif / ارسال گیف"""
         self.logger.info("استفاده از متود send_gif")
@@ -767,7 +851,8 @@ class Client:
             reply_to_message_id,
             "Gif",
             disable_notification,
-            auto_delete
+            auto_delete,
+            parse_mode
         )
         return props(result)
 
@@ -869,10 +954,6 @@ class Client:
     @async_to_sync
     async def _process_messages_(self, time_updata_sleep : Union[float,float] = 0.5):
         while self._running:
-            try:
-                await self.httpx_client.get("https://rubika.ir/",timeout=self.time_out)
-            except:
-                raise TimeoutError("please check the your internet .")
             mes = (await self.get_updates(limit=100,offset_id=self.next_offset_id))
             if mes.status=="INVALID_ACCESS":
                 raise PermissionError("Due to Rubika's restrictions, access to retrieve messages has been blocked. Please try again.")
@@ -939,10 +1020,6 @@ class Client:
     @async_to_sync
     async def _process_edit(self, time_updata_sleep : Union[int,int] = 1):
         while self._running:
-            try:
-                await self.httpx_client.get("https://rubika.ir/",timeout=self.time_out)
-            except:
-                raise TimeoutError("please check the your internet .")
             mes = (await self.get_updates(limit=100,offset_id=self.next_offset_id_))
             if mes['status']=="INVALID_ACCESS":
                 raise PermissionError("Due to Rubika's restrictions, access to retrieve messages has been blocked. Please try again.")

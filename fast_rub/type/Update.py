@@ -3,7 +3,9 @@ from ..async_sync import *
 from .get_type import *
 from .props import *
 from ..button import KeyPad
+from .metadata import metadata as metadata_prop
 import json
+from pathlib import Path
 
 class Update:
     def __init__(self, update_data: dict, client: "Client"):
@@ -83,6 +85,13 @@ class Update:
     def reply_to_message_id(self) -> Optional[str|None]:
         """message id replyed / آیدی پیام ریپلای شده"""
         return self._data["reply_to_message_id"] if "reply_to_message_id" in self._data else None
+    @property
+    def metadata(self) -> Optional[dict]:
+        """meta data / متا دیتا"""
+        return self._data["metadata"] if "metadata" in self._data else None
+    @property
+    def meta_data_parts(self) -> Optional[metadata_prop]:
+        return metadata_prop(self.metadata["meta_data_parts"]) if self.metadata else None
 
 
 
@@ -92,10 +101,10 @@ class Update:
         return await self._client.get_chat(self.chat_id)
 
     @auto_async
-    async def reply(self, text: str,keypad_inline: Optional[KeyPad] = None,auto_delete: Optional[int] = None) -> props:
+    async def reply(self, text: str,keypad_inline: Optional[KeyPad] = None,auto_delete: Optional[int] = None,parse_mode: Literal['Markdown', 'HTML', None] = "Markdown") -> props:
         """reply text / ریپلای متن"""
         return await self._client.send_text(
-            text, self.chat_id, reply_to_message_id=self.message_id,inline_keypad=keypad_inline,auto_delete=auto_delete
+            text, self.chat_id, reply_to_message_id=self.message_id,inline_keypad=keypad_inline,auto_delete=auto_delete,parse_mode=parse_mode
         )
 
     @auto_async
@@ -132,7 +141,8 @@ class Update:
         text: Optional[str] = None,
         type_file: Literal["File", "Image", "Voice", "Music", "Gif","Video"] = "File",
         disable_notification: Optional[bool] = False,
-        auto_delete: Optional[int] = None
+        auto_delete: Optional[int] = None,
+        parse_mode: Literal['Markdown', 'HTML', None] = "Markdown"
     ) -> props:
         """reply file / ریپلای فایل"""
         return await self._client.send_file(
@@ -143,7 +153,8 @@ class Update:
             self.message_id,
             type_file,
             disable_notification,
-            auto_delete
+            auto_delete,
+            parse_mode
         )
 
     @auto_async
@@ -153,11 +164,12 @@ class Update:
         name_file: Optional[str] = None,
         text: Optional[str] = None,
         disable_notification: Optional[bool] = False,
-        auto_delete: Optional[int] = None
+        auto_delete: Optional[int] = None,
+        parse_mode: Literal['Markdown', 'HTML', None] = "Markdown"
     ) -> props:
         """reply image / رپیلای تصویر"""
         return await self._client.send_image(
-            self.chat_id, image, name_file, text, self.message_id, disable_notification,auto_delete
+            self.chat_id, image, name_file, text, self.message_id, disable_notification,auto_delete,parse_mode
         )
 
     @auto_async
@@ -167,11 +179,12 @@ class Update:
         name_file: Optional[str] = None,
         text: Optional[str] = None,
         disable_notification: Optional[bool] = False,
-        auto_delete: Optional[int] = None
+        auto_delete: Optional[int] = None,
+        parse_mode: Literal['Markdown', 'HTML', None] = "Markdown"
     ) -> props:
         """reply voice / رپیلای ویس"""
         return await self._client.send_voice(
-            self.chat_id, voice, name_file, text, self.message_id, disable_notification,auto_delete
+            self.chat_id, voice, name_file, text, self.message_id, disable_notification,auto_delete,parse_mode
         )
 
     @auto_async
@@ -181,11 +194,12 @@ class Update:
         name_file: Optional[str] = None,
         text: Optional[str] = None,
         disable_notification: Optional[bool] = False,
-        auto_delete: Optional[int] = None
+        auto_delete: Optional[int] = None,
+        parse_mode: Literal['Markdown', 'HTML', None] = "Markdown"
     ) -> props:
         """reply voice / رپیلای موزیک"""
         return await self._client.send_music(
-            chat_id=self.chat_id, music=music, name_file=name_file, text=text, reply_to_message_id=self.message_id, disable_notification=disable_notification,auto_delete=auto_delete
+            chat_id=self.chat_id, music=music, name_file=name_file, text=text, reply_to_message_id=self.message_id, disable_notification=disable_notification,auto_delete=auto_delete,parse_mode=parse_mode
         )
 
     @auto_async
@@ -195,11 +209,12 @@ class Update:
         name_file: Optional[str] = None,
         text: Optional[str] = None,
         disable_notification: Optional[bool] = False,
-        auto_delete: Optional[int] = None
+        auto_delete: Optional[int] = None,
+        parse_mode: Literal['Markdown', 'HTML', None] = "Markdown"
     ) -> props:
         """reply voice / رپیلای گیف"""
         return await self._client.send_gif(
-            self.chat_id, gif, name_file, text, self.message_id, disable_notification,auto_delete
+            self.chat_id, gif, name_file, text, self.message_id, disable_notification,auto_delete,parse_mode
         )
 
     @auto_async
@@ -209,16 +224,17 @@ class Update:
         name_file: Optional[str] = None,
         text: Optional[str] = None,
         disable_notification: Optional[bool] = False,
-        auto_delete: Optional[int] = None
+        auto_delete: Optional[int] = None,
+        parse_mode: Literal['Markdown', 'HTML', None] = "Markdown"
     ) -> props:
         """reply voice / رپیلای ویدیو"""
         return await self._client.send_video(
-            self.chat_id, video, name_file, text, self.message_id, disable_notification,auto_delete
+            self.chat_id, video, name_file, text, self.message_id, disable_notification,auto_delete,parse_mode
         )
 
     @auto_async
-    async def reply_keypad(self,text:str,keypad:KeyPad,auto_delete:Optional[int]=None) -> props:
-        return await self._client.send_message_keypad(self.chat_id,text,keypad,reply_to_message_id=self.message_id,auto_delete=auto_delete)
+    async def reply_keypad(self,text:str,keypad:KeyPad,auto_delete:Optional[int]=None,parse_mode: Literal['Markdown', 'HTML', None] = "Markdown") -> props:
+        return await self._client.send_message_keypad(self.chat_id,text,keypad,reply_to_message_id=self.message_id,auto_delete=auto_delete,parse_mode=parse_mode)
 
     @auto_async
     async def forward(
@@ -291,9 +307,9 @@ class UpdateButton:
         return self._data["inline_message"]["text"]
 
     @auto_async
-    async def send_text(self,text:str,keypad=None,auto_delete: Optional[int] = None,reply_to_message_id: Optional[str] = None):
+    async def send_text(self,text:str,keypad=None,auto_delete: Optional[int] = None,reply_to_message_id: Optional[str] = None,parse_mode: Literal['Markdown', 'HTML'] = "Markdown"):
         return await self._client.send_text(
-            text, self.chat_id,inline_keypad=keypad,auto_delete=auto_delete,reply_to_message_id=reply_to_message_id
+            text, self.chat_id,inline_keypad=keypad,auto_delete=auto_delete,reply_to_message_id=reply_to_message_id,parse_mode=parse_mode
         )
 
     @auto_async

@@ -1,9 +1,11 @@
 from ..methods import Methods
 from typing import (
     Optional,
-    Union
+    Union,
+    List
 )
 from ...async_sync import *
+from ..filters import Filter
 
 class Client(object):
 
@@ -708,21 +710,15 @@ class Client(object):
     
     @async_to_sync
     async def play_voice(self, object_guid: str, file:str) -> None:
-        from asyncio import run
-        
         async def main():
             await self.methods.playVoice(objectGuid=object_guid, file=file)
-
-        run(main())
-    
-    def on_message(self, filters:list=[], regexp:Optional[str] = None):
+        await main()
+    def on_message(self, filters: Union[List[Filter], List[str], Filter, None] = None):
         def handler(func):
             self.methods.add_handler(
                 func=func,
-                filters=filters,
-                regexp=regexp
+                filters=filters
             )
-        
         return handler
     
     def run(self) -> None:

@@ -8,6 +8,7 @@ from mutagen import mp3, File
 from filetype import guess
 from os import system, chmod, remove
 from .configs import Configs
+from typing import Optional
 
 
 class Utils:
@@ -24,7 +25,7 @@ class Utils:
         return str(randint(-99999999, 99999999))
 
     @staticmethod
-    def privateParse(private: str) -> str:
+    def privateParse(private: str) -> Optional[str]:
         if private:
             if not private.startswith("-----BEGIN RSA PRIVATE KEY-----"):
                 private = "-----BEGIN RSA PRIVATE KEY-----\n" + private
@@ -49,27 +50,27 @@ class Utils:
         return phoneNumber
 
     @staticmethod
-    def getChatTypeByGuid(objectGuid: str) -> str:
+    def getChatTypeByGuid(objectGuid: str) -> Optional[str]:
         for chatType in [("u0", "User"), ("g0", "Group"), ("c0", "Channel"), ("s0", "Service"), ("b0", "Bot")]:
             if objectGuid.startswith(chatType[0]):
                 return chatType[1]
 
     @staticmethod
-    def isChatType(chatType: str) -> bool:
+    def isChatType(chatType: str) -> Optional[bool]:
         chatType = chatType.lower()
         for type in ["user", "group", "channel", "service", "bot"]:
             if type == chatType:
                 return True
 
     @staticmethod
-    def isMessageType(messageType: str) -> bool:
+    def isMessageType(messageType: str) -> Optional[bool]:
         messageType = messageType.lower()
         for type in ["text", "image", "video", "gif", "video message", "voice", "music", "file"]:
             if type == messageType:
                 return True
 
     @staticmethod
-    def getChatTypeByLink(link: str) -> str:
+    def getChatTypeByLink(link: str) -> Optional[str]:
         if "rubika.ir/joing" in link:
             return "Group"
         elif "rubika.ir/joinc" in link:
@@ -145,7 +146,137 @@ class Utils:
         return result, real_text
 
     @staticmethod
-    def checkLink(url: str) -> bool:
+    def checkMarkdown(text: str) -> tuple:
+        """
+        Parse basic Markdown styles and return metadata with plain text.
+        Supports: **bold**, *italic*, __underline__, ~~strike~~, `mono`, ||spoiler||, [link](url)
+        """
+        if not text:
+            return [], ""
+        patterns = {
+            "Bold": (r"\*\*([^\*]+?)\*\*",),
+            "Underline": (r"__([^_]+?)__",),
+            "Strike": (r"~~([^~]+?)~~",),
+            "Mono": (r"`([^`]+?)`",),
+            "Spoiler": (r"\|\|([^|]+?)\|\|",),
+            "Italic": (r"(?<!\*)\*([^*\n]+?)\*(?!\*)", r"(?<!_)_([^_\n]+?)_(?!_)"),
+            "Link": (r"\[([^\]]+?)\]\(([^\)]+?)\)",),
+        }
+        list_oi:list = []
+        all_matches = []
+        for style, pattern_list in patterns.items():
+            for pattern in pattern_list:
+                for match in finditer(pattern, text):
+                    if style == "Link":
+                        link_text, link_url = match.groups()
+                        all_matches.append({
+                            "start": match.start(),
+                            "length": len(link_text),
+                            "style": style,
+                            "content": link_text,
+                            "full_match": match.group(0),
+                            "extra": link_url
+                        })
+                    else:
+                        content = match.group(1)
+                        all_matches.append({
+                            "start": match.start(),
+                            "length": len(content),
+                            "style": style,
+                            "content": content,
+                            "full_match": match.group(0),
+                            "extra": None
+                        })
+        all_matches.sort(key=lambda x: x["start"])
+        metadata = []
+        conflict = 0
+        real_text_final = text
+        for match in all_matches:
+            if match["style"] == "Link":
+                metadata.append({
+                    "type": "Link",
+                    "from_index": match["start"] - conflict,
+                    "length": match["length"],
+                    "link_url": match["extra"]
+                })
+            else:
+                metadata.append({
+                    "type": match["style"],
+                    "from_index": match["start"] - conflict,
+                    "length": match["length"]
+                })
+            conflict += len(match["full_match"]) - len(match["content"])
+            real_text_final = real_text_final.replace(match["full_match"], match["content"], 1)
+        return metadata, real_text_final
+
+    @staticmethod
+    def checkHTML(text) -> tuple:
+        """
+        Parse basic HTML tags and return metadata with plain text
+        Supports: <b>, <strong>, <i>, <em>, <code>, <s>, <del>, <a href>, <u>, <span class="tg-spoiler">
+        """
+        if text is None:
+            return [], ""
+        metadata = []
+        conflict = 0
+        result = []
+        patterns = {
+            "Bold": (r"<b>([^<]+?)</b>", r"<strong>([^<]+?)</strong>"),
+            "Italic": (r"<i>([^<]+?)</i>", r"<em>([^<]+?)</em>"),
+            "Code": (r"<code>([^<]+?)</code>",),
+            "Strike": (r"<s>([^<]+?)</s>", r"<del>([^<]+?)</del>"),
+            "Underline": (r"<u>([^<]+?)</u>",),
+            "Spoiler": (r'<span class="tg-spoiler">([^<]+?)</span>',),
+            "Link": (r'<a href="([^"]+?)">([^<]+?)</a>',),
+        }
+        all_matches = []
+        for style, pattern_list in patterns.items():
+            for pattern in pattern_list:
+                for match in finditer(pattern, text):
+                    if style == "Link":
+                        link_url, link_text = match.groups()
+                        all_matches.append({
+                            "start": match.start(),
+                            "length": len(link_text),
+                            "style": style,
+                            "content": link_text,
+                            "full_match": match.group(0),
+                            "extra": link_url
+                        })
+                    else:
+                        content = match.group(1)
+                        all_matches.append({
+                            "start": match.start(),
+                            "length": len(content),
+                            "style": style,
+                            "content": content,
+                            "full_match": match.group(0),
+                            "extra": None
+                        })
+        all_matches.sort(key=lambda x: x["start"])
+        real_text_final = text
+        for match in all_matches:
+            if match["style"] == "Link":
+                result.append({
+                    "type": "Link",
+                    "from_index": match["start"] - conflict,
+                    "length": match["length"],
+                    "link_url": match["extra"]
+                })
+                conflict += len(match["full_match"]) - len(match["content"])
+                real_text_final = real_text_final.replace(match["full_match"], match["content"], 1)
+            else:
+                result.append({
+                    "type": match["style"],
+                    "from_index": match["start"] - conflict,
+                    "length": match["length"],
+                })
+                conflict += len(match["full_match"]) - len(match["content"])
+                real_text_final = real_text_final.replace(match["full_match"], match["content"], 1)
+        return result, real_text_final
+
+    @staticmethod
+    def checkLink(url: str) -> Optional[bool]:
         for i in ["http:/", "https://"]:
             if url.startswith(i):
                 return True
