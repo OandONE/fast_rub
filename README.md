@@ -1,10 +1,12 @@
 <img src="https://fast-rub.ParsSource.ir/icon.jpg">
 
-# fast rub
+# Fast Rub
 
-This Python library is for Rubika bots and is currently being updated.
+This Python library is for Rubika bots.
 
-## fast rub
+This library is extremely fast and can send requests to the Rubika server in an optimized and ultra-fast manner, handling your bot in the best possible way.
+
+## Fast Rub
 
 - 1 fast
 - 2 simple syntax
@@ -13,12 +15,26 @@ This Python library is for Rubika bots and is currently being updated.
 ## install :
 
 ```bash
-pip install https://ParsSource.ir/fast_rub/fast_rub-2.2.tar.gz
+pip install --upgrade fastrub
 ```
 
 [Documents](https://fast-rub.ParsSource.ir/index.html)
 
-قسمت pyrubi این کتابخانه فورک شده کتابخانه پایروبی است
-گیت هاب اصلی پایروبی : https://github.com/AliGanji1/pyrubi
+[GitHub](https://github.com/OandONE/fast_rub)
+
+قسمت PyRubi این کتابخانه فورک کتابخانه [پایروبی](https://github.com/AliGanji1/pyrubi) است
 
 
+### نحوه گرفتن آپدیت پیام ها
+```python
+from fast_rub import Client
+from fast_rub.type import Update
+
+bot = Client("name_session")
+
+@bot.on_message()
+async def getting(message:Update):
+    await message.reply("__Hello__ *from* **FastRub** !")
+
+bot.run()
+```
