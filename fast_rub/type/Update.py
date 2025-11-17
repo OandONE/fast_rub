@@ -4,6 +4,7 @@ from .get_type import *
 from .props import *
 from ..button import KeyPad
 from .metadata import metadata as metadata_prop
+from .file import file as FILE
 import json
 from pathlib import Path
 
@@ -14,7 +15,7 @@ class Update:
         except:
             self._data = update_data["updated_message"]
         self._client = client
-        self.raw_data_=update_data
+        self.raw_data_ = update_data
         self.message = update_data.get("new_message", {})
     @property
     def text(self) -> Optional[str]:
@@ -91,8 +92,74 @@ class Update:
         return self._data["metadata"] if "metadata" in self._data else None
     @property
     def meta_data_parts(self) -> Optional[metadata_prop]:
+        """meta data parts list / لیست قسمت های متا دیتا"""
         return metadata_prop(self.metadata["meta_data_parts"]) if self.metadata else None
-
+    @property
+    def is_fowrard(self) -> bool:
+        """forwarded / فوروارد شده"""
+        return "forwarded_from" in self._data
+    @property
+    def forward_from(self) -> Optional[str]:
+        """forward from / فوروارد از"""
+        if self.is_fowrard:
+            return self._data["forwarded_from"]["type_from"]
+        return None
+    @property
+    def forward_message_id(self) -> Optional[str]:
+        """message id forward / آیدی پیام فوروارد شده"""
+        if self.is_fowrard:
+            return self._data["forwarded_from"]["message_id"]
+        return None
+    @property
+    def forward_from_sender_id(self) -> Optional[str]:
+        """sender id forwarded / شناسه گوید فوروارد کننده"""
+        if self.is_fowrard:
+            return self._data["forwarded_from"]["from_sender_id"]
+        return None
+    @property
+    def is_contact(self) -> bool:
+        """contect / مخاطب"""
+        return "contact_message" in self._data
+    @property
+    def contact_phone_number(self) -> Optional[str]:
+        """phone number contact / شماره همراه مخاطب"""
+        if self.is_contact:
+            return self._data["contact_message"]["phone_number"]
+        return None
+    @property
+    def contact_first_name(self) -> Optional[str]:
+        """first name contact / اسم مخاطب"""
+        if self.is_contact:
+            return self._data["contact_message"]["first_name"]
+        return None
+    @property
+    def contact_last_name(self) -> Optional[str]:
+        """last name contact / نام خانوادگی مخاطب"""
+        if self.is_contact:
+            return self._data["contact_message"]["last_name"]
+        return None
+    @property
+    def is_sticker(self) -> bool:
+        """sticker / استیکر"""
+        return "sticker" in self._data
+    @property
+    def sticker_emoji_character(self) -> Optional[str]:
+        """imoji sticker character / کاراکتر ایموجی استیکر"""
+        if self.is_sticker:
+            return self._data["sticker"]["emoji_character"]
+        return None
+    @property
+    def sticker_sticker_id(self) -> Optional[str]:
+        """sticker id / آیدی استیکر"""
+        if self.is_sticker:
+            return self._data["sticker"]["sticker_id"]
+        return None
+    @property
+    def sticker_file(self) -> Union[FILE,dict]:
+        """file sticker / فایل استیکر"""
+        if self.is_sticker:
+            return FILE(self._data["sticker"]["file"])
+        return {}
 
 
     @auto_async

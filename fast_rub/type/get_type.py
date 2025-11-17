@@ -1,6 +1,8 @@
 import os
+from typing import Literal
 
-def get_file_category(filename):
+
+def get_file_category(filename) -> str:
     _, ext = os.path.splitext(filename)
     ext = ext.lower().lstrip('.')
     if not ext:

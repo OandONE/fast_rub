@@ -1,0 +1,2 @@
+class FastRubError(Exception):
+    pass

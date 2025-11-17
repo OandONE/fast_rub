@@ -1,7 +1,8 @@
 from typing import TYPE_CHECKING
 import re
 import time as ti
-from .type.metadata import metadata
+
+from fast_rub.Client import Update
 
 if TYPE_CHECKING:
     from .Client import Update
@@ -174,6 +175,15 @@ class has_metadata_type(Filter):
                     return True
         return False
 
+class is_metadata_type(Filter):
+    def __init__(self,type) -> None:
+        self.type = type
+    def __call__(self, update: 'Update') -> bool:
+        if update.meta_data_parts and len(update.meta_data_parts.data) != 1:
+            if update.meta_data_parts.data[0]["type"].lower() == self.type.lower():
+                return True
+        return False
+
 class has_bold(Filter):
     """check for has bold text / چک وجود داشتن متن بولد"""
     def __call__(self, update: 'Update') -> bool:
@@ -209,6 +219,97 @@ class has_link(Filter):
     def __call__(self, update: 'Update') -> bool:
         return has_metadata_type("link")(update)
 
+class is_bold(Filter):
+    """all text is bold / بولد بودن تمام متن"""
+    def __call__(self, update: 'Update') -> bool:
+        return is_metadata_type("bold")(update)
+
+class is_italic(Filter):
+    """all text is italic / ایتالیک بودن تمام متن"""
+    def __call__(self, update: 'Update') -> bool:
+        return is_metadata_type("italic")(update)
+
+class is_underline(Filter):
+    """all text is underline / آندرلاین بودن تمام متن"""
+    def __call__(self, update: 'Update') -> bool:
+        return is_metadata_type("underline")(update)
+
+class is_strike(Filter):
+    """all text is strike / خط خورده بودن تمام متن"""
+    def __call__(self, update: 'Update') -> bool:
+        return is_metadata_type("strike")(update)
+
+class is_mono(Filter):
+    """all text is mono / متن کپی بودن تمام متن"""
+    def __call__(self, update: 'Update') -> bool:
+        return is_metadata_type("mono")(update)
+
+class is_spoiler(Filter):
+    """all text is spoiler / اسپویلر بودن تمام متن"""
+    def __call__(self, update: 'Update') -> bool:
+        return is_metadata_type("spoiler")(update)
+
+class is_link(Filter):
+    """all text is link / هایپر لینک بودن تمام متن"""
+    def __call__(self, update: 'Update') -> bool:
+        return is_metadata_type("link")(update)
+
+
+class in_text(Filter):
+    """text in text message / وجود متن در متن آپدیت"""
+    def __init__(self,text: str) -> None:
+        self.text = text
+    def __call__(self, update: 'Update') -> bool:
+        if self.text in str(update.text):
+            return True
+        return False
+
+class is_forward(Filter):
+    """message is forward / پیام فوروارد شده"""
+    def __call__(self, update: 'Update') -> bool:
+        return update.is_fowrard
+
+class is_reply(Filter):
+    """message has reply / پیام دارای ریپلای"""
+    def __call__(self, update: Update) -> bool:
+        return update.reply_to_message_id != None
+
+class text_length(Filter):
+    """filter by text length / فیلتر بر اساس طول متن"""
+    def __init__(self, min_len: int = 0, max_len: float = float('inf')):
+        self.min_len = min_len
+        self.max_len = max_len
+    def __call__(self, update: 'Update') -> bool:
+        if update.text:
+            return self.min_len <= len(update.text) <= self.max_len
+        return False
+
+class starts_with(Filter):
+    """filter text starting with / فیلتر متن هایی که با این شروع میشن"""
+    def __init__(self, prefix: str):
+        self.prefix = prefix
+    def __call__(self, update: 'Update') -> bool:
+        return update.text != None and update.text.startswith(self.prefix)
+
+class ends_with(Filter):
+    """filter text ending with / فیلتر متن هایی که با این پایان میابند"""
+    def __init__(self, suffix: str):
+        self.suffix = suffix
+    def __call__(self, update: 'Update') -> bool:
+        return update.text != None and update.text.endswith(self.suffix)
+
+class is_sticker(Filter):
+    """filter by sticker / فیلتر استیکر"""
+    def __call__(self, update: 'Update') -> bool:
+        return update.is_sticker
+
+class is_contact(Filter):
+    """filter by contact / فیلتر مخاطب"""
+    def __call__(self, update: 'Update') -> bool:
+        return update.is_contact
+
+
+
 class and_filter(Filter):
     """filters {and} for if all filters is True : run code ... / فیلتر های ورودی {and} که اگر تمامی فیلتر های ورودی برابر True بود اجرا شود"""
     def __init__(self, *filters):
@@ -224,3 +325,10 @@ class or_filter(Filter):
 
     def __call__(self, update: 'Update') -> bool:
         return any(f(update) for f in self.filters)
+
+class not_filter(Filter):
+    """not True filter / درست نبودن فیلتر"""
+    def __init__(self,filter):
+        self.filter = filter
+    def __call__(self, update: Update) -> bool:
+        return not self.filter(update)

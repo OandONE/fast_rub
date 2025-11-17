@@ -4,6 +4,9 @@ import time
 import json
 import asyncio
 import inspect
+import aiofiles
+from functools import wraps
+from pathlib import Path
 from typing import (
     Optional,
     Callable,
@@ -15,11 +18,8 @@ from typing import (
     Any
 )
 from .button import KeyPad
-import aiofiles
 from .colors import *
 from .filters import Filter
-from functools import wraps
-from pathlib import Path
 from .type import (
     Update,
     UpdateButton
@@ -28,6 +28,7 @@ from .async_sync import *
 from .logger import *
 from .type.props import *
 from .pyrubi.utils.utils import Utils
+from .errors import FastRubError
 
 
 class Client:
@@ -37,13 +38,13 @@ class Client:
         token: Optional[str] = None,
         user_agent: Optional[str] = None,
         time_out: Optional[int] = 60,
-        display_welcome=True,
+        display_welcome = True,
         use_to_fastrub_webhook_on_message: Union[str,bool] = True,
         use_to_fastrub_webhook_on_button: Union[str,bool] = True,
         save_logs: Optional[bool] = None,
         view_logs: Optional[bool] = None,
         proxy: Optional[str] = None,
-        main_parse_mode: Literal['Markdown', 'HTML', None] = None
+        main_parse_mode: Literal['Markdown', 'HTML', "Unknown", None] = "Unknown"
     ):
         """Client for login and setting robot / کلاینت برای لوگین و تنظیمات ربات"""
         name = name_session + ".faru"
@@ -54,12 +55,6 @@ class Client:
         self._running = False
         self.list_ = []
         self.proxy = proxy
-        self.data_keypad = []
-        self.data_keypad2 = []
-        self._button_handlers2 = []
-        self._running_ = False
-        self._loop = None
-        self.last = []
         self._fetch_messages = False
         self._fetch_messages_ = False
         self._fetch_buttons = False
@@ -72,7 +67,7 @@ class Client:
         self.next_offset_id = ""
         self.next_offset_id_ = ""
         self.last_ = []
-        self.main_parse_mode:Literal['Markdown', 'HTML', None] = main_parse_mode
+        self.main_parse_mode:Literal['Markdown', 'HTML', 'Unknown', None] = main_parse_mode
         if os.path.isfile(name):
             with open(name, "r", encoding="utf-8") as file:
                 text_json_fast_rub_session = json.load(file)
@@ -86,11 +81,13 @@ class Client:
                 except:
                     pass
         else:
-            if token == None:
+            if token is None:
                 token = input("Enter your token : ")
                 while token in ["", " ", None]:
                     cprint("Enter the token valid !",Colors.RED)
                     token = input("Enter your token : ")
+            if len(str(self.token)) != 64 :
+                raise FastRubError(f"token invalid !")
             text_json_fast_rub_session = {
                 "name_session": name_session,
                 "token": token,
@@ -151,7 +148,7 @@ class Client:
 
     @async_to_sync
     async def check_closing(self) -> bool:
-        """چک کردن وضعیت کلاینت"""
+        """check status client / چک کردن وضعیت کلاینت"""
         if self.httpx_client.is_closed:
             try:
                 await self.httpx_client.get(self.main_url)
@@ -161,7 +158,7 @@ class Client:
 
     @async_to_sync
     async def manage_closeing(self) -> None:
-        """مدیریت اتصال کلاینت"""
+        """manage contact client / مدیریت اتصال کلاینت"""
         if await self.check_closing():
             try:
                 await self.httpx_client.aclose()
@@ -214,7 +211,7 @@ class Client:
 
     @async_to_sync
     async def send_requests(
-        self, method, data_: Optional[Union[Dict[str, Any], List[Any]]] = None,url_op:Optional[str] = None
+        self, method, data_: Optional[Union[Dict[str, Any], List[Any]]] = None
     ) -> dict:
         """send request to methods / ارسال درخواست به متود ها"""
         self.logger.info("در حال ارسال درخواست")
@@ -269,14 +266,18 @@ class Client:
         return props(result)
 
     @async_to_sync
-    async def set_main_parse_mode(self,parse_mode: Literal['Markdown', 'HTML', None]) -> None:
-        """setting parse mode main / تنظیم کردن مقدار اصلی پارس مود"""
+    async def set_main_parse_mode(self,parse_mode: Literal['Markdown', 'HTML', 'Unknown', None]) -> None:
+        """setting parse mode main / تنظیم کردن مقدار اصلی پارس مود
+
+توجه :
+در صورت تغییر مارکدوان در کلاینت یا متود ست مین پارس مود , پارس مود همیشه روی آن حالت قرار میگیرد
+در صورتی که میخواهید از این حالت خارج شود و از ورودی های متود ها پیروی کند مقدار آن را در متود ست مین پارس مود برابر 'Unknown' کنید"""
         self.main_parse_mode = parse_mode
 
     @async_to_sync
-    async def parse_mode_text(self, text: str,parse_mode: Literal["Markdown","HTML",None] = "Markdown") -> tuple:
+    async def parse_mode_text(self, text: str,parse_mode: Literal["Markdown","HTML","Unknown",None] = "Markdown") -> tuple:
         """setting parse mode text / تنظیم پارس مود متن"""
-        if self.main_parse_mode:
+        if self.main_parse_mode != "Unknown":
             parse_mode = self.main_parse_mode
         if parse_mode == "Markdown":
             data = Utils.checkMarkdown(text)
@@ -291,7 +292,7 @@ class Client:
         self,
         text: str,
         chat_id: str,
-        inline_keypad = KeyPad,
+        inline_keypad: Optional[KeyPad],
         disable_notification: Optional[bool] = False,
         reply_to_message_id: Optional[str] = None,
         auto_delete: Optional[int] = None,
@@ -323,6 +324,47 @@ class Client:
         return props(result)
 
     @async_to_sync
+    async def send_message(
+        self,
+        chat_id: str,
+        text: Optional[str],
+        inline_keypad: Optional[KeyPad],
+        disable_notification: Optional[bool] = False,
+        reply_to_message_id: Optional[str] = None,
+        auto_delete: Optional[int] = None,
+        parse_mode: Literal["Markdown","HTML",None] = "Markdown",
+        # file
+        file: Union[str , Path , bytes , None] = None,
+        name_file: Optional[str] = None,
+        type_file: Literal["File", "Image", "Voice", "Music", "Gif" , "Video"] = "File",
+        file_id: Optional[str] = None,
+        # poll
+        question: Optional[str] = None,
+        options: Optional[list] = None,
+        # location
+        latitude: Optional[str] = None,
+        longitude: Optional[str] = None,
+        # contact
+        first_name: Optional[str] = None,
+        last_name: Optional[str] = None,
+        phone_number: Optional[str] = None,
+    ) -> props:
+        """send message / ارسال پیام"""
+        if file_id:
+            return await self.send_file_by_file_id(chat_id,file_id,text,reply_to_message_id,disable_notification,auto_delete,parse_mode)
+        elif file:
+            return await self.send_file(chat_id,file,name_file,text,reply_to_message_id,type_file,disable_notification,auto_delete,parse_mode)
+        elif question != None and options != None:
+            return await self.send_poll(chat_id,question,options,auto_delete)
+        elif latitude != None and longitude != None:
+            return await self.send_location(chat_id,latitude,longitude,disable_notification=disable_notification,reply_to_message_id=reply_to_message_id,auto_delete=auto_delete)
+        elif first_name and last_name and phone_number:
+            return await self.send_contact(chat_id,first_name,last_name,phone_number,reply_to_message_id=reply_to_message_id,disable_notificatio=disable_notification,auto_delete=auto_delete)
+        elif text != None:
+            return await self.send_text(text,chat_id,inline_keypad,disable_notification,reply_to_message_id,auto_delete,parse_mode)
+        raise ValueError("Please Enter The Args !")
+
+    @async_to_sync
     async def send_poll(
         self,
         chat_id: str,
@@ -332,6 +374,8 @@ class Client:
     ) -> props:
         """sending poll to chat id / ارسال نظرسنجی به یک چت آیدی"""
         self.logger.info("استفاده از متود send_poll")
+        if len(options) > 10:
+            raise FastRubError("len for options is logner from 10 option")
         data = {"chat_id": chat_id, "question": question, "options": options}
         result = await self.send_requests(
             "sendPoll",
@@ -472,6 +516,21 @@ class Client:
             finally:
                 await self.auto_delete(to_chat_id,message_id,auto_delete)
         return props(result)
+
+    @async_to_sync
+    async def forward_messages(
+        self,
+        from_chat_id: str,
+        message_ids: list,
+        to_chat_id: str,
+        disable_notification : Optional[bool] = False,
+        auto_delete: Optional[int] = None
+    ) -> List[props]:
+        """forwarding messages to chat id / فوروارد چند پیام به یک چت آیدی"""
+        list_forwards = []
+        for ms_id in message_ids:
+            list_forwards.append(await self.forward_message(from_chat_id,ms_id,to_chat_id,disable_notification,auto_delete))
+        return list_forwards
 
     @async_to_sync
     async def edit_message_text(
@@ -1018,7 +1077,7 @@ class Client:
             await asyncio.sleep(0.1)
 
     @async_to_sync
-    async def _process_edit(self, time_updata_sleep : Union[int,int] = 1):
+    async def _process_edit(self, time_updata_sleep : int = 1):
         while self._running:
             mes = (await self.get_updates(limit=100,offset_id=self.next_offset_id_))
             if mes['status']=="INVALID_ACCESS":
