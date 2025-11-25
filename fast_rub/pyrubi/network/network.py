@@ -140,11 +140,21 @@ class Network:
             
             print("\nFailed to upload the file!")
 
-        requestSendFileData:dict = asyncio.run(self.methods.requestSendFile(
-            fileName = fileName,
-            mime = mime,
-            size = len(file)
-        ))
+        try:
+            loop = asyncio.get_running_loop()
+            requestSendFileData = asyncio.run_coroutine_threadsafe(
+                self.methods.requestSendFile(
+                    fileName=fileName,
+                    mime=mime, 
+                    size=len(file)
+                ), loop
+            ).result()
+        except RuntimeError:
+            requestSendFileData = asyncio.run(self.methods.requestSendFile(
+                fileName=fileName,
+                mime=mime,
+                size=len(file)
+            ))
 
         header = {
             "auth": self.sessionData["auth"],

@@ -44,7 +44,8 @@ class Client:
         save_logs: Optional[bool] = None,
         view_logs: Optional[bool] = None,
         proxy: Optional[str] = None,
-        main_parse_mode: Literal['Markdown', 'HTML', "Unknown", None] = "Unknown"
+        main_parse_mode: Literal['Markdown', 'HTML', "Unknown", None] = "Unknown",
+        max_retries: int = 3
     ):
         """Client for login and setting robot / کلاینت برای لوگین و تنظیمات ربات"""
         name = name_session + ".faru"
@@ -66,8 +67,11 @@ class Client:
         self._message_handlers_ = []
         self.next_offset_id = ""
         self.next_offset_id_ = ""
-        self.last_ = []
+        self.next_offset_id_get_message = ""
+        self.geted_u = 0
         self.main_parse_mode:Literal['Markdown', 'HTML', 'Unknown', None] = main_parse_mode
+        self.max_retries = max_retries
+        self.list_befor_messages = []
         if os.path.isfile(name):
             with open(name, "r", encoding="utf-8") as file:
                 text_json_fast_rub_session = json.load(file)
@@ -113,7 +117,22 @@ class Client:
             self.log_to_file = False
         if self.log_to_console is None:
             self.log_to_console = False
-        self.httpx_client = httpx.AsyncClient(timeout=self.time_out,proxy=self.proxy)
+        self.httpx_client = httpx.AsyncClient(
+            timeout=httpx.Timeout(
+                connect=10.0,
+                read=30.0,
+                write=10.0,
+                pool=10.0
+            ),
+            proxy=self.proxy,
+            limits=httpx.Limits(
+                max_connections=100,
+                max_keepalive_connections=20,
+                keepalive_expiry=60.0
+            ),
+            http1=True,
+            http2=True
+        )
         self.use_to_fastrub_webhook_on_message=use_to_fastrub_webhook_on_message
         self.use_to_fastrub_webhook_on_button = use_to_fastrub_webhook_on_button
         if type(use_to_fastrub_webhook_on_message) is str:
@@ -130,6 +149,11 @@ class Client:
             asyncio.run(self.version_botapi())
         except:
             self.main_url = self.urls[1]
+        try:
+            mes = self.get_updates(limit=100)
+            self.next_offset_id_get_message = mes["data"]["next_offset_id"]
+        except:
+            pass
         self.logger = logging.getLogger("fast_rub")
         setup_logging(log_to_console=self.log_to_console,log_to_file=self.log_to_file)
         if display_welcome:
@@ -158,23 +182,60 @@ class Client:
 
     @async_to_sync
     async def manage_closeing(self) -> None:
-        """manage contact client / مدیریت اتصال کلاینت"""
-        if await self.check_closing():
+        """مدیریت اتصال کلاینت با بررسی سلامت"""
+        try:
+            if self.httpx_client.is_closed:
+                self.logger.info("اتصال بسته شده، در حال ایجاد مجدد...")
+                await self._recreate_client()
+                return
+                
             try:
-                await self.httpx_client.aclose()
-            except:
-                pass
-            self.httpx_client = httpx.AsyncClient(
-                timeout=self.time_out, 
-                proxy=self.proxy,
-                limits=httpx.Limits(max_connections=100, max_keepalive_connections=20)
-            )
+                test_url = f"{self.main_url}{self.token}/getMe"
+                async with self.httpx_client.stream("GET", test_url, timeout=5.0) as response:
+                    if response.status_code != 200:
+                        raise httpx.ConnectError("Connection test failed")
+            except (httpx.ReadError, httpx.ConnectError, httpx.TimeoutException):
+                self.logger.warning("اتصال نامعتبر، در حال بازسازی...")
+                await self._recreate_client()
+                
+        except Exception as e:
+            self.logger.error(f"خطا در مدیریت اتصال: {e}")
+            await self._recreate_client()
+
+    async def _recreate_client(self):
+        """بازسازی کامل httpx client"""
+        try:
+            await self.httpx_client.aclose()
+        except:
+            pass
+        
+        self.httpx_client = httpx.AsyncClient(
+            timeout=httpx.Timeout(connect=10.0, read=30.0, write=10.0, pool=10.0),
+            proxy=self.proxy,
+            limits=httpx.Limits(max_connections=100, max_keepalive_connections=20),
+            http1=True,
+            http2=True
+        )
+
+    @async_to_sync
+    async def health_check(self) -> bool:
+        """بررسی سلامت اتصال به سرور تلگرام"""
+        try:
+            result = await self.send_requests("getMe")
+            return result["status"] == "OK"
+        except:
+            return False
+
+    @async_to_sync  
+    async def set_retry_settings(self, max_retries: int = 3):
+        """تنظیمات تلاش مجدد"""
+        self.max_retries = max_retries
 
     @async_to_sync
     async def version_botapi(self) -> str:
         """getting version botapi / گرفتن نسخه بات ای پی آی"""
         await self.manage_closeing()
-        response = await self.httpx_client.get(self.main_url,timeout=self.time_out)
+        response = await self.httpx_client.get(self.main_url.replace("v3/",""),timeout=self.time_out)
         version = response.text
         return version
 
@@ -213,32 +274,62 @@ class Client:
     async def send_requests(
         self, method, data_: Optional[Union[Dict[str, Any], List[Any]]] = None
     ) -> dict:
-        """send request to methods / ارسال درخواست به متود ها"""
-        self.logger.info("در حال ارسال درخواست")
+        """send request to methods with retry mechanism"""
+        self.logger.info(f"در حال ارسال درخواست به {method}")
+        max_retries = self.max_retries
         url_op = self.main_url
         url = f"{url_op}{self.token}/{method}"
         headers = {"Content-Type": "application/json"}
+        
         if self.user_agent != None:
             headers["User-Agent"] = self.user_agent
-        await self.manage_closeing()
-        try:
-            if data_ == None:
-                result = await self.httpx_client.post(url, headers=headers)
-                result_ = result.json()
-            else:
-                result = await self.httpx_client.post(url, headers=headers, json=data_)
-                result_ = result.json()
-            if result_["status"] != "OK":
-                self.logger.error(f"خطایی از سمت سرور ! status : {result_['status']}")
-                raise TypeError(f"Error for invalid status : {result_}")
-            self.logger.info("نتیجه درخواست موفق است")
-            return result_
-        except TimeoutError:
-            self.logger.error("خطا ! زمان ارسال درخواست به پایان رسیده است")
-            raise TimeoutError("Please check the internet !")
-        except Exception as e:
-            self.logger.error(f"خطایی ناشناخته : {e}")
-            raise e
+
+        last_exception = None
+        for attempt in range(max_retries):
+            try:
+                await self.manage_closeing()
+                
+                if data_ == None:
+                    result = await self.httpx_client.post(url, headers=headers)
+                    result_ = result.json()
+                else:
+                    result = await self.httpx_client.post(url, headers=headers, json=data_)
+                    result_ = result.json()
+                    
+                if result_["status"] != "OK":
+                    self.logger.error(f"خطا از سمت سرور! status: {result_['status']}")
+                    raise TypeError(f"Error for invalid status: {result_}")
+                    
+                self.logger.info("نتیجه درخواست موفق است")
+                return result_
+                
+            except (httpx.ReadError, httpx.ConnectError, httpx.TimeoutException) as e:
+                last_exception = e
+                wait_time = (attempt + 1) * 2
+                
+                self.logger.warning(
+                    f"خطای شبکه در تلاش {attempt + 1}/{max_retries}: {type(e).__name__}. "
+                    f"انتظار {wait_time} ثانیه..."
+                )
+                
+                if attempt < max_retries - 1:
+                    await asyncio.sleep(wait_time)
+                    try:
+                        await self.httpx_client.aclose()
+                    except:
+                        pass
+                    self.httpx_client = httpx.AsyncClient(
+                        timeout=httpx.Timeout(connect=10.0, read=30.0, write=10.0, pool=10.0),
+                        proxy=self.proxy,
+                        limits=httpx.Limits(max_connections=100, max_keepalive_connections=20)
+                    )
+                    
+            except Exception as e:
+                self.logger.error(f"خطای ناشنخانه send_requests » {e}")
+                raise e
+
+        self.logger.error(f"تمام {max_retries} تلاش ناموفق بود")
+        raise last_exception
 
     @async_to_sync
     async def auto_delete(self,chat_id:str,message_id:str,time_sleep:float) -> props:
@@ -292,7 +383,7 @@ class Client:
         self,
         text: str,
         chat_id: str,
-        inline_keypad: Optional[KeyPad],
+        inline_keypad: Optional[KeyPad] = None,
         disable_notification: Optional[bool] = False,
         reply_to_message_id: Optional[str] = None,
         auto_delete: Optional[int] = None,
@@ -329,7 +420,7 @@ class Client:
         chat_id: str,
         text: Optional[str],
         inline_keypad: Optional[KeyPad],
-        disable_notification: Optional[bool] = False,
+        disable_notification: bool = False,
         reply_to_message_id: Optional[str] = None,
         auto_delete: Optional[int] = None,
         parse_mode: Literal["Markdown","HTML",None] = "Markdown",
@@ -341,6 +432,11 @@ class Client:
         # poll
         question: Optional[str] = None,
         options: Optional[list] = None,
+        type_poll: Literal["Regular", "Quiz"] = "Regular",
+        is_anonymous: bool = True,
+        correct_option_index: Optional[int] = None,
+        allows_multiple_answers: bool = False,
+        hint: Optional[str] = None,
         # location
         latitude: Optional[str] = None,
         longitude: Optional[str] = None,
@@ -355,7 +451,7 @@ class Client:
         elif file:
             return await self.send_file(chat_id,file,name_file,text,reply_to_message_id,type_file,disable_notification,auto_delete,parse_mode)
         elif question != None and options != None:
-            return await self.send_poll(chat_id,question,options,auto_delete)
+            return await self.send_poll(chat_id,question,options,type_poll=type_poll,is_anonymous=is_anonymous,correct_option_index=correct_option_index,allows_multiple_answers=allows_multiple_answers,hint=hint,auto_delete=auto_delete,reply_to_message_id=reply_to_message_id,disable_notification=disable_notification)
         elif latitude != None and longitude != None:
             return await self.send_location(chat_id,latitude,longitude,disable_notification=disable_notification,reply_to_message_id=reply_to_message_id,auto_delete=auto_delete)
         elif first_name and last_name and phone_number:
@@ -370,13 +466,31 @@ class Client:
         chat_id: str,
         question: str,
         options: list,
+        type_poll: Literal["Regular", "Quiz"] = "Regular",
+        is_anonymous: bool = True,
+        correct_option_index: Optional[int] = None,
+        allows_multiple_answers: bool = False,
+        hint: Optional[str] = None,
+        disable_notification: bool = False,
+        reply_to_message_id: Optional[str] = None,
         auto_delete: Optional[int] = None
     ) -> props:
         """sending poll to chat id / ارسال نظرسنجی به یک چت آیدی"""
         self.logger.info("استفاده از متود send_poll")
         if len(options) > 10:
             raise FastRubError("len for options is logner from 10 option")
-        data = {"chat_id": chat_id, "question": question, "options": options}
+        data = {
+            "chat_id": chat_id,
+            "question": question,
+            "options": options,
+            "type": type_poll,
+            "is_anonymous": is_anonymous,
+            "correct_option_index": correct_option_index,
+            "hint": hint,
+            "allows_multiple_answers": allows_multiple_answers,
+            "reply_to_message_id": reply_to_message_id,
+            "disable_notification": disable_notification
+        }
         result = await self.send_requests(
             "sendPoll",
             data,
@@ -487,6 +601,45 @@ class Client:
             data,
         )
         return props(result)
+
+    @async_to_sync
+    async def get_message(self,chat_id: str,message_id: str,limit_search: int = 100) -> Optional[Update]:
+        updates = await self.get_updates(limit_search,self.next_offset_id_get_message)
+        self.geted_u = len(updates["data"]["updates"])
+        for message in updates["data"]["updates"]:
+            if message["type"]=="NewMessage":
+                if message["chat_id"] == chat_id and message['new_message']['message_id'] == message_id:
+                    return Update(message,self)
+        if self.geted_u >= 40:
+            try:
+                self.next_offset_id_get_message = updates["data"]["next_offset_id"]
+                self.geted_u = 0
+                return await self.get_message(chat_id,message_id,limit_search)
+            except:
+                pass
+        return None
+
+    @async_to_sync
+    async def get_messages(self,chat_id: str,message_id: str,limit_search: int = 100,get_befor: int = 10) -> Optional[dict]:
+        updates = await self.get_updates(limit_search,self.next_offset_id_get_message)
+        result = {"messages":[]}
+        self.geted_u = len(updates["data"]["updates"])
+        for message in updates["data"]["updates"]:
+            if message["type"]=="NewMessage" and message["chat_id"] == chat_id:
+                self.list_befor_messages.append(message)
+                if message['new_message']['message_id'] == message_id:
+                    self.list_befor_messages.reverse()
+                    for i in range(get_befor):
+                        result['messages'].append(self.list_befor_messages[i])
+                    return result
+        if self.geted_u >= 40:
+            try:
+                self.next_offset_id_get_message = updates["data"]["next_offset_id"]
+                self.geted_u = 0
+                return await self.get_messages(chat_id,message_id,limit_search,get_befor)
+            except:
+                pass
+        return result
 
     @async_to_sync
     async def forward_message(
@@ -986,12 +1139,14 @@ class Client:
         list_up:List[Literal["ReceiveUpdate", "ReceiveInlineMessage"]]= ["ReceiveUpdate", "ReceiveInlineMessage"]
         if r["status"]:
             for it in list_up:
-                await self.set_endpoint(f"https://fast-rub.ParsSource.ir/geting_button_updates/{self.token}/{it}", it)
+                url = f"https://fast-rub.ParsSource.ir/geting_button_updates/{self.token}/{it}"
+                set_ = await self.set_endpoint(url, it)
             return True
         else:
             if r["error"] == "This token exists":
                 for it in list_up:
-                    await self.set_endpoint(f"https://fast-rub.ParsSource.ir/geting_button_updates/{self.token}/{it}", it)
+                    url = f"https://fast-rub.ParsSource.ir/geting_button_updates/{self.token}/{it}"
+                    set_ = await self.set_endpoint(url, it)
                 return True
         return False
 
@@ -1011,31 +1166,45 @@ class Client:
         return decorator
 
     @async_to_sync
-    async def _process_messages_(self, time_updata_sleep : Union[float,float] = 0.5):
+    async def _process_messages_(self, time_updata_sleep: Union[float, float] = 0.5):
         while self._running:
-            mes = (await self.get_updates(limit=100,offset_id=self.next_offset_id))
-            if mes.status=="INVALID_ACCESS":
-                raise PermissionError("Due to Rubika's restrictions, access to retrieve messages has been blocked. Please try again.")
             try:
-                self.next_offset_id = mes["data"]["next_offset_id"]
-            except:
-                pass
-            for message in mes["data"]["updates"]:
-                if message["type"]=="NewMessage":
-                    time_sended_mes = int(message['new_message']['time'])
-                    now = int(time.time())
-                    time_ = time_updata_sleep + 4
-                    if (now - time_sended_mes < time_) and (not message['new_message']['message_id'] in self.last):
-                        self.last.append(message['new_message']['message_id'])
-                        if len(self.last) > 500:
-                            self.last.pop(-1)
-                        update_obj = Update(message,self)
-                        for handler in self._message_handlers_:
-                            self._schedule_handler(handler,update_obj)
-            await asyncio.sleep(time_updata_sleep)
+                mes = await self.get_updates(limit=100, offset_id=self.next_offset_id)
+                
+                if mes.status == "INVALID_ACCESS":
+                    raise PermissionError("Due to Rubika's restrictions, access to retrieve messages has been blocked.")
+                    
+                try:
+                    self.next_offset_id = mes["data"]["next_offset_id"]
+                except:
+                    pass
+                    
+                for message in mes["data"]["updates"]:
+                    if message["type"] == "NewMessage":
+                        time_sended_mes = int(message['new_message']['time'])
+                        now = int(time.time())
+                        time_ = time_updata_sleep + 4
+                        
+                        if (now - time_sended_mes < time_) and (not message['new_message']['message_id'] in self.last):
+                            self.last.append(message['new_message']['message_id'])
+                            if len(self.last) > 500:
+                                self.last.pop(-1)
+                            update_obj = Update(message, self)
+                            for handler in self._message_handlers_:
+                                self._schedule_handler(handler, update_obj)
+                                
+                await asyncio.sleep(time_updata_sleep)
+                
+            except (httpx.ReadError, httpx.ConnectError) as e:
+                self.logger.warning(f"خطای شبکه در _process_messages_: {e} - انتظار 5 ثانیه...")
+                await asyncio.sleep(5)
+            except Exception as e:
+                self.logger.error(f"خطای ناشناخته در _process_messages_: {e}")
+                await asyncio.sleep(10)
 
     def on_message_updates(self, filters: Optional[Filter] = None):
         """برای دریافت آپدیت‌های پیام"""
+        self._fetch_messages = True
         def decorator(handler):
             @wraps(handler)
             async def wrapped(update):
@@ -1079,25 +1248,18 @@ class Client:
     @async_to_sync
     async def _process_edit(self, time_updata_sleep : int = 1):
         while self._running:
-            mes = (await self.get_updates(limit=100,offset_id=self.next_offset_id_))
+            mes = (await self.get_updates(limit=100,offset_id=self.next_offset_id))
             if mes['status']=="INVALID_ACCESS":
                 raise PermissionError("Due to Rubika's restrictions, access to retrieve messages has been blocked. Please try again.")
             try:
-                self.next_offset_id_ = mes["data"]["next_offset_id"]
+                self.next_offset_id = mes["data"]["next_offset_id"]
             except:
                 pass
             for message in mes['data']['updates']:
                 if message["type"]=="UpdatedMessage":
-                    time_sended_mes = int(message['updated_message']['time'])
-                    now = int(time.time())
-                    time_ = time_updata_sleep + 4
-                    if (now - time_sended_mes < time_) and (not message['updated_message']['message_id'] in self.last_):
-                        self.last_.append(message['updated_message']['message_id'])
-                        if len(self.last_) > 500:
-                            self.last_.pop(-1)
-                        update_obj = Update(message,self)
-                        for handler in self._edit_handlers:
-                            self._schedule_handler(handler,update_obj)
+                    update_obj = Update(message,self)
+                    for handler in self._edit_handlers:
+                        self._schedule_handler(handler,update_obj)
             await asyncio.sleep(time_updata_sleep)
 
     @async_to_sync
@@ -1147,3 +1309,7 @@ class Client:
         self._running = True
         self.logger.info("ربات در حال دریافت پیام ها")
         asyncio.run(self._run_all())
+
+    def stop(self):
+        """خاموش کردن گرفتن آپدیت ها / off the getting updates"""
+        self._running = False

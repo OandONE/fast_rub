@@ -1,6 +1,6 @@
 from random import choices, randint
 from time import time
-from re import finditer, sub
+from re import finditer, sub , DOTALL
 from base64 import b64encode
 from io import BytesIO
 from tempfile import NamedTemporaryFile
@@ -153,7 +153,9 @@ class Utils:
         """
         if not text:
             return [], ""
+        
         patterns = {
+            "Pre": (r"```(.*?)```",),
             "Bold": (r"\*\*([^\*]+?)\*\*",),
             "Underline": (r"__([^_]+?)__",),
             "Strike": (r"~~([^~]+?)~~",),
@@ -161,66 +163,114 @@ class Utils:
             "Spoiler": (r"\|\|([^|]+?)\|\|",),
             "Italic": (r"(?<!\*)\*([^*\n]+?)\*(?!\*)", r"(?<!_)_([^_\n]+?)_(?!_)"),
             "Link": (r"\[([^\]]+?)\]\(([^\)]+?)\)",),
+            "Mention": (r"\@\@([^@@]+?)\@\@",),
         }
-        list_oi:list = []
+        
         all_matches = []
+        mention_objects = [i.group(1) for i in finditer(r"\@\(([^(]*)\)", text)]
+        mention_object_index = 0
+        used_positions = set()
+
         for style, pattern_list in patterns.items():
             for pattern in pattern_list:
-                for match in finditer(pattern, text):
+                for match in finditer(pattern, text, flags=DOTALL):
+                    start, end = match.start(), match.end()
+                    
+                    if any(pos in used_positions for pos in range(start, end)):
+                        continue
+                    
                     if style == "Link":
                         link_text, link_url = match.groups()
                         all_matches.append({
-                            "start": match.start(),
+                            "start": start,
+                            "end": end,
                             "length": len(link_text),
                             "style": style,
                             "content": link_text,
                             "full_match": match.group(0),
                             "extra": link_url
                         })
-                    else:
-                        content = match.group(1)
+                    elif style == "Pre":
+                        content = match.group(1).strip() if match.group(1) else ""
                         all_matches.append({
-                            "start": match.start(),
+                            "start": start,
+                            "end": end,
                             "length": len(content),
                             "style": style,
                             "content": content,
                             "full_match": match.group(0),
                             "extra": None
                         })
+                    else:
+                        content = match.group(1)
+                        all_matches.append({
+                            "start": start,
+                            "end": end,
+                            "length": len(content),
+                            "style": style,
+                            "content": content,
+                            "full_match": match.group(0),
+                            "extra": None
+                        })
+                    
+                    used_positions.update(range(start, end))
         all_matches.sort(key=lambda x: x["start"])
         metadata = []
         conflict = 0
         real_text_final = text
+
         for match in all_matches:
+            current_index = match["start"] - conflict
+            
             if match["style"] == "Link":
                 metadata.append({
                     "type": "Link",
-                    "from_index": match["start"] - conflict,
+                    "from_index": current_index,
                     "length": match["length"],
                     "link_url": match["extra"]
                 })
+            elif match["style"] == "Mention":
+                if mention_object_index < len(mention_objects):
+                    object_id = mention_objects[mention_object_index]
+                    metadata.append({
+                        "type": "MentionText",
+                        "from_index": current_index,
+                        "length": match["length"],
+                        "mention_text_object_guid": object_id,
+                        "mention_text_user_id": object_id,
+                        "mention_text_object_type": "group"
+                    })
+                    real_text_final = real_text_final.replace(f"({object_id})", "", 1)
+                    conflict += 6 + len(object_id)
+                    mention_object_index += 1
             else:
-                metadata.append({
-                    "type": match["style"],
-                    "from_index": match["start"] - conflict,
-                    "length": match["length"]
-                })
+                if current_index >= 0 and current_index + match["length"] <= len(real_text_final):
+                    metadata.append({
+                        "type": match["style"],
+                        "from_index": current_index,
+                        "length": match["length"]
+                    })
+
             conflict += len(match["full_match"]) - len(match["content"])
             real_text_final = real_text_final.replace(match["full_match"], match["content"], 1)
+
         return metadata, real_text_final
 
     @staticmethod
     def checkHTML(text) -> tuple:
         """
         Parse basic HTML tags and return metadata with plain text
-        Supports: <b>, <strong>, <i>, <em>, <code>, <s>, <del>, <a href>, <u>, <span class="tg-spoiler">
+        Supports: <b>, <strong>, <i>, <em>, <code>, <s>, <del>, <a href>, <u>, <span class="tg-spoiler">, <pre>
+        Also supports mentions with: <a href="rubika://@username"> or objectId mentions
         """
         if text is None:
             return [], ""
+        
         metadata = []
         conflict = 0
         result = []
         patterns = {
+            "Pre": (r"<pre>([^<]+?)</pre>",),
             "Bold": (r"<b>([^<]+?)</b>", r"<strong>([^<]+?)</strong>"),
             "Italic": (r"<i>([^<]+?)</i>", r"<em>([^<]+?)</em>"),
             "Code": (r"<code>([^<]+?)</code>",),
@@ -228,51 +278,125 @@ class Utils:
             "Underline": (r"<u>([^<]+?)</u>",),
             "Spoiler": (r'<span class="tg-spoiler">([^<]+?)</span>',),
             "Link": (r'<a href="([^"]+?)">([^<]+?)</a>',),
+            "Mention": (r'<mention>([^<]+?)</mention>',),
         }
+        
+        mention_objects = [i.group(1) for i in finditer(r'<mention objectId="([^"]+)">([^<]+?)</mention>', text)]
+        mention_object_index = 0
+        
         all_matches = []
+        used_positions = set()
+
         for style, pattern_list in patterns.items():
             for pattern in pattern_list:
-                for match in finditer(pattern, text):
+                for match in finditer(pattern, text, flags=DOTALL):
+                    start, end = match.start(), match.end()
+                    
+                    if any(pos in used_positions for pos in range(start, end)):
+                        continue
+                    
                     if style == "Link":
                         link_url, link_text = match.groups()
-                        all_matches.append({
-                            "start": match.start(),
-                            "length": len(link_text),
-                            "style": style,
-                            "content": link_text,
-                            "full_match": match.group(0),
-                            "extra": link_url
-                        })
-                    else:
+                        if link_url.startswith('rubika://'):
+                            all_matches.append({
+                                "start": start,
+                                "end": end,
+                                "length": len(link_text),
+                                "style": "Mention",
+                                "content": link_text,
+                                "full_match": match.group(0),
+                                "extra": link_url
+                            })
+                        else:
+                            all_matches.append({
+                                "start": start,
+                                "end": end,
+                                "length": len(link_text),
+                                "style": style,
+                                "content": link_text,
+                                "full_match": match.group(0),
+                                "extra": link_url
+                            })
+                    elif style == "Mention":
                         content = match.group(1)
                         all_matches.append({
-                            "start": match.start(),
+                            "start": start,
+                            "end": end,
                             "length": len(content),
                             "style": style,
                             "content": content,
                             "full_match": match.group(0),
                             "extra": None
                         })
+                    elif style == "Pre":
+                        content = match.group(1).strip() if match.group(1) else ""
+                        all_matches.append({
+                            "start": start,
+                            "end": end,
+                            "length": len(content),
+                            "style": style,
+                            "content": content,
+                            "full_match": match.group(0),
+                            "extra": None
+                        })
+                    else:
+                        content = match.group(1)
+                        all_matches.append({
+                            "start": start,
+                            "end": end,
+                            "length": len(content),
+                            "style": style,
+                            "content": content,
+                            "full_match": match.group(0),
+                            "extra": None
+                        })
+                    
+                    used_positions.update(range(start, end))
+
         all_matches.sort(key=lambda x: x["start"])
         real_text_final = text
+
         for match in all_matches:
+            current_index = match["start"] - conflict
             if match["style"] == "Link":
                 result.append({
                     "type": "Link",
-                    "from_index": match["start"] - conflict,
+                    "from_index": current_index,
                     "length": match["length"],
                     "link_url": match["extra"]
                 })
-                conflict += len(match["full_match"]) - len(match["content"])
-                real_text_final = real_text_final.replace(match["full_match"], match["content"], 1)
+            elif match["style"] == "Mention":
+                if match.get("extra") and match["extra"].startswith('rubika://'):
+                    result.append({
+                        "type": "MentionText",
+                        "from_index": current_index,
+                        "length": match["length"],
+                        "mention_text_object_guid": match["extra"].replace('rubika://', ''),
+                        "mention_text_user_id": match["extra"].replace('rubika://', ''),
+                        "mention_text_object_type": "user"
+                    })
+                elif mention_object_index < len(mention_objects):
+                    object_id = mention_objects[mention_object_index]
+                    result.append({
+                        "type": "MentionText",
+                        "from_index": current_index,
+                        "length": match["length"],
+                        "mention_text_object_guid": object_id,
+                        "mention_text_user_id": object_id,
+                        "mention_text_object_type": "group"
+                    })
+                    mention_object_index += 1
             else:
-                result.append({
-                    "type": match["style"],
-                    "from_index": match["start"] - conflict,
-                    "length": match["length"],
-                })
-                conflict += len(match["full_match"]) - len(match["content"])
-                real_text_final = real_text_final.replace(match["full_match"], match["content"], 1)
+                if current_index >= 0 and current_index + match["length"] <= len(real_text_final):
+                    result.append({
+                        "type": match["style"],
+                        "from_index": current_index,
+                        "length": match["length"],
+                    })
+
+            conflict += len(match["full_match"]) - len(match["content"])
+            real_text_final = real_text_final.replace(match["full_match"], match["content"], 1)
+
         return result, real_text_final
 
     @staticmethod

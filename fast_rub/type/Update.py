@@ -175,9 +175,19 @@ class Update:
         )
 
     @auto_async
-    async def reply_poll(self, question: str, options: list,auto_delete: Optional[int] = None) -> props:
+    async def reply_poll(
+        self,
+        question: str,
+        options: list,
+        type_poll: Literal["Regular", "Quiz"] = "Regular",
+        is_anonymous: bool = True,
+        correct_option_index: Optional[int] = None,
+        allows_multiple_answers: bool = False,
+        hint: Optional[str] = None,
+        auto_delete: Optional[int] = None
+    ) -> props:
         """reply poll / ریپلای نظرسنجی"""
-        return await self._client.send_poll(self.chat_id, question, options,auto_delete)
+        return await self._client.send_poll(self.chat_id, question, options,type_poll=type_poll,is_anonymous=is_anonymous,correct_option_index=correct_option_index,allows_multiple_answers=allows_multiple_answers,hint=hint,auto_delete=auto_delete,reply_to_message_id=self.message_id)
 
     @auto_async
     async def reply_contact(

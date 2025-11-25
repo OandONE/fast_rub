@@ -2,10 +2,10 @@ from typing import TYPE_CHECKING
 import re
 import time as ti
 
-from fast_rub.Client import Update
+from .type import Update
 
 if TYPE_CHECKING:
-    from .Client import Update
+    from .type import Update
 
 class Filter:
     def __call__(self, update: 'Update') -> bool:
