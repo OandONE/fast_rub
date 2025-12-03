@@ -44,7 +44,7 @@ class Methods:
     @async_to_sync
     async def sendCode(self, phoneNumber:str, passKey:Optional[str] = None, sendInternal:bool=False) -> dict:
         input:dict = {
-            "phone_number": f"98{Utils.phoneNumberParse(phoneNumber)}",
+            "phone_number": f"{phoneNumber}",
             "send_type": "Internal" if sendInternal else "SMS",
         }
 
@@ -101,6 +101,10 @@ class Methods:
     @async_to_sync
     async def getChats(self, startId:Optional[str]) -> dict:
         return await self.network.request(method="getChats", input={"start_id": startId})
+    
+    @async_to_sync
+    async def getObjectByUsername(self, username: str) -> dict:
+        return await self.network.request(method="getObjectByUsername",input={'username': username.replace("@","")})
     
     @async_to_sync
     async def getTopChatUsers(self) -> dict:
