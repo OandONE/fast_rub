@@ -63,6 +63,7 @@ class Client:
         self._message_handlers = []
         self._button_handlers = []
         self._edit_handlers = []
+        self._edit_handlers_ = []
         self.last = []
         self._message_handlers_ = []
         self.next_offset_id = ""
@@ -146,7 +147,7 @@ class Client:
         self.urls = ["https://botapi.rubika.ir/v3/","https://messengerg2b1.iranlms.ir/v3/"]
         self.main_url = self.urls[0]
         try:
-            asyncio.run(self.version_botapi())
+            self.version_botapi()
         except:
             self.main_url = self.urls[1]
         try:
@@ -1209,7 +1210,10 @@ class Client:
             @wraps(handler)
             async def wrapped(update):
                 if filters is None or filters(update):
-                    return await handler(update)
+                    if inspect.iscoroutinefunction(handler):
+                        return await handler(update)
+                    else:
+                        return handler(update)
             self._message_handlers.append(wrapped)
             return handler
         return decorator
@@ -1222,11 +1226,11 @@ class Client:
             return handler
         return decorator
 
-    def on_edit(self):
+    def on_edit_updates(self):
         """برای دریافت ویرایش شدن پیام ها"""
         self._fetch_edit = True
         def decorator(handler: Callable[[Update], Awaitable[None]]):
-            self._edit_handlers.append(handler)
+            self._edit_handlers_.append(handler)
             return handler
         return decorator
 
@@ -1238,6 +1242,8 @@ class Client:
                 results = response.get('updates', [])
                 if results:
                     for result in results:
+                        if result["type"] != "NewMessage":
+                            continue
                         update = Update(result,self)
                         for handler in self._message_handlers:
                             self._schedule_handler(handler,update)
@@ -1246,21 +1252,21 @@ class Client:
             await asyncio.sleep(0.1)
 
     @async_to_sync
-    async def _process_edit(self, time_updata_sleep : int = 1):
+    async def _process_edit_updates(self):
         while self._running:
-            mes = (await self.get_updates(limit=100,offset_id=self.next_offset_id))
-            if mes['status']=="INVALID_ACCESS":
-                raise PermissionError("Due to Rubika's restrictions, access to retrieve messages has been blocked. Please try again.")
-            try:
-                self.next_offset_id = mes["data"]["next_offset_id"]
-            except:
-                pass
-            for message in mes['data']['updates']:
-                if message["type"]=="UpdatedMessage":
-                    update_obj = Update(message,self)
-                    for handler in self._edit_handlers:
-                        self._schedule_handler(handler,update_obj)
-            await asyncio.sleep(time_updata_sleep)
+            response = (await self.httpx_client.get(self._button_url, timeout=self.time_out)).json()
+            if response and response.get('status') is True:
+                results = response.get('updates', [])
+                if results:
+                    for result in results:
+                        if result["type"] != "UpdatedMessage":
+                            continue
+                        update = UpdateButton(result,self)
+                        for handler in self._button_handlers:
+                            self._schedule_handler(handler,update)
+            else:
+                await self.set_token_fast_rub()
+            await asyncio.sleep(0.1)
 
     @async_to_sync
     async def _fetch_button_updates(self):
@@ -1286,16 +1292,16 @@ class Client:
             tasks.append(self._fetch_button_updates())
         if self._fetch_messages_ and self._message_handlers_:
             tasks.append(self._process_messages_())
-        if self._fetch_edit and self._edit_handlers:
-            tasks.append(self._process_edit())
+        if self._fetch_edit and self._edit_handlers_:
+            tasks.append(self._process_edit_updates())
         if not tasks:
-            raise ValueError("No handlers registered. Use on_message() or on_message_updates() or on_button() or on_edit() first.")
+            raise ValueError("No handlers registered. Use on_message() or on_message_updates() or on_button() or on_edit_updates() first.")
         await asyncio.gather(*tasks)
 
     def run(self):
         """اجرای اصلی بات - فقط اگر هندلرهای مربوطه ثبت شده باشند"""
         if not (self._fetch_messages or self._fetch_buttons or self._fetch_messages_ or self._fetch_edit):
-            raise ValueError("No update types selected. Use on_message() or on_message_updates() or on_button() or on_edit() first.")
+            raise ValueError("No update types selected. Use on_message() or on_message_updates() or on_button() or on_edit_updates() first.")
         
         if (self._fetch_messages and not self._message_handlers) or (self._fetch_messages_ and not self._message_handlers_):
             raise ValueError("Message handlers registered but no message callbacks defined.")
@@ -1303,11 +1309,12 @@ class Client:
         if self._fetch_buttons and not self._button_handlers:
             raise ValueError("Button handlers registered but no button callbacks defined.")
 
-        if self._fetch_edit and not self._edit_handlers:
+        if self._fetch_edit and not self._edit_handlers_:
             raise ValueError("Edit handlers registered but no message callbacks defined.")
 
         self._running = True
         self.logger.info("ربات در حال دریافت پیام ها")
+        cprint("start",Colors.BLUE)
         asyncio.run(self._run_all())
 
     def stop(self):
