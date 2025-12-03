@@ -86,6 +86,10 @@ class Client(object):
         return await self.methods.getChats(startId=start_id)
     
     @async_to_sync
+    async def get_object_by_username(self,user_name: str) -> dict:
+        return await self.methods.getObjectByUsername(user_name)
+
+    @async_to_sync
     async def get_top_users(self) -> dict:
         return await self.methods.getTopChatUsers()
     
@@ -138,7 +142,9 @@ class Client(object):
         return await self.methods.setChatAdmin(objectGuid=object_guid, memberGuid=member_guid, accessList=None, customTitle=None, action="UnsetAdmin")
     
     @async_to_sync
-    async def add_member(self, object_guid:str, member_guids:list) -> dict:
+    async def add_member(self, object_guid:str, member_guids:Union[list,str]) -> dict:
+        if isinstance(member_guids,str):
+            member_guids = [member_guids]
         return await self.methods.addChatMember(objectGuid=object_guid, memberGuids=member_guids)
 
     @async_to_sync
