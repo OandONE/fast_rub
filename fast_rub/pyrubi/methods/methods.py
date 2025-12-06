@@ -136,6 +136,28 @@ class Methods:
                 "action": "Join"
             }
         )
+
+    @async_to_sync
+    async def actionOnJoinRequest(self,objectGuid: str, userGuid: str, action: Literal["Accept", "Reject"]):
+        object_type = Utils.getChatTypeByGuid(objectGuid)
+        return await self.network.request(
+            method="actionOnJoinRequest",
+            input={
+                "object_guid": objectGuid,
+                "object_type": object_type,
+                "user_guid": userGuid,
+                "action": action
+            }
+        )
+
+    @async_to_sync
+    async def getJoinRequests(self, objectGuid: str):
+        return await self.network.request(
+            method="getJoinRequests",
+            input={
+                "object_guid": objectGuid
+            }
+        )
     
     @async_to_sync
     async def leaveChat(self, objectGuid:str) -> dict:
@@ -264,7 +286,7 @@ class Methods:
         return data
     
     @async_to_sync
-    async def getChatAdminMembers(self, objectGuid:str, startId:Optional[str], justGetGuids:bool) -> Union[dict,list]:
+    async def getChatAdminMembers(self, objectGuid:str, startId:Optional[str], justGetGuids: bool = False) -> Union[dict,list]:
         chatType:str = Utils.getChatTypeByGuid(objectGuid=objectGuid)
 
         data = await self.network.request(
@@ -279,6 +301,19 @@ class Methods:
 
         return data
 
+    @async_to_sync
+    async def userIsAdmin(self, objectGuid: str, userGuid: str):
+        nextStartId = None
+        hasContinue = True
+        while hasContinue:
+            result = await self.getChatAdminMembers(objectGuid, nextStartId)
+            if type(result) is dict: # for typing error
+                hasContinue = result["has_continue"]
+                nextStartId = result["next_start_id"]
+                for user in result["in_chat_members"]:
+                    if userGuid == user.member_guid:
+                        return True
+        return False
     
     @async_to_sync
     async def getChatAdminAccessList(self, objectGuid:str, memberGuid:str) -> dict:
@@ -959,7 +994,7 @@ class Methods:
         )
     
     @async_to_sync
-    async def sendVoice(self, objectGuid:str, file:str, messageId:Optional[str], text:Optional[str], fileName:Optional[str], time:int) -> Optional[dict]:
+    async def sendVoice(self, objectGuid:str, file:str, time:int, messageId:Optional[str] = None, text:Optional[str] = None, fileName:Optional[str] = None) -> Optional[dict]:
         return await self.baseSendFileInline(
             objectGuid=objectGuid,
             file=file,
@@ -1089,7 +1124,7 @@ class Methods:
         )
     
     @async_to_sync
-    async def deleteMessages(self, objectGuid:str, messageIds:list, deleteForAll:bool) -> dict:
+    async def deleteMessages(self, objectGuid:str, messageIds:list, deleteForAll: bool = True) -> dict:
         return await self.network.request(
             method="deleteMessages",
             input={
@@ -1097,6 +1132,15 @@ class Methods:
                 "message_ids": messageIds,
                 "type": "Global" if deleteForAll else "Local"
             }
+        )
+
+    @async_to_sync
+    async def autoDelete(self, objectGuid: str, messageId: str, time: int, deleteForAll: bool = True):
+        await asyncio.sleep(time)
+        return await self.deleteMessages(
+            objectGuid=objectGuid,
+            messageIds=[messageId],
+            deleteForAll=deleteForAll
         )
     
     @async_to_sync
@@ -1802,7 +1846,7 @@ class Methods:
         except ImportError:
             print("The aiortc library is not installed!")
 
-    def add_handler(self, func, filters: Union[List[Filter], List[str], Filter]) -> None:
+    def add_handler(self, func, filters: Union[List[Filter], List[str], Filter, None]) -> None:
         self.socket.addHandler(
             func=func,
             filters=filters

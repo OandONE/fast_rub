@@ -69,6 +69,11 @@ class is_sticker(Filter):
     def __call__(self, message: Message) -> bool:
         return message.message_type.lower() == "sticker"
 
+class is_me(Filter):
+    """filter by my messages / فیلتر با پیام های من"""
+    def __call__(self, message: Message) -> bool:
+        return message["chat_updates"]["chat"]["last_message"]["is_mine"]
+
 class text(Filter):
     """filter text message by text /  فیلتر کردن متن پیام بر اساس متنی"""
     def __init__(self, pattern: str):

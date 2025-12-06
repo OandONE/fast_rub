@@ -2,7 +2,8 @@ from ..methods import Methods
 from typing import (
     Optional,
     Union,
-    List
+    List,
+    Literal
 )
 from ...async_sync import *
 from ..filters import Filter
@@ -108,6 +109,14 @@ class Client(object):
     @async_to_sync
     async def join_chat(self, guid_or_link:str) -> dict:
         return await self.methods.joinChat(guidOrLink=guid_or_link)
+
+    @async_to_sync
+    async def action_on_join_request(self, object_guid: str, user_guid: str, action: Literal["Accept", "Reject"]):
+        return await self.methods.actionOnJoinRequest(objectGuid=object_guid, userGuid=user_guid, action=action)
+    
+    @async_to_sync
+    async def getJoinRequests(self, object_guid: str):
+        return await self.methods.getJoinRequests(objectGuid=object_guid)
     
     @async_to_sync
     async def leave_chat(self, object_guid:str) -> dict:
@@ -166,6 +175,10 @@ class Client(object):
     @async_to_sync
     async def get_admin_members(self, object_guid:str, start_id:Optional[str] = None, just_get_guids:bool=False) -> Union[dict,list]:
         return await self.methods.getChatAdminMembers(objectGuid=object_guid, startId=start_id, justGetGuids=just_get_guids)
+    
+    @async_to_sync
+    async def user_is_admin(self, object_guid: str, user_guid: str):
+        return await self.methods.userIsAdmin(objectGuid=object_guid,userGuid=user_guid)
     
     @async_to_sync
     async def get_admin_access_list(self, object_guid:str, member_guid:str) -> dict:
@@ -425,6 +438,10 @@ class Client(object):
     @async_to_sync
     async def delete_messages(self, object_guid:str, message_ids:list, delete_for_all:bool=True) -> dict:
         return await self.methods.deleteMessages(objectGuid=object_guid, messageIds=message_ids, deleteForAll=delete_for_all)
+
+    @async_to_sync
+    async def auto_delete(self, object_guid: str, message_id: str, time: int, delete_for_all: bool = True):
+        return await self.methods.autoDelete(objectGuid=object_guid,messageId=message_id,time=time,deleteForAll=delete_for_all)
     
     @async_to_sync
     async def seen_messages(self, object_guid:str, min_id:str, max_id:str) -> dict:
@@ -587,7 +604,7 @@ class Client(object):
         return await self.methods.requestCall(objectGuid=object_guid, callType=call_type)
     
     @async_to_sync
-    async def discardCall(self, call_id:str, duration:int, reason:str) -> dict:
+    async def discard_call(self, call_id:str, duration:int, reason:str) -> dict:
         return await self.methods.discardCall(callId=call_id, duration=duration, reason=reason)
     
     # Setting methods
@@ -719,7 +736,7 @@ class Client(object):
         async def main():
             await self.methods.playVoice(objectGuid=object_guid, file=file)
         await main()
-    def on_message(self, filters: Union[List[Filter], List[str], Filter, None] = None):
+    def on_message(self, filters: Union[List[Filter], List[str], Filter, None]):
         def handler(func):
             self.methods.add_handler(
                 func=func,

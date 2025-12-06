@@ -1,14 +1,34 @@
-from random import choices, randint
+from random import (
+    choices,
+    randint
+)
 from time import time
-from re import finditer, sub , DOTALL
+from re import (
+    finditer,
+    sub,
+    DOTALL
+)
 from base64 import b64encode
 from io import BytesIO
 from tempfile import NamedTemporaryFile
-from mutagen import mp3, File
+from mutagen import (
+    mp3,
+    File
+)
 from filetype import guess
-from os import system, chmod, remove
+from os import (
+    system,
+    chmod,
+    remove
+)
 from .configs import Configs
-from typing import Optional
+from typing import (
+    Optional,
+    List,
+    Tuple,
+    Dict,
+    Any
+)
 
 
 class Utils:
@@ -50,10 +70,11 @@ class Utils:
         return phoneNumber
 
     @staticmethod
-    def getChatTypeByGuid(objectGuid: str) -> Optional[str]:
+    def getChatTypeByGuid(objectGuid: str) -> str:
         for chatType in [("u0", "User"), ("g0", "Group"), ("c0", "Channel"), ("s0", "Service"), ("b0", "Bot")]:
             if objectGuid.startswith(chatType[0]):
                 return chatType[1]
+        return "Unknown"
 
     @staticmethod
     def isChatType(chatType: str) -> Optional[bool]:

@@ -27,8 +27,15 @@ from .type import (
 from .async_sync import *
 from .logger import *
 from .type.props import *
-from .pyrubi.utils.utils import Utils
-from .errors import FastRubError
+from .utils import (
+    TextParser,
+    utils
+)
+from .errors import (
+    TokenInvalid,
+    PollInvalid
+)
+from .encryption import Encryption
 
 
 class Client:
@@ -38,7 +45,7 @@ class Client:
         token: Optional[str] = None,
         user_agent: Optional[str] = None,
         time_out: Optional[int] = 60,
-        display_welcome = True,
+        display_welcome = False,
         use_to_fastrub_webhook_on_message: Union[str,bool] = True,
         use_to_fastrub_webhook_on_button: Union[str,bool] = True,
         save_logs: Optional[bool] = None,
@@ -75,24 +82,27 @@ class Client:
         self.list_befor_messages = []
         if os.path.isfile(name):
             with open(name, "r", encoding="utf-8") as file:
-                text_json_fast_rub_session = json.load(file)
-                self.text_json_fast_rub_session = text_json_fast_rub_session
-                self.token = text_json_fast_rub_session["token"]
-                self.time_out = text_json_fast_rub_session["time_out"]
-                self.user_agent = text_json_fast_rub_session["user_agent"]
-                try:
-                    self.log_to_file = text_json_fast_rub_session["setting_logs"]["save"]
-                    self.log_to_console = text_json_fast_rub_session["setting_logs"]["view"]
-                except:
-                    pass
+                encrypted_string = file.read().strip()
+            decrypted = Encryption().de(encrypted_string)
+            text_json_fast_rub_session = json.loads(decrypted)
+            self.text_json_fast_rub_session = text_json_fast_rub_session
+            self.token = text_json_fast_rub_session["token"]
+            self.time_out = text_json_fast_rub_session["time_out"]
+            self.user_agent = text_json_fast_rub_session["user_agent"]
+            try:
+                self.log_to_file = text_json_fast_rub_session["setting_logs"]["save"]
+                self.log_to_console = text_json_fast_rub_session["setting_logs"]["view"]
+            except:
+                pass
         else:
             if token is None:
                 token = input("Enter your token : ")
                 while token in ["", " ", None]:
                     cprint("Enter the token valid !",Colors.RED)
                     token = input("Enter your token : ")
+            self.token = token
             if len(str(self.token)) != 64 :
-                raise FastRubError(f"token invalid !")
+                raise TokenInvalid(f"token invalid ! len for token not is 64. is {len(str(self.token))}")
             text_json_fast_rub_session = {
                 "name_session": name_session,
                 "token": token,
@@ -105,10 +115,10 @@ class Client:
                 }
             }
             self.text_json_fast_rub_session = text_json_fast_rub_session
+            text_json_fast_rub_session = json.dumps(text_json_fast_rub_session,indent=4,ensure_ascii=False)
+            text_json_fast_rub_session = Encryption().en(str(text_json_fast_rub_session))
             with open(name, "w", encoding="utf-8") as file:
-                json.dump(
-                    text_json_fast_rub_session, file, ensure_ascii=False, indent=4
-                )
+                file.write(text_json_fast_rub_session)
             self.token = token
             self.time_out = time_out
             self.user_agent = user_agent
@@ -372,10 +382,10 @@ class Client:
         if self.main_parse_mode != "Unknown":
             parse_mode = self.main_parse_mode
         if parse_mode == "Markdown":
-            data = Utils.checkMarkdown(text)
+            data = TextParser.checkMarkdown(text)
             return data
         elif parse_mode == "HTML":
-            data = Utils.checkHTML(text)
+            data = TextParser.checkHTML(text)
             return data
         return [], text
 
@@ -479,7 +489,7 @@ class Client:
         """sending poll to chat id / ارسال نظرسنجی به یک چت آیدی"""
         self.logger.info("استفاده از متود send_poll")
         if len(options) > 10:
-            raise FastRubError("len for options is logner from 10 option")
+            raise PollInvalid("len for options is logner from 10 option")
         data = {
             "chat_id": chat_id,
             "question": question,
@@ -824,7 +834,7 @@ class Client:
     async def upload_file(self, url: str, file_name: str, file: Union[str , Path , bytes]) -> dict:
         """upload file to rubika server / آپلود فایل در سرور روبیکا"""
         self.logger.info("استفاده از متود upload_file")
-        if type(file) is bytes:
+        if isinstance(file, (bytes, bytearray)):
             d_file = {"file": (file_name, file, "application/octet-stream")}
         else:
             try:
@@ -902,10 +912,7 @@ class Client:
             )
         )["data"]["upload_url"]
         if not name_file:
-            for type_,pass_ in {"File":"", "Image":".png", "Voice":".mp3", "Music":".mp3", "Gif":".png" , "Video":".mp4"}.items():
-                if type_ == type_file:
-                    name_file = f"{type_+pass_}"
-                    break
+            name_file = utils.format_file(name_file)
         if not name_file:
             raise ValueError("type file is invalud !")
         file_id = (await self.upload_file(up_url_file, name_file, file))["data"]["file_id"]
@@ -924,14 +931,13 @@ class Client:
                 uploader["size_file"] = size_file
         else:
             raise FileExistsError("file not found !")
-        result = uploader
         if auto_delete:
-            message_id = result["data"]["message_id"]
+            message_id = uploader["data"]["message_id"]
             try:
-                return props(result)
+                return props(uploader)
             finally:
                 await self.auto_delete(chat_id,message_id,auto_delete)
-        return props(result)
+        return props(uploader)
 
     @async_to_sync
     async def send_image(
@@ -1108,12 +1114,16 @@ class Client:
         """download file / دانلود فایل"""
         self.logger.info("استفاده از متود download_file")
         url = await self.get_download_file_url(id_file)
-        async with httpx.AsyncClient(proxy=self.proxy) as client:
+        dir_path = os.path.dirname(path)
+        if dir_path:
+            os.makedirs(dir_path, exist_ok=True)
+        async with httpx.AsyncClient(proxy=self.proxy,timeout=30) as client:
             async with client.stream('GET', url) as response:
+                response.raise_for_status()
                 async with aiofiles.open(path, 'wb') as file:
                     async for chunk in response.aiter_bytes():
-                        self.logger.info("فایل دانلود شد")
                         await file.write(chunk)
+        self.logger.info("فایل دانلود شد")
 
     @async_to_sync
     async def set_endpoint(self, url: str, type: Literal["ReceiveUpdate", "GetSelectionItem", "ReceiveInlineMessage", "ReceiveQuery", "SearchSelectionItems"]) -> props:
@@ -1166,7 +1176,6 @@ class Client:
             return handler
         return decorator
 
-    @async_to_sync
     async def _process_messages_(self, time_updata_sleep: Union[float, float] = 0.5):
         while self._running:
             try:
@@ -1189,7 +1198,7 @@ class Client:
                         if (now - time_sended_mes < time_) and (not message['new_message']['message_id'] in self.last):
                             self.last.append(message['new_message']['message_id'])
                             if len(self.last) > 500:
-                                self.last.pop(-1)
+                                self.last.pop(0)
                             update_obj = Update(message, self)
                             for handler in self._message_handlers_:
                                 self._schedule_handler(handler, update_obj)
@@ -1234,7 +1243,6 @@ class Client:
             return handler
         return decorator
 
-    @async_to_sync
     async def _process_messages(self):
         while self._running:
             response = (await self.httpx_client.get(self._on_url, timeout=self.time_out)).json()
@@ -1251,7 +1259,6 @@ class Client:
                 await self.set_token_fast_rub()
             await asyncio.sleep(0.1)
 
-    @async_to_sync
     async def _process_edit_updates(self):
         while self._running:
             response = (await self.httpx_client.get(self._button_url, timeout=self.time_out)).json()
@@ -1268,7 +1275,6 @@ class Client:
                 await self.set_token_fast_rub()
             await asyncio.sleep(0.1)
 
-    @async_to_sync
     async def _fetch_button_updates(self):
         while self._running:
             response = (await self.httpx_client.get(self._button_url, timeout=self.time_out)).json()
@@ -1283,7 +1289,6 @@ class Client:
                 await self.set_token_fast_rub()
             await asyncio.sleep(0.1)
 
-    @async_to_sync
     async def _run_all(self):
         tasks = []
         if self._fetch_messages and self._message_handlers:
@@ -1314,7 +1319,12 @@ class Client:
 
         self._running = True
         self.logger.info("ربات در حال دریافت پیام ها")
-        cprint("start",Colors.BLUE)
+        k = ""
+        for text in "Start Handlers":
+            k += text
+            print(f"{Colors.BLUE}{k}{Colors.RESET}", end="\r")
+            time.sleep(0.07)
+        cprint("",Colors.WHITE)
         asyncio.run(self._run_all())
 
     def stop(self):

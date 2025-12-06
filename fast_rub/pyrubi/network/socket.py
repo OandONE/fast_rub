@@ -81,7 +81,7 @@ class Socket:
                 Thread(target=lambda: asyncio.run(handler(message_obj))).start()
 
 
-    def addHandler(self, func, filters: Union[List[Filter], List[str], Filter]) -> None:
+    def addHandler(self, func, filters: Union[List[Filter], List[str], Filter, None]) -> None:
         if filters and isinstance(filters, list) and all(isinstance(f, str) for f in filters):
             filters = [legacy_filter(filters)]
         elif isinstance(filters, Filter):

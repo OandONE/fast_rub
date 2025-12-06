@@ -1,2 +1,5 @@
-class FastRubError(Exception):
+class TokenInvalid(Exception):
+    pass
+
+class PollInvalid(Exception):
     pass

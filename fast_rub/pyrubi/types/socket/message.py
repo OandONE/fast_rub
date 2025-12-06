@@ -1,5 +1,12 @@
 from ....async_sync import *
-from typing import Optional
+from typing import (
+    Optional,
+    Any,
+    TYPE_CHECKING
+)
+
+if TYPE_CHECKING:
+    from ...methods.methods import Methods
 
 class ReplyInfo:
     def __init__(self, text, author_guid) -> None:
@@ -13,9 +20,26 @@ class ReplyInfo:
 
 class Message:
     def __init__(self, data:dict, methods:'Methods') -> None:
-        from ...methods.methods import Methods
         self.data = data
         self.methods = methods
+
+    def __getitem__(self, key: str) -> Any:
+        if hasattr(self, key):
+            return getattr(self, key)
+        keys = key.split(".")
+        value = self.data
+        for k in keys:
+            if isinstance(value, dict):
+                value = value.get(k)
+            elif isinstance(value, list) and k.isdigit():
+                value = value[int(k)]
+            else:
+                return None
+        return value
+
+    def get(self, key: str, default: Any = None) -> Any:
+        value = self[key]
+        return value if value is not None else default
 
     @property
     def object_guid(self) -> str:
@@ -165,7 +189,35 @@ class Message:
     @auto_async
     async def reply(self, text:str) -> dict:
         return await self.methods.sendText(objectGuid=self.object_guid, text=text, messageId=self.message_id)
+
+    @auto_async
+    async def reply_image(self,file:str, text:Optional[str], file_name:Optional[str],thumbInline: Optional[str] = None,is_spoil: bool = False):
+        return await self.methods.sendImage(self.object_guid,file,self.message_id,text,is_spoil,thumbInline,file_name)
     
+    @auto_async
+    async def reply_video(self,file:str, text:Optional[str], file_name:Optional[str],thumbInline: Optional[str] = None,is_spoil: bool = False):
+        return await self.methods.sendVideo(self.object_guid,file,self.message_id,text,is_spoil,thumbInline,file_name)
+
+    @auto_async
+    async def reply_gif(self,file:str, text:Optional[str], file_name:Optional[str],thumbInline: Optional[str] = None):
+        return await self.methods.sendGif(self.object_guid,file,self.message_id,text,thumbInline,file_name)
+
+    @auto_async
+    async def reply_music(self,file:str, text:Optional[str], file_name:Optional[str],performer: Optional[str] = None):
+        return await self.methods.sendMusic(self.object_guid,file,self.message_id,text,file_name,performer)
+
+    @auto_async
+    async def reply_voice(self,file:str, time:int = 0, text:Optional[str] = None, file_name:Optional[str] = None):
+        return await self.methods.sendVoice(self.object_guid,file,time,self.message_id,text,file_name)
+    
+    @auto_async
+    async def reply_location(self,latitude:int, longitude:int):
+        return await self.methods.sendLocation(self.object_guid,latitude,longitude,self.message_id)
+
+    @auto_async
+    async def reply_video_message(self,file:str, text:Optional[str], file_name:Optional[str],thumbInline: Optional[str] = None):
+        return await self.methods.sendVideoMessage(self.object_guid,file,self.message_id,text,thumbInline,file_name)
+
     @auto_async
     async def seen(self) -> dict:
         return await self.methods.seenChats(seenList={self.object_guid: self.message_id})
