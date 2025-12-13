@@ -230,7 +230,7 @@ class Client:
 
     @async_to_sync
     async def health_check(self) -> bool:
-        """بررسی سلامت اتصال به سرور تلگرام"""
+        """بررسی سلامت اتصال به سرور روبیکا"""
         try:
             result = await self.send_requests("getMe")
             return result["status"] == "OK"
@@ -1329,4 +1329,5 @@ class Client:
 
     def stop(self):
         """خاموش کردن گرفتن آپدیت ها / off the getting updates"""
+
         self._running = False
