@@ -241,6 +241,168 @@ async def set_endpoint():
 asyncio.run(set_endpoint())
 ```
 
+## سایر متود ها
+
+حذف خودکار پیام بعد از x ثانیه
+
+`auto_delete(chat_id:str,message_id:str,time_sleep:float)`
+
+گرفتن اطلاعات ربات
+
+`get_me()`
+
+تنظیم پارس مود اصلی همه متن ها
+
+`set_main_parse_mode(parse_mode: Literal['Markdown', 'HTML', 'Unknown', None])`
+
+ارسال متن
+
+`send_text(text: str,
+        chat_id: str,
+        inline_keypad: Optional[KeyPad] = None,
+        disable_notification: Optional[bool] = False,
+        reply_to_message_id: Optional[str] = None,
+        auto_delete: Optional[int] = None,
+        parse_mode: Literal["Markdown","HTML",None] = "Markdown")`
+
+ارسال نظرسنجی
+
+`send_poll(chat_id: str,
+        question: str,
+        options: list,
+        type_poll: Literal["Regular", "Quiz"] = "Regular",
+        is_anonymous: bool = True,
+        correct_option_index: Optional[int] = None,
+        allows_multiple_answers: bool = False,
+        hint: Optional[str] = None,
+        disable_notification: bool = False,
+        reply_to_message_id: Optional[str] = None,
+        auto_delete: Optional[int] = None)`
+
+ارسال موقعیت مکانی(لوکیشن)
+
+`send_location(chat_id: str,
+        latitude: str,
+        longitude: str,
+        chat_keypad : Optional[str] = None,
+        disable_notification: Optional[bool] = False,
+        reply_to_message_id: Optional[str] = None,
+        chat_keypad_type: Optional[str] = None,
+        auto_delete: Optional[int] = None)`
+
+ارسال مخاطب
+
+`send_contact(chat_id: str,
+        first_name: str,
+        last_name: str,
+        phone_number: str,
+        chat_keypad : Optional[str] = None,
+        chat_keypad_type: Optional[str] = None,
+        inline_keypad: Optional[str] = None,
+        reply_to_message_id: Optional[str] = None,
+        disable_notificatio: Optional[bool] = False,
+        auto_delete: Optional[int] = None)`
+
+ارسال انواع پیام
+
+`send_message(chat_id: str,
+        text: Optional[str],
+        inline_keypad: Optional[dict] = None,
+        keypad: Optional[dict] = None,
+        resize_keyboard: Optional[bool] = True,
+        on_time_keyboard: Optional[bool] = False,
+        disable_notification: bool = False,
+        reply_to_message_id: Optional[str] = None,
+        auto_delete: Optional[int] = None,
+        parse_mode: Literal["Markdown","HTML",None] = "Markdown",
+        # file
+        file: Union[str , Path , bytes , None] = None,
+        name_file: Optional[str] = None,
+        type_file: Literal["File", "Image", "Voice", "Music", "Gif" , "Video"] = "File",
+        file_id: Optional[str] = None,
+        # poll
+        question: Optional[str] = None,
+        options: Optional[list] = None,
+        type_poll: Literal["Regular", "Quiz"] = "Regular",
+        is_anonymous: bool = True,
+        correct_option_index: Optional[int] = None,
+        allows_multiple_answers: bool = False,
+        hint: Optional[str] = None,
+        # location
+        latitude: Optional[str] = None,
+        longitude: Optional[str] = None,
+        # contact
+        first_name: Optional[str] = None,
+        last_name: Optional[str] = None,
+        phone_number: Optional[str] = None)`
+
+گرفتن اطلاعات چت
+
+`get_chat(chat_id: str)`
+
+گرفتن آپدیت ها(از بالا)
+
+`get_updates(limit : Optional[int] = None, offset_id : Optional[str] = None)`
+
+گرفتن پیام با آیدی پیام
+
+`get_message(chat_id: str,message_id: str,limit_search: int = 100)`
+
+گرفتن پیام های قبل یک پیام با آیدی پیام
+
+`get_messages(chat_id: str,message_id: str,limit_search: int = 100,get_befor: int = 10)`
+
+فوروارد پیام
+
+`forward_message(from_chat_id: str,
+        message_id: str,
+        to_chat_id: str,
+        disable_notification : Optional[bool] = False,
+        auto_delete: Optional[int] = None)`
+
+فوروارد چند پیام
+
+`forward_messages(from_chat_id: str,
+        message_ids: list,
+        to_chat_id: str,
+        disable_notification : Optional[bool] = False,
+        auto_delete: Optional[int] = None)`
+
+ویرایش متن پیام
+
+`edit_message_text(chat_id: str,
+        message_id: str,
+        text: str,
+        parse_mode: Literal["Markdown","HTML",None] = "Markdown")`
+
+حذف پیام
+
+`delete_message(chat_id: str,
+        message_id: str)`
+
+ویرایش پیام کی پد اینلاین
+
+`edit_message_keypad_Inline(chat_id: str,
+        text: str,
+        inline_keypad,
+        disable_notification : Optional[bool] = False,
+        reply_to_message_id: Optional[str] = None,
+        parse_mode: Literal["Markdown","HTML",None] = "Markdown")`
+
+آپلود فایل در سرور روبیکا
+
+`upload_file(url: str, file_name: str, file: Union[str , Path , bytes])`
+
+ارسال فایل با آیدی
+
+`send_file_by_file_id(chat_id: str,
+        file_id: str,
+        text: Optional[str] = None,
+        reply_to_message_id: Optional[str] = None,
+        disable_notification: Optional[bool] = None,
+        auto_delete: Optional[int] = None,
+        parse_mode: Literal["Markdown","HTML",None] = "Markdown")`
+
 ## کلاس های Update و UpdateButton
 
 ### کلاس Update
@@ -297,9 +459,10 @@ asyncio.run(set_endpoint())
 
 ریپلای متن
 
-`reply(text: str,keypad_inline: Optional[KeyPad] = None,auto_delete: Optional[int] = None,parse_mode: Literal['Markdown', 'HTML', None] = "Markdown")`
-
-`reply_keypad(text:str,keypad:KeyPad,auto_delete:Optional[int]=None,parse_mode: Literal['Markdown', 'HTML', None] = "Markdown") # کی پد`
+`reply(text: str,keypad_inline: Optional[dict] = None,
+        keypad: Optional[dict] = None,
+        resize_keyboard: bool | None = True,
+        on_time_keyboard: bool | None = False,,auto_delete: Optional[int] = None,parse_mode: Literal['Markdown', 'HTML', None] = "Markdown")`
 
 ریپلای نظرسنجی
 
@@ -378,7 +541,9 @@ asyncio.run(set_endpoint())
 
 ارسال متن
 
-`send_text(text:str,keypad=None,auto_delete: Optional[int] = None,reply_to_message_id: Optional[str] = None,parse_mode: Literal['Markdown', 'HTML'] = "Markdown")`
+`send_text(text:str,keypad:dict:Optional[dict] = None,keypad: Optional[dict] = None,
+        resize_keyboard: Optional[bool] = True,
+        on_time_keyboard: Optional[bool] = False,auto_delete: Optional[int] = None,reply_to_message_id: Optional[str] = None,parse_mode: Literal['Markdown', 'HTML'] = "Markdown")`
 
 ارسال نظرسنجی
 
