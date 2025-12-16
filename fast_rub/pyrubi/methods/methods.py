@@ -17,7 +17,7 @@ from typing import (
     Union,
     Literal
 )
-from ...async_sync import *
+from ...core.async_sync import *
 from typing import Optional, Union, List
 from ..filters import Filter
 
@@ -921,7 +921,9 @@ class Methods:
 
     
     @async_to_sync
-    async def sendFile(self, objectGuid:str, file:str, messageId:Optional[str], text:Optional[str], fileName:Optional[str]) -> Optional[dict]:
+    async def sendFile(self, objectGuid:str, file:str, messageId:Optional[str], text:Optional[str], fileName:Optional[str] = None) -> Optional[dict]:
+        if fileName is None:
+            fileName = Utils.format_file("File")
         return await self.baseSendFileInline(
             objectGuid=objectGuid,
             file=file,
@@ -932,7 +934,9 @@ class Methods:
         )
     
     @async_to_sync
-    async def sendImage(self, objectGuid:str, file:str, messageId:Optional[str], text:Optional[str], isSpoil:bool, thumbInline:Optional[str], fileName:Optional[str]) -> Optional[dict]:
+    async def sendImage(self, objectGuid:str, file:str, messageId:Optional[str], text:Optional[str], isSpoil:bool, thumbInline:Optional[str], fileName:Optional[str] = None) -> Optional[dict]:
+        if fileName is None:
+            fileName = Utils.format_file("Image")
         return await self.baseSendFileInline(
             objectGuid=objectGuid,
             file=file,
@@ -945,7 +949,9 @@ class Methods:
         )
     
     @async_to_sync
-    async def sendVideo(self, objectGuid:str, file:str, messageId:Optional[str], text:Optional[str], isSpoil:bool, thumbInline:Optional[str], fileName:Optional[str]) -> Optional[dict]:
+    async def sendVideo(self, objectGuid:str, file:str, messageId:Optional[str], text:Optional[str], isSpoil:bool, thumbInline:Optional[str], fileName:Optional[str] = None) -> Optional[dict]:
+        if fileName is None:
+            fileName = Utils.format_file("Video")
         return await self.baseSendFileInline(
             objectGuid=objectGuid,
             file=file,
@@ -958,7 +964,9 @@ class Methods:
         )
     
     @async_to_sync
-    async def sendVideoMessage(self, objectGuid:str, file:str, messageId:Optional[str], text:Optional[str], thumbInline:Optional[str], fileName:Optional[str]) -> Optional[dict]:
+    async def sendVideoMessage(self, objectGuid:str, file:str, messageId:Optional[str], text:Optional[str], thumbInline:Optional[str], fileName:Optional[str] = None) -> Optional[dict]:
+        if fileName is None:
+            fileName = Utils.format_file("Video")
         return await self.baseSendFileInline(
             objectGuid=objectGuid,
             file=file,
@@ -970,7 +978,9 @@ class Methods:
         )
     
     @async_to_sync
-    async def sendGif(self, objectGuid:str, file:str, messageId:Optional[str], text:Optional[str], thumbInline:Optional[str], fileName:Optional[str]) -> Optional[dict]:
+    async def sendGif(self, objectGuid:str, file:str, messageId:Optional[str], text:Optional[str], thumbInline:Optional[str], fileName:Optional[str] = None) -> Optional[dict]:
+        if fileName is None:
+            fileName = Utils.format_file("Gif")
         return await self.baseSendFileInline(
             objectGuid=objectGuid,
             file=file,
@@ -982,7 +992,9 @@ class Methods:
         )
     
     @async_to_sync
-    async def sendMusic(self, objectGuid:str, file:str, messageId:Optional[str], text:Optional[str], fileName:Optional[str], performer:Optional[str]) -> Optional[dict]:
+    async def sendMusic(self, objectGuid:str, file:str, messageId:Optional[str], text:Optional[str], performer:Optional[str], fileName:Optional[str] = None) -> Optional[dict]:
+        if fileName is None:
+            fileName = Utils.format_file("Music")
         return await self.baseSendFileInline(
             objectGuid=objectGuid,
             file=file,
@@ -995,6 +1007,8 @@ class Methods:
     
     @async_to_sync
     async def sendVoice(self, objectGuid:str, file:str, time:int, messageId:Optional[str] = None, text:Optional[str] = None, fileName:Optional[str] = None) -> Optional[dict]:
+        if fileName is None:
+            fileName = Utils.format_file("Voice")
         return await self.baseSendFileInline(
             objectGuid=objectGuid,
             file=file,
@@ -1045,7 +1059,9 @@ class Methods:
         return await self.network.request("editMessage", data)
     
     @async_to_sync
-    async def actionOnMessageReaction(self, objectGuid:str, messageId:str, reactionId:int, action:str) -> dict:
+    async def actionOnMessageReaction(self, objectGuid:str, messageId:str, reactionId:Union[int,str], action:str) -> dict:
+        if type(reactionId) is str:
+            reactionId = Utils.reaction_to_id(reactionId)
         return await self.network.request(
             method="actionOnMessageReaction",
             input={
@@ -1355,20 +1371,38 @@ class Methods:
     # Poll methods
 
     @async_to_sync
-    async def sendPoll(self, objectGuid:str, question:str, options:list, messageId:Optional[str], multipleAnswers:Optional[bool] = False, anonymous:Optional[bool] = True,  quiz:Optional[bool] = False) -> dict:
+    async def sendPoll(
+        self,
+        objectGuid: str,
+        question: str,
+        options: list,
+        allowsMultipleResponses: bool = True,
+        isAnonymous: bool = False,
+        type: Literal["Quiz", "Regular"] = "Regular",
+        messageId: Optional[str] = None,
+        correctOptionIndex: Optional[int] = None,
+        hint: Optional[str] = None
+    ) -> dict:
+        if not type in ['Quiz', 'Regular']:
+            raise ValueError('type poll invalid ! type shoud is "Quiz" or "Regular".')
+        if len(options) > 2:
+            raise IndexError("Len for options is low ! Minimum for options is 2.")
+        data = {
+            'object_guid': objectGuid,
+            'question': question,
+            'options': options,
+            'allows_multiple_answers': allowsMultipleResponses,
+            'is_anonymous': isAnonymous,
+            'reply_to_message_id': messageId,
+            'type': type,
+            'rnd': Utils.randomRnd(),
+        }
+        if type == 'Quiz':
+            data['correct_option_index'] = correctOptionIndex
+            data['explanation'] =  hint
         return await self.network.request(
             method="createPoll",
-            input={
-                "allows_multiple_answers": multipleAnswers,
-                "correct_option_index": None,
-                "is_anonymous": anonymous,
-                "object_guid": objectGuid,
-                "options": options if len(options) >= 2 else ["This poll was created with Pyrubi Library", "حداقل باید دو گزینه برای نظر سنجی گزاشته شود!"],
-                "question": question,
-                "rnd": Utils.randomRnd(),
-                "type": "Quiz" if quiz else "Regular",
-                "reply_to_message_id": messageId
-            }
+            input=data
         )
     
     @async_to_sync
@@ -1772,6 +1806,17 @@ class Methods:
                 fileInline["file"] = downloadedData
 
                 return fileInline
+
+    @async_to_sync
+    async def request(
+        self,
+        method: str,
+        input: dict = {},
+        tmpSession: bool = False,
+        attempt: int = 0,
+        maxAttempt: int = 2
+    ) -> dict:
+        return await self.network.request(method=method,input=input,tmpSession=tmpSession,attempt=attempt,maxAttempt=maxAttempt)
 
     @async_to_sync
     async def playVoice(self, objectGuid:str, file: str) -> None:

@@ -49,14 +49,14 @@ class is_file(Filter):
 
 class file_name(Filter):
     """filter by name file / فیلتر با اسم فایل"""
-    def __init__(self,name_file):
+    def __init__(self,name_file: str):
         self.name_file = name_file
     def __call__(self, update:'Update'):
         return True if update.file_name==self.name_file else False
 
 class size_file(Filter):
     """filter by name file / فیلتر با اسم فایل"""
-    def __init__(self,size):
+    def __init__(self,size: int):
         self.size = size
     def __call__(self, update:'Update'):
         return True if update.size_file==self.size else False

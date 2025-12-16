@@ -1,12 +1,14 @@
-from ..Client import *
-from ..async_sync import *
+from .. import *
+from ..core.async_sync import *
 from .get_type import *
 from .props import *
-from ..button import KeyPad
 from .metadata import metadata as metadata_prop
 from .file import file as FILE
 import json
 from pathlib import Path
+from typing import TYPE_CHECKING, Optional, Union
+if TYPE_CHECKING:
+    from .prop_update import msg_update
 
 class Update:
     def __init__(self, update_data: dict, client: "Client"):
@@ -83,7 +85,7 @@ class Update:
         """button id clicked button / آیدی دکمه کلیک شده"""
         return self.button['button_id'] if self.button else None
     @property
-    def reply_to_message_id(self) -> Optional[str|None]:
+    def reply_to_message_id(self) -> Optional[str]:
         """message id replyed / آیدی پیام ریپلای شده"""
         return self._data["reply_to_message_id"] if "reply_to_message_id" in self._data else None
     @property
@@ -168,10 +170,19 @@ class Update:
         return await self._client.get_chat(self.chat_id)
 
     @auto_async
-    async def reply(self, text: str,keypad_inline: Optional[KeyPad] = None,auto_delete: Optional[int] = None,parse_mode: Literal['Markdown', 'HTML', None] = "Markdown") -> props:
+    async def reply(
+        self,
+        text: str,
+        keypad_inline: Optional[dict] = None,
+        keypad: Optional[dict] = None,
+        resize_keyboard: bool | None = True,
+        on_time_keyboard: bool | None = False,
+        auto_delete: Optional[int] = None,
+        parse_mode: Literal['Markdown', 'HTML', None] = "Markdown"
+    ) -> 'msg_update':
         """reply text / ریپلای متن"""
         return await self._client.send_text(
-            text, self.chat_id, reply_to_message_id=self.message_id,inline_keypad=keypad_inline,auto_delete=auto_delete,parse_mode=parse_mode
+            text=text, chat_id=self.chat_id, reply_to_message_id=self.message_id, inline_keypad=keypad_inline, auto_delete=auto_delete, parse_mode=parse_mode,keypad=keypad,on_time_keyboard=on_time_keyboard,resize_keyboard=resize_keyboard
         )
 
     @auto_async
@@ -222,7 +233,7 @@ class Update:
         parse_mode: Literal['Markdown', 'HTML', None] = "Markdown"
     ) -> props:
         """reply file / ریپلای فایل"""
-        return await self._client.send_file(
+        return await self._client.base_send_file(
             self.chat_id,
             file,
             name_file,
@@ -310,10 +321,6 @@ class Update:
         )
 
     @auto_async
-    async def reply_keypad(self,text:str,keypad:KeyPad,auto_delete:Optional[int]=None,parse_mode: Literal['Markdown', 'HTML', None] = "Markdown") -> props:
-        return await self._client.send_message_keypad(self.chat_id,text,keypad,reply_to_message_id=self.message_id,auto_delete=auto_delete,parse_mode=parse_mode)
-
-    @auto_async
     async def forward(
             self,
             to_chat_id:str,
@@ -384,15 +391,25 @@ class UpdateButton:
         return self._data["inline_message"]["text"]
 
     @auto_async
-    async def send_text(self,text:str,keypad=None,auto_delete: Optional[int] = None,reply_to_message_id: Optional[str] = None,parse_mode: Literal['Markdown', 'HTML'] = "Markdown"):
+    async def send_text(self,text:str,inline_keypad: Optional[dict] = None,keypad: Optional[dict] = None,resize_keyboard: Optional[bool] = True,on_time_keyboard: Optional[bool] = False,auto_delete: Optional[int] = None,reply_to_message_id: Optional[str] = None,parse_mode: Literal['Markdown', 'HTML'] = "Markdown"):
         return await self._client.send_text(
-            text, self.chat_id,inline_keypad=keypad,auto_delete=auto_delete,reply_to_message_id=reply_to_message_id,parse_mode=parse_mode
+            text, self.chat_id,inline_keypad=inline_keypad,auto_delete=auto_delete,reply_to_message_id=reply_to_message_id,parse_mode=parse_mode,keypad=keypad,resize_keyboard=resize_keyboard,on_time_keyboard=on_time_keyboard
         )
 
     @auto_async
-    async def send_pool(self,question: str,options : list,auto_delete: Optional[int] = None):
+    async def send_pool(
+        self,
+        question: str,
+        options : list,
+        type_poll: Literal['Regular', 'Quiz'] = "Regular",
+        is_anonymous: bool = True,
+        correct_option_index: int | None = None,
+        allows_multiple_answers: bool = False,
+        hint: str | None = None,
+        auto_delete: Optional[int] = None
+    ):
         return await self._client.send_poll(
-            self.chat_id,question,options,auto_delete
+            chat_id=self.chat_id,question=question,options=options,type_poll=type_poll,is_anonymous=is_anonymous,correct_option_index=correct_option_index,allows_multiple_answers=allows_multiple_answers,hint=hint,disable_notification=False,auto_delete=auto_delete
         )
 
     @auto_async
@@ -430,7 +447,7 @@ class UpdateButton:
         auto_delete: Optional[int] = None,
         reply_to_message_id: Optional[str] = None
     ):
-        return await self._client.send_file(
+        return await self._client.base_send_file(
             self.chat_id,file,name_file,text,type_file=type_file,auto_delete=auto_delete,reply_to_message_id=reply_to_message_id
         )
 

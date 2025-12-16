@@ -1,90 +1,124 @@
-from typing import Literal
-
-ButtonType = Literal[
-    "Simple", "Selection", "Calendar", "NumberPicker", "StringPicker", 
-    "Location", "Payment", "CameraImage", "CameraVideo", "GalleryImage", 
-    "GalleryVideo", "File", "Audio", "RecordAudio", "MyPhoneNumber", 
-    "MyLocation", "Textbox", "Link", "AskMyPhoneNumber", "AskLocation", "Barcode"
-]
+from typing import List, Dict, Iterator
+import json
 
 class KeyPad:
     def __init__(self):
-        self.list_KeyPads = []
+        self.list_KeyPads: List[Dict] = []
 
-    @property
-    def list_types(self) -> list:
-        return [
-    "Simple", "Selection", "Calendar", "NumberPicker", "StringPicker", 
-    "Location", "Payment", "CameraImage", "CameraVideo", "GalleryImage", 
-    "GalleryVideo", "File", "Audio", "RecordAudio", "MyPhoneNumber", 
-    "MyLocation", "Textbox", "Link", "AskMyPhoneNumber", "AskLocation", "Barcode"
-]
-
-    def _create_button(self, id: str, button_text: str, type: ButtonType) -> dict:
-        """ایجاد دیکشنری دکمه به صورت متمرکز"""
+    def _create_button(self, id: str, button_text: str, type: str = "Simple") -> dict:
         return {"id": id, "type": type, "button_text": button_text}
-    
-    def add_1row(self, id: str, button_text: str, type: ButtonType = "Simple") -> None:
-        """add key pad 1vs1 / افزودن کی پد یکی"""
+
+    def append(self, *buttons: dict):
+        if not buttons:
+            raise ValueError("حداقل یک دکمه باید ارسال شود")
+
         self.list_KeyPads.append({
-            "buttons": [self._create_button(id, button_text, type)]
-        })
-    
-    def add_2row(self, 
-                id1: str, button_text1: str, 
-                id2: str, button_text2: str,
-                type1: ButtonType = "Simple", 
-                type2: ButtonType = "Simple") -> None:
-        """add key pad 2vs2 / افزودن کی پد دو تایی"""
-        self.list_KeyPads.append({
-            "buttons": [
-                self._create_button(id1, button_text1, type1),
-                self._create_button(id2, button_text2, type2)
-            ]
-        })
-    
-    def add_3row(self, 
-                id1: str, button_text1: str,
-                id2: str, button_text2: str,
-                id3: str, button_text3: str,
-                type1: ButtonType = "Simple",
-                type2: ButtonType = "Simple", 
-                type3: ButtonType = "Simple") -> None:
-        """add key pad 3vs3 / افزودن کی پد سه تایی"""
-        self.list_KeyPads.append({
-            "buttons": [
-                self._create_button(id1, button_text1, type1),
-                self._create_button(id2, button_text2, type2),
-                self._create_button(id3, button_text3, type3)
-            ]
-        })
-    
-    def add_4row(self, 
-                id1: str, button_text1: str,
-                id2: str, button_text2: str,
-                id3: str, button_text3: str,
-                id4: str, button_text4: str,
-                type1: ButtonType = "Simple",
-                type2: ButtonType = "Simple",
-                type3: ButtonType = "Simple",
-                type4: ButtonType = "Simple") -> None:
-        """add key pad 4vs4 / افزودن کی پد چهار تایی"""
-        self.list_KeyPads.append({
-            "buttons": [
-                self._create_button(id1, button_text1, type1),
-                self._create_button(id2, button_text2, type2),
-                self._create_button(id3, button_text3, type3),
-                self._create_button(id4, button_text4, type4)
-            ]
+            "buttons": list(buttons)
         })
 
-    def pop(self,index):
+    def simple(self, id: str, button_text: str) -> dict:
+        return self._create_button(id, button_text)
+
+    def pop(self, index: int = -1):
         self.list_KeyPads.pop(index)
 
     def clear(self):
         self.list_KeyPads.clear()
 
-
-
     def get(self) -> list:
         return self.list_KeyPads
+    
+    def get_data_by_id(self, id: str) -> dict:
+        """
+            find button by id / پیدا کردن دکمه با آیدی
+
+            Docstring for get_data_by_id
+            
+            :param id: Description
+            :type id: str
+            :return: Description
+            :rtype: dict[Any, Any]
+        """
+        for buttons in self.list_KeyPads:
+            for button in buttons["buttons"]:
+                if button["id"] == id:
+                    return button
+        
+        raise IndexError("The Id Not Found !")
+    
+    def get_all_by_id(self, id: str) -> List[dict]:
+        """
+        Find all buttons with given id.
+        """
+        result = []
+
+        for row in self.list_KeyPads:
+            for button in row["buttons"]:
+                if button["id"] == id:
+                    result.append(button)
+
+        return result
+
+    def remove_by_id(self, id: str) -> dict:
+        """
+        remove button by id / حذف دکمه با آیدی
+        """
+        for row_index, row in enumerate(self.list_KeyPads):
+            buttons = row["buttons"]
+
+            for btn_index, button in enumerate(buttons):
+                if button["id"] == id:
+                    removed = buttons.pop(btn_index)
+
+                    # اگر سطر خالی شد، کل سطر حذف شود
+                    if not buttons:
+                        self.list_KeyPads.pop(row_index)
+
+                    return removed
+
+        raise KeyError(f"Button with id '{id}' not found")
+
+    def remove_all_by_id(self, id: str) -> List[dict]:
+        """
+        Remove all buttons with given id.
+        """
+        removed = []
+
+        for row in list(self.list_KeyPads):  # کپی برای حذف امن
+            buttons = row["buttons"]
+
+            for button in buttons[:]:
+                if button["id"] == id:
+                    buttons.remove(button)
+                    removed.append(button)
+
+            if not buttons:
+                self.list_KeyPads.remove(row)
+
+        if not removed:
+            raise KeyError(f"Button with id '{id}' not found")
+
+        return removed
+
+    def get_all_buttons(self) -> List[dict]:
+        return [
+            button
+            for row in self.list_KeyPads
+            for button in row["buttons"]
+        ]
+
+
+    def __str__(self) -> str:
+        return json.dumps(self.list_KeyPads,indent=4,ensure_ascii=False)
+
+    def __repr__(self) -> str:
+        return self.__str__()
+    
+    def __getitem__(self, index):
+        return self.list_KeyPads[index]
+
+    def __iter__(self) -> Iterator[Dict]:
+        return iter(self.list_KeyPads)
+
+    def __len__(self) -> int:
+        return len(self.list_KeyPads)

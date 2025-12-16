@@ -1,8 +1,9 @@
-from ....async_sync import *
+from ....core.async_sync import *
 from typing import (
     Optional,
     Any,
-    TYPE_CHECKING
+    TYPE_CHECKING,
+    Literal
 )
 
 if TYPE_CHECKING:
@@ -191,19 +192,19 @@ class Message:
         return await self.methods.sendText(objectGuid=self.object_guid, text=text, messageId=self.message_id)
 
     @auto_async
-    async def reply_image(self,file:str, text:Optional[str], file_name:Optional[str],thumbInline: Optional[str] = None,is_spoil: bool = False):
+    async def reply_image(self,file:str, text:Optional[str], file_name:Optional[str] = None,thumbInline: Optional[str] = None,is_spoil: bool = False):
         return await self.methods.sendImage(self.object_guid,file,self.message_id,text,is_spoil,thumbInline,file_name)
     
     @auto_async
-    async def reply_video(self,file:str, text:Optional[str], file_name:Optional[str],thumbInline: Optional[str] = None,is_spoil: bool = False):
+    async def reply_video(self,file:str, text:Optional[str], file_name:Optional[str] = None,thumbInline: Optional[str] = None,is_spoil: bool = False):
         return await self.methods.sendVideo(self.object_guid,file,self.message_id,text,is_spoil,thumbInline,file_name)
 
     @auto_async
-    async def reply_gif(self,file:str, text:Optional[str], file_name:Optional[str],thumbInline: Optional[str] = None):
+    async def reply_gif(self,file:str, text:Optional[str], file_name:Optional[str] = None,thumbInline: Optional[str] = None):
         return await self.methods.sendGif(self.object_guid,file,self.message_id,text,thumbInline,file_name)
 
     @auto_async
-    async def reply_music(self,file:str, text:Optional[str], file_name:Optional[str],performer: Optional[str] = None):
+    async def reply_music(self,file:str, text:Optional[str], file_name:Optional[str] = None,performer: Optional[str] = None):
         return await self.methods.sendMusic(self.object_guid,file,self.message_id,text,file_name,performer)
 
     @auto_async
@@ -217,6 +218,29 @@ class Message:
     @auto_async
     async def reply_video_message(self,file:str, text:Optional[str], file_name:Optional[str],thumbInline: Optional[str] = None):
         return await self.methods.sendVideoMessage(self.object_guid,file,self.message_id,text,thumbInline,file_name)
+
+    @auto_async
+    async def reply_poll(
+        self,
+        question: str,
+        options: list,
+        allows_multiple_responses: bool = True,
+        is_anonymous: bool = False,
+        type: Literal["Quiz", "Regular"] = "Regular",
+        correct_option_index: Optional[int] = None,
+        hint: Optional[str] = None
+    ):
+        return await self.methods.sendPoll(
+            objectGuid=self.object_guid,
+            question=question,
+            options=options,
+            messageId=self.message_id,
+            allowsMultipleResponses=allows_multiple_responses,
+            isAnonymous=is_anonymous,
+            type=type,
+            correctOptionIndex=correct_option_index,
+            hint=hint
+        )
 
     @auto_async
     async def seen(self) -> dict:

@@ -5,7 +5,7 @@ from typing import (
     List,
     Literal
 )
-from ...async_sync import *
+from ...core.async_sync import *
 from ..filters import Filter
 
 class Client(object):
@@ -408,11 +408,11 @@ class Client(object):
         return await self.methods.sendMessageAPICall(objectGuid=objectGuid, text=text, messageId=message_id, buttonId=button_id)
     
     @async_to_sync
-    async def reaction_message(self, object_guid:str, message_id:str, reaction:int) -> dict:
+    async def reaction_message(self, object_guid: str, message_id: str, reaction: Union[int,str]) -> dict:
         return await self.methods.actionOnMessageReaction(objectGuid=object_guid, messageId=message_id, reactionId=reaction, action="Add")
     
     @async_to_sync
-    async def unreaction_message(self, object_guid:str, message_id:str, reaction:int) -> dict:
+    async def unreaction_message(self, object_guid: str, message_id: str, reaction: Union[int,str]) -> dict:
         return await self.methods.actionOnMessageReaction(objectGuid=object_guid, messageId=message_id, reactionId=reaction, action="Remove")
     
     @async_to_sync
@@ -731,6 +731,17 @@ class Client(object):
     async def download(self, object_guid:Optional[str] = None, message_id:Optional[str] = None, save:bool=False, save_as:Optional[str] = None, file_inline:Optional[dict]=None) -> Optional[dict]:
         return await self.methods.download(objectGuid=object_guid, messageId=message_id, save=save, saveAs=save_as, fileInline=file_inline)
     
+    @async_to_sync
+    async def request(
+        self,
+        method: str,
+        input: dict = {},
+        tmp_session: bool = False,
+        attempt: int = 0,
+        max_attempt: int = 2
+    ) -> dict:
+        return await self.methods.request(method=method,input=input,tmpSession=tmp_session,attempt=attempt,maxAttempt=max_attempt)
+
     @async_to_sync
     async def play_voice(self, object_guid: str, file:str) -> None:
         async def main():

@@ -22,13 +22,9 @@ from os import (
     remove
 )
 from .configs import Configs
-from typing import (
-    Optional,
-    List,
-    Tuple,
-    Dict,
-    Any
-)
+from .reacrions import REACTION_MAP
+from typing import Optional
+
 
 
 class Utils:
@@ -89,6 +85,16 @@ class Utils:
         for type in ["text", "image", "video", "gif", "video message", "voice", "music", "file"]:
             if type == messageType:
                 return True
+    
+    @staticmethod
+    def format_file(type_file: Optional[str] = None) -> Optional[str]:
+        if not type_file:
+            return None
+        for type_,pass_ in {"File":"", "Image":".png", "Voice":".mp3", "Music":".mp3", "Gif":".mp4" , "Video":".mp4"}.items():
+            if type_ == type_file:
+                name_file = type_+pass_
+                return name_file
+        return None
 
     @staticmethod
     def getChatTypeByLink(link: str) -> Optional[str]:
@@ -511,6 +517,14 @@ class Utils:
             return "pyrubi"
         except Exception:
             return "pyrubi"
+    
+    @staticmethod
+    def reaction_to_id(reaction: str) -> int:
+        if len(reaction) != 1:
+            raise ValueError("The reaction not has 1 len !")
+        if not reaction in REACTION_MAP.keys():
+            raise ValueError("The reaction is not valid !")
+        return REACTION_MAP[reaction]
 
 
 class Colors:
