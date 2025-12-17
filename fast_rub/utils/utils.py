@@ -4,6 +4,8 @@ from .colors import cprint, Colors
 import time
 from .encryption import Encryption
 import json
+import os
+from ..type.errors import CreateSessionError
 
 def _collect_matches(text: str, patterns: Dict[str, List[str]], priority: Dict[str, int]) -> List[Dict[str, Any]]:
     matches = []
@@ -303,11 +305,11 @@ class utils:
         return None
     
     @staticmethod
-    def print_time(text: str, time_sleep: float = 0.07) -> None:
+    def print_time(text: str, time_sleep: float = 0.07, color: str = Colors.WHITE) -> None:
         k = ""
         for text in text:
             k += text
-            print(f"{Colors.BLUE}{k}{Colors.RESET}", end="\r")
+            print(f"{color}{k}{Colors.RESET}", end="\r")
             time.sleep(time_sleep)
         cprint("",Colors.WHITE)
     
@@ -319,6 +321,8 @@ class utils:
             text = input(text_output)
         return text
     
+    # Session
+
     @staticmethod
     def session_dict(name_session: str, token: str, user_agent: Optional[str] = None, time_out: Optional[int] = 30, display_welcome: bool = False, view_logs: Optional[bool] = False, save_logs: Optional[bool] = False) -> dict:
         text_json_fast_rub_session = {
@@ -335,15 +339,66 @@ class utils:
         return text_json_fast_rub_session
     
     @staticmethod
+    def save_dict(data: dict, name_file: str):
+        json_fast_rub_session = json.dumps(data,indent=4,ensure_ascii=False)
+        json_fast_rub_session = Encryption().en(str(json_fast_rub_session))
+        utils.save(json_fast_rub_session, name_file)
+
+    @staticmethod
+    def save(data: str, name_file: str):
+        with open(name_file, "w", encoding="utf-8") as file:
+            file.write(data)
+
+    @staticmethod
     def create_session(name_session: str, token: Optional[str] = None, user_agent: Optional[str] = None, time_out: Optional[int] = 30, display_welcome: bool = False, view_logs: Optional[bool] = False, save_logs: Optional[bool] = False) -> bool:
         try:
             if token is None:
                 token = utils.get_input("Write The Token » ")
             session = utils.session_dict(name_session,token,user_agent,time_out,display_welcome,view_logs,save_logs)
-            json_fast_rub_session = json.dumps(session,indent=4,ensure_ascii=False)
-            json_fast_rub_session = Encryption().en(str(json_fast_rub_session))
-            with open(f"{name_session}.faru", "w", encoding="utf-8") as file:
-                file.write(json_fast_rub_session)
+            utils.save_dict(session, f"{name_session}.faru")
             return True
         except:
             return False
+    
+    @staticmethod
+    def open_session(name_session: str, token: Optional[str] = None, user_agent: Optional[str] = None, time_out: Optional[int] = 30, display_welcome: bool = False, view_logs: Optional[bool] = False, save_logs: Optional[bool] = False) -> dict:
+        """بازکردن سشن
+
+        Args:
+            name_session (str): اسم سشن
+            token (Optional[str], optional): توکن. Defaults to None.
+            user_agent (Optional[str], optional): اطلاعات مرورگر درخواست کننده. Defaults to None.
+            time_out (Optional[int], optional): زمان خروج. Defaults to 30.
+            display_welcome (bool, optional): خوش آمد گویی. Defaults to False.
+            view_logs (Optional[bool], optional): نمایش لاگ ها. Defaults to False.
+            save_logs (Optional[bool], optional): ذخیره لاگ ها. Defaults to False.
+
+        Raises:
+            CreateSessionError: خطا برای ساخت سشن
+
+        Returns:
+            dict: اطلاعات سشن
+        """
+        if os.path.isfile(name_session):
+            with open(name_session, "r", encoding="utf-8") as file:
+                encrypted_string = file.read().strip()
+            try:
+                decrypted = Encryption().de(encrypted_string)
+                session = json.loads(decrypted)
+                return session
+            except:
+                cprint("Error for getting last data session !", Colors.RED)
+                creating = False
+                while not creating:
+                    creating = utils.create_session(name_session,token,user_agent,time_out,display_welcome,view_logs,save_logs)
+                    if not creating:
+                        raise CreateSessionError("Can Not Create The Session !")
+                return utils.open_session(name_session,token,user_agent,time_out,display_welcome,view_logs,save_logs)
+        else:
+            creating = False
+            while not creating:
+                creating = utils.create_session(name_session,token,user_agent,time_out,display_welcome,view_logs,save_logs)
+                if not creating:
+                    raise CreateSessionError("Can Not Create The Session !")
+            return utils.open_session(name_session,token,user_agent,time_out,display_welcome,view_logs,save_logs)
+        
