@@ -1,52 +1,35 @@
-import httpx
-import os
-import time
-import json
 import asyncio
 import inspect
-import aiofiles
+import time
 from functools import wraps
 from pathlib import Path
-from typing import (
-    Optional,
-    Callable,
-    Awaitable,
-    Literal,
-    Union,
-    Dict,
-    List,
-    Any
-)
-from .utils.colors import *
+from typing import (Any, Awaitable, Callable, Dict, List, Literal, Optional,
+                    Union)
+
+import aiofiles
+import httpx
+from sphinx import ret
+
+from .core.async_sync import async_to_sync
 from .filters import Filter
-from .type import (
-    Update,
-    UpdateButton,
-    msg_update
-)
-from .core.async_sync import *
-from .utils.logger import *
-from .type.props import *
-from .utils.utils import (
-    TextParser,
-    utils
-)
-from .type.errors import (
-    PollInvalid,
-    CreateSessionError
-)
-from .utils.encryption import Encryption
 from .network.network import Network
+from .type import Update, UpdateButton, msg_update
+from .type.errors import PollInvalid
+from .type.props import props
+from .utils.colors import Colors
+from .utils.logger import logging, setup_logging
+from .utils.utils import TextParser, utils
 
 
 class Client:
+    """کلاس Client برای مدیریت ارتباط با API است."""
     def __init__(
         self,
         name_session: str,
         token: Optional[str] = None,
         user_agent: Optional[str] = None,
         time_out: Optional[int] = 60,
-        display_welcome = False,
+        display_welcome: bool = False,
         use_to_fastrub_webhook_on_message: Union[str,bool] = True,
         use_to_fastrub_webhook_on_button: Union[str,bool] = True,
         save_logs: Optional[bool] = None,
@@ -81,35 +64,15 @@ class Client:
         self.main_parse_mode: Literal['Markdown', 'HTML', 'Unknown', None] = main_parse_mode
         self.max_retries = max_retries
         self.list_befor_messages = []
-        if os.path.isfile(name):
-            with open(name, "r", encoding="utf-8") as file:
-                encrypted_string = file.read().strip()
-            try:
-                decrypted = Encryption().de(encrypted_string)
-                text_json_fast_rub_session = json.loads(decrypted)
-                self.text_json_fast_rub_session = text_json_fast_rub_session
-                self.token = text_json_fast_rub_session["token"]
-                self.time_out = text_json_fast_rub_session["time_out"]
-                self.user_agent = text_json_fast_rub_session["user_agent"]
-                try:
-                    self.log_to_file = text_json_fast_rub_session["setting_logs"]["save"]
-                    self.log_to_console = text_json_fast_rub_session["setting_logs"]["view"]
-                except:
-                    pass
-            except:
-                cprint("Error for getting last data session !", Colors.RED)
-                creating = utils.create_session(name_session,token,user_agent,time_out,display_welcome,view_logs,save_logs)
-                if not creating:
-                    raise CreateSessionError("Can Not Create The Session !")
-        else:
-            creating = utils.create_session(name_session,token,user_agent,time_out,display_welcome,view_logs,save_logs)
-            if not creating:
-                raise CreateSessionError("Can Not Create The Session !")
-            self.token = token
-            self.time_out = time_out
-            self.user_agent = user_agent
-        self.log_to_file = save_logs
-        self.log_to_console = view_logs
+        self.session = utils.open_session(name_session, token, user_agent, time_out, display_welcome, view_logs, save_logs)
+        self.token = self.session["token"]
+        self.time_out = self.session["time_out"]
+        self.user_agent = self.session["user_agent"]
+        try:
+            self.log_to_file = self.session["setting_logs"]["save"]
+            self.log_to_console = self.session["setting_logs"]["view"]
+        except:
+            pass
         if self.log_to_file is None:
             self.log_to_file = False
         if self.log_to_console is None:
@@ -129,23 +92,28 @@ class Client:
         self.urls = ["https://botapi.rubika.ir/v3/","https://messengerg2b1.iranlms.ir/v3/"]
         self.main_url = self.urls[0]
         try:
-            self.version_botapi()
+            asyncio.run(self.version_botapi())
         except:
             self.main_url = self.urls[1]
         try:
-            mes = self.get_updates(limit=100)
+            mes = asyncio.run(self.get_updates(limit=100))
             self.next_offset_id_get_message = mes["data"]["next_offset_id"]
         except:
             pass
         setup_logging(log_to_console=self.log_to_console,log_to_file=self.log_to_file)
         if display_welcome:
-            utils.print_time("Welcome to FastRub")
+            utils.print_time("Welcome To FastRub", color=Colors.GREEN)
         self.logger.info("سشن اماده است")
 
     @property
     def TOKEN(self):
         self.logger.info("توکن دریافت شد")
         return self.token
+
+    @property
+    def NAME_SESSION(self):
+        self.logger.info("نام سشن دریافت شد")
+        return self.name_session
 
     @async_to_sync  
     async def set_retry_settings(self, max_retries: int = 3):
@@ -172,17 +140,15 @@ class Client:
         if viewing is None:
             viewing = self.log_to_console
         try:
-            self.text_json_fast_rub_session["setting_logs"]["save"] = saving
-            self.text_json_fast_rub_session["setting_logs"]["view"] = viewing
+            self.session["setting_logs"]["save"] = saving
+            self.session["setting_logs"]["view"] = viewing
         except:
-            self.text_json_fast_rub_session["setting_logs"] = {
+            self.session["setting_logs"] = {
                 "save":saving,
                 "view":viewing
             }
-        with open(self.name_session, "w") as fi:
-            json.dump(self.text_json_fast_rub_session, fi, ensure_ascii=False, indent=4)
-        if saving and viewing:
-            self.logger = setup_logging(log_to_file=saving, log_to_console=viewing)
+        utils.save_dict(self.session, self.name_session)
+        self.logger = setup_logging(log_to_file=saving, log_to_console=viewing)
         self.logger.info(f"logging تنظیم شد | نمایش: {viewing} | ذخیره: {saving}")
 
     @async_to_sync
@@ -491,6 +457,17 @@ class Client:
 
     @async_to_sync
     async def get_messages(self,chat_id: str,message_id: str,limit_search: int = 100,get_befor: int = 10) -> Optional[dict]:
+        """_summary_
+
+        Args:
+            chat_id (str): _description_
+            message_id (str): _description_
+            limit_search (int, optional): _description_. Defaults to 100.
+            get_befor (int, optional): _description_. Defaults to 10.
+
+        Returns:
+            Optional[dict]: _description_
+        """
         updates = await self.get_updates(limit_search,self.next_offset_id_get_message)
         result = {"messages":[]}
         self.geted_u = len(updates["data"]["updates"])
@@ -819,7 +796,6 @@ class Client:
     ) -> props:
         """sending image / ارسال تصویر"""
         self.logger.info("استفاده از متود send_image")
-        
         result = await self.base_send_file(
             chat_id,
             image,
@@ -1188,7 +1164,7 @@ class Client:
 
         self._running = True
         self.logger.info("ربات در حال دریافت پیام ها")
-        utils.print_time("Start")
+        utils.print_time("Start", color = Colors.BLUE)
         asyncio.run(self._run_all())
 
     def stop(self):
