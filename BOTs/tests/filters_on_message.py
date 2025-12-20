@@ -1,6 +1,7 @@
 from fast_rub import Client
 from fast_rub.type import Update
 from fast_rub.utils import filters
+import asyncio
 
 bot = Client("test")
 
@@ -18,4 +19,4 @@ async def test(msg:Update):
     text_gpt = "سلام خوبی" # برای مثال
     await msg.reply(text_gpt)
 
-bot.run()
+asyncio.run(bot.run())
