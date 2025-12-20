@@ -98,6 +98,7 @@ bot.run()
 
 ## دستورات
 
+
 ### نحوه تنظیم دستورات ربات
 ```python
 from fast_rub import Client
@@ -126,6 +127,50 @@ async def setting():
 asyncio.run(setting())
 ```
 
+
+### ارسال KeyPad
+```python
+from fast_rub import Client
+from fast_rub.button import KeyPad
+import asyncio
+
+bot = Client("test")
+
+async def setting():
+    button = KeyPad()
+    button.append(
+        button.simple("button id 1", "text 1")
+    )
+    button.append(
+        button.simple("button id 2", "text 2"),
+        button.simple("button id 3", "text 3")
+    )
+    await bot.send_text("test KeyPad",keypad=button.get())
+
+asyncio.run(setting())
+```
+
+### ارسال KeyPad Inline
+```python
+from fast_rub import Client
+from fast_rub.button import KeyPad
+import asyncio
+
+bot = Client("test")
+
+async def setting():
+    button = KeyPad()
+    button.append(
+        button.simple("button id 1", "text 1")
+    )
+    button.append(
+        button.simple("button id 2", "text 2"),
+        button.simple("button id 3", "text 3")
+    )
+    await bot.send_text("test KeyPad Inline",inline_keypad=button.get())
+
+asyncio.run(setting())
+```
 
 ## ارسال فایل
 
@@ -259,7 +304,8 @@ asyncio.run(set_endpoint())
 
 `send_text(text: str,
         chat_id: str,
-        inline_keypad: Optional[KeyPad] = None,
+        inline_keypad: Optional[list] = None,
+        keypad: Optional[list] = None,
         disable_notification: Optional[bool] = False,
         reply_to_message_id: Optional[str] = None,
         auto_delete: Optional[int] = None,
@@ -307,8 +353,8 @@ asyncio.run(set_endpoint())
 
 `send_message(chat_id: str,
         text: Optional[str],
-        inline_keypad: Optional[dict] = None,
-        keypad: Optional[dict] = None,
+        inline_keypad: Optional[list] = None,
+        keypad: Optional[list] = None,
         resize_keyboard: Optional[bool] = True,
         on_time_keyboard: Optional[bool] = False,
         disable_notification: bool = False,
@@ -373,21 +419,13 @@ asyncio.run(set_endpoint())
 `edit_message_text(chat_id: str,
         message_id: str,
         text: str,
+        inline_keypad: Optional[list] = None,
         parse_mode: Literal["Markdown","HTML",None] = "Markdown")`
 
 حذف پیام
 
 `delete_message(chat_id: str,
         message_id: str)`
-
-ویرایش پیام کی پد اینلاین
-
-`edit_message_keypad_Inline(chat_id: str,
-        text: str,
-        inline_keypad,
-        disable_notification : Optional[bool] = False,
-        reply_to_message_id: Optional[str] = None,
-        parse_mode: Literal["Markdown","HTML",None] = "Markdown")`
 
 آپلود فایل در سرور روبیکا
 
@@ -459,8 +497,8 @@ asyncio.run(set_endpoint())
 
 ریپلای متن
 
-`reply(text: str,keypad_inline: Optional[dict] = None,
-        keypad: Optional[dict] = None,
+`reply(text: str,keypad_inline: Optional[list] = None,
+        keypad: Optional[list] = None,
         resize_keyboard: bool | None = True,
         on_time_keyboard: bool | None = False,,auto_delete: Optional[int] = None,parse_mode: Literal['Markdown', 'HTML', None] = "Markdown")`
 
@@ -541,7 +579,7 @@ asyncio.run(set_endpoint())
 
 ارسال متن
 
-`send_text(text:str,keypad:dict:Optional[dict] = None,keypad: Optional[dict] = None,
+`send_text(text:str,keypad:dict:Optional[list] = None,keypad: Optional[list] = None,
         resize_keyboard: Optional[bool] = True,
         on_time_keyboard: Optional[bool] = False,auto_delete: Optional[int] = None,reply_to_message_id: Optional[str] = None,parse_mode: Literal['Markdown', 'HTML'] = "Markdown")`
 
