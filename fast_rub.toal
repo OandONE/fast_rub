@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "fastrub"
-version = "2.5.1"
+version = "2.5.6"
 authors = [
     {name = "seyyed mohamd hosein", email = "mohamadhosein159159@gmail.com"},
 ]
@@ -26,5 +26,4 @@ classifiers = [
 ]
 
 [project.urls]
-
 Homepage = "https://github.com/OandONE/fast_rub"
