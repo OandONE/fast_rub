@@ -4,75 +4,110 @@ from typing import Optional, Union, Dict, Any, List, Literal
 from ..type.errors import ServerRubikaError
 import os
 import aiofiles
+import logging
 
 class Network:
     def __init__(
         self,
         token: str,
-        logger,
+        logger: Optional[logging.Logger] = None,
         max_retries: int = 3,
         user_agent: Optional[str] = None,
         main_url: str = "https://botapi.rubika.ir/v3/",
         proxy: Optional[str] = None,
         rate_limit: int = 20
     ):
-        self.logger = logger
+        self.logger = logger or logging.getLogger("fast_rub.network")
         self.token = token
         self.user_agent = user_agent
         self.main_url = main_url
         self.proxy = proxy
         self.max_retries = max_retries
-        self._client: Optional[httpx.AsyncClient] = None
+
+        self._client: httpx.AsyncClient | None = None
         self._client_lock = asyncio.Lock()
-        self._rate_sem = asyncio.Semaphore(rate_limit)
+
+        self._rate_sem: Optional[asyncio.Semaphore] = None
+        self._queue: Optional[asyncio.Queue] = None
         self._worker_task: Optional[asyncio.Task] = None
-        self._queue: asyncio.Queue = asyncio.Queue()
         self._closed = False
+        self._rate_limit = rate_limit
 
     # -------------------
-    # Client management
+    # Lifecycle: start / stop
     # -------------------
+    async def start(self, *, start_worker: bool = True):
+        asyncio.get_running_loop()
+
+        if self._client_lock is None:
+            self._client_lock = asyncio.Lock()
+        if self._rate_sem is None:
+            self._rate_sem = asyncio.Semaphore(self._rate_limit)
+        if self._queue is None:
+            self._queue = asyncio.Queue()
+
+        await self._create_client()
+
+        if start_worker:
+            await self.start_worker()
+
     async def _create_client(self):
-        self._client = httpx.AsyncClient(
-            timeout=httpx.Timeout(connect=10.0, read=30.0, write=10.0, pool=10.0),
-            proxy=self.proxy,
-            limits=httpx.Limits(max_connections=100, max_keepalive_connections=20),
-            http1=True,
-            http2=True,
-            headers={
-                "Content-Type": "application/json",
-                "User-Agent": self.user_agent or "fast_rub/Network"
-            }
-        )
+        self._client = httpx.AsyncClient(**self._build_client_kwargs())
         self.logger.debug("HTTP client created")
-
-    async def _ensure_client(self):
-        if self._client is None or self._client.is_closed:
-            async with self._client_lock:
-                if self._client is None or self._client.is_closed:
-                    await self._create_client()
 
     async def close(self):
         self._closed = True
+
         if self._worker_task:
             self._worker_task.cancel()
             try:
                 await self._worker_task
             except asyncio.CancelledError:
                 pass
+
         if self._client and not self._client.is_closed:
-            await self._client.aclose()
-        self.logger.debug("Network closed")
+            try:
+                await self._client.aclose()
+            except RuntimeError as e:
+                if "Event loop is closed" not in str(e):
+                    raise
+
 
     # -------------------
     # Worker queue
     # -------------------
     async def start_worker(self):
-        if self._worker_task is None:
+        if self._worker_task is None or self._worker_task.done():
             self._worker_task = asyncio.create_task(self._worker())
             self.logger.debug("Worker started")
 
+    def _build_client_kwargs(self) -> dict:
+        kwargs = {
+            "timeout": httpx.Timeout(connect=10.0, read=30.0, write=10.0, pool=10.0),
+            "limits": httpx.Limits(max_connections=100, max_keepalive_connections=20),
+            "http1": True,
+            "http2": True,
+            "headers": {
+                "Content-Type": "application/json",
+                "User-Agent": self.user_agent or "fast_rub/Network"
+            }
+        }
+
+        if self.proxy:
+            try:
+                httpx.AsyncClient(proxy=self.proxy)
+                kwargs["proxies"] = self.proxy
+            except TypeError:
+                kwargs["proxy"] = self.proxy
+
+        return kwargs
+
+
     async def _worker(self):
+        if self._queue is None:
+            self.logger.warning("Worker started but queue is None.")
+            return
+
         while not self._closed:
             try:
                 url, method, data_, headers, overrides, fut = await self._queue.get()
@@ -86,7 +121,10 @@ class Network:
                 if not fut.done():
                     fut.set_exception(e)
             finally:
-                self._queue.task_done()
+                try:
+                    self._queue.task_done()
+                except Exception:
+                    pass
 
     # -------------------
     # Public request
@@ -108,12 +146,24 @@ class Network:
             "timeout": timeout or 30.0
         }
 
-        # مستقیم درخواست را بفرست، بدون Queue
         return await self._do_request(url, type_send, data_, None, **overrides)
 
     # -------------------
     # Internal request with retry
     # -------------------
+    async def _ensure_client(self):
+        if self._client_lock is None:
+            self._client_lock = asyncio.Lock()
+        if self._rate_sem is None:
+            self._rate_sem = asyncio.Semaphore(self._rate_limit)
+        if self._queue is None:
+            self._queue = asyncio.Queue()
+
+        if self._client is None or (hasattr(self._client, "is_closed") and self._client.is_closed):
+            async with self._client_lock:
+                if self._client is None or (hasattr(self._client, "is_closed") and self._client.is_closed):
+                    await self._create_client()
+
     async def _do_request(
         self,
         url: str,
@@ -126,16 +176,17 @@ class Network:
     ) -> httpx.Response:
 
         last_exception = None
-        headers = headers or {"Content-Type": "application/json"}
+        headers = headers.copy() if headers else {"Content-Type": "application/json"}
         if self.user_agent:
             headers["User-Agent"] = self.user_agent
 
-        # ابتدا Client را فقط یک بار آماده می‌کنیم
         await self._ensure_client()
 
         for attempt in range(1, max_retries + 1):
             try:
-                # Semaphore را فقط هنگام ارسال درخواست بگیریم
+                if self._rate_sem is None:
+                    self._rate_sem = asyncio.Semaphore(self._rate_limit)
+
                 async with self._rate_sem:
                     if method == "POST":
                         resp = await self._client.post(url, json=data_, headers=headers, timeout=timeout)
@@ -152,17 +203,28 @@ class Network:
                 wait_time = attempt * 1.5
                 self.logger.warning(f"Request failed attempt {attempt}/{max_retries}: {e}. Retrying in {wait_time}s...")
 
-                # فقط Client را ببند و دوباره بساز، بدون نگه داشتن Lock طولانی
+                if self._client_lock is None:
+                    self._client_lock = asyncio.Lock()
+
                 async with self._client_lock:
                     if self._client:
                         try:
                             await self._client.aclose()
-                        except:
+                        except RuntimeError as re:
+                            if "Event loop is closed" in str(re):
+                                self.logger.debug("Event loop closed while closing client (during retry) — ignoring.")
+                            else:
+                                self.logger.exception("RuntimeError when closing client (during retry)")
+                        except Exception:
                             pass
                         self._client = None
 
-                # دوباره Client را آماده کن قبل از Retry بعدی
-                await self._ensure_client()
+                try:
+                    await self._ensure_client()
+                except Exception as e2:
+                    self.logger.exception(f"Failed to recreate client: {e2}")
+                    raise e2
+
                 await asyncio.sleep(wait_time)
 
             except Exception as e:
@@ -191,17 +253,20 @@ class Network:
         if result.get("status", "") != "OK":
             self.logger.error(f"Server returned error: {result}")
             raise ServerRubikaError(result)
-        return result
-    
+        return result["data"]
+
     async def download(self, url: str, path: str = "file") -> bool:
         try:
-            await self._ensure_client()  # مهم: تضمین ساخته شدن Client
+            await self._ensure_client()
 
             dir_path = os.path.dirname(path)
             if dir_path:
                 os.makedirs(dir_path, exist_ok=True)
 
-            async with self._rate_sem:  # رعایت Rate Limit
+            if self._rate_sem is None:
+                self._rate_sem = asyncio.Semaphore(self._rate_limit)
+
+            async with self._rate_sem:
                 async with self._client.stream("GET", url) as response:
                     response.raise_for_status()
                     async with aiofiles.open(path, 'wb') as file:
@@ -211,3 +276,26 @@ class Network:
         except Exception as e:
             self.logger.error(f"Download failed: {e}")
             return False
+    
+    async def upload(self, url: str, files: dict, timeout: int = 30) -> dict:
+        try:
+            self.logger.info("در حال آپلود فایل ...")
+            await self._ensure_client()
+
+            response = await self._client.post(url, files=files, timeout=timeout)
+            response.raise_for_status()
+            result = response.json()
+            if result.get("status", "") != "OK":
+                self.logger.error(f"Server returned error: {result}")
+                raise ServerRubikaError(result)
+            self.logger.info("فایل آپلود شد")
+            return result["data"]
+        except httpx.TimeoutException:
+            self.logger.error("زمان خروج فرا رسیده !")
+            raise
+        except httpx.HTTPError:
+            self.logger.error("خطای HTTP")
+            raise
+        except Exception as e:
+            self.logger.error(f"خطایی ناشناخته » {e}")
+            raise

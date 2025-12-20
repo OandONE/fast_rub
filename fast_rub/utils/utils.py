@@ -1,5 +1,5 @@
 import re
-from typing import List, Dict, Any, Tuple, Optional
+from typing import List, Dict, Any, Tuple, Optional, Literal
 from .colors import cprint, Colors
 import time
 from .encryption import Encryption
@@ -316,15 +316,21 @@ class utils:
     @staticmethod
     def get_input(text_output: str) -> str:
         text = None
-        while text in ["", " ", None] or len(str(text)) != 64:
+        while text is None or len(text) != 64:
             cprint("Write the valid ! Your text invalid.",Colors.RED)
             text = input(text_output)
         return text
     
-    # Session
-
     @staticmethod
-    def session_dict(name_session: str, token: str, user_agent: Optional[str] = None, time_out: Optional[int] = 30, display_welcome: bool = False, view_logs: Optional[bool] = False, save_logs: Optional[bool] = False) -> dict:
+    def calculate_upload_timeout(file_size_bytes: int, upload_speed_bps: int = 300_000) -> int:
+        SAFETY_FACTOR = 1.5
+        timeout_seconds = (file_size_bytes / upload_speed_bps) * SAFETY_FACTOR
+        return max(int(timeout_seconds), 30)
+
+    # Session
+    
+    @staticmethod
+    def session_dict(name_session: str, token: str, user_agent: Optional[str] = None, time_out: Optional[float] = 30.0, display_welcome: bool = False, view_logs: Optional[bool] = False, save_logs: Optional[bool] = False) -> dict:
         text_json_fast_rub_session = {
             "name_session": name_session,
             "token": token,
@@ -350,7 +356,7 @@ class utils:
             file.write(data)
 
     @staticmethod
-    def create_session(name_session: str, token: Optional[str] = None, user_agent: Optional[str] = None, time_out: Optional[int] = 30, display_welcome: bool = False, view_logs: Optional[bool] = False, save_logs: Optional[bool] = False) -> bool:
+    def create_session(name_session: str, token: Optional[str] = None, user_agent: Optional[str] = None, time_out: Optional[float] = 30.0, display_welcome: bool = False, view_logs: Optional[bool] = False, save_logs: Optional[bool] = False) -> bool:
         try:
             if token is None:
                 token = utils.get_input("Write The Token » ")
@@ -361,7 +367,7 @@ class utils:
             return False
     
     @staticmethod
-    def open_session(name_session: str, token: Optional[str] = None, user_agent: Optional[str] = None, time_out: Optional[int] = 30, display_welcome: bool = False, view_logs: Optional[bool] = False, save_logs: Optional[bool] = False) -> dict:
+    def open_session(name_session: str, token: Optional[str] = None, user_agent: Optional[str] = None, time_out: Optional[float] = 30.0, display_welcome: bool = False, view_logs: Optional[bool] = False, save_logs: Optional[bool] = False) -> dict:
         """بازکردن سشن
 
         Args:
@@ -379,8 +385,9 @@ class utils:
         Returns:
             dict: اطلاعات سشن
         """
-        if os.path.isfile(name_session):
-            with open(name_session, "r", encoding="utf-8") as file:
+        path_session = name_session + ".faru"
+        if os.path.isfile(path_session):
+            with open(path_session, "r", encoding="utf-8") as file:
                 encrypted_string = file.read().strip()
             try:
                 decrypted = Encryption().de(encrypted_string)
@@ -401,4 +408,4 @@ class utils:
                 if not creating:
                     raise CreateSessionError("Can Not Create The Session !")
             return utils.open_session(name_session,token,user_agent,time_out,display_welcome,view_logs,save_logs)
-        
+    

@@ -1,56 +1,98 @@
-import json
+from collections.abc import MutableMapping
+from typing import Any
 
-class props:
-    def __init__(self,data):
-        self._data_ = data
-    def __getattr__(self, name):
-        return self.find_prop(keys=name)
+class props(MutableMapping):
+    """
+    Wrapper حرفه‌ای برای dict و list با دسترسی هم با attribute و هم با index.
+    """
+    def __init__(self, data: Any):
+        if isinstance(data, dict):
+            self._data = {}
+            for k, v in data.items():
+                self._data[k] = self._wrap_value(v)
+        elif isinstance(data, list):
+            self._data = [self._wrap_value(v) for v in data]
+        else:
+            raise TypeError(f"props only accepts dict or list, got {type(data)}")
+
+    def _wrap_value(self, value):
+        """اگر value dict یا list بود، باز هم props بساز"""
+        if isinstance(value, dict) or isinstance(value, list):
+            return props(value)
+        return value
+
+    # ---------------- Dict-like behavior ----------------
     def __getitem__(self, key):
-        return self._data_[key]
-    def __lts__(self, update: list, *args, **kwargs):
-        for index, element in enumerate(update):
-            if isinstance(element, list):
-                update[index] = self.__lts__(update=element)
-            elif isinstance(element, dict):
-                update[index] = props(data=element)
-            else:
-                update[index] = element
-        return update
-    def find_prop(self, keys, data_=None, *args, **kwargs):
-        if data_ is None:
-            data_ = self._data_
-        if not isinstance(keys, list):
-            keys = [keys]
-        if isinstance(data_, dict):
-            for key in keys:
-                try:
-                    update = data_[key]
-                    if isinstance(update, dict):
-                        update = props(data=update)
-                    elif isinstance(update, list):
-                        update = self.__lts__(update=update)
-                    return update
-                except KeyError:
-                    pass
-            data_ = data_.values()
-        for value in data_:
-            if isinstance(value, (dict, list)):
-                try:
-                    return self.find_prop(keys=keys, data_=value)
-                except AttributeError:
-                    return None
-        return None
-    def __str__(self) -> str:
-        return json.dumps(self._data_,indent=4,ensure_ascii=False)
-    @property
-    def status(self):
-        """status for requests / وضعیت درخواست"""
-        return self._data_["status"]
-    @property
-    def is_ok_status(self):
-        """is true status / درست بودن وضعیت"""
-        return True if self.status == "OK" else False
-    @property
-    def data(self):
-        """data (if has) / اطلاعات (اگر وجود داشته باشد)"""
-        return self._data_["data"] if "data" in self._data_ else None
+        if isinstance(self._data, dict):
+            return self._data[key]
+        raise TypeError("Cannot use key indexing on a list")
+
+    def __setitem__(self, key, value):
+        if isinstance(self._data, dict):
+            self._data[key] = self._wrap_value(value)
+        else:
+            raise TypeError("Cannot use key indexing on a list")
+
+    def __delitem__(self, key):
+        if isinstance(self._data, dict):
+            del self._data[key]
+        else:
+            raise TypeError("Cannot use key indexing on a list")
+
+    def __iter__(self):
+        return iter(self._data)
+
+    def __len__(self):
+        return len(self._data)
+
+    # ---------------- Attribute-like behavior ----------------
+    def __getattr__(self, name):
+        if isinstance(self._data, dict):
+            if name in self._data:
+                return self._data[name]
+            raise AttributeError(f"'props' object has no attribute '{name}'")
+        raise AttributeError(f"'props' object is a list, cannot access '{name}' as attribute")
+
+    def __setattr__(self, name, value):
+        if name == "_data":
+            super().__setattr__(name, value)
+        elif isinstance(self._data, dict):
+            self._data[name] = self._wrap_value(value)
+        else:
+            raise AttributeError(f"'props' object is a list, cannot set attribute '{name}'")
+
+    # ---------------- List-like behavior ----------------
+    def __getitem_list__(self, index):
+        if isinstance(self._data, list):
+            return self._data[index]
+        raise TypeError("Cannot index a dict with integer")
+
+    def __setitem_list__(self, index, value):
+        if isinstance(self._data, list):
+            self._data[index] = self._wrap_value(value)
+        else:
+            raise TypeError("Cannot index a dict with integer")
+
+    # ---------------- String / Representation ----------------
+    def __repr__(self):
+        return f"props({self._data!r})"
+
+    def __str__(self):
+        import json
+        return json.dumps(self._to_primitive(self._data), indent=4, ensure_ascii=False)
+
+    def _to_primitive(self, value):
+        """برای json.dumps کردن props به dict/list ساده"""
+        if isinstance(value, props):
+            return self._to_primitive(value._data)
+        elif isinstance(value, dict):
+            return {k: self._to_primitive(v) for k, v in value.items()}
+        elif isinstance(value, list):
+            return [self._to_primitive(v) for v in value]
+        else:
+            return value
+
+    # ---------------- Helpers ----------------
+    def to_dict(self):
+        """بازگرداندن dict/list خام"""
+        return self._to_primitive(self._data)
