@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="fastrub",
-    version="2.5.1",
+    version="2.5.6",
     author="seyyed mohamad hosein moosavi raja(01)",
     author_email="mohamadhosein159159@gmail.com",
     description="the library for rubika bots.",
@@ -12,8 +12,7 @@ setup(
     packages=find_packages(),
     python_requires='>=3.9',
     install_requires=[
-        "httpx==0.28.1", # fast_rub - sending requests
-        "httpx[http2]", # fast_rub - sending requests
+        "httpx[http2]==0.28.1", # fast_rub - sending requests
         "aiofiles==24.1.0", # fast_rub - saveing files async
         "filetype", # fork pyrubi
         "mutagen", # fork pyrubi
@@ -22,5 +21,4 @@ setup(
         "websocket-client" # fork pyrubi
     ],
     license="MIT"
-
 )
