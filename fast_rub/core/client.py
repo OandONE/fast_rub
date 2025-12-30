@@ -88,6 +88,9 @@ class Client:
 
     max_retries : int
         حداکثر تعداد تلاش مجدد در خطاهای شبکه
+
+    show_progress: Optional[bool]
+        نمایش لاگ های ارسال انواع فایل 
     """
     def __init__(
         self,
@@ -338,6 +341,7 @@ class Client:
         name_file: Optional[str] = None,
         type_file: Literal["File", "Image", "Voice", "Music", "Gif" , "Video"] = "File",
         file_id: Optional[str] = None,
+        show_progress: bool = True,
         # poll
         question: Optional[str] = None,
         options: Optional[list] = None,
@@ -356,9 +360,9 @@ class Client:
     ) ->  msg_update:
         """send message / ارسال پیام"""
         if file_id:
-            return await self.send_file_by_file_id(chat_id,file_id,text,reply_to_message_id,disable_notification,auto_delete,parse_mode,meta_data)
+            return await self.send_file_by_file_id(chat_id,file_id,text,reply_to_message_id,disable_notification,auto_delete,parse_mode,meta_data,inline_keypad,keypad,resize_keyboard,on_time_keyboard)
         elif file:
-            return await self.base_send_file(chat_id,file,name_file,text,reply_to_message_id,type_file,disable_notification,auto_delete,parse_mode,meta_data)
+            return await self.base_send_file(chat_id,file,name_file,text,reply_to_message_id,type_file,disable_notification,auto_delete,parse_mode,meta_data,inline_keypad,keypad,resize_keyboard,on_time_keyboard,show_progress=show_progress)
         elif question != None and options != None:
             return await self.send_poll(chat_id,question,options,type_poll=type_poll,is_anonymous=is_anonymous,correct_option_index=correct_option_index,allows_multiple_answers=allows_multiple_answers,hint=hint,auto_delete=auto_delete,reply_to_message_id=reply_to_message_id,disable_notification=disable_notification)
         elif latitude != None and longitude != None:
