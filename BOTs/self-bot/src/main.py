@@ -199,7 +199,7 @@ async def main(msg: Message):
 
     elif text in ["ریپلای","reply","info","اطلاعات"]:
         if reply_msg_id:
-            rep_info = (await msg.reply_info)
+            rep_info = await msg.reply_info()
             reply_info = await bot.get_chat_info(rep_info.author_guid)
             first_name = reply_info["user"]["first_name"]
             last_name = reply_info["user"]["last_name"] if "last_name" in reply_info["user"] else "ندارد"
