@@ -1,4 +1,4 @@
-from .core.Client import Client
+from .core.client import Client
 from .utils import filters
 from .version.version import v
 

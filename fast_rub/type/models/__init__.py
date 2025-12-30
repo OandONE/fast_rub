@@ -1,2 +1,2 @@
-from .Bot import Bot
-from .Chat import Chat
+from .bot import Bot
+from .chat import Chat

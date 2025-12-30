@@ -1,9 +1,13 @@
 from os.path import exists
 from json import loads, dumps
+from typing import TYPE_CHECKING
+import asyncio
+
+if TYPE_CHECKING:
+    from ..client import Client
 
 class Sessions:
-
-    def __init__(self, client:object) -> None:
+    def __init__(self, client: "Client") -> None:
         self.client = client
 
     def cheackSessionExists(self):
@@ -14,7 +18,7 @@ class Sessions:
         
     def createSession(self):
         from ..methods import Methods
-        methods:object = Methods(
+        methods: object = Methods(
             sessionData={},
             platform=self.client.platform,
             apiVersion=6,
@@ -26,7 +30,7 @@ class Sessions:
         while True:
             phoneNumber:str = input("Enter the phone number » ")
             try:
-                sendCodeData:dict = methods.sendCode(phoneNumber=phoneNumber)
+                sendCodeData: dict = asyncio.run(methods.sendCode(phoneNumber=phoneNumber))
             except:
                 print("The phone number is invalid! Please try again.")
                 continue
@@ -34,7 +38,7 @@ class Sessions:
             if sendCodeData['status'] == 'SendPassKey':
                 while True:
                     passKey:str = input(f'\nEnter the pass key [{sendCodeData["hint_pass_key"]}]  » ')
-                    sendCodeData:dict = methods.sendCode(phoneNumber=phoneNumber, passKey=passKey)
+                    sendCodeData: dict = asyncio.run(methods.sendCode(phoneNumber=phoneNumber, passKey=passKey))
                     
                     if sendCodeData['status'] == 'InvalidPassKey':
                         print(f'\nThe pass key({sendCodeData["hint_pass_key"]}) is invalid! Please try again.')
@@ -43,7 +47,7 @@ class Sessions:
             
             while True:
                 phoneCode:str = input("\nEnter the code » ").strip()
-                signInData:dict = methods.signIn(phoneNumber=phoneNumber, phoneCodeHash=sendCodeData['phone_code_hash'], phoneCode=phoneCode)
+                signInData: dict = asyncio.run(methods.signIn(phoneNumber=phoneNumber, phoneCodeHash=sendCodeData['phone_code_hash'], phoneCode=phoneCode))
                 if signInData['status'] != 'OK':
                     print("The code is invalid! Please try again.")
                     continue
@@ -59,14 +63,15 @@ class Sessions:
 
             open(f"{self.client.session}.pyrubi", "w", encoding="UTF-8").write(dumps(sessionData, indent=4))
 
-            Methods(
+            save = Methods(
                 sessionData=sessionData,
                 platform=self.client.platform,
                 apiVersion=6,
                 proxy=self.client.proxy,
                 timeOut=self.client.timeOut,
                 showProgressBar=True
-            ).registerDevice(deviceModel=f"pyrubi-{self.client.session}")
+            )
+            asyncio.run(save.registerDevice(deviceModel=f"pyrubi-{self.client.session}"))
             print(f"\nSign in as \"{self.client.session}\" was successful.")
 
             return sessionData

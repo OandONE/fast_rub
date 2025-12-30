@@ -2,8 +2,6 @@ from typing import TYPE_CHECKING
 import re
 import time as ti
 
-from ..type import Update
-
 if TYPE_CHECKING:
     from ..type import Update
 
@@ -25,7 +23,7 @@ class sender_id(Filter):
         self.user_id = user_id
 
     def __call__(self, update: 'Update') -> bool:
-        return update.message.get('sender_id') == self.user_id
+        return update.sender_id == self.user_id
 
 class is_user(Filter):
     """filter type sender message by is PV(user) / فیلتر کردن تایپ ارسال کننده پیام با پیوی"""
@@ -161,9 +159,11 @@ class chat_ids(Filter):
 
     def __call__(self, update: 'Update') -> bool:
         for c in self.ids:
-            if update.chat_id==c:
+            if update.chat_id == c:
                 return True
         return False
+
+# Mata Data
 
 class has_metadata_type(Filter):
     def __init__(self,type) -> None:
@@ -255,6 +255,7 @@ class is_link(Filter):
         return is_metadata_type("link")(update)
 
 
+
 class in_text(Filter):
     """text in text message / وجود متن در متن آپدیت"""
     def __init__(self,text: str) -> None:
@@ -271,7 +272,7 @@ class is_forward(Filter):
 
 class is_reply(Filter):
     """message has reply / پیام دارای ریپلای"""
-    def __call__(self, update: Update) -> bool:
+    def __call__(self, update: 'Update') -> bool:
         return update.reply_to_message_id != None
 
 class text_length(Filter):
@@ -330,5 +331,5 @@ class not_filter(Filter):
     """not True filter / درست نبودن فیلتر"""
     def __init__(self,filter):
         self.filter = filter
-    def __call__(self, update: Update) -> bool:
+    def __call__(self, update: 'Update') -> bool:
         return not self.filter(update)

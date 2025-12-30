@@ -1,2 +1,2 @@
 from .async_sync import *
-from .Client import Client
+from .client import Client

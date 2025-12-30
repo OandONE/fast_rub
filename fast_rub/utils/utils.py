@@ -1,11 +1,14 @@
 import re
-from typing import List, Dict, Any, Tuple, Optional, Literal
+from typing import List, Dict, Any, Tuple, Optional, Union
+from pathlib import Path
+import aiofiles
 from .colors import cprint, Colors
 import time
 from .encryption import Encryption
 import json
 import os
 from ..type.errors import CreateSessionError
+from ..network.network import Network
 
 def _collect_matches(text: str, patterns: Dict[str, List[str]], priority: Dict[str, int]) -> List[Dict[str, Any]]:
     matches = []
@@ -293,7 +296,7 @@ class TextParser:
         real_text_final = "".join(out_parts)
         return metadata, real_text_final
 
-class utils:
+class Utils:
     @staticmethod
     def format_file(type_file: Optional[str] = None) -> Optional[str]:
         if not type_file:
@@ -348,7 +351,7 @@ class utils:
     def save_dict(data: dict, name_file: str):
         json_fast_rub_session = json.dumps(data,indent=4,ensure_ascii=False)
         json_fast_rub_session = Encryption().en(str(json_fast_rub_session))
-        utils.save(json_fast_rub_session, name_file)
+        Utils.save(json_fast_rub_session, name_file)
 
     @staticmethod
     def save(data: str, name_file: str):
@@ -359,9 +362,9 @@ class utils:
     def create_session(name_session: str, token: Optional[str] = None, user_agent: Optional[str] = None, time_out: Optional[float] = 30.0, display_welcome: bool = False, view_logs: Optional[bool] = False, save_logs: Optional[bool] = False) -> bool:
         try:
             if token is None:
-                token = utils.get_input("Write The Token » ")
-            session = utils.session_dict(name_session,token,user_agent,time_out,display_welcome,view_logs,save_logs)
-            utils.save_dict(session, f"{name_session}.faru")
+                token = Utils.get_input("Write The Token » ")
+            session = Utils.session_dict(name_session,token,user_agent,time_out,display_welcome,view_logs,save_logs)
+            Utils.save_dict(session, f"{name_session}.faru")
             return True
         except:
             return False
@@ -397,15 +400,67 @@ class utils:
                 cprint("Error for getting last data session !", Colors.RED)
                 creating = False
                 while not creating:
-                    creating = utils.create_session(name_session,token,user_agent,time_out,display_welcome,view_logs,save_logs)
+                    creating = Utils.create_session(name_session,token,user_agent,time_out,display_welcome,view_logs,save_logs)
                     if not creating:
                         raise CreateSessionError("Can Not Create The Session !")
-                return utils.open_session(name_session,token,user_agent,time_out,display_welcome,view_logs,save_logs)
+                return Utils.open_session(name_session,token,user_agent,time_out,display_welcome,view_logs,save_logs)
         else:
             creating = False
             while not creating:
-                creating = utils.create_session(name_session,token,user_agent,time_out,display_welcome,view_logs,save_logs)
+                creating = Utils.create_session(name_session,token,user_agent,time_out,display_welcome,view_logs,save_logs)
                 if not creating:
                     raise CreateSessionError("Can Not Create The Session !")
-            return utils.open_session(name_session,token,user_agent,time_out,display_welcome,view_logs,save_logs)
+            return Utils.open_session(name_session,token,user_agent,time_out,display_welcome,view_logs,save_logs)
     
+
+    # Mata Data
+
+    @staticmethod
+    def data_format(
+        data: dict,
+        inline_keypad: Optional[list] = None,
+        keypad: Optional[list] = None,
+        resize_keyboard: Optional[bool] = True,
+        on_time_keyboard: Optional[bool] = False,
+        metadata: Optional[list] = None,
+        meta_data: Optional[list] = None,
+    ) -> dict:
+        if inline_keypad:
+            data["inline_keypad"] = {"rows": inline_keypad}
+        if keypad:
+            data["chat_keypad"] = {
+                "rows": keypad,
+                "resize_keyboard": resize_keyboard,
+                "on_time_keyboard": on_time_keyboard,
+            }
+            data["chat_keypad_type"] = "New"
+        if metadata:
+            data["metadata"] = {"meta_data_parts": metadata}
+            if meta_data:
+                for meta in meta_data:
+                    data["metadata"]["meta_data_parts"].append(meta)
+        elif meta_data:
+            data["metadata"] = {"meta_data_parts": meta_data}
+        return data
+    
+    # Other
+
+    @staticmethod
+    async def d_file(file: Union[str , Path , bytes], file_name: str, network: Network) -> Dict[str, Tuple[str, Union[bytes, bytearray], str]]:
+        if isinstance(file, (bytes, bytearray)):
+            d_file = {"file": (file_name, file, "application/octet-stream")}
+        else:
+            try:
+                async with aiofiles.open(file, "rb") as fi:
+                    fil = await fi.read()
+                    d_file = {"file": (file_name, fil , "application/octet-stream")}
+            except:
+                file_ = (await network.request(str(file),type_send="GET")).content
+                d_file = {"file": (file_name, file_, "application/octet-stream")}
+        return d_file
+    
+    @staticmethod
+    def check_data(data: dict) -> bool:
+        if data.get("status", "") == "OK":
+            return True
+        return False

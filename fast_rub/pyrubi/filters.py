@@ -143,6 +143,20 @@ class time_range(Filter):
         message_time = message.time
         return self.from_time <= message_time <= self.to_time
 
+class starts_with(Filter):
+    """filter text starting with / فیلتر متن هایی که با این شروع میشن"""
+    def __init__(self, prefix: str):
+        self.prefix = prefix
+    def __call__(self, message: Message) -> bool:
+        return message.text != None and message.text.startswith(self.prefix)
+
+class ends_with(Filter):
+    """filter text ending with / فیلتر متن هایی که با این پایان میابند"""
+    def __init__(self, suffix: str):
+        self.suffix = suffix
+    def __call__(self, message: Message) -> bool:
+        return message.text != None and message.text.endswith(self.suffix)
+
 class and_filter(Filter):
     """filters {and} for if all filters is True : run code ... / فیلتر های ورودی {and} که اگر تمامی فیلتر های ورودی برابر True بود اجرا شود"""
     def __init__(self, *filters):

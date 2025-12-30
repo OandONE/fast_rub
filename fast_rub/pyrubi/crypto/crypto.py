@@ -56,7 +56,8 @@ class Cryption:
         signature = pkcs1_15.new(self.keypair).sign(sha_data)
         return b64e(signature).decode('UTF-8')
 
-    def decryptRsaOaep(private:str, data_enc:str):
+    @staticmethod
+    def decryptRsaOaep(private: str, data_enc:str):
         keyPair = RSA.import_key(private.encode('UTF-8'))
         return PKCS1_OAEP.new(keyPair).decrypt(b64decode(data_enc)).decode('UTF-8')
     

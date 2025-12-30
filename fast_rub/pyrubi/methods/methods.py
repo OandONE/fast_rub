@@ -42,7 +42,7 @@ class Methods:
     # Authentication methods
 
     @async_to_sync
-    async def sendCode(self, phoneNumber:str, passKey:Optional[str] = None, sendInternal:bool=False) -> dict:
+    async def sendCode(self, phoneNumber: str, passKey: Optional[str] = None, sendInternal: bool = False) -> dict:
         input:dict = {
             "phone_number": f"{phoneNumber}",
             "send_type": "Internal" if sendInternal else "SMS",
@@ -1084,11 +1084,17 @@ class Methods:
         )
 
     @async_to_sync
-    async def resendMessage(self, objectGuid:Optional[str], messageId:Optional[str], toObjectGuid:Optional[str], replyToMessageId:Optional[str], text:Optional[str], fileInline) -> dict:
+    async def resendMessage(self, objectGuid: Optional[str] = None, messageId: Optional[str] = None, toObjectGuid:Optional[str] = None, replyToMessageId:Optional[str] = None, text:Optional[str] = None, fileInline: Optional[dict] = None) -> dict:
+        messageData = {}
         if not fileInline:
-            messageData:dict = await self.getMessagesById(objectGuid=objectGuid, messageIds=[messageId])
-
-        text_:str = text or messageData["messages"][0]["text"]
+            if objectGuid:
+                messageData:dict = await self.getMessagesById(objectGuid=objectGuid, messageIds=[messageId])
+            else:
+                raise ValueError("You Shoud Write The 'fileInline' or (objectGuid, messageId) Args")
+        
+        if not text and not messageData:
+            raise ValueError("You Shoud Write The 'text' or (objectGuid, messageId) Args")
+        text_: str = text or messageData["messages"][0]["text"]
         metadata = Utils.checkMetadata(text_)
         input = {
             "is_mute": False,
@@ -1196,7 +1202,9 @@ class Methods:
         )
     
     @async_to_sync
-    async def getMessagesById(self, objectGuid:Optional[str], messageIds:list) -> dict:
+    async def getMessagesById(self, objectGuid: str, messageIds: Union[list, str]) -> dict:
+        if type(messageIds) is str:
+            messageIds = [messageIds]
         return await self.network.request(
             method="getMessagesByID",
             input={
@@ -1762,7 +1770,7 @@ class Methods:
     
     @async_to_sync
     async def checkJoin(self, objectGuid:str, userGuid:str) -> Optional[bool]:
-        userUsername:str = (await self.getChatInfo(userGuid))["user"].get("username")
+        userUsername: str = (await self.getChatInfo(userGuid))["user"].get("username")
 
         if userGuid in (await self.getChatAllMembers(objectGuid=objectGuid, searchText=userUsername, startId=None, justGetGuids=True)):
             return True
@@ -1777,16 +1785,18 @@ class Methods:
         return await self.network.request(method="getProfileLinkItems", input={"object_guid": objectGuid})
     
     @async_to_sync
-    async def getDownloadLink(self, objectGuid:Optional[str], messageId:Optional[str], fileInline:Optional[dict]) -> Optional[str]:
+    async def getDownloadLink(self, objectGuid: str, messageId:Optional[str], fileInline:Optional[dict]) -> Optional[str]:
         if not fileInline:
-            fileInline = (await self.getMessagesById(objectGuid=objectGuid, messageIds=[messageId]))["messages"][0]["file_inline"]
+            msg = await self.getMessagesById(objectGuid=objectGuid, messageIds=[messageId])
+            fileInline = msg["messages"][0]["file_inline"]
         if fileInline:
             return f'https://messenger{fileInline["dc_id"]}.iranlms.ir/InternFile.ashx?id={fileInline["file_id"]}&ach={fileInline["access_hash_rec"]}'
     
     @async_to_sync
-    async def download(self,save:bool, objectGuid:Optional[str] = None, messageId:Optional[str] = None, saveAs:Optional[str] = None, fileInline:Optional[dict] = None) -> Optional[dict]:
+    async def download(self,save:bool, objectGuid: str, messageId:Optional[str] = None, saveAs:Optional[str] = None, fileInline:Optional[dict] = None) -> Optional[dict]:
         if fileInline is None:
-            fileInline = (await self.getMessagesById(objectGuid=objectGuid, messageIds=[messageId]))["messages"][0]["file_inline"]
+            msg = await self.getMessagesById(objectGuid=objectGuid, messageIds=[messageId])
+            fileInline = msg["messages"][0]["file_inline"]
         if not fileInline is None:
             downloading = self.network.download(
                 accessHashRec=fileInline["access_hash_rec"],
@@ -1852,46 +1862,53 @@ class Methods:
             await rtcConnection.setRemoteDescription(remoteDescription)
 
             def onEnded():
-                asyncio.ensure_future(rtcConnection.close())
+                asyncio.create_task(rtcConnection.close())
 
             player.audio.on("ended", onEnded)
 
-            def keepAlive():
+            async def keepAlive():
                 while rtcConnection.connectionState != "closed":
                     try:
-                        sending_code = asyncio.run(self.sendChatVoiceChatActivity(
+                        sending_code = await self.sendChatVoiceChatActivity(
                             objectGuid=objectGuid,
                             voideChatId=voiceChatId,
                             activity="Speaking",
                             participantObjectGuid=self.sessionData["user"]["user_guid"]
-                        ))
+                        )
                         if sending_code["status"] != "OK":
+                            print({"status": sending_code["status"], "method": "sendChatVoiceChatActivity"})
                             break
                         
-                        if asyncio.run(self.getChatVoiceChatUpdates(
+                        if (await self.getChatVoiceChatUpdates(
                             objectGuid=objectGuid,
                             voideChatId=voiceChatId
                         ))["status"] != "OK":
+                            print({"status": sending_code["status"], "method": "getChatVoiceChatUpdates"})
                             break
 
-                        sleep(8)
-                    except (InvalidInput, InvalidAuth):
+                        await asyncio.sleep(8)
+                    except (InvalidInput, InvalidAuth) as e:
+                        print(e)
                         break
-                    except:
+                    except Exception as e:
+                        print(e)
                         continue
                 
-            from threading import Thread
-            Thread(target=keepAlive, daemon=False).start()
+            keepalive_task = asyncio.create_task(keepAlive())
 
-            while rtcConnection.connectionState != "closed":
-                await asyncio.sleep(1)
+            try:
+                while rtcConnection.connectionState != "closed":
+                    await asyncio.sleep(1)
+            finally:
+                keepalive_task.cancel()
+                await rtcConnection.close()
 
-            asyncio.ensure_future(rtcConnection.close())
+            asyncio.create_task(rtcConnection.close())
 
         except ImportError:
             print("The aiortc library is not installed!")
 
-    def add_handler(self, func, filters: Union[List[Filter], List[str], Filter, None]) -> None:
+    def add_handler(self, func, filters: Union[List[Filter], List[str], Filter, None] = None) -> None:
         self.socket.addHandler(
             func=func,
             filters=filters

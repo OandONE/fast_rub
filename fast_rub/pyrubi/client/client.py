@@ -12,14 +12,14 @@ class Client(object):
 
     def __init__(
         self,
-        session:Optional[str]=None,
-        auth:Optional[str]=None,
-        private:Optional[str]=None,
-        platform:str="web",
-        api_version:int=6,
-        proxy:Optional[str]=None,
-        time_out=10,
-        show_progress_bar:bool=True
+        session: Optional[str] = None,
+        auth: Optional[str] = None,
+        private: Optional[str] = None,
+        platform: Literal["web", "rubx", "android"] = "web",
+        api_version: int = 6,
+        proxy: Optional[str] = None,
+        time_out = 10,
+        show_progress_bar: bool = True
     ):
         
         self.session = session
@@ -28,11 +28,11 @@ class Client(object):
         self.proxy = proxy
         self.timeOut = time_out
         
-        if(session):
+        if session:
             from ..sessions import Sessions
             self.sessions = Sessions(self)
 
-            if(self.sessions.cheackSessionExists()):
+            if self.sessions.cheackSessionExists():
                 self.sessionData = self.sessions.loadSessionData()
             else:
                 self.sessionData = self.sessions.createSession()
@@ -560,8 +560,19 @@ class Client(object):
     # Poll methods
 
     @async_to_sync
-    async def send_poll(self, object_guid:str, question:str, options:list, message_id:Optional[str] = None, multiple_answers:Optional[bool]=None, anonymous:Optional[bool]=None, quiz:Optional[bool]=None) -> dict:
-        return await self.methods.sendPoll(objectGuid=object_guid, question=question, options=options, messageId=message_id, multipleAnswers=multiple_answers, anonymous=anonymous, quiz=quiz)
+    async def send_poll(
+        self,
+        object_guid: str,
+        question: str,
+        options: list,
+        allows_multiple_responses: bool = True,
+        is_anonymous: bool = False,
+        type: Literal["Quiz", "Regular"] = "Regular",
+        message_id: Optional[str] = None,
+        correct_option_index: Optional[int] = None,
+        hint: Optional[str] = None
+    ) -> dict:
+        return await self.methods.sendPoll(objectGuid=object_guid, question=question, options=options,allowsMultipleResponses=allows_multiple_responses,isAnonymous=is_anonymous,type=type, messageId=message_id,hint=hint,correctOptionIndex=correct_option_index)
     
     @async_to_sync
     async def vote_poll(self, poll_id:str, selection_index:int) -> dict:
@@ -724,11 +735,11 @@ class Client(object):
         return await self.methods.getProfileLinkItems(objectGuid=object_guid)
     
     @async_to_sync
-    async def get_download_link(self, object_guid:Optional[str] = None, message_id:Optional[str] = None, file_inline:Optional[dict]=None) -> Optional[str]:
+    async def get_download_link(self, object_guid: str, message_id:Optional[str] = None, file_inline:Optional[dict]=None) -> Optional[str]:
         return await self.methods.getDownloadLink(objectGuid=object_guid, messageId=message_id, fileInline=file_inline)
     
     @async_to_sync
-    async def download(self, object_guid:Optional[str] = None, message_id:Optional[str] = None, save:bool=False, save_as:Optional[str] = None, file_inline:Optional[dict]=None) -> Optional[dict]:
+    async def download(self, object_guid: str, message_id:Optional[str] = None, save:bool=False, save_as:Optional[str] = None, file_inline:Optional[dict]=None) -> Optional[dict]:
         return await self.methods.download(objectGuid=object_guid, messageId=message_id, save=save, saveAs=save_as, fileInline=file_inline)
     
     @async_to_sync
@@ -743,11 +754,10 @@ class Client(object):
         return await self.methods.request(method=method,input=input,tmpSession=tmp_session,attempt=attempt,maxAttempt=max_attempt)
 
     @async_to_sync
-    async def play_voice(self, object_guid: str, file:str) -> None:
-        async def main():
-            await self.methods.playVoice(objectGuid=object_guid, file=file)
-        await main()
-    def on_message(self, filters: Union[List[Filter], List[str], Filter, None]):
+    async def play_voice(self, object_guid: str, file: str) -> None:
+        await self.methods.playVoice(objectGuid=object_guid, file=file)
+    
+    def on_message(self, filters: Union[List[Filter], List[str], Filter, None] = None):
         def handler(func):
             self.methods.add_handler(
                 func=func,

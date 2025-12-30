@@ -42,25 +42,33 @@ class MetaData:
         return template.replace("#text", text)
 
     def bold(self, text: str) -> str:
+        """bold text / متن بولد"""
         return self.format_text(text, Style.BOLD)
 
     def spoil(self, text: str) -> str:
+        """spoil text / متن اسپویل"""
         return self.format_text(text, Style.SPOIL)
 
     def underline(self, text: str) -> str:
+        """underline text / متن آندرلاین"""
         return self.format_text(text, Style.UNDERLINE)
 
     def strike(self, text: str) -> str:
+        """strike text / متن خط خورده"""
         return self.format_text(text, Style.STRIKE)
 
     def copy(self, text: str) -> str:
+        """copy text / متن کپی"""
         return self.format_text(text, Style.COPY)
 
     def code(self, text: str) -> str:
+        """code text / متن کد"""
         return self.format_text(text, Style.CODE)
 
     def link(self, text: str, link: str) -> str:
+        """link text / متن لینک"""
         return self.format_text(text, Style.LINK, link=link)
 
     def mention(self, text: str, sender_id: str) -> str:
+        """mention text / متن منشن"""
         return self.format_text(text, Style.MENTION, sender_id=sender_id)

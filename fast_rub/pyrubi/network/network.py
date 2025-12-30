@@ -4,7 +4,7 @@ from urllib3 import PoolManager, ProxyManager
 from ..utils import Configs
 from ..exceptions import *
 from .helper import Helper
-from typing import Any,Protocol,Optional,Union
+from typing import Any, Protocol, Optional, Union
 import asyncio
 from ..utils import *
 
@@ -33,16 +33,16 @@ class Network:
         url:str = Helper.getApiServer()
         platform:str = self.methods.platform.lower()
         apiVersion:int = self.methods.apiVersion
-
+        configs = Configs()
         if platform in ["rubx", "rubikax"]:
-            client:dict = Configs.clients["android"]
+            client: dict = configs.clients["android"]
             client["package"] = "ir.rubx.bapp"
         
         elif platform in ["android"]:
-            client:dict = Configs.clients["android"]
+            client: dict = configs.clients["android"]
 
         else:
-            client:dict = Configs.clients["web"]
+            client: dict = configs.clients["web"]
 
         data = {
             "api_version": str(apiVersion),

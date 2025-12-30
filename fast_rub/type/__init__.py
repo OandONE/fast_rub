@@ -1,3 +1,3 @@
-from .Update import *
+from .update import *
 from .errors import *
 from .prop_update import msg_update

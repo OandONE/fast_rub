@@ -16,7 +16,6 @@ class props(MutableMapping):
             raise TypeError(f"props only accepts dict or list, got {type(data)}")
 
     def _wrap_value(self, value):
-        """اگر value dict یا list بود، باز هم props بساز"""
         if isinstance(value, dict) or isinstance(value, list):
             return props(value)
         return value
@@ -82,7 +81,6 @@ class props(MutableMapping):
         return json.dumps(self._to_primitive(self._data), indent=4, ensure_ascii=False)
 
     def _to_primitive(self, value):
-        """برای json.dumps کردن props به dict/list ساده"""
         if isinstance(value, props):
             return self._to_primitive(value._data)
         elif isinstance(value, dict):

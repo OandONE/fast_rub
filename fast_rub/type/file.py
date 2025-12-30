@@ -1,6 +1,6 @@
 import json
 
-class file:
+class File:
     def __init__(self,data: dict):
         self.data = data
     @property

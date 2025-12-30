@@ -1,8 +1,7 @@
 import os
-from typing import Literal
 
 
-def get_file_category(filename) -> str:
+def get_file_category(filename: str) -> str:
     _, ext = os.path.splitext(filename)
     ext = ext.lower().lstrip('.')
     if not ext:
@@ -22,3 +21,4 @@ def get_file_category(filename) -> str:
         if ext in extensions:
             return category
     return "other"
+

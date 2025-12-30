@@ -1,10 +1,14 @@
-import httpx
-import asyncio
 from typing import Optional, Union, Dict, Any, List, Literal
+from tqdm.asyncio import tqdm
+from pathlib import Path
 from ..type.errors import ServerRubikaError
 import os
 import aiofiles
+import asyncio
+import httpx
+import tempfile
 import logging
+
 
 class Network:
     def __init__(
@@ -250,12 +254,13 @@ class Network:
         except Exception:
             raise ServerRubikaError("Error converting response to JSON")
 
-        if result.get("status", "") != "OK":
+        from ..utils.utils import Utils
+        if not Utils.check_data(result):
             self.logger.error(f"Server returned error: {result}")
             raise ServerRubikaError(result)
         return result["data"]
 
-    async def download(self, url: str, path: str = "file") -> bool:
+    async def download(self, url: str, path: str = "file", show_progress: bool = True) -> bool:
         try:
             await self._ensure_client()
 
@@ -269,33 +274,98 @@ class Network:
             async with self._rate_sem:
                 async with self._client.stream("GET", url) as response:
                     response.raise_for_status()
+                    total = int(response.headers.get("content-length", 0))
+                    if show_progress and total:
+                        pbar = tqdm(total=total, unit="B", unit_scale=True, desc="Downloading")
+                    else:
+                        pbar = None
                     async with aiofiles.open(path, 'wb') as file:
                         async for chunk in response.aiter_bytes():
                             await file.write(chunk)
+                            if pbar:
+                                pbar.update(len(chunk))
+                    if pbar:
+                        pbar.close()
             return True
         except Exception as e:
             self.logger.error(f"Download failed: {e}")
             return False
     
-    async def upload(self, url: str, files: dict, timeout: int = 30) -> dict:
+    async def upload_httpx(self, url: str, files: dict) -> dict:
         try:
             self.logger.info("در حال آپلود فایل ...")
             await self._ensure_client()
 
-            response = await self._client.post(url, files=files, timeout=timeout)
+            from ..utils.utils import Utils
+            response = await self._client.post(url, files=files, timeout=None)
             response.raise_for_status()
             result = response.json()
-            if result.get("status", "") != "OK":
+            if not Utils.check_data(result):
                 self.logger.error(f"Server returned error: {result}")
                 raise ServerRubikaError(result)
             self.logger.info("فایل آپلود شد")
             return result["data"]
-        except httpx.TimeoutException:
-            self.logger.error("زمان خروج فرا رسیده !")
-            raise
         except httpx.HTTPError:
             self.logger.error("خطای HTTP")
             raise
         except Exception as e:
             self.logger.error(f"خطایی ناشناخته » {e}")
             raise
+
+    async def upload(self, url: str, file_path: Union[str, Path, bytes], file_name: str, show_progress: bool = True) -> dict:
+        self.logger.info("در حال آپلود فایل (aiohttp stream)...")
+        try:
+            import aiohttp
+        except ImportError:
+            raise ImportError("ابتدا کتابخانه aiohttp را برای آپلود نصب کنید !")
+        is_temp = False
+        if isinstance(file_path, (bytes, bytearray)):
+            tmp = tempfile.NamedTemporaryFile(delete=False)
+            tmp.write(file_path)
+            tmp.close()
+            file_path = tmp.name
+            is_temp = True
+        try:
+            total_size = None
+            if isinstance(file_path, (str, Path)):
+                total_size = os.path.getsize(file_path)
+            timeout = aiohttp.ClientTimeout(total=None)
+            async with aiohttp.ClientSession(timeout=timeout) as session:
+                form = aiohttp.FormData()
+                async def file_gen():
+                    async with aiofiles.open(file_path, "rb") as f:
+                        if show_progress and total_size:
+                            pbar = tqdm(total=total_size, unit="B", unit_scale=True, desc="Uploading")
+                        else:
+                            pbar = None
+                        while True:
+                            chunk = await f.read(64 * 1024)
+                            if not chunk:
+                                break
+                            if pbar:
+                                pbar.update(len(chunk))
+                            yield chunk
+                        if pbar:
+                            pbar.close()
+                form.add_field(
+                    "file",
+                    file_gen(),
+                    filename=file_name,
+                    content_type="application/octet-stream"
+                )
+                async with session.post(url, data=form) as resp:
+                    if resp.status != 200:
+                        text = await resp.text()
+                        raise ServerRubikaError(
+                            {"status": "ERROR", "detail": text}
+                        )
+                    result = await resp.json()
+                    from ..utils.utils import Utils
+                    if not Utils.check_data(result):
+                        self.logger.error(f"Server returned error: {result}")
+                        raise ServerRubikaError(result)
+                    self.logger.info("آپلود با موفقیت انجام شد")
+                    return result["data"]
+        finally:
+            if is_temp:
+                os.remove(file_path)

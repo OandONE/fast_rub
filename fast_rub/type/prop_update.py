@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING, Literal, Optional
 if TYPE_CHECKING:
-    from ..core.Client import Client
-from .Update import Update
+    from ..core import Client
+from . import Update
 import json
 from .props import props
 

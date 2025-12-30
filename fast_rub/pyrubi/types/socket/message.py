@@ -3,7 +3,8 @@ from typing import (
     Optional,
     Any,
     TYPE_CHECKING,
-    Literal
+    Literal,
+    Union
 )
 
 if TYPE_CHECKING:
@@ -181,11 +182,11 @@ class Message:
                 return True
         return False
     
-    @property
-    def reply_info(self) -> Optional[ReplyInfo]:
+    @auto_async
+    async def reply_info(self) -> Optional[ReplyInfo]:
         if not self.reply_message_id:
             return
-        return ReplyInfo.from_json(asyncio.run(self.methods.getMessagesById(self.object_guid, [self.reply_message_id]))["messages"][0])
+        return ReplyInfo.from_json((await self.methods.getMessagesById(self.object_guid, [self.reply_message_id]))["messages"][0])
     
     @auto_async
     async def reply(self, text:str) -> dict:
@@ -247,7 +248,7 @@ class Message:
         return await self.methods.seenChats(seenList={self.object_guid: self.message_id})
     
     @auto_async
-    async def reaction(self, reaction:int) -> dict:
+    async def reaction(self, reaction: Union[int, str]) -> dict:
         return await self.methods.actionOnMessageReaction(objectGuid=self.object_guid, messageId=self.message_id, reactionId=reaction, action="Add")
     
     @auto_async
@@ -272,4 +273,4 @@ class Message:
     
     @auto_async
     async def download(self, save: bool = False, save_as: Optional[str] = None) -> Optional[dict]:
-        return await self.methods.download(save=save, saveAs=save_as, fileInline=self.file_inline)
+        return await self.methods.download(objectGuid=self.object_guid, save=save, saveAs=save_as, fileInline=self.file_inline)

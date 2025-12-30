@@ -19,18 +19,3 @@ class ChatActivities:
     typing:str = "Typing"
     recording:str = "Recording"
     uploading:str = "Uploading"
-
-class Filters:
-    user:str = "User"
-    group:str = "Group"
-    channel:str = "Channel"
-    bot:str = "Bot"
-    service:str = "Service"
-    media:str = "Media"
-    file:str = "File"
-    image:str = "Image"
-    video:str = "Video"
-    gif:str = "Gif"
-    music:str = "Music"
-    voice:str = "Voice"
-    sticker:str = "Sticker"
