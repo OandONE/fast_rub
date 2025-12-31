@@ -712,24 +712,24 @@ class Update:
     async def ban(
         self,
         chat_id: Optional[str] = None,
-        member_id: Optional[str] = None
+        user_id: Optional[str] = None
     ):
         """ban user / بن کاربر"""
         return await self._client.ban_chat_member(
-            chat_id if chat_id else self.chat_id,
-            member_id if member_id else self.sender_id,
+            chat_id=chat_id if chat_id else self.chat_id,
+            user_id=user_id if user_id else self.sender_id,
         )
     
     @auto_async
     async def unban(
         self,
         chat_id: Optional[str] = None,
-        member_id: Optional[str] = None
+        user_id: Optional[str] = None
     ):
         """un ban user / آنبن کاربر"""
         return await self._client.unban_chat_member(
             chat_id=chat_id if chat_id else self.chat_id,
-            member_id=member_id if member_id else self.sender_id,
+            user_id=user_id if user_id else self.sender_id,
         )
 
     @auto_async
@@ -745,9 +745,9 @@ class Update:
         )
         if not msg:
             return None
-        return self._client.ban_chat_member(
+        return await self._client.ban_chat_member(
             chat_id=self.chat_id,
-            member_id=msg.sender_id
+            user_id=msg.sender_id
         )
 
     @auto_async
@@ -763,9 +763,9 @@ class Update:
         )
         if not msg:
             return None
-        return self._client.unban_chat_member(
+        return await self._client.unban_chat_member(
             chat_id=self.chat_id,
-            member_id=msg.sender_id
+            user_id=msg.sender_id
         )
 
     @auto_async
