@@ -1,6 +1,6 @@
 from .core.client import Client
 from .utils import filters
-from .version.version import v
+from .utils.version import v
 
 __author__ = "Seyyed Mohamad Hosein Moosavi Raja"
 __version__ = v
