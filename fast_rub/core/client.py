@@ -1217,12 +1217,12 @@ class Client:
     async def ban_chat_member(
         self,
         chat_id: str,
-        member_id: str
+        user_id: str
     ) -> props:
         """ban member in chat / بن کردن کاربر در چت"""
         data = {
             "chat_id": chat_id,
-            "member_id": member_id
+            "user_id": user_id
         }
         result = await self.send_requests("banChatMember", data)
         return props(result)
@@ -1231,12 +1231,12 @@ class Client:
     async def unban_chat_member(
         self,
         chat_id: str,
-        member_id: str
+        user_id: str
     ) -> props:
         """un ban member in chat / آنبن کردن کاربر در چت"""
         data = {
             "chat_id": chat_id,
-            "member_id": member_id
+            "user_id": user_id
         }
         result = await self.send_requests("unbanChatMember", data)
         return props(result)
