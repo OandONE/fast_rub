@@ -223,7 +223,7 @@ class Update:
     @auto_async
     async def reply(
         self,
-        text: str,
+        text: Optional[str] = None,
         keypad_inline: Optional[list] = None,
         inline_keypad: Optional[list] = None,
         keypad: Optional[list] = None,
@@ -312,7 +312,8 @@ class Update:
             parse_mode=parse_mode,
             keypad=keypad,
             on_time_keyboard=on_time_keyboard,
-            resize_keyboard=resize_keyboard
+            resize_keyboard=resize_keyboard,
+            meta_data=meta_data
         )
 
     @auto_async
@@ -689,6 +690,7 @@ class Update:
         self,
         file_id: Optional[str] = None
     ) -> Optional[str]:
+        """getting url download file / گرفتن لینک دانلود فایل"""
         final_id = file_id or self.file_id
         if final_id is None:
             raise TypeError("Message is not file and you not got the file_id Arg.")
@@ -753,7 +755,7 @@ class Update:
     @auto_async
     async def unban_reply(
         self,
-        chat_id: Optional[str] = None,
+        chat_id: Optional[str] = None
     ):
         if not self.reply_to_message_id:
             return None
