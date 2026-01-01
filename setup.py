@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="fastrub",
-    version="2.6.6",
+    version="2.6.7",
     author="seyyed mohamad hosein moosavi raja(01)",
     author_email="mohamadhosein159159@gmail.com",
     description="The fastest library for writing Rubika messenger bots both synchronously and asynchronously ⚡",
@@ -23,6 +23,7 @@ setup(
     ],
     license="MIT"
 )
+
 
 
 
