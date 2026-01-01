@@ -14,9 +14,17 @@ async def test2(msg:Update):
     await msg.reply("درود")
 
 @bot.on_message(filters.starts_with("+"))
-async def test(msg:Update):
+async def test3(msg:Update):
     # کد های برای مثال ارسال پیام برای هوش مصنوعی ... 
     text_gpt = "سلام خوبی" # برای مثال
     await msg.reply(text_gpt)
+
+class custom_filter(filters.Filter):
+    def __call__(self, update: Update) -> bool:
+        return update.text == "/start"
+
+@bot.on_message(custom_filter())
+async def test4(msg: Update):
+    await msg.reply("your text is /start")
 
 asyncio.run(bot.run())
