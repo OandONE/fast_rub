@@ -5,6 +5,7 @@ from .props import *
 from .models.chat import Chat
 from .metadata import metadata as metadata_prop
 from .file import File
+from ..utils.utils import Utils
 import json
 from pathlib import Path
 from typing import TYPE_CHECKING, Optional, Union, Literal
@@ -41,14 +42,7 @@ class Update:
     @property
     def sender_type(self) -> Literal["User","Group","Channel"]:
         """sender type / نوع ارسال کننده"""
-        if self.chat_id.startswith("b"):
-            return "User"
-        elif self.chat_id.startswith("g"):
-            return "Group"
-        elif self.chat_id.startswith("c"):
-            return "Channel"
-        else:
-            raise ValueError("chat id is not found")
+        return Utils.get_chat_id_type(self.chat_id)
     @property
     def sender_id(self) -> str:
         """sender id message / شناسه گوید کاربر ارسال کننده"""
@@ -206,7 +200,7 @@ class Update:
         self.pattern = re.compile(pattern, flags)
         return bool(
             self.pattern.search(
-                text if text else self.text
+                Utils.prefer_first(text, self.text)
             )
         )
 
@@ -217,7 +211,7 @@ class Update:
     ) -> Chat:
         """get info the chat id / گرفتن درباره چت آیدی"""
         return await self._client.get_chat(
-            chat_id=chat_id if chat_id else self.chat_id
+            chat_id=Utils.prefer_first(chat_id, self.chat_id)
         )
 
     @auto_async
@@ -260,8 +254,8 @@ class Update:
         """reply message / ریپلای پیام"""
         return await self._client.send_message(
             text=text,
-            chat_id=chat_id if chat_id else self.chat_id,
-            reply_to_message_id=reply_to_message_id if reply_to_message_id else self.message_id,
+            chat_id=Utils.prefer_first(chat_id, self.chat_id),
+            reply_to_message_id=Utils.prefer_first(reply_to_message_id, self.message_id),
             inline_keypad=inline_keypad if inline_keypad else keypad_inline,
             auto_delete=auto_delete,
             parse_mode=parse_mode,
@@ -305,8 +299,8 @@ class Update:
         """reply text / ریپلای متن"""
         return await self._client.send_text(
             text=text,
-            chat_id=chat_id if chat_id else self.chat_id,
-            reply_to_message_id=reply_to_message_id if reply_to_message_id else self.message_id,
+            chat_id=Utils.prefer_first(chat_id, self.chat_id),
+            reply_to_message_id=Utils.prefer_first(reply_to_message_id, self.message_id),
             inline_keypad=inline_keypad,
             auto_delete=auto_delete,
             parse_mode=parse_mode,
@@ -332,7 +326,7 @@ class Update:
     ) -> 'msg_update':
         """reply poll / ریپلای نظرسنجی"""
         return await self._client.send_poll(
-            chat_id=chat_id if chat_id else self.chat_id,
+            chat_id=Utils.prefer_first(chat_id, self.chat_id),
             question=question,
             options=options,
             type_poll=type_poll,
@@ -341,7 +335,7 @@ class Update:
             allows_multiple_answers=allows_multiple_answers,
             hint=hint,
             auto_delete=auto_delete,
-            reply_to_message_id=reply_to_message_id if reply_to_message_id else self.message_id
+            reply_to_message_id=Utils.prefer_first(reply_to_message_id, self.message_id)
         )
 
     @auto_async
@@ -356,11 +350,11 @@ class Update:
     ) -> 'msg_update':
         """reply contact / ریپلای مخاطب"""
         return await self._client.send_contact(
-            chat_id=chat_id if chat_id else self.chat_id,
+            chat_id=Utils.prefer_first(chat_id, self.chat_id),
             first_name=first_name,
             last_name=last_name,
             phone_number=phone_number,
-            reply_to_message_id=reply_to_message_id if reply_to_message_id else self.message_id,
+            reply_to_message_id=Utils.prefer_first(reply_to_message_id, self.message_id),
             auto_delete=auto_delete
         )
 
@@ -375,10 +369,10 @@ class Update:
     ) -> 'msg_update':
         """reply location / ریپلای موقعیت مکانی"""
         return await self._client.send_location(
-            chat_id=chat_id if chat_id else self.chat_id,
+            chat_id=Utils.prefer_first(chat_id, self.chat_id),
             latitude=latitude,
             longitude=longitude,
-            reply_to_message_id=reply_to_message_id if reply_to_message_id else self.message_id,
+            reply_to_message_id=Utils.prefer_first(reply_to_message_id, self.message_id),
             auto_delete=auto_delete
         )
 
@@ -404,11 +398,11 @@ class Update:
     ) -> 'msg_update':
         """reply file / ریپلای فایل"""
         return await self._client.base_send_file(
-            chat_id=chat_id if chat_id else self.chat_id,
+            chat_id=Utils.prefer_first(chat_id, self.chat_id),
             file=file,
             name_file=name_file,
             text=text,
-            reply_to_message_id=reply_to_message_id if reply_to_message_id else self.message_id,
+            reply_to_message_id=Utils.prefer_first(reply_to_message_id, self.message_id),
             type_file=type_file,
             disable_notification=disable_notification,
             auto_delete=auto_delete,
@@ -444,11 +438,11 @@ class Update:
     ) -> 'msg_update':
         """reply file / ریپلای فایل"""
         return await self._client.base_send_file(
-            chat_id=chat_id if chat_id else self.chat_id,
+            chat_id=Utils.prefer_first(chat_id, self.chat_id),
             file=file,
             name_file=name_file,
             text=text,
-            reply_to_message_id=reply_to_message_id if reply_to_message_id else self.message_id,
+            reply_to_message_id=Utils.prefer_first(reply_to_message_id, self.message_id),
             type_file=type_file,
             disable_notification=disable_notification,
             auto_delete=auto_delete,
@@ -483,11 +477,11 @@ class Update:
     ) -> 'msg_update':
         """reply image / رپیلای تصویر"""
         return await self._client.send_image(
-            chat_id=chat_id if chat_id else self.chat_id,
+            chat_id=Utils.prefer_first(chat_id, self.chat_id),
             image=image,
             name_file=name_file,
             text=text,
-            reply_to_message_id=reply_to_message_id if reply_to_message_id else self.message_id,
+            reply_to_message_id=Utils.prefer_first(reply_to_message_id, self.message_id),
             disable_notification=disable_notification,
             auto_delete=auto_delete,
             parse_mode=parse_mode,
@@ -521,11 +515,11 @@ class Update:
     ) -> 'msg_update':
         """reply voice / رپیلای ویس"""
         return await self._client.send_voice(
-            chat_id=chat_id if chat_id else self.chat_id,
+            chat_id=Utils.prefer_first(chat_id, self.chat_id),
             voice=voice,
             name_file=name_file,
             text=text,
-            reply_to_message_id=reply_to_message_id if reply_to_message_id else self.message_id,
+            reply_to_message_id=Utils.prefer_first(reply_to_message_id, self.message_id),
             disable_notification=disable_notification,
             auto_delete=auto_delete,
             parse_mode=parse_mode,
@@ -559,11 +553,11 @@ class Update:
     ) -> 'msg_update':
         """reply voice / رپیلای موزیک"""
         return await self._client.send_music(
-            chat_id=chat_id if chat_id else self.chat_id,
+            chat_id=Utils.prefer_first(chat_id, self.chat_id),
             music=music,
             name_file=name_file,
             text=text,
-            reply_to_message_id=reply_to_message_id if reply_to_message_id else self.message_id,
+            reply_to_message_id=Utils.prefer_first(reply_to_message_id, self.message_id),
             disable_notification=disable_notification,
             auto_delete=auto_delete,
             parse_mode=parse_mode,
@@ -597,11 +591,11 @@ class Update:
     ) -> 'msg_update':
         """reply voice / رپیلای گیف"""
         return await self._client.send_gif(
-            chat_id=chat_id if chat_id else self.chat_id,
+            chat_id=Utils.prefer_first(chat_id, self.chat_id),
             gif=gif,
             name_file=name_file,
             text=text,
-            reply_to_message_id=reply_to_message_id if reply_to_message_id else self.message_id,
+            reply_to_message_id=Utils.prefer_first(reply_to_message_id, self.message_id),
             disable_notification=disable_notification,
             auto_delete=auto_delete,
             parse_mode=parse_mode,
@@ -635,11 +629,11 @@ class Update:
     ) -> 'msg_update':
         """reply voice / رپیلای ویدیو"""
         return await self._client.send_video(
-            chat_id=chat_id if chat_id else self.chat_id,
+            chat_id=Utils.prefer_first(chat_id, self.chat_id),
             video=video,
             name_file=name_file,
             text=text,
-            reply_to_message_id=reply_to_message_id if reply_to_message_id else self.message_id,
+            reply_to_message_id=Utils.prefer_first(reply_to_message_id, self.message_id),
             disable_notification=disable_notification,
             auto_delete=auto_delete,
             parse_mode=parse_mode,
@@ -662,8 +656,8 @@ class Update:
     ) -> 'msg_update':
         """forward / فوروارد"""
         return await self._client.forward_message(
-            from_chat_id=from_chat_id if from_chat_id else self.chat_id,
-            message_id=message_id if message_id else self.message_id,
+            from_chat_id=Utils.prefer_first(from_chat_id, self.chat_id),
+            message_id=Utils.prefer_first(message_id, self.message_id),
             to_chat_id=to_chat_id,
             auto_delete=auto_delete
         )
@@ -706,8 +700,8 @@ class Update:
     ) -> props:
         """delete / حذف"""
         return await self._client.delete_message(
-            chat_id=chat_id if chat_id else self.chat_id,
-            message_id=message_id if message_id else self.message_id
+            chat_id=Utils.prefer_first(chat_id, self.chat_id),
+            message_id=Utils.prefer_first(message_id, self.message_id)
         )
     
     @auto_async
@@ -718,8 +712,8 @@ class Update:
     ):
         """ban user / بن کاربر"""
         return await self._client.ban_chat_member(
-            chat_id=chat_id if chat_id else self.chat_id,
-            user_id=user_id if user_id else self.sender_id,
+            chat_id=Utils.prefer_first(chat_id, self.chat_id),
+            user_id=Utils.prefer_first(user_id, self.sender_id),
         )
     
     @auto_async
@@ -730,8 +724,8 @@ class Update:
     ):
         """un ban user / آنبن کاربر"""
         return await self._client.unban_chat_member(
-            chat_id=chat_id if chat_id else self.chat_id,
-            user_id=user_id if user_id else self.sender_id,
+            chat_id=Utils.prefer_first(chat_id, self.chat_id),
+            user_id=Utils.prefer_first(user_id, self.sender_id),
         )
 
     @auto_async
@@ -742,7 +736,7 @@ class Update:
         if not self.reply_to_message_id:
             return None
         msg = await self._client.get_message(
-            chat_id=chat_id if chat_id else self.chat_id,
+            chat_id=Utils.prefer_first(chat_id, self.chat_id),
             message_id=self.reply_to_message_id
         )
         if not msg:
@@ -760,7 +754,7 @@ class Update:
         if not self.reply_to_message_id:
             return None
         msg = await self._client.get_message(
-            chat_id=chat_id if chat_id else self.chat_id,
+            chat_id=Utils.prefer_first(chat_id, self.chat_id),
             message_id=self.reply_to_message_id
         )
         if not msg:
@@ -780,8 +774,8 @@ class Update:
         if not self.is_reply:
             return None
         msg = await self._client.get_message(
-            chat_id=chat_id if chat_id else self.chat_id,
-            message_id=message_id if message_id else self.reply_to_message_id
+            chat_id=Utils.prefer_first(chat_id, self.chat_id),
+            message_id=Utils.prefer_first(message_id, self.reply_to_message_id)
         )
         return msg
     
@@ -843,9 +837,98 @@ class UpdateButton:
         return self._data["inline_message"]["text"]
 
     @auto_async
-    async def send_text(self,text:str,inline_keypad: Optional[list] = None,keypad: Optional[list] = None,resize_keyboard: Optional[bool] = True,on_time_keyboard: Optional[bool] = False,auto_delete: Optional[int] = None,reply_to_message_id: Optional[str] = None,parse_mode: Literal['Markdown', 'HTML'] = "Markdown"):
+    async def send_text(
+        self,
+        text: str,
+        inline_keypad: Optional[list] = None,
+        keypad: Optional[list] = None,
+        resize_keyboard: Optional[bool] = True,
+        on_time_keyboard: Optional[bool] = False,
+        auto_delete: Optional[int] = None,
+        reply_to_message_id: Optional[str] = None,
+        parse_mode: Literal['Markdown', 'HTML'] = "Markdown",
+        meta_data: Optional[list] = None,
+        chat_id: Optional[str] = None
+    ):
+        """send text / ارسال متن"""
         return await self._client.send_text(
-            text, self.chat_id,inline_keypad=inline_keypad,auto_delete=auto_delete,reply_to_message_id=reply_to_message_id,parse_mode=parse_mode,keypad=keypad,resize_keyboard=resize_keyboard,on_time_keyboard=on_time_keyboard
+            text=text,
+            chat_id=Utils.prefer_first(chat_id, self.chat_id),
+            inline_keypad=inline_keypad,
+            auto_delete=auto_delete,
+            reply_to_message_id=reply_to_message_id,
+            parse_mode=parse_mode,
+            keypad=keypad,
+            resize_keyboard=resize_keyboard,
+            on_time_keyboard=on_time_keyboard,
+            meta_data=meta_data
+        )
+    
+    @auto_async
+    async def send_message(
+        self,
+        text: Optional[str] = None,
+        inline_keypad: Optional[list] = None,
+        keypad: Optional[list] = None,
+        resize_keyboard: Optional[bool] = True,
+        on_time_keyboard: Optional[bool] = False,
+        reply_to_message_id: Optional[str] = None,
+        auto_delete: Optional[int] = None,
+        parse_mode: Literal["Markdown","HTML",None] = "Markdown",
+        meta_data: Optional[list] = None,
+        # file
+        file: Union[str , Path , bytes , None] = None,
+        name_file: Optional[str] = None,
+        type_file: Literal["File", "Image", "Voice", "Music", "Gif" , "Video"] = "File",
+        file_id: Optional[str] = None,
+        show_progress: bool = True,
+        # poll
+        question: Optional[str] = None,
+        options: Optional[list] = None,
+        type_poll: Literal["Regular", "Quiz"] = "Regular",
+        is_anonymous: bool = True,
+        correct_option_index: Optional[int] = None,
+        allows_multiple_answers: bool = False,
+        hint: Optional[str] = None,
+        # location
+        latitude: Optional[str] = None,
+        longitude: Optional[str] = None,
+        # contact
+        first_name: Optional[str] = None,
+        last_name: Optional[str] = None,
+        phone_number: Optional[str] = None,
+
+        chat_id: Optional[str] = None
+    ):
+        """send message / ارسال پیام"""
+        return await self._client.send_message(
+            chat_id=Utils.prefer_first(chat_id, self.chat_id),
+            text=text,
+            inline_keypad=inline_keypad,
+            keypad=keypad,
+            resize_keyboard=resize_keyboard,
+            on_time_keyboard=on_time_keyboard,
+            reply_to_message_id=reply_to_message_id,
+            auto_delete=auto_delete,
+            parse_mode=parse_mode,
+            meta_data=meta_data,
+            file=file,
+            name_file=name_file,
+            type_file=type_file,
+            file_id=file_id,
+            show_progress=show_progress,
+            question=question,
+            options=options,
+            type_poll=type_poll,
+            is_anonymous=is_anonymous,
+            correct_option_index=correct_option_index,
+            allows_multiple_answers=allows_multiple_answers,
+            hint=hint,
+            latitude=latitude,
+            longitude=longitude,
+            first_name=first_name,
+            last_name=last_name,
+            phone_number=phone_number
         )
 
     @auto_async
@@ -855,13 +938,25 @@ class UpdateButton:
         options : list,
         type_poll: Literal['Regular', 'Quiz'] = "Regular",
         is_anonymous: bool = True,
-        correct_option_index: int | None = None,
+        correct_option_index: Optional[int] = None,
         allows_multiple_answers: bool = False,
-        hint: str | None = None,
-        auto_delete: Optional[int] = None
+        hint: Optional[str] = None,
+        auto_delete: Optional[int] = None,
+        reply_to_message_id: Optional[str] = None,
+        chat_id: Optional[str] = None
     ):
+        """sending pool / ارسال نظرسنجی"""
         return await self._client.send_poll(
-            chat_id=self.chat_id,question=question,options=options,type_poll=type_poll,is_anonymous=is_anonymous,correct_option_index=correct_option_index,allows_multiple_answers=allows_multiple_answers,hint=hint,disable_notification=False,auto_delete=auto_delete
+            chat_id=Utils.prefer_first(chat_id, self.chat_id),
+            question=question,
+            options=options,
+            type_poll=type_poll,
+            is_anonymous=is_anonymous,
+            correct_option_index=correct_option_index,
+            allows_multiple_answers=allows_multiple_answers,
+            hint=hint,
+            auto_delete=auto_delete,
+            reply_to_message_id=reply_to_message_id
         )
 
     @auto_async
@@ -871,10 +966,19 @@ class UpdateButton:
         last_name: str,
         phone_number: str,
         auto_delete: Optional[int] = None,
-        reply_to_message_id: Optional[str] = None
+        reply_to_message_id: Optional[str] = None,
+        inline_keypad: Optional[list] = None,
+        chat_id: Optional[str] = None
     ):
+        """sending contact / ارسال مخاطب"""
         return await self._client.send_contact(
-            self.chat_id,first_name,last_name,phone_number,auto_delete=auto_delete,reply_to_message_id=reply_to_message_id
+            chat_id=Utils.prefer_first(chat_id, self.chat_id),
+            first_name=first_name,
+            last_name=last_name,
+            phone_number=phone_number,
+            auto_delete=auto_delete,
+            reply_to_message_id=reply_to_message_id,
+            inline_keypad=inline_keypad
         )
 
     @auto_async
@@ -883,10 +987,16 @@ class UpdateButton:
         latitude: str,
         longitude: str,
         auto_delete: Optional[int] = None,
-        reply_to_message_id: Optional[str] = None
+        reply_to_message_id: Optional[str] = None,
+        chat_id: Optional[str] = None
     ):
+        """sending location / ارسال موقعیت مکانی"""
         return await self._client.send_location(
-            self.chat_id,latitude,longitude,auto_delete=auto_delete,reply_to_message_id=reply_to_message_id
+            chat_id=Utils.prefer_first(chat_id, self.chat_id),
+            latitude=latitude,
+            longitude=longitude,
+            auto_delete=auto_delete,
+            reply_to_message_id=reply_to_message_id
         )
 
     @auto_async
@@ -905,14 +1015,52 @@ class UpdateButton:
         resize_keyboard: Optional[bool] = True,
         on_time_keyboard: Optional[bool] = False,
         upload_by: Literal["aiohttp", "httpx"] = "aiohttp",
-        show_progress: bool = True
+        show_progress: bool = True,
+        chat_id: Optional[str] = None
     ):
+        """sending file / ارسال فایل"""
         return await self._client.base_send_file(
-            chat_id=self.chat_id,
+            chat_id=Utils.prefer_first(chat_id, self.chat_id),
             file=file,
             name_file=name_file,
             text=text,
             type_file=type_file,
+            auto_delete=auto_delete,
+            reply_to_message_id=reply_to_message_id,
+            parse_mode=parse_mode,
+            meta_data=meta_data,
+            inline_keypad=inline_keypad,
+            keypad=keypad,
+            resize_keyboard=resize_keyboard,
+            on_time_keyboard=on_time_keyboard,
+            upload_by=upload_by,
+            show_progress=show_progress
+        )
+    
+    @auto_async
+    async def send_document(
+        self,
+        file: Union[str , Path , bytes],
+        name_file: Optional[str] = None,
+        text: Optional[str] = None,
+        auto_delete: Optional[int] = None,
+        reply_to_message_id: Optional[str] = None,
+        parse_mode: Literal['Markdown', 'HTML', None] = "Markdown",
+        meta_data: Optional[list] = None,
+        inline_keypad: Optional[list] = None,
+        keypad: Optional[list] = None,
+        resize_keyboard: Optional[bool] = True,
+        on_time_keyboard: Optional[bool] = False,
+        upload_by: Literal["aiohttp", "httpx"] = "aiohttp",
+        show_progress: bool = True,
+        chat_id: Optional[str] = None
+    ):
+        """sending file / ارسال فایل"""
+        return await self._client.send_document(
+            chat_id=Utils.prefer_first(chat_id, self.chat_id),
+            file=file,
+            name_file=name_file,
+            text=text,
             auto_delete=auto_delete,
             reply_to_message_id=reply_to_message_id,
             parse_mode=parse_mode,
@@ -940,13 +1088,15 @@ class UpdateButton:
         resize_keyboard: Optional[bool] = True,
         on_time_keyboard: Optional[bool] = False,
         upload_by: Literal["aiohttp", "httpx"] = "aiohttp",
-        show_progress: bool = True
+        show_progress: bool = True,
+        chat_id: Optional[str] = None
     ):
+        """sending image / ارسال تصویر"""
         return await self._client.send_image(
-            self.chat_id,
-            image,
-            name_file,
-            text,
+            chat_id=Utils.prefer_first(chat_id, self.chat_id),
+            image=image,
+            name_file=name_file,
+            text=text,
             auto_delete=auto_delete,
             reply_to_message_id=reply_to_message_id,
             parse_mode=parse_mode,
@@ -974,13 +1124,15 @@ class UpdateButton:
         resize_keyboard: Optional[bool] = True,
         on_time_keyboard: Optional[bool] = False,
         upload_by: Literal["aiohttp", "httpx"] = "aiohttp",
-        show_progress: bool = True
+        show_progress: bool = True,
+        chat_id: Optional[str] = None
     ):
+        """sending video / ارسال ویدیو"""
         return await self._client.send_video(
-            self.chat_id,
-            video,
-            name_file,
-            text,
+            chat_id=Utils.prefer_first(chat_id, self.chat_id),
+            video=video,
+            name_file=name_file,
+            text=text,
             auto_delete=auto_delete,
             reply_to_message_id=reply_to_message_id,
             parse_mode=parse_mode,
@@ -1008,13 +1160,15 @@ class UpdateButton:
         resize_keyboard: Optional[bool] = True,
         on_time_keyboard: Optional[bool] = False,
         upload_by: Literal["aiohttp", "httpx"] = "aiohttp",
-        show_progress: bool = True
+        show_progress: bool = True,
+        chat_id: Optional[str] = None
     ):
+        """sending voice / ارسال ویس"""
         return await self._client.send_voice(
-            self.chat_id,
-            voice,
-            name_file,
-            text,
+            chat_id=Utils.prefer_first(chat_id, self.chat_id),
+            voice=voice,
+            name_file=name_file,
+            text=text,
             auto_delete=auto_delete,
             reply_to_message_id=reply_to_message_id,
             parse_mode=parse_mode,
@@ -1042,13 +1196,15 @@ class UpdateButton:
         resize_keyboard: Optional[bool] = True,
         on_time_keyboard: Optional[bool] = False,
         upload_by: Literal["aiohttp", "httpx"] = "aiohttp",
-        show_progress: bool = True
+        show_progress: bool = True,
+        chat_id: Optional[str] = None
     ):
+        """sending music / ارسال موزیک"""
         return await self._client.send_music(
-            self.chat_id,
-            music,
-            name_file,
-            text,
+            chat_id=Utils.prefer_first(chat_id, self.chat_id),
+            music=music,
+            name_file=name_file,
+            text=text,
             auto_delete=auto_delete,
             reply_to_message_id=reply_to_message_id,
             parse_mode=parse_mode,
@@ -1076,13 +1232,15 @@ class UpdateButton:
         resize_keyboard: Optional[bool] = True,
         on_time_keyboard: Optional[bool] = False,
         upload_by: Literal["aiohttp", "httpx"] = "aiohttp",
-        show_progress: bool = True
+        show_progress: bool = True,
+        chat_id: Optional[str] = None
     ):
+        """sending gif / ارسال گیف"""
         return await self._client.send_gif(
-            self.chat_id,
-            gif,
-            name_file,
-            text,
+            chat_id=Utils.prefer_first(chat_id, self.chat_id),
+            gif=gif,
+            name_file=name_file,
+            text=text,
             auto_delete=auto_delete,
             reply_to_message_id=reply_to_message_id,
             parse_mode=parse_mode,
@@ -1094,7 +1252,22 @@ class UpdateButton:
             upload_by=upload_by,
             show_progress=show_progress
         )
+    
+    def to_dict(
+        self
+    ) -> dict:
+        """convert Update to Dict / تبدیل آپدیت به دیکشنری"""
+        if isinstance(self._data, props):
+            self._data = dict(self._data.to_dict())
+        return self._data
 
     def __str__(self) -> str:
-        return json.dumps(self._data)
+        return json.dumps(
+            self.to_dict(),
+            indent=4,
+            ensure_ascii=False
+        )
+
+    def __repr__(self) -> str:
+        return self.__str__()
 

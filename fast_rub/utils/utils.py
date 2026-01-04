@@ -464,3 +464,18 @@ class Utils:
         if data.get("status", "") == "OK":
             return True
         return False
+
+    @staticmethod
+    def prefer_first(value1: Optional[str] = None, value2: Optional[str] = None) -> str:
+        return value1 if value1 else str(value2)
+
+    @staticmethod
+    def get_chat_id_type(chat_id: str):
+        if chat_id.startswith("b"):
+            return "User"
+        elif chat_id.startswith("g"):
+            return "Group"
+        elif chat_id.startswith("c"):
+            return "Channel"
+        else:
+            raise ValueError("chat id is not found")

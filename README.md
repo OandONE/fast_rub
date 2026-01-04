@@ -986,5 +986,30 @@ asyncio.run(bot.run())
 
 `not_filter(filter)`
 
+#### ساخت فیلتر سفارشی
+
+```python
+from fast_rub import Client, filters
+from fast_rub.type import Update
+import asyncio
+
+bot = Client("test")
+
+class stiker_emoji_filter(filters.Filter):
+    """فیلتر تشخیص ایموجی استیکر"""
+    def __init__(self, sticker_emoji_character: str):
+        self.sticker_emoji_character = sticker_emoji_character
+    def __call__(self, update: Update) -> bool:
+        return str(update.sticker_emoji_character) == self.sticker_emoji_character
+
+@bot.on_message(stiker_emoji_filter("😂"))
+async def test_filters(msg: Update):
+    await msg.reply("خخخ")
+
+asyncio.run(bot.run())
+```
+
+
+
 <hr>
 <h1>Seyyed Mohamad Hosein Moosavi (01)</h1>

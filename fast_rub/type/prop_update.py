@@ -35,13 +35,7 @@ class msg_update:
         return await self.client.get_message(self.chat_id,self.message_id)
     
     async def delete_message(self) -> props:
-        """حذف پیام / delete message
-        
-        Docstring for delete_message
-        
-        :return: Description
-        :rtype: props
-        """
+        """حذف پیام / delete message"""
         return await self.client.delete_message(self.chat_id, self.message_id)
 
     def __str__(self) -> str:
