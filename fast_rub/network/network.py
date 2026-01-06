@@ -312,7 +312,14 @@ class Network:
             self.logger.error(f"خطایی ناشناخته » {e}")
             raise
 
-    async def upload(self, url: str, file_path: Union[str, Path, bytes], file_name: str, show_progress: bool = True) -> dict:
+    async def upload(
+        self,
+        url: str,
+        file_path: Union[str, Path, bytes],
+        file_name: str,
+        show_progress: bool = True,
+        chunk_size: int = 64 * 1024
+    ) -> dict:
         self.logger.info("در حال آپلود فایل (aiohttp stream)...")
         try:
             import aiohttp
@@ -339,7 +346,7 @@ class Network:
                         else:
                             pbar = None
                         while True:
-                            chunk = await f.read(64 * 1024)
+                            chunk = await f.read(chunk_size)
                             if not chunk:
                                 break
                             if pbar:

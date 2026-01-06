@@ -372,6 +372,63 @@ class Client(object):
         return await self.methods.sendText(objectGuid=object_guid, text=text, messageId=message_id)
     
     @async_to_sync
+    async def send_message(
+        self,
+        object_guid: str,
+        text: str,
+        message_id: Optional[str] = None,
+        # file
+        file: Optional[str] = None,
+        file_name: Optional[str] = None,
+        type_file: Literal["Image", "Video", "Gif", "VideoMessage","Music", "Voice","File"] = "File",
+        is_spoil: bool = False,
+        custom_thumb_inline: Optional[str] = None,
+        time: Optional[int] = None,
+        performer: Optional[str] = None,
+        # poll
+        question: Optional[str] = None,
+        options: Optional[list] = None,
+        type_poll: Literal["Regular", "Quiz"] = "Regular",
+        is_anonymous: bool = True,
+        correct_option_index: Optional[int] = None,
+        allows_multiple_answers: bool = False,
+        hint: Optional[str] = None,
+        # location
+        latitude: Optional[int] = None,
+        longitude: Optional[int] = None,
+        # contact
+        first_name: Optional[str] = None,
+        last_name: Optional[str] = None,
+        phone_number: Optional[str] = None,
+        user_guid: Optional[str] = None
+    ) -> Optional[dict]:
+        return await self.methods.sendMessage(
+            objectGuid=object_guid,
+            text=text,
+            mesageId=message_id,
+            file=file,
+            fileName=file_name,
+            typeFile=type_file,
+            isSpoil=is_spoil,
+            customThumbInline=custom_thumb_inline,
+            time=time,
+            performer=performer,
+            question=question,
+            options=options,
+            typePoll=type_poll,
+            isAnonymous=is_anonymous,
+            correctOptionIndex=correct_option_index,
+            allowsMultipleAnswers=allows_multiple_answers,
+            hint=hint,
+            latitude=latitude,
+            longitude=longitude,
+            firstName=first_name,
+            lastName=last_name,
+            phoneNumber=phone_number,
+            userGuid=user_guid
+        )
+    
+    @async_to_sync
     async def send_file(self, object_guid:str, file:str, message_id:Optional[str] = None, text:Optional[str] = None, file_name:Optional[str] = None) -> Optional[dict]:
         return await self.methods.sendFile(objectGuid=object_guid, file=file, text=text, messageId=message_id, fileName=file_name)
     

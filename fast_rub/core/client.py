@@ -19,7 +19,8 @@ from ..type.props import props
 from ..type.models import *
 from ..utils.colors import Colors
 from ..utils.logger import logging, setup_logging
-from ..utils.utils import TextParser, Utils
+from ..utils.utils import Utils
+from ..utils.text_parser import TextParser
 
 
 class Client:
@@ -122,16 +123,16 @@ class Client:
         self.list_commands = []
         self.proxy = proxy
         self.show_progress = show_progress
-        self._fetch_messages = False
-        self._fetch_messages_ = False
+        self._fetch_messages_webhook = False
+        self._fetch_messages_polling = False
         self._fetch_buttons = False
         self._fetch_edit = False
-        self._message_handlers = []
+        self._message_handlers_webhook = []
         self._button_handlers = []
         self._edit_handlers = []
         self._edit_handlers_ = []
         self.last = []
-        self._message_handlers_ = []
+        self._message_handlers_polling = []
         self.next_offset_id = ""
         self.next_offset_id_ = ""
         self.next_offset_id_get_message = ""
@@ -139,9 +140,17 @@ class Client:
         self.main_parse_mode: Literal['Markdown', 'HTML', 'Unknown', None] = main_parse_mode
         self.max_retries = max_retries
         self.messages = deque(maxlen=keeper_messages)
-        self.session = Utils.open_session(name_session, token, user_agent, time_out, display_welcome, view_logs, save_logs)
-        self.token:str = self.session["token"]
-        self.time_out = self.session["time_out"]
+        self.session = Utils.open_session(
+            name_session=name_session,
+            token=token,
+            user_agent=user_agent,
+            time_out=time_out,
+            display_welcome=display_welcome,
+            view_logs=view_logs,
+            save_logs=save_logs
+        )
+        self.token: str = self.session["token"]
+        self.time_out: float = self.session["time_out"]
         self.user_agent = self.session["user_agent"]
         try:
             self.log_to_file = self.session["setting_logs"]["save"]
@@ -226,14 +235,41 @@ class Client:
             self.network = Network(self.token,logger=self.logger,max_retries=self.max_retries,user_agent=self.user_agent,proxy=self.proxy)
         response = await self.network.send_request(method=method,data_=data_)
         return response
-
+    
     @async_to_sync
-    async def auto_delete(self,chat_id:str,message_id:str,time_sleep:float) -> props:
-        """auto delete message next {time_sleep} time s / حذف خودکار پیام بعد از فلان مقدار ثانیه"""
+    async def auto_delete_(
+        self,
+        chat_id:str,
+        message_id:str,
+        time_sleep:float
+    ) -> props:
         await asyncio.sleep(time_sleep)
         result = await self.delete_message(chat_id,message_id)
         return props(result)
-    
+
+    @async_to_sync
+    async def auto_delete(
+        self,
+        chat_id:str,
+        message_id:str,
+        time_sleep:float,
+        separate_task: bool = False
+    ) -> Optional[props]:
+        """auto delete message next {time_sleep} time s / حذف خودکار پیام بعد از فلان مقدار ثانیه"""
+        if separate_task:
+            asyncio.create_task(
+                self.auto_delete_(
+                    chat_id=chat_id,
+                    message_id=message_id,
+                    time_sleep=time_sleep
+                )
+            )
+        else:
+            return await self.auto_delete_(
+                chat_id=chat_id,
+                message_id=message_id,
+                time_sleep=time_sleep
+            )
 
     @async_to_sync
     async def get_me(self) -> Bot:
@@ -333,6 +369,7 @@ class Client:
         type_file: Literal["File", "Image", "Voice", "Music", "Gif" , "Video"] = "File",
         file_id: Optional[str] = None,
         show_progress: bool = True,
+        chunk_size: int = 64 * 1024,
         # poll
         question: Optional[str] = None,
         options: Optional[list] = None,
@@ -351,17 +388,87 @@ class Client:
     ) ->  msg_update:
         """send message / ارسال پیام"""
         if file_id:
-            return await self.send_file_by_file_id(chat_id,file_id,text,reply_to_message_id,disable_notification,auto_delete,parse_mode,meta_data,inline_keypad,keypad,resize_keyboard,on_time_keyboard)
+            return await self.send_file_by_file_id(
+                chat_id=chat_id,
+                file_id=file_id,
+                text=text,
+                reply_to_message_id=reply_to_message_id,
+                disable_notification=disable_notification,
+                auto_delete=auto_delete,
+                parse_mode=parse_mode,
+                meta_data=meta_data,
+                inline_keypad=inline_keypad,
+                keypad=keypad,
+                resize_keyboard=resize_keyboard,
+                on_time_keyboard=on_time_keyboard
+            )
         elif file:
-            return await self.base_send_file(chat_id,file,name_file,text,reply_to_message_id,type_file,disable_notification,auto_delete,parse_mode,meta_data,inline_keypad,keypad,resize_keyboard,on_time_keyboard,show_progress=show_progress)
-        elif question != None and options != None:
-            return await self.send_poll(chat_id,question,options,type_poll=type_poll,is_anonymous=is_anonymous,correct_option_index=correct_option_index,allows_multiple_answers=allows_multiple_answers,hint=hint,auto_delete=auto_delete,reply_to_message_id=reply_to_message_id,disable_notification=disable_notification)
-        elif latitude != None and longitude != None:
-            return await self.send_location(chat_id,latitude,longitude,disable_notification=disable_notification,reply_to_message_id=reply_to_message_id,auto_delete=auto_delete)
+            return await self.base_send_file(
+                chat_id=chat_id,
+                file=file,
+                name_file=name_file,
+                text=text,
+                reply_to_message_id=reply_to_message_id,
+                type_file=type_file,
+                disable_notification=disable_notification,
+                auto_delete=auto_delete,
+                parse_mode=parse_mode,
+                meta_data=meta_data,
+                inline_keypad=inline_keypad,
+                keypad=keypad,
+                resize_keyboard=resize_keyboard,
+                on_time_keyboard=on_time_keyboard,
+                show_progress=show_progress,
+                chunk_size=chunk_size
+            )
+        elif (not question is None) and (not options is None):
+            return await self.send_poll(
+                chat_id=chat_id,
+                question=question,
+                options=options,
+                type_poll=type_poll,
+                is_anonymous=is_anonymous,
+                correct_option_index=correct_option_index,
+                allows_multiple_answers=allows_multiple_answers,
+                hint=hint,
+                auto_delete=auto_delete,
+                reply_to_message_id=reply_to_message_id,
+                disable_notification=disable_notification
+            )
+        elif (not latitude is None) and (not longitude is None):
+            return await self.send_location(
+                chat_id=chat_id,
+                latitude=latitude,
+                longitude=longitude,
+                disable_notification=disable_notification,
+                reply_to_message_id=reply_to_message_id,
+                auto_delete=auto_delete
+            )
         elif first_name and last_name and phone_number:
-            return await self.send_contact(chat_id,first_name,last_name,phone_number,reply_to_message_id=reply_to_message_id,disable_notificatio=disable_notification,auto_delete=auto_delete)
+            return await self.send_contact(
+                chat_id=chat_id,
+                first_name=first_name,
+                last_name=last_name,
+                phone_number=phone_number,
+                reply_to_message_id=reply_to_message_id,
+                disable_notificatio=disable_notification,
+                auto_delete=auto_delete,
+                inline_keypad=inline_keypad
+            )
         elif text != None:
-            return await self.send_text(text=text,chat_id=chat_id,inline_keypad=inline_keypad,disable_notification=disable_notification,reply_to_message_id=reply_to_message_id,auto_delete=auto_delete,parse_mode=parse_mode,keypad=keypad,on_time_keyboard=on_time_keyboard,resize_keyboard=resize_keyboard,meta_data=meta_data)
+            return await self.send_text(
+                text=text,
+                chat_id=chat_id,
+                inline_keypad=inline_keypad,
+                disable_notification=disable_notification,
+                reply_to_message_id=reply_to_message_id,
+                auto_delete=auto_delete,
+                parse_mode=parse_mode,
+                keypad=keypad,
+                on_time_keyboard=on_time_keyboard,
+                resize_keyboard=resize_keyboard,
+                meta_data=meta_data
+            )
         raise ValueError("Please Write The Args !")
 
     @async_to_sync
@@ -485,7 +592,8 @@ class Client:
         first_name = chat["first_name"] if "first_name" in chat else chat["title"]
         last_name = chat["last_name"] if "last_name" in chat else None
         user_id = chat["user_id"] if "user_id" in chat else None
-        return Chat(first_name=first_name,last_name=last_name,user_id=user_id)
+        chat_id = chat["chat_id"]
+        return Chat(chat_id=chat_id,first_name=first_name,last_name=last_name,user_id=user_id)
 
     @async_to_sync
     async def get_updates(
@@ -714,12 +822,14 @@ class Client:
         )
 
     @async_to_sync
-    async def set_commands(self) -> dict:
+    async def set_commands(self, list_commands: Optional[list] = None) -> dict:
         """set the commands for robot / تنظیم دستورات برای ربات"""
         self.logger.info("استفاده از متود set_commands")
         result = await self.send_requests(
             "setCommands",
-            {"bot_commands": self.list_commands},
+            {
+                "bot_commands": list_commands if list_commands else self.list_commands
+            }
         )
         return result
     
@@ -732,13 +842,21 @@ class Client:
         return result
     
     @async_to_sync
-    async def upload_file(self, url: str, file_name: str, file: Union[str, Path, bytes], upload_by: Literal["aiohttp", "httpx"] = "aiohttp", show_progress: bool = True) -> dict:
+    async def upload_file(
+        self,
+        url: str,
+        file_name: str,
+        file: Union[str, Path, bytes],
+        upload_by: Literal["aiohttp", "httpx"] = "aiohttp",
+        show_progress: bool = True,
+        chunk_size: int = 64 * 1024
+    ) -> dict:
         """upload file to rubika server / آپلود فایل در سرور روبیکا"""
         self.logger.info("استفاده از متود upload_file")
         if not self.show_progress is None:
             show_progress = self.show_progress
         if upload_by == "aiohttp":
-            response = await self.network.upload(url, file, file_name, show_progress)
+            response = await self.network.upload(url, file, file_name, show_progress, chunk_size)
         elif upload_by == "httpx":
             d_file = await Utils.d_file(file, file_name, self.network)
             response = await self.network.upload_httpx(url, d_file)
@@ -809,7 +927,8 @@ class Client:
         resize_keyboard: Optional[bool] = True,
         on_time_keyboard: Optional[bool] = False,
         upload_by: Literal["aiohttp", "httpx"] = "aiohttp",
-        show_progress: bool = True
+        show_progress: bool = True,
+        chunk_size: int = 64 * 1024
     ) -> msg_update:
         """sending file with types ['File', 'Image', 'Voice', 'Music', 'Gif' , 'Video'] / ارسال فایل با نوع های فایل و عکس و پیغام صوتی و موزیک و گیف و ویدیو"""
         self.logger.info("استفاده از متود base_send_file")
@@ -819,9 +938,29 @@ class Client:
             name_file = Utils.format_file(type_file)
         if not name_file:
             raise ValueError("type file is invalud !")
-        upload_file = await self.upload_file(upload_url_file, name_file, file, upload_by, show_progress)
+        upload_file = await self.upload_file(
+            url=upload_url_file,
+            file_name=name_file,
+            file=file,
+            upload_by=upload_by,
+            show_progress=show_progress,
+            chunk_size=chunk_size
+        )
         file_id = upload_file["file_id"]
-        send = await self.send_file_by_file_id(chat_id,file_id,text,reply_to_message_id,disable_notification,parse_mode=parse_mode,auto_delete=auto_delete,meta_data=meta_data,inline_keypad=inline_keypad,keypad=keypad,resize_keyboard=resize_keyboard,on_time_keyboard=on_time_keyboard)
+        send = await self.send_file_by_file_id(
+            chat_id=chat_id,
+            file_id=file_id,
+            text=text,
+            reply_to_message_id=reply_to_message_id,
+            disable_notification=disable_notification,
+            parse_mode=parse_mode,
+            auto_delete=auto_delete,
+            meta_data=meta_data,
+            inline_keypad=inline_keypad,
+            keypad=keypad,
+            resize_keyboard=resize_keyboard,
+            on_time_keyboard=on_time_keyboard
+        )
         sended = send.to_dict()
         sended["file_id"] = file_id
         sended["type_file"] = type_file
@@ -856,28 +995,29 @@ class Client:
         resize_keyboard: Optional[bool] = True,
         on_time_keyboard: Optional[bool] = False,
         upload_by: Literal["aiohttp", "httpx"] = "aiohttp",
-        show_progress: bool = True
+        show_progress: bool = True,
+        chunk_size: int = 64 * 1024
     ) -> msg_update:
         "ارسال فایل / send file"
         self.logger.info("استفاده از متود send_file")
-
         result = await self.base_send_file(
-            chat_id,
-            file,
-            name_file,
-            text,
-            reply_to_message_id,
-            "File",
-            disable_notification,
-            auto_delete,
-            parse_mode,
-            meta_data,
-            inline_keypad,
-            keypad,
-            resize_keyboard,
-            on_time_keyboard,
-            upload_by,
-            show_progress
+            chat_id=chat_id,
+            file=file,
+            name_file=name_file,
+            text=text,
+            reply_to_message_id=reply_to_message_id,
+            type_file="File",
+            disable_notification=disable_notification,
+            auto_delete=auto_delete,
+            parse_mode=parse_mode,
+            meta_data=meta_data,
+            inline_keypad=inline_keypad,
+            keypad=keypad,
+            resize_keyboard=resize_keyboard,
+            on_time_keyboard=on_time_keyboard,
+            upload_by=upload_by,
+            show_progress=show_progress,
+            chunk_size=chunk_size
         )
         return result
 
@@ -898,28 +1038,29 @@ class Client:
         resize_keyboard: Optional[bool] = True,
         on_time_keyboard: Optional[bool] = False,
         upload_by: Literal["aiohttp", "httpx"] = "aiohttp",
-        show_progress: bool = True
+        show_progress: bool = True,
+        chunk_size: int = 64 * 1024
     ) -> msg_update:
         "ارسال فایل / send file"
         self.logger.info("استفاده از متود send_document")
-
         result = await self.base_send_file(
-            chat_id,
-            file,
-            name_file,
-            text,
-            reply_to_message_id,
-            "File",
-            disable_notification,
-            auto_delete,
-            parse_mode,
-            meta_data,
-            inline_keypad,
-            keypad,
-            resize_keyboard,
-            on_time_keyboard,
-            upload_by,
-            show_progress
+            chat_id=chat_id,
+            file=file,
+            name_file=name_file,
+            text=text,
+            reply_to_message_id=reply_to_message_id,
+            type_file="File",
+            disable_notification=disable_notification,
+            auto_delete=auto_delete,
+            parse_mode=parse_mode,
+            meta_data=meta_data,
+            inline_keypad=inline_keypad,
+            keypad=keypad,
+            resize_keyboard=resize_keyboard,
+            on_time_keyboard=on_time_keyboard,
+            upload_by=upload_by,
+            show_progress=show_progress,
+            chunk_size=chunk_size
         )
         return result
 
@@ -940,27 +1081,29 @@ class Client:
         resize_keyboard: Optional[bool] = True,
         on_time_keyboard: Optional[bool] = False,
         upload_by: Literal["aiohttp", "httpx"] = "aiohttp",
-        show_progress: bool = True
+        show_progress: bool = True,
+        chunk_size: int = 64 * 1024
     ) -> msg_update:
         """sending image / ارسال تصویر"""
         self.logger.info("استفاده از متود send_image")
         result = await self.base_send_file(
-            chat_id,
-            image,
-            name_file,
-            text,
-            reply_to_message_id,
-            "Image",
-            disable_notification,
-            auto_delete,
-            parse_mode,
-            meta_data,
-            inline_keypad,
-            keypad,
-            resize_keyboard,
-            on_time_keyboard,
-            upload_by,
-            show_progress
+            chat_id=chat_id,
+            file=image,
+            name_file=name_file,
+            text=text,
+            reply_to_message_id=reply_to_message_id,
+            type_file="Image",
+            disable_notification=disable_notification,
+            auto_delete=auto_delete,
+            parse_mode=parse_mode,
+            meta_data=meta_data,
+            inline_keypad=inline_keypad,
+            keypad=keypad,
+            resize_keyboard=resize_keyboard,
+            on_time_keyboard=on_time_keyboard,
+            upload_by=upload_by,
+            show_progress=show_progress,
+            chunk_size=chunk_size
         )
         return result
 
@@ -981,27 +1124,29 @@ class Client:
         resize_keyboard: Optional[bool] = True,
         on_time_keyboard: Optional[bool] = False,
         upload_by: Literal["aiohttp", "httpx"] = "aiohttp",
-        show_progress: bool = True
+        show_progress: bool = True,
+        chunk_size: int = 64 * 1024
     ) -> msg_update:
         """sending video / ارسال ویدیو"""
         self.logger.info("استفاده از متود send_video")
         result = await self.base_send_file(
-            chat_id,
-            video,
-            name_file,
-            text,
-            reply_to_message_id,
-            "Video",
-            disable_notification,
-            auto_delete,
-            parse_mode,
-            meta_data,
-            inline_keypad,
-            keypad,
-            resize_keyboard,
-            on_time_keyboard,
-            upload_by,
-            show_progress
+            chat_id=chat_id,
+            file=video,
+            name_file=name_file,
+            text=text,
+            reply_to_message_id=reply_to_message_id,
+            type_file="Video",
+            disable_notification=disable_notification,
+            auto_delete=auto_delete,
+            parse_mode=parse_mode,
+            meta_data=meta_data,
+            inline_keypad=inline_keypad,
+            keypad=keypad,
+            resize_keyboard=resize_keyboard,
+            on_time_keyboard=on_time_keyboard,
+            upload_by=upload_by,
+            show_progress=show_progress,
+            chunk_size=chunk_size
         )
         return result
 
@@ -1022,27 +1167,29 @@ class Client:
         resize_keyboard: Optional[bool] = True,
         on_time_keyboard: Optional[bool] = False,
         upload_by: Literal["aiohttp", "httpx"] = "aiohttp",
-        show_progress: bool = True
+        show_progress: bool = True,
+        chunk_size: int = 64 * 1024
     ) -> msg_update:
         """sending voice / ارسال ویس"""
         self.logger.info("استفاده از متود send_voice")
         result = await self.base_send_file(
-            chat_id,
-            voice,
-            name_file,
-            text,
-            reply_to_message_id,
-            "Voice",
-            disable_notification,
-            auto_delete,
-            parse_mode,
-            meta_data,
-            inline_keypad,
-            keypad,
-            resize_keyboard,
-            on_time_keyboard,
-            upload_by,
-            show_progress
+            chat_id=chat_id,
+            file=voice,
+            name_file=name_file,
+            text=text,
+            reply_to_message_id=reply_to_message_id,
+            type_file="Voice",
+            disable_notification=disable_notification,
+            auto_delete=auto_delete,
+            parse_mode=parse_mode,
+            meta_data=meta_data,
+            inline_keypad=inline_keypad,
+            keypad=keypad,
+            resize_keyboard=resize_keyboard,
+            on_time_keyboard=on_time_keyboard,
+            upload_by=upload_by,
+            show_progress=show_progress,
+            chunk_size=chunk_size
         )
         return result
 
@@ -1063,27 +1210,29 @@ class Client:
         resize_keyboard: Optional[bool] = True,
         on_time_keyboard: Optional[bool] = False,
         upload_by: Literal["aiohttp", "httpx"] = "aiohttp",
-        show_progress: bool = True
+        show_progress: bool = True,
+        chunk_size: int = 64 * 1024
     ) -> msg_update:
         """sending music / ارسال موزیک"""
         self.logger.info("استفاده از متود send_music")
         result = await self.base_send_file(
-            chat_id,
-            music,
-            name_file,
-            text,
-            reply_to_message_id,
-            "Music",
-            disable_notification,
-            auto_delete,
-            parse_mode,
-            meta_data,
-            inline_keypad,
-            keypad,
-            resize_keyboard,
-            on_time_keyboard,
-            upload_by,
-            show_progress
+            chat_id=chat_id,
+            file=music,
+            name_file=name_file,
+            text=text,
+            reply_to_message_id=reply_to_message_id,
+            type_file="Music",
+            disable_notification=disable_notification,
+            auto_delete=auto_delete,
+            parse_mode=parse_mode,
+            meta_data=meta_data,
+            inline_keypad=inline_keypad,
+            keypad=keypad,
+            resize_keyboard=resize_keyboard,
+            on_time_keyboard=on_time_keyboard,
+            upload_by=upload_by,
+            show_progress=show_progress,
+            chunk_size=chunk_size
         )
         return result
 
@@ -1104,27 +1253,29 @@ class Client:
         resize_keyboard: Optional[bool] = True,
         on_time_keyboard: Optional[bool] = False,
         upload_by: Literal["aiohttp", "httpx"] = "aiohttp",
-        show_progress: bool = True
+        show_progress: bool = True,
+        chunk_size: int = 64 * 1024
     ) -> msg_update:
         """sending gif / ارسال گیف"""
         self.logger.info("استفاده از متود send_gif")
         result = await self.base_send_file(
-            chat_id,
-            gif,
-            name_file,
-            text,
-            reply_to_message_id,
-            "Gif",
-            disable_notification,
-            auto_delete,
-            parse_mode,
-            meta_data,
-            inline_keypad,
-            keypad,
-            resize_keyboard,
-            on_time_keyboard,
-            upload_by,
-            show_progress
+            chat_id=chat_id,
+            file=gif,
+            name_file=name_file,
+            text=text,
+            reply_to_message_id=reply_to_message_id,
+            type_file="Gif",
+            disable_notification=disable_notification,
+            auto_delete=auto_delete,
+            parse_mode=parse_mode,
+            meta_data=meta_data,
+            inline_keypad=inline_keypad,
+            keypad=keypad,
+            resize_keyboard=resize_keyboard,
+            on_time_keyboard=on_time_keyboard,
+            upload_by=upload_by,
+            show_progress=show_progress,
+            chunk_size=chunk_size
         )
         return result
 
@@ -1241,6 +1392,7 @@ class Client:
         result = await self.send_requests("unbanChatMember", data)
         return props(result)
 
+    # decorators
 
     def _schedule_handler(self, handler, update):
         async def _wrapped():
@@ -1250,22 +1402,45 @@ class Client:
                 self.logger.exception("Error in handler")
         asyncio.create_task(_wrapped())
 
-    def on_message(self, filters: Optional[Filter] = None):
+    def on_message(self,
+        filters: Optional[Filter] = None,
+        edited_messages: Literal[False, True, "both"] = False,
+        deleted_messages: Literal[False, True, "both"] = False
+    ):
         """برای دریافت پیام‌های معمولی"""
-        self._fetch_messages_ = True
+        self._fetch_messages_polling = True
         def decorator(handler):
             @wraps(handler)
             async def wrapped(update):
-                if filters is None or filters(update):
+                try:
+                    if filters is not None:
+                        try:
+                            if not filters(update):
+                                return
+                        except Exception as e:
+                            print(f"[FILTER ERROR] {filters} -> {e}")
+                            return
+
                     if inspect.iscoroutinefunction(handler):
                         return await handler(update)
                     else:
                         return handler(update)
-            self._message_handlers_.append(wrapped)
+
+                except Exception as e:
+                    print(f"[HANDLER ERROR] {handler.__name__} -> {e}")
+                    return None
+
+            handler_info = {
+                "handler": wrapped,
+                "filters": filters,
+                "edited_messages": edited_messages,
+                "deleted_messages": deleted_messages
+            }
+            self._message_handlers_polling.append(handler_info)
             return handler
         return decorator
 
-    async def _process_messages_polling(self, time_updata_sleep: Union[float, float] = 0.5):
+    async def _process_messages_polling(self):
         while self._running:
             try:
                 mes = await self.get_updates(limit=100, offset_id=self.next_offset_id)
@@ -1275,26 +1450,48 @@ class Client:
                     pass
                 messages = mes["updates"]
                 for message in messages:
-                    if message["type"] == "NewMessage":
-                        time_sended_mes = int(message['new_message']['time'])
-                        now = int(time.time())
-                        time_ = time_updata_sleep + 4
-                        if (now - time_sended_mes < time_) and (not message['new_message']['message_id'] in self.last):
-                            self.last.append(message['new_message']['message_id'])
-                            if len(self.last) > 500:
-                                self.last.pop(0)
-                            update_obj = Update(message, self)
-                            self.messages.append(update_obj)
-                            for handler in self._message_handlers_:
-                                self._schedule_handler(handler, update_obj)
-                await asyncio.sleep(time_updata_sleep)
+                    if message["type"] not in ["NewMessage", "UpdatedMessage", "RemoveMessage"]:
+                        continue
+                    update = Update(message, self)
+                    is_edited = message["type"] == "UpdatedMessage"
+                    is_deleted = message["type"] = "RemoveMessage"
+                    for handler_info in self._message_handlers_polling:
+                        handler = handler_info["handler"]
+                        edited_messages_option = handler_info["edited_messages"]
+                        deleted_messages_option = handler_info["deleted_messages"]
+                        if edited_messages_option == False and is_edited:
+                            continue
+                        elif edited_messages_option == True and not is_edited:
+                            continue
+                        if deleted_messages_option == False and is_deleted:
+                            continue
+                        elif deleted_messages_option == True and not is_deleted:
+                            continue
+                        filters = handler_info["filters"]
+                        if filters is not None:
+                            try:
+                                if not filters(update):
+                                    continue
+                            except Exception as e:
+                                print(f"[FILTER ERROR] {filters} -> {e}")
+                                continue
+                        self._schedule_handler(handler, update)
+                    if not is_edited and not is_deleted:
+                        self.messages.append(update)
             except (httpx.ReadError, httpx.ConnectError) as e:
                 self.logger.warning(f"خطای شبکه در _process_messages_polling: {e} - انتظار 5 ثانیه...")
                 await asyncio.sleep(5)
             except Exception as e:
                 self.logger.error(f"خطای ناشناخته در _process_messages_polling: {e}")
 
-    def on_message_updates(self, filters: Optional[Filter] = None):
+
+    def on_message_updates(
+        self,
+        filters: Optional[Filter] = None,
+        edited_messages: Literal[False, True, "both"] = False,
+        deleted_messages: Literal[False, True, "both"] = False
+    ):
+        """گرفتن پیام ها با وبهوک"""
         self._fetch_messages = True
 
         def decorator(handler):
@@ -1318,9 +1515,86 @@ class Client:
                     print(f"[HANDLER ERROR] {handler.__name__} -> {e}")
                     return None
 
-            self._message_handlers.append(wrapped)
+            handler_info = {
+                "handler": wrapped,
+                "filters": filters,
+                "edited_messages": edited_messages,
+                "deleted_messages": deleted_messages
+            }
+            
+            self._message_handlers_webhook.append(handler_info)
             return wrapped
+
         return decorator
+
+
+    def on_edit_updates(self, filters: Optional[Filter] = None):
+        """برای دریافت ویرایش شدن پیام ها"""
+        return self.on_message_updates(filters=filters, edited_messages=True)
+    
+    def on_delete_updates(self, filters: Optional[Filter] = None):
+        """برای دریافت پیام های حذف شده"""
+        return self.on_message_updates(filters=filters, deleted_messages=True)
+
+    def on_all_message_updates(self, filters: Optional[Filter] = None):
+        """گرفتن تمامی پیام ها(ارسال شده/ویرایش شده/حذف شده)"""
+        return self.on_message_updates(filters=filters, edited_messages="both", deleted_messages="both")
+    
+
+    def on_edit(self, filters: Optional[Filter] = None):
+        """برای دریافت ویرایش شدن پیام ها"""
+        return self.on_message(filters=filters, edited_messages=True)
+    
+    def on_delete(self, filters: Optional[Filter] = None):
+        """برای دریافت پیام های حذف شده"""
+        return self.on_message(filters=filters, deleted_messages=True)
+
+    def on_all_message(self, filters: Optional[Filter] = None):
+        """گرفتن تمامی پیام ها(ارسال شده/ویرایش شده/حذف شده)"""
+        return self.on_message(filters=filters, edited_messages="both", deleted_messages="both")
+
+
+    async def _process_messages_webhook(self):
+        while self._running:
+            response = await self.network.request(self._on_url, timeout=self.time_out,type_send="GET")
+            result = response.json()
+            if result and result.get('status') is True and response.status_code == 200:
+                results = result.get('updates', [])
+                if results:
+                    for result in results:
+                        if result["type"] not in ["NewMessage", "UpdatedMessage", "RemovedMessage"]:
+                            continue
+                        update = Update(result, self)
+                        is_edited = result["type"] == "UpdatedMessage"
+                        is_deleted = result["type"] = "RemovedMessage"
+                        for handler_info in self._message_handlers_webhook:
+                            handler = handler_info["handler"]
+                            edited_messages_option = handler_info["edited_messages"]
+                            deleted_messages_option = handler_info["deleted_messages"]
+                            if edited_messages_option == False and is_edited:
+                                continue
+                            elif edited_messages_option == True and not is_edited:
+                                continue
+                            if deleted_messages_option == False and is_deleted:
+                                continue
+                            elif deleted_messages_option == True and not is_deleted:
+                                continue
+                            filters = handler_info["filters"]
+                            if filters is not None:
+                                try:
+                                    if not filters(update):
+                                        continue
+                                except Exception as e:
+                                    print(f"[FILTER ERROR] {filters} -> {e}")
+                                    continue
+                            self._schedule_handler(handler, update)
+                        if not is_edited and not is_deleted:
+                            self.messages.append(update)
+            else:
+                await self.set_token_fast_rub()
+            await asyncio.sleep(0.1)
+
+    # Inline Button
 
     def on_button(self):
         """برای دریافت پیام ها به صورت پولینگ"""
@@ -1339,52 +1613,12 @@ class Client:
             return handler
         return decorator
 
-    def on_edit_updates(self):
-        """برای دریافت ویرایش شدن پیام ها"""
-        self._fetch_edit = True
-        def decorator(handler: Callable[[Update], Awaitable[None]]):
-            self._edit_handlers_.append(handler)
-            return handler
-        return decorator
-
-    async def _process_messages_webhook(self):
-        while self._running:
-            response = (await self.network.request(self._on_url, timeout=self.time_out,type_send="GET")).json()
-            if response and response.get('status') is True:
-                results = response.get('updates', [])
-                if results:
-                    for result in results:
-                        if result["type"] != "NewMessage":
-                            continue
-                        update = Update(result,self)
-                        self.messages.append(update)
-                        for handler in self._message_handlers:
-                            self._schedule_handler(handler,update)
-            else:
-                await self.set_token_fast_rub()
-            await asyncio.sleep(0.1)
-
-    async def _process_edit_updates(self):
-        while self._running:
-            response = (await self.network.request(self._button_url, timeout=self.time_out,type_send="GET")).json()
-            if response and response.get('status') is True:
-                results = response.get('updates', [])
-                if results:
-                    for result in results:
-                        if result["type"] != "UpdatedMessage":
-                            continue
-                        update = UpdateButton(result,self)
-                        for handler in self._edit_handlers:
-                            self._schedule_handler(handler,update)
-            else:
-                await self.set_token_fast_rub()
-            await asyncio.sleep(0.1)
-
     async def _fetch_button_updates(self):
         while self._running:
-            response = (await self.network.request(self._button_url, timeout=self.time_out,type_send="GET")).json()
-            if response and response.get('status') is True:
-                results = response.get('updates', [])
+            response = await self.network.request(self._button_url, timeout=self.time_out,type_send="GET")
+            result = response.json()
+            if result and result.get('status') is True:
+                results = result.get('updates', [])
                 if results:
                     for result in results:
                         update = UpdateButton(result,self)
@@ -1394,26 +1628,26 @@ class Client:
                 await self.set_token_fast_rub()
             await asyncio.sleep(0.1)
     
+    # Run
+
     async def _run_all(self):
         tasks = []
         if self._fetch_buttons:
             tasks.append(self._fetch_button_updates())
-        if self._fetch_messages:
+        if self._fetch_messages_webhook:
             tasks.append(self._process_messages_webhook())
-        if self._fetch_messages_ and self._message_handlers_:
+        if self._fetch_messages_polling and self._message_handlers_polling:
             tasks.append(self._process_messages_polling())
-        if self._fetch_edit and self._edit_handlers_:
-            tasks.append(self._process_edit_updates())
         if not tasks:
             raise ValueError("No handlers registered. Use on_message() or on_message_updates() or on_button() or on_edit_updates() first.")
         await asyncio.gather(*tasks)
 
     async def run(self):
         """اجرای اصلی بات - فقط اگر هندلرهای مربوطه ثبت شده باشند"""
-        if not (self._fetch_messages or self._fetch_buttons or self._fetch_messages_ or self._fetch_edit):
+        if not (self._fetch_messages_webhook or self._fetch_buttons or self._fetch_messages_polling or self._fetch_edit):
             raise ValueError("No update types selected. Use on_message() or on_message_updates() or on_button() or on_edit_updates() first.")
         
-        if (self._fetch_messages and not self._message_handlers) or (self._fetch_messages_ and not self._message_handlers_):
+        if (self._fetch_messages_webhook and not self._message_handlers_webhook) or (self._fetch_messages_polling and not self._message_handlers_polling):
             raise ValueError("Message handlers registered but no message callbacks defined.")
         
         if self._fetch_buttons and not self._button_handlers:

@@ -140,7 +140,7 @@ class time_range(Filter):
         self.to_time = to_time
 
     def __call__(self, message: Message) -> bool:
-        message_time = message.time
+        message_time = int(message.time)
         return self.from_time <= message_time <= self.to_time
 
 class starts_with(Filter):

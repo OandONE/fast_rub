@@ -1,11 +1,12 @@
 from typing import Optional
 
 class Chat:
-    def __init__(self, *, first_name: Optional[str] = None, last_name: Optional[str] = None,user_id: Optional[str] = None,username: Optional[str] = None):
+    def __init__(self, *,chat_id: str, first_name: Optional[str] = None, last_name: Optional[str] = None,user_id: Optional[str] = None,username: Optional[str] = None):
         self._first_name = first_name
         self._last_name = last_name
         self._user_id = user_id
         self._username = username
+        self._chat_id = chat_id
 
     @property
     def first_name(self) -> Optional[str]:
@@ -26,6 +27,10 @@ class Chat:
     @property
     def username(self) -> Optional[str]:
         return self._username
+    
+    @property
+    def chat_id(self) -> str:
+        return self._chat_id
 
     def to_dict(self) -> dict:
         return {
@@ -33,7 +38,8 @@ class Chat:
             "title": self._first_name,
             "last_name": self._last_name,
             "user_id": self._user_id,
-            "username": self._username
+            "username": self._username,
+            "chat_id": self._chat_id
         }
 
     def __repr__(self):

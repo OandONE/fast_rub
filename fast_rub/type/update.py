@@ -26,7 +26,7 @@ class Update:
     @property
     def text(self) -> Optional[str]:
         """text message / متن پیام"""
-        return self._data['text'] if "text" in self._data else None
+        return self._data.get("text")
     @property
     def message_id(self) -> str:
         """message id / آیدی پیام"""
@@ -186,6 +186,20 @@ class Update:
             return File(self._data["sticker"]["file"])
         return {}
 
+    # remove update
+    @property
+    def removed_message_id(self) -> Optional[str]:
+        """message id deleted / آیدی پیام پاک شده"""
+        return self.raw_data_.get("removed_message_id")
+    
+    @property
+    def update_time(self) -> Optional[int]:
+        """update time message deleted / زمان پاک شدن پیام"""
+        up_time = self.raw_data_.get("update_time")
+        if up_time:
+            return int(up_time)
+        return None
+
 
 
     def regex(
@@ -232,6 +246,7 @@ class Update:
         type_file: Literal["File", "Image", "Voice", "Music", "Gif" , "Video"] = "File",
         file_id: Optional[str] = None,
         show_progress: bool = True,
+        chunk_size: int = 64 * 1024,
         # poll
         question: Optional[str] = None,
         options: Optional[list] = None,
@@ -279,7 +294,8 @@ class Update:
             longitude=longitude,
             first_name=first_name,
             last_name=last_name,
-            phone_number=phone_number
+            phone_number=phone_number,
+            chunk_size=chunk_size
         )
 
     @auto_async
@@ -394,7 +410,8 @@ class Update:
         upload_by: Literal["aiohttp", "httpx"] = "aiohttp",
         show_progress: bool = True,
         chat_id: Optional[str] = None,
-        reply_to_message_id: Optional[str] = None
+        reply_to_message_id: Optional[str] = None,
+        chunk_size: int = 64 * 1024
     ) -> 'msg_update':
         """reply file / ریپلای فایل"""
         return await self._client.base_send_file(
@@ -413,7 +430,8 @@ class Update:
             resize_keyboard=resize_keyboard,
             on_time_keyboard=on_time_keyboard,
             upload_by=upload_by,
-            show_progress=show_progress
+            show_progress=show_progress,
+            chunk_size=chunk_size
         )
     
     @auto_async
@@ -434,7 +452,8 @@ class Update:
         upload_by: Literal["aiohttp", "httpx"] = "aiohttp",
         show_progress: bool = True,
         chat_id: Optional[str] = None,
-        reply_to_message_id: Optional[str] = None
+        reply_to_message_id: Optional[str] = None,
+        chunk_size: int = 64 * 1024
     ) -> 'msg_update':
         """reply file / ریپلای فایل"""
         return await self._client.base_send_file(
@@ -453,7 +472,8 @@ class Update:
             resize_keyboard=resize_keyboard,
             on_time_keyboard=on_time_keyboard,
             upload_by=upload_by,
-            show_progress=show_progress
+            show_progress=show_progress,
+            chunk_size=chunk_size
         )
 
     @auto_async
@@ -473,7 +493,8 @@ class Update:
         upload_by: Literal["aiohttp", "httpx"] = "aiohttp",
         show_progress: bool = True,
         chat_id: Optional[str] = None,
-        reply_to_message_id: Optional[str] = None
+        reply_to_message_id: Optional[str] = None,
+        chunk_size: int = 64 * 1024
     ) -> 'msg_update':
         """reply image / رپیلای تصویر"""
         return await self._client.send_image(
@@ -491,7 +512,8 @@ class Update:
             resize_keyboard=resize_keyboard,
             on_time_keyboard=on_time_keyboard,
             upload_by=upload_by,
-            show_progress=show_progress
+            show_progress=show_progress,
+            chunk_size=chunk_size
         )
 
     @auto_async
@@ -511,7 +533,8 @@ class Update:
         upload_by: Literal["aiohttp", "httpx"] = "aiohttp",
         show_progress: bool = True,
         chat_id: Optional[str] = None,
-        reply_to_message_id: Optional[str] = None
+        reply_to_message_id: Optional[str] = None,
+        chunk_size: int = 64 * 1024
     ) -> 'msg_update':
         """reply voice / رپیلای ویس"""
         return await self._client.send_voice(
@@ -529,7 +552,8 @@ class Update:
             resize_keyboard=resize_keyboard,
             on_time_keyboard=on_time_keyboard,
             upload_by=upload_by,
-            show_progress=show_progress
+            show_progress=show_progress,
+            chunk_size=chunk_size
         )
 
     @auto_async
@@ -549,7 +573,8 @@ class Update:
         upload_by: Literal["aiohttp", "httpx"] = "aiohttp",
         show_progress: bool = True,
         chat_id: Optional[str] = None,
-        reply_to_message_id: Optional[str] = None
+        reply_to_message_id: Optional[str] = None,
+        chunk_size: int = 64 * 1024
     ) -> 'msg_update':
         """reply voice / رپیلای موزیک"""
         return await self._client.send_music(
@@ -568,6 +593,7 @@ class Update:
             on_time_keyboard=on_time_keyboard,
             upload_by=upload_by,
             show_progress=show_progress,
+            chunk_size=chunk_size
         )
 
     @auto_async
@@ -587,7 +613,8 @@ class Update:
         upload_by: Literal["aiohttp", "httpx"] = "aiohttp",
         show_progress: bool = True,
         chat_id: Optional[str] = None,
-        reply_to_message_id: Optional[str] = None
+        reply_to_message_id: Optional[str] = None,
+        chunk_size: int = 64 * 1024
     ) -> 'msg_update':
         """reply voice / رپیلای گیف"""
         return await self._client.send_gif(
@@ -605,7 +632,8 @@ class Update:
             resize_keyboard=resize_keyboard,
             on_time_keyboard=on_time_keyboard,
             upload_by=upload_by,
-            show_progress=show_progress
+            show_progress=show_progress,
+            chunk_size=chunk_size
         )
 
     @auto_async
@@ -625,7 +653,8 @@ class Update:
         upload_by: Literal["aiohttp", "httpx"] = "aiohttp",
         show_progress: bool = True,
         chat_id: Optional[str] = None,
-        reply_to_message_id: Optional[str] = None
+        reply_to_message_id: Optional[str] = None,
+        chunk_size: int = 64 * 1024
     ) -> 'msg_update':
         """reply voice / رپیلای ویدیو"""
         return await self._client.send_video(
@@ -643,7 +672,8 @@ class Update:
             resize_keyboard=resize_keyboard,
             on_time_keyboard=on_time_keyboard,
             upload_by=upload_by,
-            show_progress=show_progress
+            show_progress=show_progress,
+            chunk_size=chunk_size
         )
 
     @auto_async
@@ -882,6 +912,7 @@ class UpdateButton:
         type_file: Literal["File", "Image", "Voice", "Music", "Gif" , "Video"] = "File",
         file_id: Optional[str] = None,
         show_progress: bool = True,
+        chunk_size: int = 64 * 1024,
         # poll
         question: Optional[str] = None,
         options: Optional[list] = None,
@@ -928,7 +959,8 @@ class UpdateButton:
             longitude=longitude,
             first_name=first_name,
             last_name=last_name,
-            phone_number=phone_number
+            phone_number=phone_number,
+            chunk_size=chunk_size
         )
 
     @auto_async
@@ -1016,7 +1048,8 @@ class UpdateButton:
         on_time_keyboard: Optional[bool] = False,
         upload_by: Literal["aiohttp", "httpx"] = "aiohttp",
         show_progress: bool = True,
-        chat_id: Optional[str] = None
+        chat_id: Optional[str] = None,
+        chunk_size: int = 64 * 1024
     ):
         """sending file / ارسال فایل"""
         return await self._client.base_send_file(
@@ -1034,7 +1067,8 @@ class UpdateButton:
             resize_keyboard=resize_keyboard,
             on_time_keyboard=on_time_keyboard,
             upload_by=upload_by,
-            show_progress=show_progress
+            show_progress=show_progress,
+            chunk_size=chunk_size
         )
     
     @auto_async
@@ -1053,7 +1087,8 @@ class UpdateButton:
         on_time_keyboard: Optional[bool] = False,
         upload_by: Literal["aiohttp", "httpx"] = "aiohttp",
         show_progress: bool = True,
-        chat_id: Optional[str] = None
+        chat_id: Optional[str] = None,
+        chunk_size: int = 64 * 1024
     ):
         """sending file / ارسال فایل"""
         return await self._client.send_document(
@@ -1070,7 +1105,8 @@ class UpdateButton:
             resize_keyboard=resize_keyboard,
             on_time_keyboard=on_time_keyboard,
             upload_by=upload_by,
-            show_progress=show_progress
+            show_progress=show_progress,
+            chunk_size=chunk_size
         )
 
     @auto_async
@@ -1089,7 +1125,8 @@ class UpdateButton:
         on_time_keyboard: Optional[bool] = False,
         upload_by: Literal["aiohttp", "httpx"] = "aiohttp",
         show_progress: bool = True,
-        chat_id: Optional[str] = None
+        chat_id: Optional[str] = None,
+        chunk_size: int = 64 * 1024
     ):
         """sending image / ارسال تصویر"""
         return await self._client.send_image(
@@ -1106,7 +1143,8 @@ class UpdateButton:
             resize_keyboard=resize_keyboard,
             on_time_keyboard=on_time_keyboard,
             upload_by=upload_by,
-            show_progress=show_progress
+            show_progress=show_progress,
+            chunk_size=chunk_size
         )
 
     @auto_async
@@ -1125,7 +1163,8 @@ class UpdateButton:
         on_time_keyboard: Optional[bool] = False,
         upload_by: Literal["aiohttp", "httpx"] = "aiohttp",
         show_progress: bool = True,
-        chat_id: Optional[str] = None
+        chat_id: Optional[str] = None,
+        chunk_size: int = 64 * 1024
     ):
         """sending video / ارسال ویدیو"""
         return await self._client.send_video(
@@ -1142,7 +1181,8 @@ class UpdateButton:
             resize_keyboard=resize_keyboard,
             on_time_keyboard=on_time_keyboard,
             upload_by=upload_by,
-            show_progress=show_progress
+            show_progress=show_progress,
+            chunk_size=chunk_size
         )
 
     @auto_async
@@ -1161,7 +1201,8 @@ class UpdateButton:
         on_time_keyboard: Optional[bool] = False,
         upload_by: Literal["aiohttp", "httpx"] = "aiohttp",
         show_progress: bool = True,
-        chat_id: Optional[str] = None
+        chat_id: Optional[str] = None,
+        chunk_size: int = 64 * 1024
     ):
         """sending voice / ارسال ویس"""
         return await self._client.send_voice(
@@ -1178,7 +1219,8 @@ class UpdateButton:
             resize_keyboard=resize_keyboard,
             on_time_keyboard=on_time_keyboard,
             upload_by=upload_by,
-            show_progress=show_progress
+            show_progress=show_progress,
+            chunk_size=chunk_size
         )
 
     @auto_async
@@ -1197,7 +1239,8 @@ class UpdateButton:
         on_time_keyboard: Optional[bool] = False,
         upload_by: Literal["aiohttp", "httpx"] = "aiohttp",
         show_progress: bool = True,
-        chat_id: Optional[str] = None
+        chat_id: Optional[str] = None,
+        chunk_size: int = 64 * 1024
     ):
         """sending music / ارسال موزیک"""
         return await self._client.send_music(
@@ -1214,7 +1257,8 @@ class UpdateButton:
             resize_keyboard=resize_keyboard,
             on_time_keyboard=on_time_keyboard,
             upload_by=upload_by,
-            show_progress=show_progress
+            show_progress=show_progress,
+            chunk_size=chunk_size
         )
 
     @auto_async
@@ -1233,7 +1277,8 @@ class UpdateButton:
         on_time_keyboard: Optional[bool] = False,
         upload_by: Literal["aiohttp", "httpx"] = "aiohttp",
         show_progress: bool = True,
-        chat_id: Optional[str] = None
+        chat_id: Optional[str] = None,
+        chunk_size: int = 64 * 1024
     ):
         """sending gif / ارسال گیف"""
         return await self._client.send_gif(
@@ -1250,7 +1295,8 @@ class UpdateButton:
             resize_keyboard=resize_keyboard,
             on_time_keyboard=on_time_keyboard,
             upload_by=upload_by,
-            show_progress=show_progress
+            show_progress=show_progress,
+            chunk_size=chunk_size
         )
     
     def to_dict(

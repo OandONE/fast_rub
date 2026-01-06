@@ -1,11 +1,11 @@
 from json import dumps, loads
 from tqdm import tqdm
-from urllib3 import PoolManager, ProxyManager
+from typing import Any, Protocol, Optional, Union
+import httpx
+import aiohttp
 from ..utils import Configs
 from ..exceptions import *
 from .helper import Helper
-from typing import Any, Protocol, Optional, Union
-import asyncio
 from ..utils import *
 
 
@@ -23,33 +23,77 @@ class MethodsProtocol(Protocol):
 
 
 class Network:
-    def __init__(self, methods:MethodsProtocol) -> None:
+    def __init__(self, methods: MethodsProtocol) -> None:
         self.methods = methods
         self.sessionData = methods.sessionData
         self.crypto = methods.crypto
-        self.http = ProxyManager(methods.proxy) if methods.proxy else PoolManager()
+        
+        if methods.proxy:
+            import os
+            if isinstance(methods.proxy, dict):
+                proxy_str = methods.proxy.get("http") or methods.proxy.get("https") or list(methods.proxy.values())[0]
+            else:
+                proxy_str = methods.proxy
+            
+            os.environ['HTTP_PROXY'] = proxy_str
+            os.environ['HTTPS_PROXY'] = proxy_str
+            os.environ['ALL_PROXY'] = proxy_str
+        
+        self.httpx_client = httpx.AsyncClient(
+            timeout=methods.timeOut,
+            trust_env=True
+        )
+        
+        self.proxy_str = None
+        if methods.proxy:
+            if isinstance(methods.proxy, dict):
+                self.proxy_str = methods.proxy.get("http") or methods.proxy.get("https") or list(methods.proxy.values())[0]
+            else:
+                self.proxy_str = methods.proxy
+        
+        self.aiohttp_session = None
 
-    async def request(self, method:str, input:dict={}, tmpSession:bool=False, attempt:int = 0, maxAttempt:int=2) -> dict:
-        url:str = Helper.getApiServer()
-        platform:str = self.methods.platform.lower()
-        apiVersion:int = self.methods.apiVersion
+    async def _get_aiohttp_session(self):
+        if self.aiohttp_session is None:
+            connector = aiohttp.TCPConnector()
+            
+            if self.proxy_str:
+                self.aiohttp_session = aiohttp.ClientSession(
+                    connector=connector,
+                    trust_env=True
+                )
+            else:
+                self.aiohttp_session = aiohttp.ClientSession(
+                    connector=connector
+                )
+        
+        return self.aiohttp_session
+
+    async def request(self, method: str, input: dict = {}, tmpSession: bool = False, 
+                     attempt: int = 0, maxAttempt: int = 2) -> dict:
+        url: str = Helper.getApiServer()
+        platform: str = self.methods.platform.lower()
+        apiVersion: int = self.methods.apiVersion
         configs = Configs()
+        
         if platform in ["rubx", "rubikax"]:
             client: dict = configs.clients["android"]
             client["package"] = "ir.rubx.bapp"
-        
         elif platform in ["android"]:
             client: dict = configs.clients["android"]
-
         else:
             client: dict = configs.clients["web"]
 
+        auth_key = "tmp_session" if tmpSession else "auth"
+        auth_value = (
+            self.crypto.auth if tmpSession else
+            self.crypto.changeAuthType(self.sessionData["auth"]) if apiVersion > 5 else
+            self.sessionData["auth"]
+        )
+        
         data = {
             "api_version": str(apiVersion),
-            "tmp_session" if tmpSession else
-            "auth": self.crypto.auth if tmpSession else
-            self.crypto.changeAuthType(self.sessionData["auth"]) if apiVersion > 5 else
-            self.sessionData["auth"],
+            auth_key: auth_value,
             "data_enc": self.crypto.encrypt(
                 dumps({
                     "method": method,
@@ -59,56 +103,54 @@ class Network:
             )
         }
 
-        headers:dict = {
+        headers: dict = {
             "Referer": "https://web.rubika.ir/",
-            "Content-Type": "application/json; charset=utf-8"
+            "Content-Type": "application/json; charset=utf-8",
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
         }
 
         if not tmpSession and apiVersion > 5:
             data["sign"] = self.crypto.makeSignFromData(data["data_enc"])
 
-        while True:
-            result = self.http.request(
-                method="POST",
-                url=url,
-                headers=headers,
-                body = dumps(data).encode(),
-                timeout=self.methods.timeOut
-            )
-
+        while attempt <= maxAttempt:
             try:
-                result = loads(self.crypto.decrypt(loads(result.data.decode("UTF-8"))["data_enc"]))
-            except:
-                attempt += 1
-
-                if attempt > maxAttempt:
-                    raise
+                response = await self.httpx_client.post(
+                    url=url,
+                    headers=headers,
+                    json=data
+                )
+                response.raise_for_status()
                 
+                result_data = response.json()
+                decrypted_data = self.crypto.decrypt(result_data["data_enc"])
+                result = loads(decrypted_data)
+                
+                if result["status"] == "OK":
+                    if tmpSession:
+                        result["data"]["tmp_session"] = self.crypto.auth
+                    return result["data"]
+                else:
+                    raise Utils.raise_error(result)
+                    
+            except (httpx.RequestError, httpx.HTTPStatusError, ValueError) as e:
+                attempt += 1
+                if attempt > maxAttempt:
+                    raise httpx.NetworkError(f"Request failed after {maxAttempt} attempts: {str(e)}")
                 continue
 
-            if result["status"] == "OK":
-                if tmpSession:
-                    result["data"]["tmp_session"] = self.crypto.auth
+        raise httpx.NetworkError("Request failed")
 
-                return result["data"]
-            
-            else:
-                raise {
-                    "INVALID_AUTH": InvalidAuth(),
-                    "NOT_REGISTERED": NotRegistered(),
-                    "INVALID_INPUT": InvalidInput(),
-                    "TOO_REQUESTS": TooRequests()
-                }[result["status_det"]]
-
-    def upload(
+    async def upload(
         self, 
         file: Union[str, bytes], 
         fileName: Optional[str] = None, 
         chunkSize: int = 131072
-    ):
+    ) -> Optional[dict]:
         if isinstance(file, str):
             if Utils.checkLink(url=file):
-                file_bytes: bytes = self.http.request(method="GET", url=file).data
+                response = await self.httpx_client.get(file)
+                response.raise_for_status()
+                file_bytes: bytes = response.content
                 mime: str = Utils.getMimeFromByte(file_bytes)
                 fileName = fileName or Utils.generateFileName(mime=mime)
                 file = file_bytes
@@ -116,7 +158,6 @@ class Network:
                 fileName = fileName or file
                 with open(file, "rb") as fh:
                     file = fh.read()
-                
                 mime = Utils.getMimeFromByte(file)
 
         elif isinstance(file, bytes):
@@ -125,38 +166,33 @@ class Network:
         else:
             raise FileNotFoundError("Enter a valid path or url or bytes of file.")
 
-        def send_chunk(data, maxAttempts=2):
+        async def send_chunk(session: aiohttp.ClientSession, data: bytes, 
+                           upload_url: str, headers: dict, maxAttempts: int = 2) -> Optional[dict]:
             for attempt in range(maxAttempts):
                 try:
-                    response = self.http.request(
-                        "POST",
-                        url=requestSendFileData["upload_url"],
-                        headers=header,
-                        body=data
-                    )
-                    return loads(response.data.decode("UTF-8"))
-                except Exception:
-                    print(f"\nError uploading file! (Attempt {attempt + 1}/{maxAttempts})")
+                    async with session.post(
+                        upload_url,
+                        headers=headers,
+                        data=data,
+                        timeout=aiohttp.ClientTimeout(total=self.methods.timeOut)
+                    ) as response:
+                        response.raise_for_status()
+                        return await response.json()
+                except Exception as e:
+                    print(f"\nError uploading file! (Attempt {attempt + 1}/{maxAttempts}): {e}")
             
             print("\nFailed to upload the file!")
+            return None
 
-        try:
-            loop = asyncio.get_running_loop()
-            requestSendFileData = asyncio.run_coroutine_threadsafe(
-                self.methods.requestSendFile(
-                    fileName=fileName,
-                    mime=mime, 
-                    size=len(file)
-                ), loop
-            ).result()
-        except RuntimeError:
-            requestSendFileData = asyncio.run(self.methods.requestSendFile(
-                fileName=fileName,
-                mime=mime,
-                size=len(file)
-            ))
+        requestSendFileData = await self.methods.requestSendFile(
+            fileName=fileName,
+            mime=mime,
+            size=len(file)
+        )
 
-        header = {
+        session = await self._get_aiohttp_session()
+        
+        headers = {
             "auth": self.sessionData["auth"],
             "access-hash-send": requestSendFileData["access_hash_send"],
             "file-id": requestSendFileData["id"],
@@ -178,22 +214,28 @@ class Network:
         for partNumber in range(1, totalParts + 1):
             startIdx = (partNumber - 1) * chunkSize
             endIdx = min(startIdx + chunkSize, len(file))
-            header["chunk-size"] = str(endIdx - startIdx)
-            header["part-number"] = str(partNumber)
-            header["total-part"] = str(totalParts)
+            chunk_headers = headers.copy()
+            chunk_headers["chunk-size"] = str(endIdx - startIdx)
+            chunk_headers["part-number"] = str(partNumber)
+            chunk_headers["total-part"] = str(totalParts)
+            
             data = file[startIdx:endIdx]
-            hashFileReceive = send_chunk(data)
+            hashFileReceive = await send_chunk(
+                session, 
+                data, 
+                requestSendFileData["upload_url"],
+                chunk_headers
+            )
             
             if processBar is not None:
                 processBar.update(len(data))
 
             if not hashFileReceive:
-                return
+                return None
             
             if partNumber == totalParts:
-
-                if not hashFileReceive["data"]:
-                    return
+                if not hashFileReceive.get("data"):
+                    return None
                 
                 requestSendFileData["file"] = file
                 requestSendFileData["access_hash_rec"] = hashFileReceive["data"]["access_hash_rec"]
@@ -201,9 +243,13 @@ class Network:
                 requestSendFileData["mime"] = mime
                 requestSendFileData["size"] = len(file)
                 return requestSendFileData
-            
-    def download(self, accessHashRec:str, fileId:str, dcId:str, size:int, fileName:str, chunkSize:int=262143, attempt:int=0, maxAttempts:int=2):
-        headers:dict = {
+        
+        return None
+
+    async def download(self, accessHashRec: str, fileId: str, dcId: str, 
+                      size: int, fileName: str, chunkSize: int = 262143, 
+                      attempt: int = 0, maxAttempts: int = 2) -> Optional[bytes]:
+        headers = {
             "auth": self.sessionData["auth"],
             "access-hash-rec": accessHashRec,
             "dc-id": dcId,
@@ -218,15 +264,8 @@ class Network:
             "User-Agent": "okhttp/3.12.1"
         }
 
-
-        response = self.http.request(
-            "POST",
-            url=f"https://messenger{dcId}.iranlms.ir/GetFile.ashx",
-            headers=headers,
-            preload_content=False
-        )
-
-        data:bytes = b""
+        session = await self._get_aiohttp_session()
+        url = f"https://messenger{dcId}.iranlms.ir/GetFile.ashx"
 
         processBar: Optional[tqdm] = None
 
@@ -239,19 +278,52 @@ class Network:
                 unit_divisor=1024,
             )
 
-        for downloadedData in response.stream(chunkSize):
+        for retry in range(maxAttempts):
             try:
-                if downloadedData:
-                    data += downloadedData
-                    if processBar is not None:
-                        processBar.update(len(downloadedData))
-
-                if len(data) >= size:
-                    return data
-            except Exception:
+                data: bytes = b""
+                
+                async with session.post(
+                    url,
+                    headers=headers,
+                    timeout=aiohttp.ClientTimeout(total=self.methods.timeOut)
+                ) as response:
+                    response.raise_for_status()
+                    
+                    async for chunk in response.content.iter_chunked(chunkSize):
+                        if chunk:
+                            data += chunk
+                            if processBar is not None:
+                                processBar.update(len(chunk))
+                        
+                        if len(data) >= size:
+                            if processBar is not None:
+                                processBar.close()
+                            return data[:size]
+                
+            except Exception as e:
+                attempt += 1
                 if attempt <= maxAttempts:
-                    attempt += 1
-                    print(f"\nError downloading file! (Attempt {attempt}/{maxAttempts})")
+                    print(f"\nError downloading file! (Attempt {attempt}/{maxAttempts}): {e}")
                     continue
-
+                
+                if processBar is not None:
+                    processBar.close()
                 raise TimeoutError("Failed to download the file!")
+        
+        if processBar is not None:
+            processBar.close()
+        return None
+
+    async def close(self):
+        """Close all HTTP sessions"""
+        await self.httpx_client.aclose()
+        
+        if self.aiohttp_session:
+            await self.aiohttp_session.close()
+            self.aiohttp_session = None
+
+    async def __aenter__(self):
+        return self
+
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        await self.close()

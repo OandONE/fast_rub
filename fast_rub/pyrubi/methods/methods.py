@@ -505,10 +505,10 @@ class Methods:
     
     @async_to_sync
     async def uploadAvatar(self, objectGuid:str, mainFile:str, thumbnailFile:Optional[str]) -> Optional[dict]:
-        uploadMainFileData = self.network.upload(file=mainFile)
+        uploadMainFileData = await self.network.upload(file=mainFile)
 
         if uploadMainFileData is not None and thumbnailFile is not None:
-            uplo_ = self.network.upload(file=thumbnailFile)
+            uplo_ = await self.network.upload(file=thumbnailFile)
             if isinstance(uplo_,dict):
                 return await self.network.request(
                     method="uploadAvatar",
@@ -843,22 +843,104 @@ class Methods:
         if metadata[0] != []: input["metadata"] = {"meta_data_parts": metadata[0]}
 
         return await self.network.request(method="sendMessage", input=input)
+
+    
+    
+    @async_to_sync
+    async def sendMessage(
+        self,
+        objectGuid: str,
+        text: Optional[str] = None,
+        mesageId: Optional[str] = None,
+        # file
+        file: Optional[str] = None,
+        fileName: Optional[str] = None,
+        typeFile: Literal["Image", "Video", "Gif", "VideoMessage","Music", "Voice","File"] = "File",
+        isSpoil: bool = False,
+        customThumbInline: Optional[str] = None,
+        time: Optional[int] = None,
+        performer: Optional[str] = None,
+        # poll
+        question: Optional[str] = None,
+        options: Optional[list] = None,
+        typePoll: Literal["Regular", "Quiz"] = "Regular",
+        isAnonymous: bool = True,
+        correctOptionIndex: Optional[int] = None,
+        allowsMultipleAnswers: bool = False,
+        hint: Optional[str] = None,
+        # location
+        latitude: Optional[int] = None,
+        longitude: Optional[int] = None,
+        # contact
+        firstName: Optional[str] = None,
+        lastName: Optional[str] = None,
+        phoneNumber: Optional[str] = None,
+        userGuid: Optional[str] = None
+    ) -> Optional[dict]:
+        if file:
+            return await self.baseSendFileInline(
+                objectGuid=objectGuid,
+                file=file,
+                text=text,
+                messageId=mesageId,
+                fileName=fileName,
+                type=typeFile,
+                isSpoil=isSpoil,
+                customThumbInline=customThumbInline,
+                time=time,
+                performer=performer
+            )
+        elif (not question is None) and (not options is None):
+            return await self.sendPoll(
+                objectGuid=objectGuid,
+                question=question,
+                options=options,
+                allowsMultipleResponses=allowsMultipleAnswers,
+                isAnonymous=isAnonymous,
+                type=typePoll,
+                messageId=mesageId,
+                correctOptionIndex=correctOptionIndex,
+                hint=hint
+            )
+        elif (not latitude is None) and (not longitude is None):
+            return await self.sendLocation(
+                objectGuid=objectGuid,
+                latitude=latitude,
+                longitude=longitude,
+                messageId=mesageId
+            )
+        elif firstName and lastName and phoneNumber and userGuid:
+            return await self.sendContact(
+                objectGuid=objectGuid,
+                firstName=firstName,
+                lastName=lastName,
+                phoneNumber=phoneNumber,
+                messageId=mesageId,
+                userGuid=userGuid
+            )
+        elif not text is None:
+            return await self.sendText(
+                objectGuid=objectGuid,
+                text=text,
+                messageId=mesageId
+            )
+        raise ValueError("Please Write The Args !")
     
     @async_to_sync
     async def baseSendFileInline(
         self,
-        objectGuid:str,
-        file:str,
-        text:Optional[str],
-        messageId:Optional[str],
-        fileName:Optional[str],
-        type:Literal["Image", "Video", "Gif", "VideoMessage","Music", "Voice","File"],
-        isSpoil:bool=False,
-        customThumbInline:Optional[str] = None,
-        time:Optional[int]=None,
-        performer:Optional[str] = None
+        objectGuid: str,
+        file: str,
+        text: Optional[str] = None,
+        messageId: Optional[str] = None,
+        fileName: Optional[str] = None,
+        type: Literal["Image", "Video", "Gif", "VideoMessage","Music", "Voice","File"] = "File",
+        isSpoil: bool = False,
+        customThumbInline: Optional[str] = None,
+        time: Optional[int] = None,
+        performer: Optional[str] = None
     ) -> Optional[dict]:
-        upload_data = self.network.upload(file=file, fileName=fileName)
+        upload_data = await self.network.upload(file=file, fileName=fileName)
         if isinstance(upload_data,dict):
             uploadData:dict = dict(upload_data)
             if not uploadData:
@@ -884,7 +966,7 @@ class Methods:
                 customThumbInline = Utils.getImageThumbnail(
                     customThumbInline
                     if isinstance(customThumbInline, bytes)
-                    else self.network.http.request("GET", customThumbInline).data
+                    else (await self.network.httpx_client.request("GET", customThumbInline)).content
                     if Utils.checkLink(customThumbInline)
                     else open(customThumbInline, "rb").read()
                 ) if customThumbInline else None
@@ -1446,8 +1528,8 @@ class Methods:
             by = thumbInline
         elif isinstance(thumbInline,str):
             if Utils.checkLink(thumbInline):
-                by = self.network.http.request("GET", thumbInline)
-                if not isinstance(by,bytes):
+                by = (await self.network.httpx_client.request("GET", thumbInline)).content
+                if not isinstance(by, bytes):
                     raise ValueError("Error !")
             else:
                 with open(thumbInline,"rb") as file:
@@ -1798,7 +1880,7 @@ class Methods:
             msg = await self.getMessagesById(objectGuid=objectGuid, messageIds=[messageId])
             fileInline = msg["messages"][0]["file_inline"]
         if not fileInline is None:
-            downloading = self.network.download(
+            downloading = await self.network.download(
                 accessHashRec=fileInline["access_hash_rec"],
                 fileId=fileInline["file_id"],
                 dcId=fileInline["dc_id"],

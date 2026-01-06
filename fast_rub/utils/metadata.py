@@ -25,7 +25,7 @@ class MetaData:
         Style.COPY: {ParseMode.MARKDOWN: "`#text`", ParseMode.HTML: "<code>#text</code>"},
         Style.CODE: {ParseMode.MARKDOWN: "```#text```", ParseMode.HTML: "<pre>#text</pre>"},
         Style.LINK: {ParseMode.MARKDOWN: "[#text](#link)", ParseMode.HTML: '<a href="#link">#text</a>'},
-        Style.MENTION: {ParseMode.MARKDOWN: "#text", ParseMode.HTML: '<mention objectId="#sender_id">#text</mention>'}
+        Style.MENTION: {ParseMode.MARKDOWN: "[#text](#sender_id)", ParseMode.HTML: '<mention objectId="#sender_id">#text</mention>'}
     }
 
     def __init__(self, parse_mode: ParseMode = ParseMode.MARKDOWN):

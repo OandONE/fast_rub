@@ -24,6 +24,7 @@ from os import (
 from .configs import Configs
 from .reacrions import REACTION_MAP
 from typing import Optional
+from ..exceptions import *
 
 
 
@@ -271,6 +272,18 @@ class Utils:
         if not reaction in REACTION_MAP.keys():
             raise ValueError("The reaction is not valid !")
         return REACTION_MAP[reaction]
+    
+    @staticmethod
+    def raise_error(result: dict):
+        status_det = result["status_det"]
+        errors = {
+            "INVALID_AUTH": InvalidAuth(),
+            "NOT_REGISTERED": NotRegistered(),
+            "INVALID_INPUT": InvalidInput(),
+            "TOO_REQUESTS": TooRequests()
+        }
+        error = errors[status_det]
+        raise error
 
 
 class Colors:
