@@ -4,11 +4,11 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "fastrub"
-version = "2.7.5"
+version = "2.8.0"
 authors = [
     {name = "seyyed mohamd hosein", email = "mohamadhosein159159@gmail.com"},
 ]
-description = "the library rubika for bots."
+description = "The fastest library for writing Rubika messenger bots both synchronously and asynchronously ⚡"
 readme = { file = "README.md", content-type = "text/markdown" }
 requires-python = ">=3.10"
 classifiers = [
@@ -26,5 +26,4 @@ classifiers = [
 ]
 
 [project.urls]
-
 Homepage = "https://github.com/OandONE/fast_rub"
