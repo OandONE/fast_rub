@@ -252,7 +252,7 @@ class Message:
         return await self.methods.actionOnMessageReaction(objectGuid=self.object_guid, messageId=self.message_id, reactionId=reaction, action="Add")
     
     @auto_async
-    async def delete(self, delete_for_all:bool=True) -> dict:
+    async def delete(self, delete_for_all: bool = True) -> dict:
         return await self.methods.deleteMessages(objectGuid=self.object_guid, messageIds=[self.message_id], deleteForAll=delete_for_all)
     
     @auto_async
@@ -274,3 +274,4 @@ class Message:
     @auto_async
     async def download(self, save: bool = False, save_as: Optional[str] = None) -> Optional[dict]:
         return await self.methods.download(objectGuid=self.object_guid, save=save, saveAs=save_as, fileInline=self.file_inline)
+

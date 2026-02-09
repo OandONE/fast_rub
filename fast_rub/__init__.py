@@ -1,4 +1,4 @@
-from .core.client import Client
+from .core.client import Client, Robot, Bot, BotApi, BotApiClient
 from .utils import filters
 from .utils.version import v
 

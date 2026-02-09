@@ -41,3 +41,4 @@ def auto_async(func):
                 return await coro
             return asyncio.run(run_wrapper())
     return wrapper
+

@@ -19,11 +19,11 @@ class text(Filter):
 
 class sender_id(Filter):
     """filter guid message by guid / فیلتر کردن شناسه گوید پیام"""
-    def __init__(self, user_id: str):
-        self.user_id = user_id
+    def __init__(self, sender_id: str):
+        self.sender_id = sender_id
 
     def __call__(self, update: 'Update') -> bool:
-        return update.sender_id == self.user_id
+        return update.sender_id == self.sender_id
 
 class is_user(Filter):
     """filter type sender message by is PV(user) / فیلتر کردن تایپ ارسال کننده پیام با پیوی"""
@@ -123,8 +123,8 @@ class time(Filter):
     def __init__(self,from_time:float=0,end_time=float("inf")):
         self.from_time = from_time
         self.end_time = end_time
-    def __call__(self,update:'Update'):
-        if ti.time()>self.from_time and ti.time()<self.end_time:
+    def __call__(self, update:'Update'):
+        if ti.time() > self.from_time and ti.time() < self.end_time:
             return True
         return False
 
@@ -132,23 +132,22 @@ class time(Filter):
 
 class commands(Filter):
     """filter text message by commands / فیلتر کردن متن پیام با دستورات"""
-    def __init__(self, coms: list):
-        self.coms = coms
+    def __init__(self, commands: list):
+        self.commands = commands
 
     def __call__(self, update: 'Update') -> bool:
-        for txt in self.coms:
-            if (update.text!=None) and (update.text==txt or update.text.replace("/","")==txt):
+        for command in self.commands:
+            if (update.text != None) and (update.text == command or update.text.replace("/","") == command):
                 return True
         return False
 
-class author_guids(Filter):
-    """filter guid message by guids / فیلتر کردن گوید پیام با گوید ها"""
-    def __init__(self, guids: list):
-        self.guids = guids
-
+class sender_ids(Filter):
+    """filter sender id message by sender ids / فیلتر کردن سندر آیدی پیام با سندر آیدی ها"""
+    def __init__(self, sender_ids: list):
+        self.sender_ids = sender_ids
     def __call__(self, update: 'Update') -> bool:
-        for g in self.guids:
-            if update.sender_id==g:
+        for sender_id in self.sender_ids:
+            if update.sender_id == sender_id:
                 return True
         return False
 
@@ -166,7 +165,7 @@ class chat_ids(Filter):
 # Mata Data
 
 class has_metadata_type(Filter):
-    def __init__(self,type) -> None:
+    def __init__(self, type: str) -> None:
         self.type = type
     def __call__(self, update: 'Update') -> bool:
         if update.meta_data_parts:
@@ -176,7 +175,7 @@ class has_metadata_type(Filter):
         return False
 
 class is_metadata_type(Filter):
-    def __init__(self,type) -> None:
+    def __init__(self, type: str) -> None:
         self.type = type
     def __call__(self, update: 'Update') -> bool:
         if update.meta_data_parts and len(update.meta_data_parts.data) != 1:
@@ -258,7 +257,7 @@ class is_link(Filter):
 
 class in_text(Filter):
     """text in text message / وجود متن در متن آپدیت"""
-    def __init__(self,text: str) -> None:
+    def __init__(self, text: str) -> None:
         self.text = text
     def __call__(self, update: 'Update') -> bool:
         if self.text in str(update.text):
@@ -329,7 +328,7 @@ class or_filter(Filter):
 
 class not_filter(Filter):
     """not True filter / درست نبودن فیلتر"""
-    def __init__(self,filter):
+    def __init__(self, filter):
         self.filter = filter
     def __call__(self, update: 'Update') -> bool:
         return not self.filter(update)

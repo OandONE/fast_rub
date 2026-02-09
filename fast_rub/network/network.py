@@ -17,14 +17,17 @@ class Network:
         logger: Optional[logging.Logger] = None,
         max_retries: int = 3,
         user_agent: Optional[str] = None,
-        main_url: str = "https://botapi.rubika.ir/v3/",
+        base_urls: list = [
+            "https://botapi.rubika.ir/",
+            "https://messengerg2b1.iranlms.ir/"
+        ],
         proxy: Optional[str] = None,
         rate_limit: int = 20
     ):
         self.logger = logger or logging.getLogger("fast_rub.network")
         self.token = token
         self.user_agent = user_agent
-        self.main_url = main_url
+        self.base_urls = base_urls
         self.proxy = proxy
         self.max_retries = max_retries
 
@@ -193,9 +196,9 @@ class Network:
 
                 async with self._rate_sem:
                     if method == "POST":
-                        resp = await self._client.post(url, json=data_, headers=headers, timeout=timeout)
+                        resp = await self._client.post(url, json=data_, headers=headers, timeout=timeout) # pyright: ignore[reportOptionalMemberAccess]
                     elif method == "GET":
-                        resp = await self._client.get(url, headers=headers, timeout=timeout)
+                        resp = await self._client.get(url, headers=headers, timeout=timeout) # pyright: ignore[reportOptionalMemberAccess]
                     else:
                         raise ValueError(f"Invalid method: {method}")
 
@@ -244,21 +247,29 @@ class Network:
     async def send_request(
         self,
         method: str,
-        data_: Optional[Union[Dict[str, Any], List[Any]]] = None
+        data: Optional[Union[Dict[str, Any], List[Any]]] = None
     ) -> dict:
         self.logger.debug(f"method {method}")
-        url = f"{self.main_url}{self.token}/{method}"
-        resp = await self.request(url, data_, "POST")
-        try:
-            result = resp.json()
-        except Exception:
-            raise ServerRubikaError("Error converting response to JSON")
+        for base_url in self.base_urls:
+            self.logger.debug(f"Base Url » {base_url}")
+            url = f"{base_url}v3/{self.token}/{method}"
+            try:
+                response = await self.request(url, data, "POST")
+            except:
+                continue
+            try:
+                result = response.json()
+            except:
+                self.logger.error("Error Converting Response To JSON")
+                raise ServerRubikaError("Error Converting Response To JSON")
 
-        from ..utils.utils import Utils
-        if not Utils.check_data(result):
-            self.logger.error(f"Server returned error: {result}")
-            raise ServerRubikaError(result)
-        return result["data"]
+            from ..utils.utils import Utils
+            if not Utils.check_data(result):
+                self.logger.error(f"Server Response Error: {result}")
+                raise ServerRubikaError(result)
+
+            return result["data"]
+        raise httpx.TimeoutException("All Base Urls Sending Requests and Can't Get Response .")
 
     async def download(self, url: str, path: str = "file", show_progress: bool = True) -> bool:
         try:
@@ -272,7 +283,7 @@ class Network:
                 self._rate_sem = asyncio.Semaphore(self._rate_limit)
 
             async with self._rate_sem:
-                async with self._client.stream("GET", url) as response:
+                async with self._client.stream("GET", url) as response: # pyright: ignore[reportOptionalMemberAccess]
                     response.raise_for_status()
                     total = int(response.headers.get("content-length", 0))
                     if show_progress and total:
@@ -297,7 +308,7 @@ class Network:
             await self._ensure_client()
 
             from ..utils.utils import Utils
-            response = await self._client.post(url, files=files, timeout=None)
+            response = await self._client.post(url, files=files, timeout=None) # pyright: ignore[reportOptionalMemberAccess]
             response.raise_for_status()
             result = response.json()
             if not Utils.check_data(result):

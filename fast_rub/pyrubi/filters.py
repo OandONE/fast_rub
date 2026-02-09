@@ -197,3 +197,4 @@ class legacy_filter(Filter):
                 if message.object_guid == filter_item:
                     return True
         return False
+

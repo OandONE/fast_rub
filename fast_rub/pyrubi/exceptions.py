@@ -20,3 +20,4 @@ class TooRequests(ClientException):
 
     def __init__(self, message: str = "You won't be able to use this method for a while!"):
         super().__init__(message)
+

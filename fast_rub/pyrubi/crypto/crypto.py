@@ -9,7 +9,7 @@ from typing import Optional
 
 class Cryption:
 
-    def __init__(self, auth:str, private_key: Optional[str] = None):
+    def __init__(self, auth: str, private_key: Optional[str] = None):
         self.auth = auth
         
         if auth:
@@ -82,3 +82,4 @@ class Cryption:
         public = self.changeAuthType(b64e(keyPair.publickey().export_key()).decode('UTF-8'))
         privarte = keyPair.export_key().decode('UTF-8')
         return public, privarte
+

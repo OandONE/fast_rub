@@ -1,4 +1,4 @@
-from typing import Dict, Tuple, Optional, Union, TYPE_CHECKING
+from typing import Dict, Tuple, Optional, Union, TYPE_CHECKING, Literal
 from pathlib import Path
 import aiofiles
 from .colors import cprint, Colors
@@ -10,15 +10,23 @@ from ..type.errors import CreateSessionError
 if TYPE_CHECKING:
     from ..network.network import Network
 
+SUFFIX = "faru"
+
 class Utils:
     @staticmethod
     def format_file(type_file: Optional[str] = None) -> Optional[str]:
-        if not type_file:
-            return None
-        for type_,pass_ in {"File":"", "Image":".png", "Voice":".mp3", "Music":".mp3", "Gif":".mp4" , "Video":".mp4"}.items():
-            if type_ == type_file:
-                name_file = type_+pass_
-                return name_file
+        if type_file:
+            for type_, pass_ in {
+                "File": "",
+                "Image": ".png",
+                "Voice": ".mp3",
+                "Music": ".mp3",
+                "Gif": ".mp4",
+                "Video": ".mp4"
+            }.items():
+                if type_ == type_file:
+                    name_file = type_+pass_
+                    return name_file
         return None
     
     @staticmethod
@@ -78,31 +86,14 @@ class Utils:
             if token is None:
                 token = Utils.get_input("Write The Token » ")
             session = Utils.session_dict(name_session,token,user_agent,time_out,display_welcome,view_logs,save_logs)
-            Utils.save_dict(session, f"{name_session}.faru")
+            Utils.save_dict(session, Utils.name_session(name_session))
             return True
         except:
             return False
     
     @staticmethod
     def open_session(name_session: str, token: Optional[str] = None, user_agent: Optional[str] = None, time_out: Optional[float] = None, display_welcome: bool = False, view_logs: Optional[bool] = False, save_logs: Optional[bool] = False) -> dict:
-        """بازکردن سشن
-
-        Args:
-            name_session (str): اسم سشن
-            token (Optional[str], optional): توکن. Defaults to None.
-            user_agent (Optional[str], optional): اطلاعات مرورگر درخواست کننده. Defaults to None.
-            time_out (Optional[int], optional): زمان خروج. Defaults to 30.
-            display_welcome (bool, optional): خوش آمد گویی. Defaults to False.
-            view_logs (Optional[bool], optional): نمایش لاگ ها. Defaults to False.
-            save_logs (Optional[bool], optional): ذخیره لاگ ها. Defaults to False.
-
-        Raises:
-            CreateSessionError: خطا برای ساخت سشن
-
-        Returns:
-            dict: اطلاعات سشن
-        """
-        path_session = name_session + ".faru"
+        path_session = Utils.name_session(name_session)
         if os.path.isfile(path_session):
             with open(path_session, "r", encoding="utf-8") as file:
                 encrypted_string = file.read().strip()
@@ -151,7 +142,7 @@ class Utils:
         resize_keyboard: Optional[bool] = True,
         on_time_keyboard: Optional[bool] = False,
         metadata: Optional[list] = None,
-        meta_data: Optional[list] = None
+        meta_data: list = []
     ) -> dict:
         if inline_keypad:
             data["inline_keypad"] = {"rows": inline_keypad}
@@ -163,13 +154,15 @@ class Utils:
             }
             data["chat_keypad_type"] = "New"
         if metadata:
-            data["metadata"] = {"meta_data_parts": metadata}
-            if meta_data:
-                for meta in meta_data:
-                    data["metadata"]["meta_data_parts"].append(meta)
-        elif meta_data:
+            for md in metadata:
+                meta_data.append(md)
+        if meta_data:
             data["metadata"] = {"meta_data_parts": meta_data}
         return data
+    
+    @staticmethod
+    def name_session(name_session: str) -> str:
+        return name_session + "." + SUFFIX
     
     # Other
 
@@ -198,7 +191,7 @@ class Utils:
         return value1 if value1 else str(value2)
 
     @staticmethod
-    def get_chat_id_type(chat_id: str):
+    def get_chat_id_type(chat_id: str) -> Literal['User', 'Group', 'Channel']:
         if chat_id.startswith("b"):
             return "User"
         elif chat_id.startswith("g"):

@@ -1,10 +1,9 @@
 import asyncio
 import inspect
-import time
 from functools import wraps
 from pathlib import Path
 from collections import deque
-from typing import (Any, Awaitable, Callable, Dict, List, Literal, Optional,
+from typing import (Any, Dict, List, Literal, Optional, Tuple,
                     Union)
 
 import aiofiles
@@ -16,7 +15,7 @@ from ..network.network import Network
 from ..type import Update, UpdateButton, msg_update
 from ..type.errors import PollInvalid
 from ..type.props import props
-from ..type.models import *
+from ..type.models import Bot as BotModel, Chat as ChatModel
 from ..utils.colors import Colors
 from ..utils.logger import logging, setup_logging
 from ..utils.utils import Utils
@@ -88,6 +87,12 @@ class Client:
         پارس مود پیش‌فرض پیام‌ها
         اگر مقدار 'Unknown' باشد، پارس مود هر متد به صورت جداگانه اعمال می‌شود
 
+    base_urls : list = [
+            "https://botapi.rubika.ir/",
+            "https://messengerg2b1.iranlms.ir/"
+        ]
+        لیست آدرس های اصلی برای ارسال درخواست
+
     max_retries : int = 3
         حداکثر تعداد تلاش مجدد در خطاهای شبکه
 
@@ -110,19 +115,37 @@ class Client:
         view_logs: Optional[bool] = None,
         proxy: Optional[str] = None,
         main_parse_mode: Literal['Markdown', 'HTML', "Unknown", None] = "Unknown",
+        base_urls: list = [
+            "https://botapi.rubika.ir/",
+            "https://messengerg2b1.iranlms.ir/"
+        ],
         max_retries: int = 3,
         show_progress: Optional[bool] = None,
-        keeper_messages: int = 500
+        keeper_messages: int = 500,
     ):
         """Client for login and setting robot / کلاینت برای لوگین و تنظیمات ربات"""
-        name = name_session + ".faru"
+        name = Utils.name_session(name_session)
         self.name_session = name
+        self.token = token
+        self.save_logs = save_logs
+        self.view_logs = view_logs
+        self.display_welcome = display_welcome
         self.time_out = time_out
         self.user_agent = user_agent
-        self._running = False
-        self.list_commands = []
         self.proxy = proxy
         self.show_progress = show_progress
+        self.main_parse_mode: Literal['Markdown', 'HTML', 'Unknown', None] = main_parse_mode
+        self.max_retries = max_retries
+        self.keeper_messages = keeper_messages
+        self.use_to_fastrub_webhook_on_message = use_to_fastrub_webhook_on_message
+        self.use_to_fastrub_webhook_on_button = use_to_fastrub_webhook_on_button
+        self.urls = base_urls
+        loop = asyncio.get_running_loop()
+        loop.create_task(self.start())
+
+    async def start(self):
+        """شروع کردن ربات"""
+        self._running = False
         self._fetch_messages_webhook = False
         self._fetch_messages_polling = False
         self._fetch_buttons = False
@@ -135,19 +158,18 @@ class Client:
         self._message_handlers_polling = []
         self.next_offset_id = ""
         self.next_offset_id_ = ""
-        self.next_offset_id_get_message = ""
+        self.next_offset_id_get_message = None
         self.geted_u = 0
-        self.main_parse_mode: Literal['Markdown', 'HTML', 'Unknown', None] = main_parse_mode
-        self.max_retries = max_retries
-        self.messages = deque(maxlen=keeper_messages)
+        self.list_commands = []
+        self.messages = deque(maxlen=self.keeper_messages)
         self.session = Utils.open_session(
-            name_session=name_session,
-            token=token,
-            user_agent=user_agent,
-            time_out=time_out,
-            display_welcome=display_welcome,
-            view_logs=view_logs,
-            save_logs=save_logs
+            name_session=self.name_session,
+            token=self.token,
+            user_agent=self.user_agent,
+            time_out=self.time_out,
+            display_welcome=self.display_welcome,
+            view_logs=self.view_logs,
+            save_logs=self.save_logs
         )
         self.token: str = self.session["token"]
         self.time_out: float = self.session["time_out"]
@@ -162,31 +184,28 @@ class Client:
         if self.log_to_console is None:
             self.log_to_console = False
         self.logger = logging.getLogger("fast_rub")
-        self.use_to_fastrub_webhook_on_message = use_to_fastrub_webhook_on_message
-        self.use_to_fastrub_webhook_on_button = use_to_fastrub_webhook_on_button
-        if type(use_to_fastrub_webhook_on_message) is str:
-            self._on_url = use_to_fastrub_webhook_on_message
+        if type(self.use_to_fastrub_webhook_on_message) is str:
+            self._on_url = self.use_to_fastrub_webhook_on_message
         else:
-            self._on_url = f"https://fast-rub.ParsSource.ir/geting_button_updates/get_on?token={self.token}"
-        if type(use_to_fastrub_webhook_on_button) is str:
-            self._button_url = use_to_fastrub_webhook_on_button
+            self._on_url = f"https://fast-rub.ParsSource.ir/api/geting_button_updates/get_on?token={self.token}"
+        if type(self.use_to_fastrub_webhook_on_button) is str:
+            self._button_url = self.use_to_fastrub_webhook_on_button
         else:
-            self._button_url = f"https://fast-rub.ParsSource.ir/geting_button_updates/get?token={self.token}"
-        self.urls = ["https://botapi.rubika.ir/v3/","https://messengerg2b1.iranlms.ir/v3/"]
+            self._button_url = f"https://fast-rub.ParsSource.ir/api/geting_button_updates/get?token={self.token}"
+        
         self.main_url = self.urls[0]
-        try:
-            asyncio.run(self.version_botapi())
-        except:
-            self.main_url = self.urls[1]
-        try:
-            mes = asyncio.run(self.get_updates(limit=100))
-            self.next_offset_id_get_message = mes["next_offset_id"]
-        except:
-            pass
+        self.network = Network(
+            token=self.token,
+            logger=self.logger,
+            max_retries=self.max_retries,
+            user_agent=self.user_agent,
+            proxy=self.proxy
+        )
         setup_logging(log_to_console=self.log_to_console,log_to_file=self.log_to_file)
-        if display_welcome:
+        if self.display_welcome:
             Utils.print_time("Welcome To FastRub", color=Colors.GREEN)
         self.logger.info("سشن اماده است")
+
 
     @property
     def TOKEN(self):
@@ -196,7 +215,11 @@ class Client:
     @async_to_sync
     async def version_botapi(self) -> str:
         """getting version botapi / گرفتن نسخه بات ای پی آی"""
-        response = await self.network.request(self.main_url.replace("v3/",""),type_send="GET",timeout=self.time_out)
+        response = await self.network.request(
+            url=self.main_url,
+            type_send="GET",
+            timeout=self.time_out
+        )
         version = response.text
         return version
 
@@ -229,22 +252,21 @@ class Client:
         self, method: str, data_: Optional[Union[Dict[str, Any], List[Any]]] = None
     ) -> dict:
         """send request to methods with retry mechanism"""
-        try:
-            self.network
-        except:
-            self.network = Network(self.token,logger=self.logger,max_retries=self.max_retries,user_agent=self.user_agent,proxy=self.proxy)
-        response = await self.network.send_request(method=method,data_=data_)
+        response = await self.network.send_request(method=method,data=data_)
         return response
     
     @async_to_sync
-    async def auto_delete_(
+    async def _auto_delete(
         self,
-        chat_id:str,
-        message_id:str,
-        time_sleep:float
+        chat_id: str,
+        message_id: str,
+        time_sleep: float
     ) -> props:
         await asyncio.sleep(time_sleep)
-        result = await self.delete_message(chat_id,message_id)
+        result = await self.delete_message(
+            chat_id=chat_id,
+            message_id=message_id
+        )
         return props(result)
 
     @async_to_sync
@@ -258,32 +280,26 @@ class Client:
         """auto delete message next {time_sleep} time s / حذف خودکار پیام بعد از فلان مقدار ثانیه"""
         if separate_task:
             asyncio.create_task(
-                self.auto_delete_(
+                self._auto_delete(
                     chat_id=chat_id,
                     message_id=message_id,
                     time_sleep=time_sleep
                 )
             )
+            return None
         else:
-            return await self.auto_delete_(
+            return await self._auto_delete(
                 chat_id=chat_id,
                 message_id=message_id,
                 time_sleep=time_sleep
             )
 
     @async_to_sync
-    async def get_me(self) -> Bot:
+    async def get_me(self) -> BotModel:
         """geting info accont bot / گرفتن اطلاعات اکانت ربات"""
         self.logger.info("استفاده از متود get_me")
         result = await self.send_requests(method="getMe")
-        bot = result["bot"]
-        bot_id = bot["bot_id"]
-        bot_title = bot["bot_title"]
-        description = bot["description"]
-        username = bot["username"]
-        start_message = bot["start_message"]
-        share_url = bot["share_url"]
-        return Bot(bot_id=bot_id,bot_title=bot_title,description=description,username=username,start_message=start_message,share_url=share_url)
+        return BotModel(data=result)
 
     @async_to_sync
     async def set_main_parse_mode(self,parse_mode: Literal['Markdown', 'HTML', 'Unknown', None]) -> None:
@@ -295,7 +311,11 @@ class Client:
         self.main_parse_mode = parse_mode
 
     @async_to_sync
-    async def parse_mode_text(self, text: str,parse_mode: Literal["Markdown","HTML","Unknown",None] = "Markdown") -> tuple:
+    async def _parse_mode_text(
+        self,
+        text: str,
+        parse_mode: Literal["Markdown","HTML","Unknown",None] = "Markdown"
+    ) -> Tuple[List[Dict[str, Any]], str]:
         """setting parse mode text / تنظیم پارس مود متن"""
         if self.main_parse_mode != "Unknown":
             parse_mode = self.main_parse_mode
@@ -307,14 +327,20 @@ class Client:
             return data
         return [], text
 
-    async def _auto_delete(self, data: dict, auto_delete: int):
-        message_id = data["message_id"]
-        chat_id = data["chat_id"]
-        await self.auto_delete(chat_id, message_id, auto_delete)
-
-    async def _manage_auto_delete(self, data: dict, auto_delete: Optional[int] = None):
+    async def _manage_auto_delete(
+        self,
+        data: dict,
+        auto_delete: Optional[int] = None
+    ) -> None:
         if auto_delete:
-            asyncio.create_task(self._auto_delete(data, auto_delete))
+            message_id = data["message_id"]
+            chat_id = data["chat_id"]
+            await self.auto_delete(
+                chat_id=chat_id,
+                message_id=message_id,
+                time_sleep=auto_delete,
+                separate_task=True
+            )
 
     @async_to_sync
     async def send_text(
@@ -329,11 +355,11 @@ class Client:
         reply_to_message_id: Optional[str] = None,
         auto_delete: Optional[int] = None,
         parse_mode: Literal["Markdown","HTML",None] = "Markdown",
-        meta_data: Optional[list] = None
+        meta_data: list = []
     ) -> msg_update:
         """sending text to chat id / ارسال متنی به یک چت آیدی"""
         self.logger.info("استفاده از متود send_text")
-        metadata, text  = await self.parse_mode_text(text, parse_mode)
+        metadata, text  = await self._parse_mode_text(text, parse_mode)
         data = {
             "chat_id": chat_id,
             "text": text,
@@ -362,7 +388,7 @@ class Client:
         reply_to_message_id: Optional[str] = None,
         auto_delete: Optional[int] = None,
         parse_mode: Literal["Markdown","HTML",None] = "Markdown",
-        meta_data: Optional[list] = None,
+        meta_data: list = [],
         # file
         file: Union[str , Path , bytes , None] = None,
         name_file: Optional[str] = None,
@@ -580,20 +606,17 @@ class Client:
     async def get_chat(
         self,
         chat_id: str
-    ) -> Chat:
+    ) -> ChatModel:
         """geting info chat id info / گرفتن اطلاعات های یک چت"""
         self.logger.info("استفاده از متود get_chat")
-        data = {"chat_id": chat_id}
+        data = {
+            "chat_id": chat_id
+        }
         result = await self.send_requests(
             "getChat",
             data,
         )
-        chat = result["chat"]
-        first_name = chat["first_name"] if "first_name" in chat else chat["title"]
-        last_name = chat["last_name"] if "last_name" in chat else None
-        user_id = chat["user_id"] if "user_id" in chat else None
-        chat_id = chat["chat_id"]
-        return Chat(chat_id=chat_id,first_name=first_name,last_name=last_name,user_id=user_id)
+        return ChatModel(data=result)
 
     @async_to_sync
     async def get_updates(
@@ -652,21 +675,7 @@ class Client:
         self.logger.error("پیام پیدا نشد !")
         return None
 
-    @async_to_sync
-    async def get_message_by_id(
-        self,
-        message_id: str,
-        chat_id: Optional[str] = None,
-        limit_search: int = 100,
-        search_by: Literal["messages", "get_updates", "all"] = "all"
-    ) -> Optional[Update]:
-        """get message by id / گرفتن پیام با آیدی"""
-        return await self.get_message(
-            chat_id,
-            message_id,
-            limit_search,
-            search_by
-        )
+    get_message_by_id = get_message
 
     @async_to_sync
     async def get_messages(
@@ -761,11 +770,11 @@ class Client:
         text: str,
         inline_keypad: Optional[list] = None,
         parse_mode: Literal["Markdown","HTML",None] = "Markdown",
-        meta_data: Optional[list] = None
+        meta_data: list = []
     ) -> msg_update:
         """editing message text / ویرایش متن پیام"""
         self.logger.info("استفاده از متود edit_message_text")
-        metadata, text  = await self.parse_mode_text(text, parse_mode)
+        metadata, text  = await self._parse_mode_text(text, parse_mode)
         data = {"chat_id": chat_id, "message_id": message_id, "text": text}
         data = Utils.data_format(data, inline_keypad, metadata=metadata, meta_data=meta_data)
         result = await self.send_requests(
@@ -775,8 +784,7 @@ class Client:
         result["chat_id"] = chat_id
         return msg_update(result, self)
     
-    @async_to_sync
-    async def auto_edit(
+    async def _auto_edit(
         self,
         chat_id: str,
         message_id: str,
@@ -784,9 +792,8 @@ class Client:
         aute_edit: int,
         inline_keypad: Optional[list] = None,
         parse_mode: Literal["Markdown","HTML",None] = "Markdown",
-        meta_data: Optional[list] = None
+        meta_data: list = []
     ) -> msg_update:
-        """auto edit message text {time_sleep} time s / ویرایش خودکار متن پیام بعد از فلان مقدار ثانیه"""
         await asyncio.sleep(aute_edit)
         editing = await self.edit_message_text(
             chat_id,
@@ -797,6 +804,43 @@ class Client:
             meta_data
         )
         return editing
+    
+    @async_to_sync
+    async def auto_edit(
+        self,
+        chat_id: str,
+        message_id: str,
+        text: str,
+        aute_edit: int,
+        inline_keypad: Optional[list] = None,
+        parse_mode: Literal["Markdown","HTML",None] = "Markdown",
+        meta_data: list = [],
+        separate_task: bool = False
+    ) -> Optional[msg_update]:
+        """auto edit message text {time_sleep} time s / ویرایش خودکار متن پیام بعد از فلان مقدار ثانیه"""
+        if separate_task:
+            asyncio.create_task(
+                self._auto_edit(
+                    chat_id=chat_id,
+                    message_id=message_id,
+                    text=text,
+                    aute_edit=aute_edit,
+                    inline_keypad=inline_keypad,
+                    parse_mode=parse_mode,
+                    meta_data=meta_data
+                )
+            )
+            return None
+        else:
+            return await self._auto_edit(
+                chat_id=chat_id,
+                message_id=message_id,
+                text=text,
+                aute_edit=aute_edit,
+                inline_keypad=inline_keypad,
+                parse_mode=parse_mode,
+                meta_data=meta_data
+            )
 
     @async_to_sync
     async def delete_message(
@@ -806,7 +850,10 @@ class Client:
     ) -> props:
         """delete message / پاکسازی(حذف) یک پیام"""
         self.logger.info("استفاده از متود delete_message")
-        data = {"chat_id": chat_id, "message_id": message_id}
+        data = {
+            "chat_id": chat_id,
+            "message_id": message_id
+        }
         result = await self.send_requests(
             "deleteMessage",
             data,
@@ -874,7 +921,7 @@ class Client:
         disable_notification: Optional[bool] = None,
         auto_delete: Optional[int] = None,
         parse_mode: Literal["Markdown","HTML",None] = "Markdown",
-        meta_data: Optional[list] = None,
+        meta_data: list = [],
         inline_keypad: Optional[list] = None,
         keypad: Optional[list] = None,
         resize_keyboard: Optional[bool] = True,
@@ -884,7 +931,7 @@ class Client:
         self.logger.info("استفاده از متود send_file_by_file_id")
         metadata = []
         if text:
-            metadata, text  = await self.parse_mode_text(text, parse_mode)
+            metadata, text  = await self._parse_mode_text(text, parse_mode)
         data = {
             "chat_id": chat_id,
             "text": text,
@@ -921,7 +968,7 @@ class Client:
         disable_notification : Optional[bool] = False,
         auto_delete: Optional[int] = None,
         parse_mode: Literal["Markdown","HTML",None] = "Markdown",
-        meta_data: Optional[list] = None,
+        meta_data: list = [],
         inline_keypad: Optional[list] = None,
         keypad: Optional[list] = None,
         resize_keyboard: Optional[bool] = True,
@@ -989,7 +1036,7 @@ class Client:
         disable_notification: Optional[bool] = False,
         auto_delete: Optional[int] = None,
         parse_mode: Literal["Markdown","HTML",None] = "Markdown",
-        meta_data: Optional[list] = None,
+        meta_data: list = [],
         inline_keypad: Optional[list] = None,
         keypad: Optional[list] = None,
         resize_keyboard: Optional[bool] = True,
@@ -1032,7 +1079,7 @@ class Client:
         disable_notification: Optional[bool] = False,
         auto_delete: Optional[int] = None,
         parse_mode: Literal["Markdown","HTML",None] = "Markdown",
-        meta_data: Optional[list] = None,
+        meta_data: list = [],
         inline_keypad: Optional[list] = None,
         keypad: Optional[list] = None,
         resize_keyboard: Optional[bool] = True,
@@ -1075,7 +1122,7 @@ class Client:
         disable_notification: Optional[bool] = False,
         auto_delete: Optional[int] = None,
         parse_mode: Literal["Markdown","HTML",None] = "Markdown",
-        meta_data: Optional[list] = None,
+        meta_data: list = [],
         inline_keypad: Optional[list] = None,
         keypad: Optional[list] = None,
         resize_keyboard: Optional[bool] = True,
@@ -1118,7 +1165,7 @@ class Client:
         disable_notification : Optional[bool] = False,
         auto_delete: Optional[int] = None,
         parse_mode: Literal["Markdown","HTML",None] = "Markdown",
-        meta_data: Optional[list] = None,
+        meta_data: list = [],
         inline_keypad: Optional[list] = None,
         keypad: Optional[list] = None,
         resize_keyboard: Optional[bool] = True,
@@ -1161,7 +1208,7 @@ class Client:
         disable_notification: Optional[bool] = False,
         auto_delete: Optional[int] = None,
         parse_mode: Literal["Markdown","HTML",None] = "Markdown",
-        meta_data: Optional[list] = None,
+        meta_data: list = [],
         inline_keypad: Optional[list] = None,
         keypad: Optional[list] = None,
         resize_keyboard: Optional[bool] = True,
@@ -1204,7 +1251,7 @@ class Client:
         disable_notification : Optional[bool] = False,
         auto_delete: Optional[int] = None,
         parse_mode: Literal["Markdown","HTML",None] = "Markdown",
-        meta_data: Optional[list] = None,
+        meta_data: list = [],
         inline_keypad: Optional[list] = None,
         keypad: Optional[list] = None,
         resize_keyboard: Optional[bool] = True,
@@ -1247,7 +1294,7 @@ class Client:
         disable_notification : Optional[bool] = False,
         auto_delete: Optional[int] = None,
         parse_mode: Literal["Markdown","HTML",None] = "Markdown",
-        meta_data: Optional[list] = None,
+        meta_data: list = [],
         inline_keypad: Optional[list] = None,
         keypad: Optional[list] = None,
         resize_keyboard: Optional[bool] = True,
@@ -1343,11 +1390,8 @@ class Client:
         )
         return props(result)
     
-    @async_to_sync
-    async def update_end_point(self, url: str, type: Literal["ReceiveUpdate", "GetSelectionItem", "ReceiveInlineMessage", "ReceiveQuery", "SearchSelectionItems"]) -> props:
-        """set endpoint url / تنظیم ادرس اند پوینت"""
-        result = await self.set_endpoint(url, type)
-        return result
+    update_end_point = set_endpoint
+    update_endpoint = set_endpoint
 
     @async_to_sync
     async def set_token_fast_rub(self) -> bool:
@@ -1391,6 +1435,13 @@ class Client:
         }
         result = await self.send_requests("unbanChatMember", data)
         return props(result)
+    
+    ban_member = ban_chat_member
+    unban_member = unban_chat_member
+    ban_group_member = ban_chat_member
+    unban_group_member = unban_chat_member
+    ban_channel_member = ban_chat_member
+    unban_channel_member = unban_chat_member
 
     # decorators
 
@@ -1640,6 +1691,11 @@ class Client:
             tasks.append(self._process_messages_polling())
         if not tasks:
             raise ValueError("No handlers registered. Use on_message() or on_message_updates() or on_button() or on_edit_updates() first.")
+        try:
+            mes = await self.get_updates(limit=100)
+            self.next_offset_id_get_message = mes["next_offset_id"]
+        except:
+            pass
         await asyncio.gather(*tasks)
 
     async def run(self):
@@ -1657,6 +1713,7 @@ class Client:
             raise ValueError("Edit handlers registered but no message callbacks defined.")
 
         self._running = True
+        await self.start()
         self.logger.info("ربات در حال دریافت پیام ها")
         Utils.print_time("Start", color = Colors.BLUE)
         await self._run_all()
@@ -1669,6 +1726,39 @@ class Client:
         از حالت ایسینک(run) استفاده کنید تا لوپ بر عهده سورس شما باشد نه کتابخانه"""
         asyncio.run(self.run())
 
-    def stop(self):
+    def stop(
+        self,
+        type_stop: Literal["all", "running"] = "running"
+    ):
         """خاموش کردن گرفتن آپدیت ها / off the getting updates"""
+        self.logger.info("ربات متوقف شد !")
         self._running = False
+        if type_stop == "all":
+            del self.network
+            del self.session
+            del self.token
+            del self.name_session
+            del self.logger
+            del self._on_url
+            del self._button_url
+            del self.urls
+            del self.main_url
+    
+    def __enter__(self):
+        return self
+    
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.stop(type_stop="all")
+    
+    async def __aenter__(self):
+        await self.start()
+        return self
+    
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        self.stop(type_stop="all")
+
+
+Robot = Client
+Bot = Client
+BotApi = Client
+BotApiClient = Client

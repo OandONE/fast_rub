@@ -2,7 +2,7 @@ from .. import *
 from ..core.async_sync import *
 from .get_type import *
 from .props import *
-from .models.chat import Chat
+from .models import Chat
 from .metadata import metadata as metadata_prop
 from .file import File
 from ..utils.utils import Utils
@@ -239,7 +239,7 @@ class Update:
         on_time_keyboard: bool | None = False,
         auto_delete: Optional[int] = None,
         parse_mode: Literal['Markdown', 'HTML', None] = "Markdown",
-        meta_data: Optional[list] = None,
+        meta_data: list = [],
         # file
         file: Union[str , Path , bytes , None] = None,
         name_file: Optional[str] = None,
@@ -308,7 +308,7 @@ class Update:
         on_time_keyboard: bool | None = False,
         auto_delete: Optional[int] = None,
         parse_mode: Literal['Markdown', 'HTML', None] = "Markdown",
-        meta_data: Optional[list] = None,
+        meta_data: list = [],
         chat_id: Optional[str] = None,
         reply_to_message_id: Optional[str] = None
     ) -> 'msg_update':
@@ -402,7 +402,7 @@ class Update:
         disable_notification: Optional[bool] = False,
         auto_delete: Optional[int] = None,
         parse_mode: Literal['Markdown', 'HTML', None] = "Markdown",
-        meta_data: Optional[list] = None,
+        meta_data: list = [],
         inline_keypad: Optional[list] = None,
         keypad: Optional[list] = None,
         resize_keyboard: Optional[bool] = True,
@@ -444,7 +444,7 @@ class Update:
         disable_notification: Optional[bool] = False,
         auto_delete: Optional[int] = None,
         parse_mode: Literal['Markdown', 'HTML', None] = "Markdown",
-        meta_data: Optional[list] = None,
+        meta_data: list = [],
         inline_keypad: Optional[list] = None,
         keypad: Optional[list] = None,
         resize_keyboard: Optional[bool] = True,
@@ -485,7 +485,7 @@ class Update:
         disable_notification: Optional[bool] = False,
         auto_delete: Optional[int] = None,
         parse_mode: Literal['Markdown', 'HTML', None] = "Markdown",
-        meta_data: Optional[list] = None,
+        meta_data: list = [],
         inline_keypad: Optional[list] = None,
         keypad: Optional[list] = None,
         resize_keyboard: Optional[bool] = True,
@@ -525,7 +525,7 @@ class Update:
         disable_notification: Optional[bool] = False,
         auto_delete: Optional[int] = None,
         parse_mode: Literal['Markdown', 'HTML', None] = "Markdown",
-        meta_data: Optional[list] = None,
+        meta_data: list = [],
         inline_keypad: Optional[list] = None,
         keypad: Optional[list] = None,
         resize_keyboard: Optional[bool] = True,
@@ -565,7 +565,7 @@ class Update:
         disable_notification: Optional[bool] = False,
         auto_delete: Optional[int] = None,
         parse_mode: Literal['Markdown', 'HTML', None] = "Markdown",
-        meta_data: Optional[list] = None,
+        meta_data: list = [],
         inline_keypad: Optional[list] = None,
         keypad: Optional[list] = None,
         resize_keyboard: Optional[bool] = True,
@@ -605,7 +605,7 @@ class Update:
         disable_notification: Optional[bool] = False,
         auto_delete: Optional[int] = None,
         parse_mode: Literal['Markdown', 'HTML', None] = "Markdown",
-        meta_data: Optional[list] = None,
+        meta_data: list = [],
         inline_keypad: Optional[list] = None,
         keypad: Optional[list] = None,
         resize_keyboard: Optional[bool] = True,
@@ -645,7 +645,7 @@ class Update:
         disable_notification: Optional[bool] = False,
         auto_delete: Optional[int] = None,
         parse_mode: Literal['Markdown', 'HTML', None] = "Markdown",
-        meta_data: Optional[list] = None,
+        meta_data: list = [],
         inline_keypad: Optional[list] = None,
         keypad: Optional[list] = None,
         resize_keyboard: Optional[bool] = True,
@@ -820,6 +820,35 @@ class Update:
             self._data['file']['type'] = self.type_file
         self._data["sender_type"] = self.sender_type
         return self._data
+    
+    def get(
+        self,
+        key: str,
+        defult = None
+    ):
+        try:
+            return self.raw_data_[key]
+        except:
+            try:
+                return self._data[key]
+            except:
+                return defult
+    
+    def __setitem__(
+        self,
+        key,
+        value
+    ):
+        self.raw_data_[key] = value
+    
+    def __getitem__(
+        self,
+        key
+    ):
+        result = self.get(key)
+        if not result:
+            raise KeyError(f"The {key} has not in datas .")
+        return result
 
     def __str__(self) -> str:
         return json.dumps(
@@ -877,7 +906,7 @@ class UpdateButton:
         auto_delete: Optional[int] = None,
         reply_to_message_id: Optional[str] = None,
         parse_mode: Literal['Markdown', 'HTML'] = "Markdown",
-        meta_data: Optional[list] = None,
+        meta_data: list = [],
         chat_id: Optional[str] = None
     ):
         """send text / ارسال متن"""
@@ -905,7 +934,7 @@ class UpdateButton:
         reply_to_message_id: Optional[str] = None,
         auto_delete: Optional[int] = None,
         parse_mode: Literal["Markdown","HTML",None] = "Markdown",
-        meta_data: Optional[list] = None,
+        meta_data: list = [],
         # file
         file: Union[str , Path , bytes , None] = None,
         name_file: Optional[str] = None,
@@ -1041,7 +1070,7 @@ class UpdateButton:
         auto_delete: Optional[int] = None,
         reply_to_message_id: Optional[str] = None,
         parse_mode: Literal['Markdown', 'HTML', None] = "Markdown",
-        meta_data: Optional[list] = None,
+        meta_data: list = [],
         inline_keypad: Optional[list] = None,
         keypad: Optional[list] = None,
         resize_keyboard: Optional[bool] = True,
@@ -1080,7 +1109,7 @@ class UpdateButton:
         auto_delete: Optional[int] = None,
         reply_to_message_id: Optional[str] = None,
         parse_mode: Literal['Markdown', 'HTML', None] = "Markdown",
-        meta_data: Optional[list] = None,
+        meta_data: list = [],
         inline_keypad: Optional[list] = None,
         keypad: Optional[list] = None,
         resize_keyboard: Optional[bool] = True,
@@ -1118,7 +1147,7 @@ class UpdateButton:
         auto_delete: Optional[int] = None,
         reply_to_message_id: Optional[str] = None,
         parse_mode: Literal['Markdown', 'HTML', None] = "Markdown",
-        meta_data: Optional[list] = None,
+        meta_data: list = [],
         inline_keypad: Optional[list] = None,
         keypad: Optional[list] = None,
         resize_keyboard: Optional[bool] = True,
@@ -1156,7 +1185,7 @@ class UpdateButton:
         auto_delete: Optional[int] = None,
         reply_to_message_id: Optional[str] = None,
         parse_mode: Literal['Markdown', 'HTML', None] = "Markdown",
-        meta_data: Optional[list] = None,
+        meta_data: list = [],
         inline_keypad: Optional[list] = None,
         keypad: Optional[list] = None,
         resize_keyboard: Optional[bool] = True,
@@ -1194,7 +1223,7 @@ class UpdateButton:
         auto_delete: Optional[int] = None,
         reply_to_message_id: Optional[str] = None,
         parse_mode: Literal['Markdown', 'HTML', None] = "Markdown",
-        meta_data: Optional[list] = None,
+        meta_data: list = [],
         inline_keypad: Optional[list] = None,
         keypad: Optional[list] = None,
         resize_keyboard: Optional[bool] = True,
@@ -1232,7 +1261,7 @@ class UpdateButton:
         auto_delete: Optional[int] = None,
         reply_to_message_id: Optional[str] = None,
         parse_mode: Literal['Markdown', 'HTML', None] = "Markdown",
-        meta_data: Optional[list] = None,
+        meta_data: list = [],
         inline_keypad: Optional[list] = None,
         keypad: Optional[list] = None,
         resize_keyboard: Optional[bool] = True,
@@ -1270,7 +1299,7 @@ class UpdateButton:
         auto_delete: Optional[int] = None,
         reply_to_message_id: Optional[str] = None,
         parse_mode: Literal['Markdown', 'HTML', None] = "Markdown",
-        meta_data: Optional[list] = None,
+        meta_data: list = [],
         inline_keypad: Optional[list] = None,
         keypad: Optional[list] = None,
         resize_keyboard: Optional[bool] = True,
@@ -1317,3 +1346,11 @@ class UpdateButton:
     def __repr__(self) -> str:
         return self.__str__()
 
+
+Message = Update
+Updates = Update
+InlineUpdate = UpdateButton
+UpdateInline = UpdateButton
+ButtonUpdate = UpdateButton
+InlineMessage = UpdateButton
+MessageInline = UpdateButton

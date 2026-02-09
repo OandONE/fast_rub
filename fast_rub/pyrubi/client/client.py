@@ -8,17 +8,17 @@ from typing import (
 from ...core.async_sync import *
 from ..filters import Filter
 
-class Client(object):
+class Client:
 
     def __init__(
         self,
         session: Optional[str] = None,
         auth: Optional[str] = None,
         private: Optional[str] = None,
-        platform: Literal["web", "rubx", "android"] = "web",
+        platform: Literal["web", "rubx", "android", "PWA"] = "web",
         api_version: int = 6,
         proxy: Optional[str] = None,
-        time_out = 10,
+        time_out: int = 10,
         show_progress_bar: bool = True
     ):
         
@@ -115,7 +115,7 @@ class Client(object):
         return await self.methods.actionOnJoinRequest(objectGuid=object_guid, userGuid=user_guid, action=action)
     
     @async_to_sync
-    async def getJoinRequests(self, object_guid: str):
+    async def get_join_requests(self, object_guid: str):
         return await self.methods.getJoinRequests(objectGuid=object_guid)
     
     @async_to_sync
@@ -375,7 +375,7 @@ class Client(object):
     async def send_message(
         self,
         object_guid: str,
-        text: str,
+        text: Optional[str] = None,
         message_id: Optional[str] = None,
         # file
         file: Optional[str] = None,
@@ -808,7 +808,13 @@ class Client(object):
         attempt: int = 0,
         max_attempt: int = 2
     ) -> dict:
-        return await self.methods.request(method=method,input=input,tmpSession=tmp_session,attempt=attempt,maxAttempt=max_attempt)
+        return await self.methods.request(
+            method=method,
+            input=input,
+            tmpSession=tmp_session,
+            attempt=attempt,
+            maxAttempt=max_attempt
+        )
 
     @async_to_sync
     async def play_voice(self, object_guid: str, file: str) -> None:

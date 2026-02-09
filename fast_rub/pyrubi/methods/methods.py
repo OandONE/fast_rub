@@ -22,10 +22,18 @@ from typing import Optional, Union, List
 from ..filters import Filter
 
 class Methods:
-    def __init__(self, sessionData:dict, platform:str, apiVersion:int, proxy:Optional[str], timeOut:int, showProgressBar:bool) -> None:
+    def __init__(
+        self,
+        sessionData: dict,
+        platform: str,
+        apiVersion: int,
+        proxy: Optional[str] = None,
+        timeOut: int = 30,
+        showProgressBar: bool = True
+    ) -> None:
         self.platform = platform.lower()
-        if not self.platform in ["android", "web", "rubx", "rubikax", "rubino"]:
-            print("The \"{}\" is not a valid platform. Choose these one -> (web, android, rubx)".format(platform))
+        if not self.platform in ["android", "web", "rubx", "rubikax", "rubino", "PWA"]:
+            print("The \"{}\" is not a valid platform. Choose these one -> (web, android, rubx, PWA)".format(platform))
             exit()
         self.apiVersion = apiVersion
         self.proxy = proxy
@@ -44,7 +52,7 @@ class Methods:
     @async_to_sync
     async def sendCode(self, phoneNumber: str, passKey: Optional[str] = None, sendInternal: bool = False) -> dict:
         input:dict = {
-            "phone_number": f"{phoneNumber}",
+            "phone_number": f"{Utils.phone_number_parse(phoneNumber)}",
             "send_type": "Internal" if sendInternal else "SMS",
         }
 
@@ -1147,7 +1155,7 @@ class Methods:
         return await self.network.request(
             method="actionOnMessageReaction",
             input={
-                "action": action, #Add OR Remove
+                "action": action, # Add OR Remove
                 "object_guid": objectGuid,
                 "message_id": messageId,
                 "reaction_id": reactionId

@@ -55,16 +55,19 @@ class Utils:
     @staticmethod
     def getState() -> int:
         return int(time()) - 150
+    
+    @staticmethod
+    def phone_number_parser_fa_en(phone: str) -> str:
+        parsed = phone.translate(str.maketrans("۰۱۲۳۴۵۶۷۸۹", "0123456789"))
+        return parsed
 
     @staticmethod
-    def phoneNumberParse(phoneNumber: str) -> str:
-        if str(phoneNumber).startswith("0"):
-            phoneNumber = phoneNumber[1:]
-        elif str(phoneNumber).startswith("98"):
-            phoneNumber = phoneNumber[2:]
-        elif str(phoneNumber).startswith("+98"):
-            phoneNumber = phoneNumber[3:]
-        return phoneNumber
+    def phone_number_parse(phone_number: str) -> str:
+        phone_number = Utils.phone_number_parser_fa_en(phone_number).strip().replace("+", "")
+        if phone_number.startswith("09"):
+            phone_number = f"98{phone_number[1:]}"
+            return phone_number
+        return phone_number
 
     @staticmethod
     def getChatTypeByGuid(objectGuid: str) -> str:

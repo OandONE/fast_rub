@@ -17,5 +17,5 @@ class Colors:
     UNDERLINE = '\033[4m'
     RESET = '\033[0m'
 
-def cprint(text, color=Colors.WHITE, end='\n'):
+def cprint(text: str, color = Colors.WHITE, end: str = '\n'):
     print(f"{color}{text}{Colors.RESET}", end=end)

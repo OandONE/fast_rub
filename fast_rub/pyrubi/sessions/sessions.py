@@ -75,3 +75,4 @@ class Sessions:
             print(f"\nSign in as \"{self.client.session}\" was successful.")
 
             return sessionData
+
