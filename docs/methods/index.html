@@ -1,0 +1,951 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>فست روب · مستندات متدها</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="مستندات کامل متدهای کتابخانه فست‌روب (Fast Rub) برای ساخت بات روبیکا به صورت کاملا async/sync">
+  <meta name="keywords" content="فست روب, Fast Rub, روبیکا, بات روبیکا, Rubika Bot, Python, متدهای روبیکا, Rubika API, مستندات بات روبیکا">
+  <meta name="author" content="Seyyed Mohamad Hosein Moosavi Raja">
+  <meta name="robots" content="index, follow">
+  <meta name="language" content="Persian">
+  <meta name="distribution" content="global">
+  <meta name="rating" content="general">
+
+  <meta property="og:title" content="فست‌روب · مستندات متدها">
+  <meta property="og:description" content="مستندات کامل متدهای کتابخانه Fast Rub برای ساخت بات روبیکا">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://fast-rub.ParsSource.ir/methods/index.html">
+  <meta property="og:locale" content="fa_IR">
+  <meta property="og:site_name" content="Fast Rub Documentation">
+
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="فست‌روب · مستندات متدها">
+  <meta name="twitter:description" content="مستندات کامل متدهای کتابخانه Fast Rub برای ساخت بات روبیکا">
+
+  <link rel="canonical" href="https://fast-rub.ParsSource.ir/methods/index.html">
+
+  <link rel="icon" type="image/png" href="../icon.jpg">
+  <link rel="apple-touch-icon" href="../icon.jpg">
+
+  <link rel="manifest" href="/manifest.json">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;700&display=swap" rel="stylesheet">
+
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "TechArticle",
+    "headline": "مستندات متدهای فست‌روب",
+    "description": "مستندات کامل متدهای کتابخانه Fast Rub برای ساخت بات روبیکا",
+    "author": {
+      "@type": "Organization",
+      "name": "Seyyed Mohamad Hosein Moosavi Raja"
+    },
+    "datePublished": "2025-01-01",
+    "dateModified": "2025-12-01",
+    "inLanguage": "fa",
+    "url": "https://fast-rub.ParsSource.ir/methods/index.html"
+  }
+  </script>
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: 'Vazirmatn', system-ui, -apple-system, 'Segoe UI', Roboto, Tahoma, Arial, sans-serif;
+      background-color: #fafafa;
+      color: #1e1e2f;
+      line-height: 1.7;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+    a {
+      text-decoration: none;
+      color: #7b1fa2;
+    }
+    a:hover {
+      text-decoration: underline;
+    }
+    .wrapper {
+      display: flex;
+      flex: 1;
+      max-width: 1440px;
+      margin: 0 auto;
+      width: 100%;
+      background: white;
+      box-shadow: 0 0 30px rgba(0,0,0,0.05);
+    }
+
+    .sidebar {
+      width: 280px;
+      background: #f5f0fa;
+      border-left: 1px solid #e0d0ea;
+      padding: 2rem 1.5rem;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+      transition: transform 0.3s ease;
+    }
+    .sidebar h1 {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: #4a148c;
+      margin-bottom: 0.2rem;
+      line-height: 1.2;
+    }
+    .sidebar .sub {
+      color: #6a1b9a;
+      font-weight: 400;
+      font-size: 0.95rem;
+      margin-bottom: 2rem;
+      border-bottom: 2px solid #d1c4e9;
+      padding-bottom: 1rem;
+    }
+    .nav-links {
+      list-style: none;
+      margin-bottom: 2.5rem;
+    }
+    .nav-links li {
+      margin-bottom: 0.6rem;
+    }
+    .nav-links a {
+      display: block;
+      padding: 0.4rem 0.8rem;
+      border-radius: 30px;
+      font-weight: 500;
+      color: #4a148c;
+      transition: all 0.2s;
+    }
+    .nav-links a:hover {
+      background: #e1d5f0;
+      text-decoration: none;
+    }
+    .nav-links .active {
+      background: #b39ddb;
+      color: white;
+    }
+    .toc-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #3e1a5b;
+      margin: 1.5rem 0 0.8rem;
+      padding-top: 1rem;
+      border-top: 2px solid #d1c4e9;
+    }
+    .toc-list {
+      list-style: none;
+      padding-right: 0;
+    }
+    .toc-list li {
+      margin-bottom: 0.4rem;
+      font-size: 0.9rem;
+    }
+    .toc-list a {
+      color: #5e3c7e;
+      display: inline-block;
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+    }
+    .toc-list a:hover {
+      background: #ede7f6;
+    }
+
+    .main {
+      flex: 1;
+      padding: 2.5rem 3rem;
+      background: white;
+      min-width: 0;
+    }
+    .main-header {
+      margin-bottom: 2.5rem;
+    }
+    .main-header h1 {
+      font-size: 2.4rem;
+      font-weight: 700;
+      color: #4a148c;
+      margin-bottom: 0.5rem;
+    }
+    .main-header p {
+      color: #5a5a7a;
+      font-size: 1.1rem;
+    }
+
+    .method {
+      margin-bottom: 4rem;
+      scroll-margin-top: 1rem;
+    }
+    .method h2 {
+      font-size: 1.9rem;
+      font-weight: 600;
+      color: #1a1a2c;
+      border-bottom: 3px solid #ffb300;
+      padding-bottom: 0.5rem;
+      margin-bottom: 1.8rem;
+    }
+    .method .signature {
+      background: #f3e9fd;
+      padding: 0.8rem 1.5rem;
+      border-radius: 40px;
+      display: inline-block;
+      font-family: 'Courier New', Courier, monospace;
+      direction: ltr;
+      color: #2d1b3c;
+      font-weight: 500;
+      margin-bottom: 1.5rem;
+    }
+    .method .desc {
+      margin-bottom: 1.8rem;
+      color: #3e3e5e;
+    }
+
+    .table-responsive {
+      overflow-x: auto;
+      margin: 1.5rem 0;
+      border-radius: 16px;
+      border: 1px solid #f0e6fa;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.95rem;
+      background: white;
+    }
+    th {
+      background: #b39ddb;
+      color: white;
+      font-weight: 600;
+      padding: 0.9rem 1.2rem;
+      text-align: right;
+    }
+    td {
+      padding: 0.9rem 1.2rem;
+      border-bottom: 1px solid #ede7f6;
+      vertical-align: top;
+    }
+    tr:last-child td {
+      border-bottom: none;
+    }
+    td:first-child, th:first-child {
+      font-family: 'Courier New', monospace;
+      direction: ltr;
+    }
+    td code {
+      background: #f3e8ff;
+      padding: 0.2rem 0.4rem;
+      border-radius: 6px;
+      font-size: 0.85rem;
+    }
+
+    .code-block-wrapper {
+      position: relative;
+      margin: 2rem 0 1.2rem;
+      direction: ltr;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+    }
+    .copy-btn {
+      position: absolute;
+      left: 0.8rem;
+      top: 0.8rem;
+      background: #2d2d3f;
+      color: #ffd54f;
+      border: none;
+      border-radius: 30px;
+      padding: 0.35rem 1.1rem;
+      font-size: 0.8rem;
+      font-family: 'Vazirmatn', sans-serif;
+      font-weight: 500;
+      cursor: pointer;
+      z-index: 10;
+      transition: 0.2s;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+    .copy-btn:hover {
+      background: #4a397f;
+      color: white;
+    }
+    pre[class*="language-"] {
+      margin: 0;
+      border-radius: 16px;
+      padding: 1.8rem 1.5rem 1.2rem;
+      background: #1e1e2a;
+    }
+
+    .footer {
+      margin-top: 3rem;
+      padding-top: 2rem;
+      border-top: 2px solid #d1c4e9;
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.95rem;
+    }
+    .footer a {
+      color: #6a1b9a;
+      font-weight: 600;
+    }
+
+    .method h2, th, td {
+      text-align: right;
+    }
+    .signature {
+      text-align: left;
+    }
+
+    @media (max-width: 900px) {
+      .wrapper {
+        flex-direction: column;
+      }
+      .sidebar {
+        width: 100%;
+        height: auto;
+        position: relative;
+        border-left: none;
+        border-bottom: 1px solid #e0d0ea;
+      }
+      .main {
+        padding: 1.8rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <aside class="sidebar">
+      <h1>Fast Rub</h1>
+      <div class="sub">مستندات کتابخانه</div>
+
+      <ul class="nav-links">
+        <li><a href="../index.html">معرفی</a></li>
+        <li><a href="#" class="active">متد ها</a></li>
+        <li><a href="../models/index.html">مدل ها</a></li>
+        <li><a href="pyrubi/index.html">فورک پایروبی</a></li>
+      </ul>
+
+      <div class="toc-title">📌 فهرست متدها</div>
+      <ul id="toc-list" class="toc-list">
+      </ul>
+    </aside>
+
+    <main class="main">
+      <div class="main-header">
+        <h1>متد‌های کلاینت</h1>
+        <p>تمامی متدهای غیرهمزمان (async) که برای تعامل با بات روبیکا نیاز دارید.</p>
+      </div>
+      <div id="methods-container"></div>
+
+      <footer class="footer">
+        <a href="../index.html">→ معرفی</a>
+        <a href="../models/index.html">مدل ها ←</a>
+      </footer>
+    </main>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+
+  <script>
+    const methodsData = [
+      // ===== ۱. __init__ =====
+      {
+        id: "init",
+        title: "__init__ (ورودی‌های اصلی کلاس کلاینت)",
+        signature: "Client(name_session, token=None, ...)",
+        desc: "ساخت نمونه اصلی بات. تمام تنظیمات اولیه در اینجا انجام می‌شود.",
+        params: [
+          ["name_session", "str", "اسم سشن برای ذخیره‌سازی اطلاعات"],
+          ["token", "str | None", "توکن بات"],
+          ["user_agent", "str | None", "اطلاعات مرورگر درخواست‌دهنده"],
+          ["time_out", "int | None", "زمان انتظار برای درخواست‌ها"],
+          ["display_welcome", "bool | None", "خوش‌آمدگویی کتابخانه"],
+          ["use_to_fastrub_webhook_on_message", "bool(False) | str", "آدرس وبهوک برای پیام‌ها (خودکار)"],
+          ["use_to_fastrub_webhook_on_button", "bool(False) | str", "آدرس وبهوک برای کلیک دکمه‌ها"],
+          ["save_logs", "bool | None", "ذخیره لاگ‌ها"],
+          ["view_logs", "bool | None", "نمایش لاگ‌ها"],
+          ["proxy", "bool | None", "پروکسی"],
+          ["main_parse_mode", "'Markdown' | 'HTML' | None", "پارس‌مود پیش‌فرض"],
+          ["max_retries", "int = 3", "تعداد تلاش مجدد"],
+          ["show_progress", "bool | None", "نمایش پیشرفت آپلود/دانلود"],
+          ["keeper_messages", "int = 500", "تعداد پیام‌های ذخیره برای get_message"]
+        ],
+        returns: null,
+        example: `from fast_rub import Client\n\nbot = Client("my_session")\n# یا با توکن\nbot = Client("my_session", token="12345:abcde")`
+      },
+      // ===== ۲. get_me =====
+      {
+        id: "get_me",
+        title: "گرفتن اطلاعات بات",
+        signature: "async get_me()",
+        desc: "اطلاعات کامل بات شامل آیدی، یوزرنیم و نام را برمی‌گرداند.",
+        params: [],
+        returns: [
+          ["get_me", "<a href='../models/index.html#base_models'>Bot</a>", "اطلاعات بات"]
+        ],
+        example: `me = await bot.get_me()\nprint(me)\nprint(f"bot username » {me.username}")`
+      },
+      // ===== ۳. send_text =====
+      {
+        id: "send_text",
+        title: "ارسال پیام متنی (همراه کیبورد و اینلاین)",
+        signature: "async send_text(text, chat_id, ...)",
+        desc: "متن ساده، فرمت‌دار (Markdown/HTML) به همراه کیبورد شیشه‌ای یا عادی.",
+        params: [
+          ["text", "str", "متن پیام"],
+          ["chat_id", "str", "چت آیدی"],
+          ["inline_keypad", "list[KeyPad] | None", "دکمه‌های شیشه‌ای (اینلاین)"],
+          ["keypad", "list[KeyPad] | None", "دکمه‌های کیبورد"],
+          ["resize_keyboard", "bool = True", "تغییر خودکار سایز کیبورد"],
+          ["on_time_keyboard", "bool = False", "کیبورد یکبار مصرف"],
+          ["disable_notification", "bool | None", "غیرفعال کردن اعلان"],
+          ["reply_to_message_id", "str | None", "در پاسخ به پیام"],
+          ["auto_delete", "int | None", "پاکسازی خودکار (ثانیه)"],
+          ["parse_mode", "'Markdown' | 'HTML' = 'Markdown'", "پارس مود"],
+          ["meta_data", "list = []", "لیست متادیتا"]
+        ],
+        returns: [
+          ["msg_update", "<a href='../models/index.html#msg_update'>msg_update</a>", "اطلاعات پیام ارسال‌شده"]
+        ],
+        example: `sending = await bot.send_text("سلام", "b123...")\nprint(sending)\n\n# با دکمه شیشه‌ای\nfrom fast_rub import KeyPad\nbuttons = KeyPad()\nbuttons.append(buttons.simple("id1", "نمایش متن"))\nawait bot.send_text("متن", chat_id, inline_keypad=buttons.get())`
+      },
+      // ===== ۴. send_poll =====
+      {
+        id: "send_poll",
+        title: "ارسال نظرسنجی",
+        signature: "async send_poll(chat_id, question, options, ...)",
+        desc: "نظرسنجی معمولی یا مسابقه‌ای (Quiz).",
+        params: [
+          ["chat_id", "str", "چت آیدی"],
+          ["question", "str", "متن سوال"],
+          ["options", "list", "گزینه‌ها"],
+          ["type_poll", "'Regular' | 'Quiz' = 'Regular'", "نوع نظرسنجی"],
+          ["is_anonymous", "bool = True", "ناشناس بودن"],
+          ["correct_option_index", "int | None", "ایندکس گزینه صحیح (Quiz)"],
+          ["allows_multiple_answers", "bool = False", "چند انتخابی"],
+          ["hint", "str | None", "راهنمایی پاسخ"],
+          ["reply_to_message_id", "str | None", "در پاسخ به"],
+          ["auto_delete", "int | None", "پاکسازی خودکار"]
+        ],
+        returns: [
+          ["msg_update", "<a href='../models/index.html#msg_update'>msg_update</a>", "اطلاعات پیام نظرسنجی"]
+        ],
+        example: `options = ["چلو قرمه سبزی", "زرشک پلو با مرغ"]\npoll = await bot.send_poll("chat_id", "به چه غذایی علاقه دارید؟", options)\nprint(poll)`
+      },
+      // ===== ۵. send_location =====
+      {
+        id: "send_location",
+        title: "ارسال موقعیت مکانی",
+        signature: "async send_location(chat_id, latitude, longitude, ...)",
+        desc: "نقطه روی نقشه با طول و عرض جغرافیایی.",
+        params: [
+          ["chat_id", "str", "چت آیدی"],
+          ["latitude", "str", "عرض جغرافیایی"],
+          ["longitude", "str", "طول جغرافیایی"],
+          ["chat_keypad", "str | None", "کیپد"],
+          ["disable_notification", "bool | None", "اعلان"],
+          ["reply_to_message_id", "str | None", "در پاسخ به"],
+          ["chat_keypad_type", "str | None", "نوع کیپد"],
+          ["auto_delete", "int | None", "پاکسازی خودکار"]
+        ],
+        returns: [
+          ["msg_update", "<a href='../models/index.html#msg_update'>msg_update</a>", "اطلاعات پیام"]
+        ],
+        example: `loc = await bot.send_location("chat_id", "35.6892", "51.3890")\nprint(loc)`
+      },
+      // ===== ۶. send_contact =====
+      {
+        id: "send_contact",
+        title: "ارسال مخاطب",
+        signature: "async send_contact(chat_id, first_name, last_name, phone_number, ...)",
+        desc: "ارسال یک شخص (نام، نام خانوادگی، شماره تلفن).",
+        params: [
+          ["chat_id", "str", "چت آیدی"],
+          ["first_name", "str", "نام"],
+          ["last_name", "str", "نام خانوادگی"],
+          ["phone_number", "str", "شماره تلفن"],
+          ["chat_keypad", "str | None", "کیپد"],
+          ["disable_notification", "bool | None", "اعلان"],
+          ["inline_keypad", "list[KeyPad] | None", "دکمه شیشه‌ای"],
+          ["reply_to_message_id", "str", "در پاسخ به"],
+          ["chat_keypad_type", "str", "نوع کیپد"],
+          ["auto_delete", "int | None", "پاکسازی خودکار"]
+        ],
+        returns: [
+          ["msg_update", "<a href='../models/index.html#msg_update'>msg_update</a>", "اطلاعات پیام"]
+        ],
+        example: `contact = await bot.send_contact("chat_id", "سید محمد حسین", "موسوی رجا", "+989017760881")\nprint(contact)`
+      },
+      // ===== ۷. دکوراتورهای پیام (polling & webhook) =====
+      {
+        id: "message_decorators",
+        title: "دکوراتورهای دریافت پیام‌ها",
+        signature: "@bot.on_message(filters=None, edited_messages=False, deleted_messages=False)",
+        desc: "ثبت هندلر برای پیام‌های جدید (پولینگ). نمونه مشابه برای وبهوک: @bot.on_message_updates()",
+        params: [
+          ["filters", "<a href='../models/index.html#filters'>filters</a> | None", "فیلتر پیام"],
+          ["edited_messages", "bool | 'both' = False", "دریافت ویرایش‌شده‌ها"],
+          ["deleted_messages", "bool | 'both' = False", "دریافت حذف‌شده‌ها"]
+        ],
+        returns: [
+          ["Message", "<a href='../models/index.html#update'>Message</a>", "آبجکت پیام"]
+        ],
+        example: `@bot.on_message()\nasync def handler(msg: Message):\n    await msg.reply("پاسخ خودکار")\n    if msg.text == "/off":\n        bot.stop()\n\n# سایر دکوراتورها:\n# @bot.on_edit() , @bot.on_delete() , @bot.on_all_message()\n# @bot.on_edit_updates() , @bot.on_delete_updates() , @bot.on_all_message_updates()`
+      },
+      // ===== ۸. on_button =====
+      {
+        id: "on_button",
+        title: "دکوراتور کلیک روی دکمه‌های شیشه‌ای (اینلاین)",
+        signature: "@bot.on_button()",
+        desc: "وقتی کاربر روی دکمه اینلاین کلیک می‌کند این هندلر فراخوانی می‌شود.",
+        params: [],
+        returns: [
+          ["UpdateButton", "<a href='../models/index.html#updatebutton'>UpdateButton</a>", "اطلاعات کلیک"]
+        ],
+        example: `@bot.on_button()\nasync def button_click(upd):\n    print(upd)\n    await upd.send_text("دکمه کلیک شد!")`
+      },
+      // ===== ۹. get_chat =====
+      {
+        id: "get_chat",
+        title: "گرفتن اطلاعات چت",
+        signature: "async get_chat(chat_id)",
+        desc: "اطلاعات گروه، کانال یا کاربر.",
+        params: [
+          ["chat_id", "str", "چت آیدی"]
+        ],
+        returns: [
+          ["Chat", "<a href='../models/index.html#base_models'>Chat</a>", "اطلاعات چت"]
+        ],
+        example: `chat = await bot.get_chat("b123...")\nprint(chat)`
+      },
+      // ===== ۱۰. forward_message =====
+      {
+        id: "forward_message",
+        title: "فوروارد پیام",
+        signature: "async forward_message(from_chat_id, message_id, to_chat_id, ...)",
+        desc: "فوروارد یک پیام به چت دیگر.",
+        params: [
+          ["from_chat_id", "str", "مبدأ"],
+          ["message_id", "str", "شناسه پیام"],
+          ["to_chat_id", "str", "مقصد"],
+          ["disable_notification", "bool | None", "اعلان"],
+          ["auto_delete", "int | None", "پاکسازی خودکار"]
+        ],
+        returns: [
+          ["msg_update", "<a href='../models/index.html#msg_update'>msg_update</a>", "پیام فوروارد شده"]
+        ],
+        example: `fwd = await bot.forward_message("from_id", "msg_id", "to_id")\nprint(fwd)`
+      },
+      // ===== ۱۱. edit_message_text =====
+      {
+        id: "edit_message_text",
+        title: "ویرایش متن پیام",
+        signature: "async edit_message_text(chat_id, message_id, text, ...)",
+        desc: "متن و دکمه‌های یک پیام را تغییر دهید.",
+        params: [
+          ["chat_id", "str", "چت آیدی"],
+          ["message_id", "str", "شناسه پیام"],
+          ["text", "str", "متن جدید"],
+          ["inline_keypad", "list | None", "دکمه شیشه‌ای جدید"],
+          ["parse_mode", "'Markdown' | 'HTML' | None", "پارس مود"],
+          ["meta_data", "list = []", "متادیتا"]
+        ],
+        returns: [
+          ["msg_update", "<a href='../models/index.html#msg_update'>msg_update</a>", "پیام ویرایش شده"]
+        ],
+        example: `edited = await bot.edit_message_text("chat_id", "msg_id", "متن جدید")\nprint(edited)`
+      },
+      // ===== ۱۲. delete_message =====
+      {
+        id: "delete_message",
+        title: "حذف پیام",
+        signature: "async delete_message(chat_id, message_id)",
+        desc: "حذف یک پیام از چت.",
+        params: [
+          ["chat_id", "str", "چت آیدی"],
+          ["message_id", "str", "شناسه پیام"]
+        ],
+        returns: null,
+        example: `await bot.delete_message("chat_id", "msg_id")`
+      },
+      // ===== ۱۳. set_commands =====
+      {
+        id: "set_commands",
+        title: "تنظیم دستورات (commands)",
+        signature: "async set_commands(commands_list=None)",
+        desc: "تنظیم، افزودن یا حذف دستورات پیشنهادی بات.",
+        params: [],
+        returns: null,
+        example: `await bot.add_commands("/help", "راهنمای ربات")\nawait bot.add_commands("/start", "شروع")\nawait bot.set_commands()  # اعمال تغییرات\n\n# یا مستقیم\ncmds = [{"command": "help", "description": "راهنما"}]\nawait bot.set_commands(cmds)\n\n# حذف همه\nawait bot.delete_commands()`
+      },
+      // ===== ۱۴. update_endpoint =====
+      {
+        id: "update_endpoint",
+        title: "آپدیت آدرس وب‌هوک (URL Endpoint)",
+        signature: "async update_endpoint(url, type)",
+        desc: "تغییر آدرسی که روبیکا آپدیت‌ها را به آن ارسال می‌کند.",
+        params: [
+          ["url", "str", "آدرس جدید"],
+          ["type", 'Literal["ReceiveUpdate", "GetSelectionItem", "ReceiveInlineMessage", "ReceiveQuery", "SearchSelectionItems"]', "نوع آپدیت (ReceiveUpdate, etc)"]
+        ],
+        returns: null,
+        example: `result = await bot.update_endpoint("https://my.site/webhook", "ReceiveUpdate")\nprint(result)`
+      },
+      // ===== ۱۵. ارسال فایل (گروهی) =====
+      {
+        id: "send_files",
+        title: "ارسال فایل / تصویر / ویدیو / صدا / گیف",
+        signature: "async send_file(chat_id, file, ...)  و  send_image, send_video, ...",
+        desc: "متدهای مجزا برای هر نوع فایل. پارامترها یکسان هستند.",
+        params: [
+          ["chat_id", "str", "چت آیدی"],
+          ["file / video / image / voice / music / gif", "str | Path | bytes", "فایل ورودی"],
+          ["name_file", "str | None", "نام فایل (پیشفرض: 'file')"],
+          ["text", "str | None", "کپشن"],
+          ["reply_to_message_id", "str | None", "در پاسخ به"],
+          ["disable_notification", "bool | None", "اعلان"],
+          ["auto_delete", "int | None", "پاکسازی خودکار"],
+          ["parse_mode", "'Markdown' | 'HTML' | None", "پارس مود"],
+          ["meta_data", "list = []", "متادیتا"],
+          ["inline_keypad", "list | None", "دکمه شیشه‌ای"],
+          ["keypad", "list | None", "کیبورد عادی"],
+          ["resize_keyboard", "bool = True", "تغییر سایز"],
+          ["on_time_keyboard", "bool = False", "یکبار مصرف"],
+          ["upload_by", "'aiohttp' | 'httpx' = 'aiohttp'", "کتابخانه آپلود"],
+          ["show_progress", "bool = True", "نمایش نوار پیشرفت"],
+          ["chunk_size", "int = 65536", "سایز چانک"]
+        ],
+        returns: [
+          ["msg_update", "<a href='../models/index.html#msg_update'>msg_update</a>", "پیام فایل ارسال شده"]
+        ],
+        example: `await bot.send_file("chat_id", "test.json", name_file="data.json", text="caption")\nawait bot.send_image("chat_id", "photo.png")\nawait bot.send_video("chat_id", "vid.mp4")`
+      },
+      // ===== ۱۶. request_send_file =====
+      {
+        id: "request_send_file",
+        title: "درخواست لینک آپلود فایل",
+        signature: "async request_send_file(type='File')",
+        desc: "از سرور آپلود روبیکا یک لینک موقت برای آپلود دریافت کنید.",
+        params: [
+          ["type", "'File' | 'Image' | 'Voice' | 'Music' | 'Gif' | 'Video' = 'File'", "نوع فایل"]
+        ],
+        returns: [
+          ["upload_url", "str", "آدرس آپلود"]
+        ],
+        example: `req = await bot.request_send_file("Image")\nprint(req["upload_url"])`
+      },
+      // ===== ۱۷. send_file_by_file_id =====
+      {
+        id: "send_file_by_file_id",
+        title: "ارسال فایل با آیدی (file_id)",
+        signature: "async send_file_by_file_id(chat_id, file_id, text=None, ...)",
+        desc: "فایلی که قبلاً آیدی گرفته را بدون آپلود مجدد ارسال کنید.",
+        params: [
+          ["chat_id", "str", "چت آیدی"],
+          ["file_id", "str", "شناسه فایل"],
+          ["text", "str | None", "کپشن"],
+          ["reply_to_message_id", "str | None", "در پاسخ به"],
+          ["disable_notification", "bool | None", "اعلان"],
+          ["auto_delete", "int | None", "پاکسازی"],
+          ["parse_mode", "'Markdown' | 'HTML' = 'Markdown'", "پارس مود"],
+          ["meta_data", "list = []", "متادیتا"],
+          ["inline_keypad", "list | None", "دکمه شیشه‌ای"],
+          ["keypad", "list | None", "کیبورد"],
+          ["resize_keyboard", "bool = True", "تغییر سایز"],
+          ["on_time_keyboard", "bool = False", "یکبار مصرف"]
+        ],
+        returns: [
+          ["msg_update", "<a href='../models/index.html#msg_update'>msg_update</a>", "پیام ارسالی"]
+        ],
+        example: `await bot.send_file_by_file_id("chat_id", "file_id_123...")`
+      },
+      // ===== ۱۸. send_sticker =====
+      {
+        id: "send_sticker",
+        title: "ارسال استیکر",
+        signature: "async send_sticker(chat_id, id_sticker, ...)",
+        desc: "استیکر را با آیدی آن ارسال کنید.",
+        params: [
+          ["chat_id", "str", "چت آیدی"],
+          ["id_sticker", "str", "آیدی استیکر"],
+          ["reply_to_message_id", "str | None", "در پاسخ به"],
+          ["disable_notification", "bool | None", "اعلان"],
+          ["auto_delete", "int | None", "پاکسازی خودکار"]
+        ],
+        returns: [
+          ["msg_update", "<a href='../models/index.html#msg_update'>msg_update</a>", "پیام استیکر"]
+        ],
+        example: `await bot.send_sticker("chat_id", "sticker_id_001")`
+      },
+      // ===== ۱۹. download_file =====
+      {
+        id: "download_file",
+        title: "دانلود فایل",
+        signature: "async download_file(id_file, path, show_progress=True)",
+        desc: "فایل را با file_id دانلود و در مسیر مشخص ذخیره کنید.",
+        params: [
+          ["id_file", "str", "آیدی فایل"],
+          ["path", "str", "مسیر ذخیره"],
+          ["show_progress", "bool = True", "نمایش پیشرفت"]
+        ],
+        returns: null,
+        example: `await bot.download_file("file_id", "./downloads/test.txt")`
+      },
+      // ===== ۲۰. get_download_file_url =====
+      {
+        id: "get_download_file_url",
+        title: "گرفتن لینک دانلود مستقیم",
+        signature: "async get_download_file_url(id_file)",
+        desc: "لینک قابل مرورگر برای دانلود فایل.",
+        params: [
+          ["id_file", "str", "آیدی فایل"]
+        ],
+        returns: [
+          ["url", "str", "لینک دانلود"]
+        ],
+        example: `url = await bot.get_download_file_url("file_id")\nprint(url)`
+      },
+      // ===== ۲۱. version_botapi =====
+      {
+        id: "version_botapi",
+        title: "نسخه BotApi",
+        signature: "async version_botapi()",
+        desc: "نسخه فعلی BotApi روبیکا را برگردان.",
+        params: [],
+        returns: [
+          ["version", "str", "نسخه"]
+        ],
+        example: `ver = await bot.version_botapi()\nprint(ver)`
+      },
+      // ===== ۲۲. auto_delete =====
+      {
+        id: "auto_delete",
+        title: "پاکسازی خودکار پیام",
+        signature: "async auto_delete(chat_id, message_id, time_sleep, separate_task=False)",
+        desc: "پس از تأخیر مشخص، پیام را حذف می‌کند.",
+        params: [
+          ["chat_id", "str", "چت آیدی"],
+          ["message_id", "str", "شناسه پیام"],
+          ["time_sleep", "float", "زمان انتظار (ثانیه)"],
+          ["separate_task", "bool = False", "اجرا در تسک جداگانه"]
+        ],
+        returns: null,
+        example: `await bot.auto_delete("b...", "msg_id", 30)`
+      },
+      // ===== ۲۳. auto_edit =====
+      {
+        id: "auto_edit",
+        title: "ویرایش خودکار پیام",
+        signature: "async auto_edit(chat_id, message_id, text, time_sleep, ...)",
+        desc: "پس از تأخیر، متن پیام را ویرایش می‌کند.",
+        params: [
+          ["chat_id", "str", "چت آیدی"],
+          ["message_id", "str", "شناسه پیام"],
+          ["text", "str", "متن جدید"],
+          ["time_sleep", "float", "زمان انتظار (ثانیه)"],
+          ["inline_keypad", "list | None", "دکمه شیشه‌ای جدید"],
+          ["parse_mode", "'Markdown' | 'HTML' = 'Markdown'", "پارس مود"],
+          ["meta_data", "list = []", "متادیتا"],
+          ["separate_task", "bool = False", "تسک جداگانه"]
+        ],
+        returns: null,
+        example: `await bot.auto_edit("b...", "msg_id", "متن جدید", 20)`
+      },
+      // ===== ۲۴. get_message =====
+      {
+        id: "get_message",
+        title: "گرفتن پیام با آیدی",
+        signature: "async get_message(chat_id, message_id, limit_search=100, search_by='all')",
+        desc: "یک پیام خاص را از تاریخچه یا حافظه کش پیدا کنید.",
+        params: [
+          ["chat_id", "str", "چت آیدی"],
+          ["message_id", "str", "شناسه پیام"],
+          ["limit_search", "int = 100", "محدودیت جستجو"],
+          ["search_by", "'messages' | 'get_updates' | 'all' = 'all'", "جستجو در"]
+        ],
+        returns: [
+          ["Message", "<a href='../models/index.html#update'>Message</a> | None", "پیام یا None"]
+        ],
+        example: `msg = await bot.get_message("b...", "msg_id")\nif msg:\n    print(msg.text)`
+      },
+      // ===== ۲۵. get_messages =====
+      {
+        id: "get_messages",
+        title: "گرفتن پیام‌های قبل از یک پیام",
+        signature: "async get_messages(chat_id, message_id, limit_search=100, get_befor=10, search_by='all')",
+        desc: "لیستی از پیام‌های قبل از message_id را برمی‌گرداند.",
+        params: [
+          ["chat_id", "str", "چت آیدی"],
+          ["message_id", "str", "شناسه پیام"],
+          ["limit_search", "int = 100", "محدودیت جستجو"],
+          ["get_befor", "int = 10", "تعداد پیام‌های قبل"],
+          ["search_by", "'messages' | 'get_updates' | 'all' = 'all'", "جستجو در"]
+        ],
+        returns: [
+          ["Messages", "List[<a href='../models/index.html#update'>Message</a>] | None", "لیست پیام‌ها"]
+        ],
+        example: `msgs = await bot.get_messages("b...", "msg_id", get_befor=5)\nfor m in msgs:\n    print(m.text)`
+      },
+      // ===== ۲۶. ban_chat_member =====
+      {
+        id: "ban_chat_member",
+        title: "مسدود کردن عضو از چت",
+        signature: "async ban_chat_member(chat_id, user_id)",
+        desc: "کاربر را از گروه/کانال حذف و مسدود می‌کند.",
+        params: [
+          ["chat_id", "str", "چت آیدی"],
+          ["user_id", "str", "آیدی کاربر"]
+        ],
+        returns: null,
+        example: `await bot.ban_chat_member("group_id", "user_id")`
+      },
+      // ===== ۲۷. unban_chat_member =====
+      {
+        id: "unban_chat_member",
+        title: "رفع مسدودیت عضو",
+        signature: "async unban_chat_member(chat_id, user_id)",
+        desc: "کاربر را از حالت مسدود خارج می‌کند.",
+        params: [
+          ["chat_id", "str", "چت آیدی"],
+          ["user_id", "str", "آیدی کاربر"]
+        ],
+        returns: null,
+        example: `await bot.unban_chat_member("group_id", "user_id")`
+      }
+    ];
+
+    function renderDocs() {
+      const container = document.getElementById('methods-container');
+      const tocList = document.getElementById('toc-list');
+      container.innerHTML = '';
+      tocList.innerHTML = '';
+
+      methodsData.forEach((method, index) => {
+
+        const section = document.createElement('section');
+        section.className = 'method';
+        section.id = method.id;
+
+        const title = document.createElement('h2');
+        title.textContent = method.title;
+        section.appendChild(title);
+
+        if (method.signature) {
+          const sig = document.createElement('div');
+          sig.className = 'signature';
+          sig.textContent = method.signature;
+          section.appendChild(sig);
+        }
+
+        if (method.desc) {
+          const desc = document.createElement('div');
+          desc.className = 'desc';
+          desc.textContent = method.desc;
+          section.appendChild(desc);
+        }
+
+        if (method.params && method.params.length > 0) {
+          const tableTitle = document.createElement('p');
+          tableTitle.style.fontWeight = 'bold';
+          tableTitle.style.margin = '1.5rem 0 0.5rem';
+          tableTitle.textContent = '📥 ورودی‌ها';
+          section.appendChild(tableTitle);
+
+          const div = document.createElement('div');
+          div.className = 'table-responsive';
+          const table = document.createElement('table');
+          const thead = `<thead><tr><th>فیلد</th><th>نوع</th><th>توضیحات</th></tr></thead>`;
+          let tbody = '<tbody>';
+          method.params.forEach(p => {
+            tbody += `<tr><td><code>${p[0]}</code></td><td>${p[1]}</td><td>${p[2]}</td></tr>`;
+          });
+          tbody += '</tbody>';
+          table.innerHTML = thead + tbody;
+          div.appendChild(table);
+          section.appendChild(div);
+        }
+
+        if (method.returns && method.returns.length > 0) {
+          const tableTitle = document.createElement('p');
+          tableTitle.style.fontWeight = 'bold';
+          tableTitle.style.margin = '1.5rem 0 0.5rem';
+          tableTitle.textContent = '📤 خروجی';
+          section.appendChild(tableTitle);
+
+          const div = document.createElement('div');
+          div.className = 'table-responsive';
+          const table = document.createElement('table');
+          const thead = `<thead><tr><th>فیلد</th><th>نوع</th><th>توضیحات</th></tr></thead>`;
+          let tbody = '<tbody>';
+          method.returns.forEach(r => {
+            tbody += `<tr><td><code>${r[0]}</code></td><td>${r[1]}</td><td>${r[2]}</td></tr>`;
+          });
+          tbody += '</tbody>';
+          table.innerHTML = thead + tbody;
+          div.appendChild(table);
+          section.appendChild(div);
+        }
+
+        if (method.example) {
+          const exTitle = document.createElement('p');
+          exTitle.style.fontWeight = 'bold';
+          exTitle.style.margin = '1.8rem 0 0.5rem';
+          exTitle.textContent = '🧪 مثال';
+          section.appendChild(exTitle);
+
+          const wrapper = document.createElement('div');
+          wrapper.className = 'code-block-wrapper';
+          const btn = document.createElement('button');
+          btn.className = 'copy-btn';
+          btn.textContent = 'کپی';
+          wrapper.appendChild(btn);
+
+          const pre = document.createElement('pre');
+          const code = document.createElement('code');
+          code.className = 'language-python';
+          code.textContent = method.example.trim();
+          pre.appendChild(code);
+          wrapper.appendChild(pre);
+          section.appendChild(wrapper);
+        }
+
+        container.appendChild(section);
+
+        const tocItem = document.createElement('li');
+        const tocLink = document.createElement('a');
+        tocLink.href = `#${method.id}`;
+        tocLink.textContent = method.title;
+        tocItem.appendChild(tocLink);
+        tocList.appendChild(tocItem);
+      });
+
+      document.querySelectorAll('.copy-btn').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+          const pre = this.nextElementSibling;
+          const code = pre.querySelector('code');
+          navigator.clipboard.writeText(code.textContent).then(() => {
+            this.textContent = '✅ کپی شد!';
+            setTimeout(() => { this.textContent = 'کپی'; }, 1200);
+          });
+        });
+      });
+
+      if (window.Prism) {
+        Prism.highlightAll();
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', renderDocs);
+  </script>
+
+</body>
+</html>
