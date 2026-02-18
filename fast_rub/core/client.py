@@ -1,5 +1,6 @@
 import asyncio
 import inspect
+import logging
 from functools import wraps
 from pathlib import Path
 from collections import deque
@@ -122,11 +123,12 @@ class Client:
         max_retries: int = 3,
         show_progress: Optional[bool] = None,
         keeper_messages: int = 500,
+        logger: Optional[logging.Logger] = None
     ):
         """Client for login and setting robot / کلاینت برای لوگین و تنظیمات ربات"""
         name = Utils.name_session(name_session)
         self.name_session = name
-        self.token = token
+        self.token = token # pyright: ignore[reportAttributeAccessIssue]
         self.save_logs = save_logs
         self.view_logs = view_logs
         self.display_welcome = display_welcome
@@ -139,12 +141,15 @@ class Client:
         self.keeper_messages = keeper_messages
         self.use_to_fastrub_webhook_on_message = use_to_fastrub_webhook_on_message
         self.use_to_fastrub_webhook_on_button = use_to_fastrub_webhook_on_button
-        self.urls = base_urls
-        loop = asyncio.get_running_loop()
-        loop.create_task(self.start())
+        self.urls: List[str] = base_urls
+        if logger:
+            self.logger = logger
+        else:
+            self.logger = logging.getLogger("fast_rub")
+        self.start()
 
-    async def start(self):
-        """شروع کردن ربات"""
+    def start(self):
+        """تنظیمات شروع کردن ربات"""
         self._running = False
         self._fetch_messages_webhook = False
         self._fetch_messages_polling = False
@@ -177,13 +182,12 @@ class Client:
         try:
             self.log_to_file = self.session["setting_logs"]["save"]
             self.log_to_console = self.session["setting_logs"]["view"]
-        except:
+        except KeyError:
             pass
         if self.log_to_file is None:
             self.log_to_file = False
         if self.log_to_console is None:
             self.log_to_console = False
-        self.logger = logging.getLogger("fast_rub")
         if type(self.use_to_fastrub_webhook_on_message) is str:
             self._on_url = self.use_to_fastrub_webhook_on_message
         else:
@@ -194,12 +198,20 @@ class Client:
             self._button_url = f"https://fast-rub.ParsSource.ir/api/geting_button_updates/get?token={self.token}"
         
         self.main_url = self.urls[0]
+        new_urls = []
+        for url in self.urls:
+            if not url.endswith("/"):
+                new_urls.append(url + "/")
+            else:
+                new_urls.append(url)
+        self.urls = new_urls
         self.network = Network(
             token=self.token,
             logger=self.logger,
             max_retries=self.max_retries,
             user_agent=self.user_agent,
-            proxy=self.proxy
+            proxy=self.proxy,
+            base_urls=self.urls
         )
         setup_logging(log_to_console=self.log_to_console,log_to_file=self.log_to_file)
         if self.display_welcome:
@@ -722,6 +734,9 @@ class Client:
         self.logger.error("پیام ها پیدا نشدند !")
         return None
 
+    get_messages_by_id = get_messages
+    get_message_inveral = get_messages
+
     @async_to_sync
     async def forward_message(
         self,
@@ -1068,48 +1083,7 @@ class Client:
         )
         return result
 
-    @async_to_sync
-    async def send_document(
-        self,
-        chat_id: str,
-        file: Union[str , Path , bytes],
-        name_file: Optional[str] = None,
-        text : Optional[str] = None,
-        reply_to_message_id : Optional[str] = None,
-        disable_notification: Optional[bool] = False,
-        auto_delete: Optional[int] = None,
-        parse_mode: Literal["Markdown","HTML",None] = "Markdown",
-        meta_data: list = [],
-        inline_keypad: Optional[list] = None,
-        keypad: Optional[list] = None,
-        resize_keyboard: Optional[bool] = True,
-        on_time_keyboard: Optional[bool] = False,
-        upload_by: Literal["aiohttp", "httpx"] = "aiohttp",
-        show_progress: bool = True,
-        chunk_size: int = 64 * 1024
-    ) -> msg_update:
-        "ارسال فایل / send file"
-        self.logger.info("استفاده از متود send_document")
-        result = await self.base_send_file(
-            chat_id=chat_id,
-            file=file,
-            name_file=name_file,
-            text=text,
-            reply_to_message_id=reply_to_message_id,
-            type_file="File",
-            disable_notification=disable_notification,
-            auto_delete=auto_delete,
-            parse_mode=parse_mode,
-            meta_data=meta_data,
-            inline_keypad=inline_keypad,
-            keypad=keypad,
-            resize_keyboard=resize_keyboard,
-            on_time_keyboard=on_time_keyboard,
-            upload_by=upload_by,
-            show_progress=show_progress,
-            chunk_size=chunk_size
-        )
-        return result
+    send_document = send_file
 
     @async_to_sync
     async def send_image(
@@ -1153,6 +1127,9 @@ class Client:
             chunk_size=chunk_size
         )
         return result
+
+    send_photo = send_image
+    send_picture = send_image
 
     @async_to_sync
     async def send_video(
@@ -1617,7 +1594,7 @@ class Client:
                             continue
                         update = Update(result, self)
                         is_edited = result["type"] == "UpdatedMessage"
-                        is_deleted = result["type"] = "RemovedMessage"
+                        is_deleted = result["type"] == "RemovedMessage"
                         for handler_info in self._message_handlers_webhook:
                             handler = handler_info["handler"]
                             edited_messages_option = handler_info["edited_messages"]
@@ -1690,7 +1667,7 @@ class Client:
         if self._fetch_messages_polling and self._message_handlers_polling:
             tasks.append(self._process_messages_polling())
         if not tasks:
-            raise ValueError("No handlers registered. Use on_message() or on_message_updates() or on_button() or on_edit_updates() first.")
+            raise ValueError("No handlers registered. Use decorator first.")
         try:
             mes = await self.get_updates(limit=100)
             self.next_offset_id_get_message = mes["next_offset_id"]
@@ -1701,7 +1678,7 @@ class Client:
     async def run(self):
         """اجرای اصلی بات - فقط اگر هندلرهای مربوطه ثبت شده باشند"""
         if not (self._fetch_messages_webhook or self._fetch_buttons or self._fetch_messages_polling or self._fetch_edit):
-            raise ValueError("No update types selected. Use on_message() or on_message_updates() or on_button() or on_edit_updates() first.")
+            raise ValueError("No update types selected. Use decorator first.")
         
         if (self._fetch_messages_webhook and not self._message_handlers_webhook) or (self._fetch_messages_polling and not self._message_handlers_polling):
             raise ValueError("Message handlers registered but no message callbacks defined.")
@@ -1713,7 +1690,6 @@ class Client:
             raise ValueError("Edit handlers registered but no message callbacks defined.")
 
         self._running = True
-        await self.start()
         self.logger.info("ربات در حال دریافت پیام ها")
         Utils.print_time("Start", color = Colors.BLUE)
         await self._run_all()
@@ -1751,7 +1727,7 @@ class Client:
         self.stop(type_stop="all")
     
     async def __aenter__(self):
-        await self.start()
+        self.start()
         return self
     
     async def __aexit__(self, exc_type, exc_val, exc_tb):
