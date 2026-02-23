@@ -1,7 +1,8 @@
+from ..type.errors import ServerRubikaError
+from ..utils.utils import Utils
+from pathlib import Path
 from typing import Optional, Union, Dict, Any, List, Literal
 from tqdm.asyncio import tqdm
-from pathlib import Path
-from ..type.errors import ServerRubikaError
 import os
 import aiofiles
 import asyncio
@@ -263,7 +264,6 @@ class Network:
                 self.logger.error("Error Converting Response To JSON")
                 raise ServerRubikaError("Error Converting Response To JSON")
 
-            from ..utils.utils import Utils
             if not Utils.check_data(result):
                 self.logger.error(f"Server Response Error: {result}")
                 raise ServerRubikaError(result)
