@@ -1,11 +1,12 @@
 import asyncio
 import inspect
 import logging
+import time
 from functools import wraps
 from pathlib import Path
 from collections import deque
 from typing import (Any, Dict, List, Literal, Optional, Tuple,
-                    Union)
+                    Union, Callable)
 
 import aiofiles
 import httpx
@@ -1471,18 +1472,20 @@ class Client:
     async def _process_messages_polling(self):
         while self._running:
             try:
-                mes = await self.get_updates(limit=100, offset_id=self.next_offset_id)
+                messages = await self.get_updates(limit=100, offset_id=self.next_offset_id)
                 try:
-                    self.next_offset_id = mes["next_offset_id"]
-                except:
+                    self.next_offset_id = messages["next_offset_id"]
+                except KeyError:
                     pass
-                messages = mes["updates"]
+                messages = messages["updates"]
                 for message in messages:
                     if message["type"] not in ["NewMessage", "UpdatedMessage", "RemoveMessage"]:
                         continue
                     update = Update(message, self)
+                    if not update.time + 5 > time.time():
+                        continue
                     is_edited = message["type"] == "UpdatedMessage"
-                    is_deleted = message["type"] = "RemoveMessage"
+                    is_deleted = message["type"] == "RemoveMessage"
                     for handler_info in self._message_handlers_polling:
                         handler = handler_info["handler"]
                         edited_messages_option = handler_info["edited_messages"]
@@ -1671,7 +1674,7 @@ class Client:
         try:
             mes = await self.get_updates(limit=100)
             self.next_offset_id_get_message = mes["next_offset_id"]
-        except:
+        except KeyError:
             pass
         await asyncio.gather(*tasks)
 
@@ -1719,6 +1722,53 @@ class Client:
             del self._button_url
             del self.urls
             del self.main_url
+    
+    def add_handler(
+        self,
+        handler: Callable,
+        type_handler: Literal["polling", "webhook", "button"],
+        filters: Optional[Filter] = None,
+        edited_messages: Literal[False, True, "both"] = False,
+        deleted_messages: Literal[False, True, "both"] = False
+    ):
+        if type_handler in ["polling", "webhook"]:
+            self._fetch_messages = True
+            @wraps(handler)
+            async def wrapped(update):
+                try:
+                    if filters is not None:
+                        try:
+                            if not filters(update):
+                                return
+                        except Exception as e:
+                            print(f"[FILTER ERROR] {filters} -> {e}")
+                            return
+
+                    if inspect.iscoroutinefunction(handler):
+                        return await handler(update)
+                    else:
+                        return handler(update)
+
+                except Exception as e:
+                    print(f"[HANDLER ERROR] {handler.__name__} -> {e}")
+                    return None
+            handler_info = {
+                "handler": wrapped,
+                "filters": filters,
+                "edited_messages": edited_messages,
+                "deleted_messages": deleted_messages
+            }
+            if edited_messages:
+                self._fetch_edit = True
+            if type_handler == "polling":
+                self._fetch_messages_polling = True
+                self._message_handlers_polling.append(handler_info)
+            else:
+                self._fetch_messages_webhook = True
+                self._message_handlers_webhook.append(handler_info)
+        else:
+            self._fetch_buttons = True
+            self._button_handlers.append(handler)
     
     def __enter__(self):
         return self
