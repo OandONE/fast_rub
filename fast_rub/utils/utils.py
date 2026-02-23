@@ -167,7 +167,7 @@ class Utils:
     # Other
 
     @staticmethod
-    async def d_file(file: Union[str , Path , bytes], file_name: str, network: "Network") -> Dict[str, Tuple[str, Union[bytes, bytearray], str]]:
+    async def d_file(file: Union[str , Path , bytes], file_name: str, network: 'Network') -> Dict[str, Tuple[str, Union[bytes, bytearray], str]]:
         if isinstance(file, (bytes, bytearray)):
             d_file = {"file": (file_name, file, "application/octet-stream")}
         else:
