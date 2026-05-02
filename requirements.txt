@@ -1,6 +1,7 @@
 httpx[http2]==0.28.1
-aiohttp==3.8.3
+aiohttp==3.9.0
 aiofiles==24.1.0
+aiosqlite==0.21.0
 filetype
 mutagen
 pycryptodome
