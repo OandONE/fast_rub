@@ -22,6 +22,7 @@ from ..utils.colors import Colors
 from ..utils.logger import logging, setup_logging
 from ..utils.utils import Utils
 from ..utils.text_parser import TextParser
+from ..utils.session import Session
 
 
 class Client:
@@ -85,13 +86,12 @@ class Client:
     proxy : Optional[str]
         پراکسی برای ارتباطات شبکه
 
-    main_parse_mode : Literal['Markdown', 'HTML', 'Unknown', None] = "Unknown"
+    main_parse_mode : Literal['Markdown', 'HTML', 'Null', None] = "Null"
         پارس مود پیش‌فرض پیام‌ها
-        اگر مقدار 'Unknown' باشد، پارس مود هر متد به صورت جداگانه اعمال می‌شود
+        اگر مقدار 'Null' باشد، پارس مود هر متد به صورت جداگانه اعمال می‌شود
 
     base_urls : list = [
-            "https://botapi.rubika.ir/",
-            "https://messengerg2b1.iranlms.ir/"
+            "https://botapi.rubika.ir/", # "https://messengerg2b1.iranlms.ir/"
         ]
         لیست آدرس های اصلی برای ارسال درخواست
 
@@ -103,6 +103,15 @@ class Client:
     
     keeper_messages: int = 500
         تعداد پیام ها برای ذخیره شدن در لیست از سمت پروسس های گرفتن پیام ها برای متود گت مسیج
+    
+    offset_id: Optional[str] = None
+        آفست آیدی برای گرفتن پیام های پولینگ
+    
+    save_offset_id: bool = True
+        ذخیره شدن آفست آیدی در دیتابیس
+    
+    run_start: bool = True
+        اجرا کردن متود start با asyncio.run - توصیه می شود متود start را در محیط کد خود اجرا کنید و این مقدار با نادرست کنید
     """
     def __init__(
         self,
@@ -116,19 +125,21 @@ class Client:
         save_logs: Optional[bool] = None,
         view_logs: Optional[bool] = None,
         proxy: Optional[str] = None,
-        main_parse_mode: Literal['Markdown', 'HTML', "Unknown", None] = "Unknown",
+        main_parse_mode: Literal['Markdown', 'HTML', "Null", None] = "Null",
         base_urls: list = [
             "https://botapi.rubika.ir/",
-            "https://messengerg2b1.iranlms.ir/"
+            # "https://messengerg2b1.iranlms.ir/"
         ],
         max_retries: int = 3,
         show_progress: Optional[bool] = None,
         keeper_messages: int = 500,
-        logger: Optional[logging.Logger] = None
+        logger: Optional[logging.Logger] = None,
+        offset_id: Optional[str] = None,
+        save_offset_id: bool = True,
+        run_start: bool = True
     ):
         """Client for login and setting robot / کلاینت برای لوگین و تنظیمات ربات"""
-        name = Utils.name_session(name_session)
-        self.name_session = name
+        self.name_session = name_session
         self.token = token # pyright: ignore[reportAttributeAccessIssue]
         self.save_logs = save_logs
         self.view_logs = view_logs
@@ -137,19 +148,22 @@ class Client:
         self.user_agent = user_agent
         self.proxy = proxy
         self.show_progress = show_progress
-        self.main_parse_mode: Literal['Markdown', 'HTML', 'Unknown', None] = main_parse_mode
+        self.main_parse_mode: Literal['Markdown', 'HTML', 'Null', None] = main_parse_mode
         self.max_retries = max_retries
         self.keeper_messages = keeper_messages
         self.use_to_fastrub_webhook_on_message = use_to_fastrub_webhook_on_message
         self.use_to_fastrub_webhook_on_button = use_to_fastrub_webhook_on_button
         self.urls: List[str] = base_urls
+        self.offset_id = offset_id
+        self.save_offset_id = save_offset_id
         if logger:
             self.logger = logger
         else:
             self.logger = logging.getLogger("fast_rub")
-        self.start()
+        if run_start:
+            asyncio.run(self.start())
 
-    def start(self):
+    async def start(self):
         """تنظیمات شروع کردن ربات"""
         self._running = False
         self._fetch_messages_webhook = False
@@ -162,27 +176,27 @@ class Client:
         self._edit_handlers_ = []
         self.last = []
         self._message_handlers_polling = []
-        self.next_offset_id = ""
-        self.next_offset_id_ = ""
         self.next_offset_id_get_message = None
         self.geted_u = 0
         self.list_commands = []
         self.messages = deque(maxlen=self.keeper_messages)
-        self.session = Utils.open_session(
-            name_session=self.name_session,
+        self.session = await Session.open(
+            name=self.name_session,
             token=self.token,
             user_agent=self.user_agent,
             time_out=self.time_out,
             display_welcome=self.display_welcome,
             view_logs=self.view_logs,
-            save_logs=self.save_logs
+            save_logs=self.save_logs,
+            offset_id=self.offset_id,
+            save_offset_id=self.save_offset_id
         )
-        self.token: str = self.session["token"]
-        self.time_out: float = self.session["time_out"]
-        self.user_agent = self.session["user_agent"]
+        self.token: str = self.session.token
+        self.time_out = self.session.time_out
+        self.user_agent = self.session.user_agent
         try:
-            self.log_to_file = self.session["setting_logs"]["save"]
-            self.log_to_console = self.session["setting_logs"]["view"]
+            self.log_to_file = self.session.save_logs
+            self.log_to_console = self.session.view_logs
         except KeyError:
             pass
         if self.log_to_file is None:
@@ -199,13 +213,9 @@ class Client:
             self._button_url = f"https://fast-rub.ParsSource.ir/api/geting_button_updates/get?token={self.token}"
         
         self.main_url = self.urls[0]
-        new_urls = []
-        for url in self.urls:
-            if not url.endswith("/"):
-                new_urls.append(url + "/")
-            else:
-                new_urls.append(url)
-        self.urls = new_urls
+        self.urls = Utils.format_url(self.urls)
+        self.next_offset_id = self.session.offset_id
+        self.save_offset_id = self.session.save_offset_id
         self.network = Network(
             token=self.token,
             logger=self.logger,
@@ -235,30 +245,6 @@ class Client:
         )
         version = response.text
         return version
-
-    @async_to_sync
-    async def set_logging(
-        self,
-        saving: Optional[bool] = None,
-        viewing: Optional[bool] = None
-    ):
-        """on or off viewing and saveing logs / فعال یا غیرفعال کردن نمایش و ذخیره لاگ"""
-        self.logger.info("استفاده از متود set_logging")
-        if saving is None:
-            saving = self.log_to_file
-        if viewing is None:
-            viewing = self.log_to_console
-        try:
-            self.session["setting_logs"]["save"] = saving
-            self.session["setting_logs"]["view"] = viewing
-        except:
-            self.session["setting_logs"] = {
-                "save":saving,
-                "view":viewing
-            }
-        Utils.save_dict(self.session, self.name_session)
-        self.logger = setup_logging(log_to_file=saving, log_to_console=viewing)
-        self.logger.info(f"logging تنظیم شد | نمایش: {viewing} | ذخیره: {saving}")
 
     @async_to_sync
     async def send_requests(
@@ -315,22 +301,22 @@ class Client:
         return BotModel(data=result)
 
     @async_to_sync
-    async def set_main_parse_mode(self,parse_mode: Literal['Markdown', 'HTML', 'Unknown', None]) -> None:
+    async def set_main_parse_mode(self,parse_mode: Literal['Markdown', 'HTML', 'Null', None]) -> None:
         """setting parse mode main / تنظیم کردن مقدار اصلی پارس مود
 
 توجه :
 در صورت تغییر مارکدوان در کلاینت یا متود ست مین پارس مود , پارس مود همیشه روی آن حالت قرار میگیرد
-در صورتی که میخواهید از این حالت خارج شود و از ورودی های متود ها پیروی کند مقدار آن را در متود ست مین پارس مود برابر 'Unknown' کنید"""
+در صورتی که میخواهید از این حالت خارج شود و از ورودی های متود ها پیروی کند مقدار آن را در متود ست مین پارس مود برابر 'Null' کنید"""
         self.main_parse_mode = parse_mode
 
     @async_to_sync
     async def _parse_mode_text(
         self,
         text: str,
-        parse_mode: Literal["Markdown","HTML","Unknown",None] = "Markdown"
+        parse_mode: Literal["Markdown","HTML","Null",None] = "Markdown"
     ) -> Tuple[List[Dict[str, Any]], str]:
         """setting parse mode text / تنظیم پارس مود متن"""
-        if self.main_parse_mode != "Unknown":
+        if self.main_parse_mode != "Null":
             parse_mode = self.main_parse_mode
         if parse_mode == "Markdown":
             data = TextParser.checkMarkdown(text)
@@ -1421,6 +1407,60 @@ class Client:
     ban_channel_member = ban_chat_member
     unban_channel_member = unban_chat_member
 
+    async def resend_message(
+        self,
+        message_id: str,
+        from_chat_id: str,
+        to_chat_id: str,
+        auto_delete: Optional[int] = None,
+        parse_mode: Literal["Markdown","HTML",None] = "Markdown",
+        meta_data: list = [],
+        name_save_file: Optional[str] = None,
+        show_progress: bool = True,
+        chunk_size: int = 64 * 1024
+    ) -> msg_update:
+        """re send message / ارسال مجدد پیام"""
+        msg = await self.get_message_by_id(from_chat_id, message_id)
+        if msg:
+            text = msg.text
+            file_file_id = msg.file_id
+            file_file_name = str(msg.file_name)
+            if (not file_file_id) and text:
+                return await self.send_text(
+                    text=text,
+                    chat_id=to_chat_id,
+                    auto_delete=auto_delete,
+                    parse_mode=parse_mode,
+                    meta_data=meta_data
+                )
+            if file_file_id:
+                download_name = name_save_file if name_save_file else file_file_name
+                type_file = Utils.type_file(name_file=download_name)
+                await self.download_file(
+                    file_file_id,
+                    download_name,
+                    show_progress
+                )
+                return await self.base_send_file(
+                    chat_id=to_chat_id,
+                    file=download_name,
+                    name_file=download_name,
+                    text=text,
+                    auto_delete=auto_delete,
+                    parse_mode=parse_mode,
+                    meta_data=meta_data,
+                    show_progress=show_progress,
+                    chunk_size=chunk_size,
+                    type_file=type_file
+                )
+            self.logger.warn("Can't Find Message !")
+            raise KeyError("Can't Find Message !")
+        else:
+            self.logger.warn("Can't Find Message !")
+            raise KeyError("Can't Find Message !")
+
+    copy_message = resend_message
+
     # decorators
 
     def _schedule_handler(self, handler, update):
@@ -1436,38 +1476,76 @@ class Client:
         edited_messages: Literal[False, True, "both"] = False,
         deleted_messages: Literal[False, True, "both"] = False
     ):
-        """برای دریافت پیام‌های معمولی"""
-        self._fetch_messages_polling = True
+        """برای دریافت پیام‌های معمولی به صورت پولینگ"""
         def decorator(handler):
-            @wraps(handler)
-            async def wrapped(update):
-                try:
-                    if filters is not None:
-                        try:
-                            if not filters(update):
-                                return
-                        except Exception as e:
-                            print(f"[FILTER ERROR] {filters} -> {e}")
-                            return
-
-                    if inspect.iscoroutinefunction(handler):
-                        return await handler(update)
-                    else:
-                        return handler(update)
-
-                except Exception as e:
-                    print(f"[HANDLER ERROR] {handler.__name__} -> {e}")
-                    return None
-
-            handler_info = {
-                "handler": wrapped,
-                "filters": filters,
-                "edited_messages": edited_messages,
-                "deleted_messages": deleted_messages
-            }
-            self._message_handlers_polling.append(handler_info)
+            self.add_handler(
+                handler=handler,
+                type_handler="polling",
+                filters=filters,
+                edited_messages=edited_messages,
+                deleted_messages=deleted_messages
+            )
             return handler
         return decorator
+
+    def on_message_updates(
+        self,
+        filters: Optional[Filter] = None,
+        edited_messages: Literal[False, True, "both"] = False,
+        deleted_messages: Literal[False, True, "both"] = False
+    ):
+        """گرفتن پیام ها با وبهوک"""
+        def decorator(handler):
+            self.add_handler(
+                handler=handler,
+                type_handler="webhook",
+                filters=filters,
+                edited_messages=edited_messages,
+                deleted_messages=deleted_messages
+            )
+            return handler
+        return decorator
+
+    def on_button(self):
+        """برای دریافت کلیک های دکمه های شیشه ای"""
+        def decorator(handler):
+            self.add_handler(
+                handler=handler,
+                type_handler="button"
+            )
+            return handler
+        return decorator
+    
+    on_inline = on_button
+    on_inline_button = on_button
+    on_glass_buttons = on_button
+    on_glass_inline = on_button
+    
+    def on_edit_updates(self, filters: Optional[Filter] = None):
+        """برای دریافت ویرایش شدن پیام ها"""
+        return self.on_message_updates(filters=filters, edited_messages=True)
+    
+    def on_delete_updates(self, filters: Optional[Filter] = None):
+        """برای دریافت پیام های حذف شده"""
+        return self.on_message_updates(filters=filters, deleted_messages=True)
+
+    def on_all_message_updates(self, filters: Optional[Filter] = None):
+        """گرفتن تمامی پیام ها(ارسال شده/ویرایش شده/حذف شده)"""
+        return self.on_message_updates(filters=filters, edited_messages="both", deleted_messages="both")
+    
+
+    def on_edit(self, filters: Optional[Filter] = None):
+        """برای دریافت ویرایش شدن پیام ها"""
+        return self.on_message(filters=filters, edited_messages=True)
+    
+    def on_delete(self, filters: Optional[Filter] = None):
+        """برای دریافت پیام های حذف شده"""
+        return self.on_message(filters=filters, deleted_messages=True)
+
+    def on_all_message(self, filters: Optional[Filter] = None):
+        """گرفتن تمامی پیام ها(ارسال شده/ویرایش شده/حذف شده)"""
+        return self.on_message(filters=filters, edited_messages="both", deleted_messages="both")
+
 
     async def _process_messages_polling(self):
         while self._running:
@@ -1475,6 +1553,9 @@ class Client:
                 messages = await self.get_updates(limit=100, offset_id=self.next_offset_id)
                 try:
                     self.next_offset_id = messages["next_offset_id"]
+                    if self.save_offset_id:
+                        self.session.offset_id = self.next_offset_id
+                        await self.session.save()
                 except KeyError:
                     pass
                 messages = messages["updates"]
@@ -1514,76 +1595,6 @@ class Client:
                 await asyncio.sleep(5)
             except Exception as e:
                 self.logger.error(f"خطای ناشناخته در _process_messages_polling: {e}")
-
-
-    def on_message_updates(
-        self,
-        filters: Optional[Filter] = None,
-        edited_messages: Literal[False, True, "both"] = False,
-        deleted_messages: Literal[False, True, "both"] = False
-    ):
-        """گرفتن پیام ها با وبهوک"""
-        self._fetch_messages = True
-
-        def decorator(handler):
-            @wraps(handler)
-            async def wrapped(update):
-                try:
-                    if filters is not None:
-                        try:
-                            if not filters(update):
-                                return
-                        except Exception as e:
-                            print(f"[FILTER ERROR] {filters} -> {e}")
-                            return
-
-                    if inspect.iscoroutinefunction(handler):
-                        return await handler(update)
-                    else:
-                        return handler(update)
-
-                except Exception as e:
-                    print(f"[HANDLER ERROR] {handler.__name__} -> {e}")
-                    return None
-
-            handler_info = {
-                "handler": wrapped,
-                "filters": filters,
-                "edited_messages": edited_messages,
-                "deleted_messages": deleted_messages
-            }
-            
-            self._message_handlers_webhook.append(handler_info)
-            return wrapped
-
-        return decorator
-
-
-    def on_edit_updates(self, filters: Optional[Filter] = None):
-        """برای دریافت ویرایش شدن پیام ها"""
-        return self.on_message_updates(filters=filters, edited_messages=True)
-    
-    def on_delete_updates(self, filters: Optional[Filter] = None):
-        """برای دریافت پیام های حذف شده"""
-        return self.on_message_updates(filters=filters, deleted_messages=True)
-
-    def on_all_message_updates(self, filters: Optional[Filter] = None):
-        """گرفتن تمامی پیام ها(ارسال شده/ویرایش شده/حذف شده)"""
-        return self.on_message_updates(filters=filters, edited_messages="both", deleted_messages="both")
-    
-
-    def on_edit(self, filters: Optional[Filter] = None):
-        """برای دریافت ویرایش شدن پیام ها"""
-        return self.on_message(filters=filters, edited_messages=True)
-    
-    def on_delete(self, filters: Optional[Filter] = None):
-        """برای دریافت پیام های حذف شده"""
-        return self.on_message(filters=filters, deleted_messages=True)
-
-    def on_all_message(self, filters: Optional[Filter] = None):
-        """گرفتن تمامی پیام ها(ارسال شده/ویرایش شده/حذف شده)"""
-        return self.on_message(filters=filters, edited_messages="both", deleted_messages="both")
-
 
     async def _process_messages_webhook(self):
         while self._running:
@@ -1625,25 +1636,6 @@ class Client:
                 await self.set_token_fast_rub()
             await asyncio.sleep(0.1)
 
-    # Inline Button
-
-    def on_button(self):
-        """برای دریافت پیام ها به صورت پولینگ"""
-        self._fetch_buttons = True
-        def decorator(handler):
-            @wraps(handler)
-            async def wrapped(update):
-                try:
-                    if inspect.iscoroutinefunction(handler):
-                        await handler(update)
-                    else:
-                        handler(update)
-                except Exception as e:
-                    self.logger.exception(f"Error in button handler: {e}")
-            self._button_handlers.append(wrapped)
-            return handler
-        return decorator
-
     async def _fetch_button_updates(self):
         while self._running:
             response = await self.network.request(self._button_url, timeout=self.time_out,type_send="GET")
@@ -1672,8 +1664,8 @@ class Client:
         if not tasks:
             raise ValueError("No handlers registered. Use decorator first.")
         try:
-            mes = await self.get_updates(limit=100)
-            self.next_offset_id_get_message = mes["next_offset_id"]
+            messages = await self.get_updates(limit=100)
+            self.next_offset_id_get_message = messages["next_offset_id"]
         except KeyError:
             pass
         await asyncio.gather(*tasks)
@@ -1766,6 +1758,7 @@ class Client:
             else:
                 self._fetch_messages_webhook = True
                 self._message_handlers_webhook.append(handler_info)
+            return wrapped
         else:
             self._fetch_buttons = True
             self._button_handlers.append(handler)
@@ -1777,7 +1770,7 @@ class Client:
         self.stop(type_stop="all")
     
     async def __aenter__(self):
-        self.start()
+        await self.start()
         return self
     
     async def __aexit__(self, exc_type, exc_val, exc_tb):
