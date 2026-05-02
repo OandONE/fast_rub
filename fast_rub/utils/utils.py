@@ -3,14 +3,14 @@ from pathlib import Path
 import aiofiles
 from .colors import cprint, Colors
 import time
-from .encryption import Encryption
-import json
-import os
-from ..type.errors import CreateSessionError
 if TYPE_CHECKING:
     from ..network.network import Network
 
-SUFFIX = "faru"
+DATA_SUFFIXS = {
+    "Image": ("png", "jpg", "gif", "jpeg", "webp", "svg", "ico"),
+    "Video": ("mp4", "mkv", "mov", "avi", "webm", "m4v", "mpg", "mpeg"),
+    "Music": ("mp3", "wav", "aac", "m4a", "ogg")
+}
 
 class Utils:
     @staticmethod
@@ -32,8 +32,8 @@ class Utils:
     @staticmethod
     def print_time(text: str, time_sleep: float = 0.07, color: str = Colors.WHITE) -> None:
         k = ""
-        for text in text:
-            k += text
+        for ch in text:
+            k += ch
             print(f"{color}{k}{Colors.RESET}", end="\r")
             time.sleep(time_sleep)
         cprint("",Colors.WHITE)
@@ -51,86 +51,6 @@ class Utils:
         SAFETY_FACTOR = 1.5
         timeout_seconds = (file_size_bytes / upload_speed_bps) * SAFETY_FACTOR
         return max(int(timeout_seconds), 30)
-
-    # Session
-    
-    @staticmethod
-    def session_dict(name_session: str, token: str, user_agent: Optional[str] = None, time_out: Optional[float] = 30.0, display_welcome: bool = False, view_logs: Optional[bool] = False, save_logs: Optional[bool] = False) -> dict:
-        text_json_fast_rub_session = {
-            "name_session": name_session,
-            "token": token,
-            "user_agent": user_agent,
-            "time_out": time_out,
-            "display_welcome": display_welcome,
-            "setting_logs":{
-                "view":view_logs,
-                "save":save_logs
-            }
-        }
-        return text_json_fast_rub_session
-    
-    @staticmethod
-    def save_dict(data: dict, name_file: str):
-        json_fast_rub_session = json.dumps(data,indent=4,ensure_ascii=False)
-        json_fast_rub_session = Encryption.en(str(json_fast_rub_session))
-        Utils.save(json_fast_rub_session, name_file)
-
-    @staticmethod
-    def save(data: str, name_file: str):
-        with open(name_file, "w", encoding="utf-8") as file:
-            file.write(data)
-
-    @staticmethod
-    def create_session(name_session: str, token: Optional[str] = None, user_agent: Optional[str] = None, time_out: Optional[float] = 30.0, display_welcome: bool = False, view_logs: Optional[bool] = False, save_logs: Optional[bool] = False) -> bool:
-        try:
-            if token is None:
-                token = Utils.get_input("Write The Token » ")
-            session = Utils.session_dict(name_session,token,user_agent,time_out,display_welcome,view_logs,save_logs)
-            Utils.save_dict(session, Utils.name_session(name_session))
-            return True
-        except:
-            return False
-    
-    @staticmethod
-    def open_session(name_session: str, token: Optional[str] = None, user_agent: Optional[str] = None, time_out: Optional[float] = None, display_welcome: bool = False, view_logs: Optional[bool] = False, save_logs: Optional[bool] = False) -> dict:
-        path_session = Utils.name_session(name_session)
-        if os.path.isfile(path_session):
-            with open(path_session, "r", encoding="utf-8") as file:
-                encrypted_string = file.read().strip()
-            try:
-                decrypted = Encryption.de(encrypted_string)
-                session_data = json.loads(decrypted)
-            except:
-                cprint("Error for getting last data session !", Colors.RED)
-                creating = False
-                while not creating:
-                    creating = Utils.create_session(name_session,token,user_agent,time_out,display_welcome,view_logs,save_logs)
-                    if not creating:
-                        raise CreateSessionError("Can Not Create The Session !")
-                session_data = Utils.open_session(name_session,token,user_agent,time_out,display_welcome,view_logs,save_logs)
-            current_params = {
-                'token': token,
-                'user_agent': user_agent,
-                'time_out': time_out,
-                'display_welcome': display_welcome,
-                'setting_logs': {
-                    'view': view_logs,
-                    'save': save_logs
-                }
-            }
-            for param_name, param_value in current_params.items():
-                if param_name in session_data:
-                    if param_value is not None and session_data[param_name] != param_value:
-                        session_data[param_name] = param_value
-        else:
-            creating = False
-            while not creating:
-                creating = Utils.create_session(name_session,token,user_agent,time_out,display_welcome,view_logs,save_logs)
-                if not creating:
-                    raise CreateSessionError("Can Not Create The Session !")
-            session_data = Utils.open_session(name_session,token,user_agent,time_out,display_welcome,view_logs,save_logs)
-        return session_data
-    
 
     # Mata Data
 
@@ -159,10 +79,6 @@ class Utils:
         if meta_data:
             data["metadata"] = {"meta_data_parts": meta_data}
         return data
-    
-    @staticmethod
-    def name_session(name_session: str) -> str:
-        return name_session + "." + SUFFIX
     
     # Other
 
@@ -200,3 +116,27 @@ class Utils:
             return "Channel"
         else:
             raise ValueError("chat id is not found")
+    
+    @staticmethod
+    def format_url(urls: list) -> list:
+        new_urls = []
+        for url in urls:
+            if not url.endswith("/"):
+                new_urls.append(url + "/")
+            else:
+                new_urls.append(url)
+        return new_urls
+    
+    @staticmethod
+    def suffix_file(name_file: str) -> str:
+        end = name_file.split(".")[-1]
+        return end
+    
+    @staticmethod
+    def type_file(name_file: str) -> Literal["File", "Image", "Voice", "Music", "Gif" , "Video"]:
+        suffix = Utils.suffix_file(name_file=name_file)
+        for tp, suf in DATA_SUFFIXS.items():
+            if suffix in suf:
+                return tp # pyright: ignore[reportReturnType]
+        return "File"
+
