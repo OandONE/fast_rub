@@ -809,6 +809,31 @@ class Update:
         )
         return msg
     
+    @auto_async
+    async def resend_message(
+        self,
+        to_chat_id: Optional[str] = None,
+        auto_delete: Optional[int] = None,
+        parse_mode: Literal['Markdown', 'HTML'] = "Markdown",
+        meta_data: list = [],
+        name_save_file: Optional[str] = None,
+        show_progress: bool = True,
+        chunk_size: int = 64 * 1024
+    ):
+        to_chat_id = to_chat_id if to_chat_id else self.chat_id
+        return await self._client.resend_message(
+            message_id=self.message_id,
+            from_chat_id=self.chat_id,
+            to_chat_id=to_chat_id,
+            auto_delete=auto_delete,
+            parse_mode=parse_mode,
+            meta_data=meta_data,
+            name_save_file=name_save_file,
+            show_progress=show_progress,
+            chunk_size=chunk_size
+        )
+    
+    copy_message = resend_message
 
     def to_dict(
         self
