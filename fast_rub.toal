@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "fastrub"
-version = "2.9.6"
+version = "3.0.2"
 authors = [
     {name = "seyyed mohamd hosein", email = "mohamadhosein159159@gmail.com"},
 ]
