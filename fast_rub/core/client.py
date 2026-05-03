@@ -22,7 +22,8 @@ from ..utils.colors import Colors
 from ..utils.logger import logging, setup_logging
 from ..utils.utils import Utils
 from ..utils.text_parser import TextParser
-from ..utils.session import Session
+from ..db.session import Session
+from ..db.message_keeper import MessageKeeper
 
 
 class Client:
@@ -101,8 +102,11 @@ class Client:
     show_progress: Optional[bool]
         نمایش لاگ های ارسال انواع فایل 
     
-    keeper_messages: int = 500
-        تعداد پیام ها برای ذخیره شدن در لیست از سمت پروسس های گرفتن پیام ها برای متود گت مسیج
+    keeper_messages_ram: int = 500
+        تعداد پیام ها برای ذخیره شدن در لیست از سمت پروسس های گرفتن پیام ها برای متود گت مسیج در رم
+    
+    keeper_messages_db: int = 500
+        تعداد پیام ها برای ذخیره شدن در لیست از سمت پروسس های گرفتن پیام ها برای متود گت مسیج در دیتابیس
     
     offset_id: Optional[str] = None
         آفست آیدی برای گرفتن پیام های پولینگ
@@ -132,11 +136,12 @@ class Client:
         ],
         max_retries: int = 3,
         show_progress: Optional[bool] = None,
-        keeper_messages: int = 500,
+        keeper_messages_ram: int = 5_000,
+        keeper_messages_db: int = 0,
         logger: Optional[logging.Logger] = None,
         offset_id: Optional[str] = None,
         save_offset_id: bool = True,
-        run_start: bool = True
+        run_start: bool = True,
     ):
         """Client for login and setting robot / کلاینت برای لوگین و تنظیمات ربات"""
         self.name_session = name_session
@@ -150,12 +155,13 @@ class Client:
         self.show_progress = show_progress
         self.main_parse_mode: Literal['Markdown', 'HTML', 'Null', None] = main_parse_mode
         self.max_retries = max_retries
-        self.keeper_messages = keeper_messages
+        self.keeper_messages_ram = keeper_messages_ram
         self.use_to_fastrub_webhook_on_message = use_to_fastrub_webhook_on_message
         self.use_to_fastrub_webhook_on_button = use_to_fastrub_webhook_on_button
         self.urls: List[str] = base_urls
         self.offset_id = offset_id
         self.save_offset_id = save_offset_id
+        self.keeper_messages_db = keeper_messages_db
         if logger:
             self.logger = logger
         else:
@@ -179,7 +185,11 @@ class Client:
         self.next_offset_id_get_message = None
         self.geted_u = 0
         self.list_commands = []
-        self.messages = deque(maxlen=self.keeper_messages)
+        self.messages = deque(maxlen=self.keeper_messages_ram)
+        self.messages_db = MessageKeeper(
+            db_path=self.name_session,
+            number_keeper=self.keeper_messages_db
+        )
         self.session = await Session.open(
             name=self.name_session,
             token=self.token,
@@ -615,7 +625,7 @@ class Client:
             "getChat",
             data,
         )
-        return ChatModel(data=result)
+        return ChatModel(data=result["chat"])
 
     @async_to_sync
     async def get_updates(
@@ -647,12 +657,23 @@ class Client:
         if search_by in ("all", "messages"):
             self.logger.info("در حال جستجو پیام در بین پیام های ذخیره شده ...")
             for msg in self.messages:
-                if type(msg) is Update:
+                if isinstance(msg, Update):
                     if msg.message_id == message_id:
                         if msg.chat_id == chat_id or chat_id is None:
                             self.logger.info("پیام در بین پیام های ذخیره شده پیدا شد !")
                             return msg
-            self.logger.warn("پیام در بین پیام های ذخیره شده پیدا نشد !")
+            if self.keeper_messages_db and chat_id:
+                finder = await self.messages_db.find_message(
+                    chat_id=chat_id,
+                    message_id=message_id
+                )
+                if finder:
+                    self.logger.info("پیام در بین پیام های دیتابیس پیدا شد !")
+                    return Update(
+                        update_data=finder,
+                        client=self
+                    )
+            self.logger.warn("پیام در بین پیام های ذخیره شده و دیتابیس پیدا نشد !")
         if search_by in ("all", "get_updates"):
             self.logger.info("در حال جستجو پیام با get_updates ...")
             updates = await self.get_updates(limit_search,self.next_offset_id_get_message)
@@ -1358,18 +1379,21 @@ class Client:
     update_endpoint = set_endpoint
 
     @async_to_sync
-    async def set_token_fast_rub(self) -> bool:
+    async def set_token_fast_rub(
+        self,
+        list_getted: List[Literal["ReceiveUpdate", "ReceiveInlineMessage"]] = ["ReceiveUpdate", "ReceiveInlineMessage"]
+    ) -> bool:
         """seting token in fast_rub for getting click glass messages and updata messges / تنظیم توکن در فست روب برای گرفتن کلیک های روی پیام شیشه ای و آپدیت پیام ها"""
         self.logger.info("استفاده از متود set_token_fast_rub")
         try:
-            check_setted = await self.network.request(f"https://fast-rub.ParsSource.ir/set_token?token={self.token}")
-            check_setted = check_setted.json()
-            list_getted: List[Literal["ReceiveUpdate", "ReceiveInlineMessage"]] = ["ReceiveUpdate", "ReceiveInlineMessage"]
+            await self.network.request(f"https://fast-rub.ParsSource.ir/api/set_token?token={self.token}")
             for get in list_getted:
-                url = f"https://fast-rub.ParsSource.ir/geting_button_updates/{self.token}/{get}"
+                url = f"https://fast-rub.ParsSource.ir/api/geting_button_updates/{self.token}/{get}"
                 await self.set_endpoint(url, get)
+            self.logger.info("توکن با موفقیت در پیامگیر ثبت شد")
             return True
-        except:
+        except Exception as e:
+            self.logger.warn(f"خطا در ثبت توکن در پیامگیر فست روب : {e}")
             return False
     
     @async_to_sync
@@ -1407,6 +1431,7 @@ class Client:
     ban_channel_member = ban_chat_member
     unban_channel_member = unban_chat_member
 
+    @async_to_sync
     async def resend_message(
         self,
         message_id: str,
@@ -1550,7 +1575,10 @@ class Client:
     async def _process_messages_polling(self):
         while self._running:
             try:
-                messages = await self.get_updates(limit=100, offset_id=self.next_offset_id)
+                messages = await self.get_updates(
+                    limit=100,
+                    offset_id=self.next_offset_id
+                )
                 try:
                     self.next_offset_id = messages["next_offset_id"]
                     if self.save_offset_id:
@@ -1589,7 +1617,10 @@ class Client:
                                 continue
                         self._schedule_handler(handler, update)
                     if not is_edited and not is_deleted:
-                        self.messages.append(update)
+                        if self.keeper_messages_ram:
+                            self.messages.append(update)
+                        if self.keeper_messages_db:
+                            await self.messages_db.append(update)
             except (httpx.ReadError, httpx.ConnectError) as e:
                 self.logger.warning(f"خطای شبکه در _process_messages_polling: {e} - انتظار 5 ثانیه...")
                 await asyncio.sleep(5)
@@ -1632,6 +1663,10 @@ class Client:
                             self._schedule_handler(handler, update)
                         if not is_edited and not is_deleted:
                             self.messages.append(update)
+                            if self.keeper_messages_ram:
+                                self.messages.append(update)
+                            if self.keeper_messages_db:
+                                await self.messages_db.append(update)
             else:
                 await self.set_token_fast_rub()
             await asyncio.sleep(0.1)
@@ -1681,7 +1716,7 @@ class Client:
         if self._fetch_buttons and not self._button_handlers:
             raise ValueError("Button handlers registered but no button callbacks defined.")
 
-        if self._fetch_edit and not self._edit_handlers_:
+        if self._fetch_edit and not (self._message_handlers_polling or self._message_handlers_webhook):
             raise ValueError("Edit handlers registered but no message callbacks defined.")
 
         self._running = True
@@ -1714,6 +1749,7 @@ class Client:
             del self._button_url
             del self.urls
             del self.main_url
+            del self.session
     
     def add_handler(
         self,
