@@ -9,3 +9,6 @@ class ServerRubikaError(Exception):
 
 class CreateSessionError(Exception):
     pass
+
+class InvalidID(Exception):
+    pass
