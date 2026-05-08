@@ -281,9 +281,9 @@ class Client:
     @async_to_sync
     async def auto_delete(
         self,
-        chat_id:str,
-        message_id:str,
-        time_sleep:float,
+        chat_id: str,
+        message_id: str,
+        time_sleep: float,
         separate_task: bool = False
     ) -> Optional[props]:
         """auto delete message next {time_sleep} time s / حذف خودکار پیام بعد از فلان مقدار ثانیه"""
@@ -297,6 +297,7 @@ class Client:
             )
             return None
         else:
+            Utils.check_id_raise(chat_id)
             return await self._auto_delete(
                 chat_id=chat_id,
                 message_id=message_id,
@@ -368,6 +369,7 @@ class Client:
     ) -> msg_update:
         """sending text to chat id / ارسال متنی به یک چت آیدی"""
         self.logger.info("استفاده از متود send_text")
+        Utils.check_id_raise(chat_id)
         metadata, text  = await self._parse_mode_text(text, parse_mode)
         data = {
             "chat_id": chat_id,
@@ -523,6 +525,7 @@ class Client:
     ) -> msg_update:
         """sending poll to chat id / ارسال نظرسنجی به یک چت آیدی"""
         self.logger.info("استفاده از متود send_poll")
+        Utils.check_id_raise(chat_id)
         if len(options) > 10:
             raise PollInvalid("len for options is logner from 10 option")
         data = {
@@ -559,6 +562,7 @@ class Client:
     ) -> msg_update:
         """sending location to chat id / ارسال لوکیشن(موقعیت مکانی) به یک چت آیدی"""
         self.logger.info("استفاده از متود send_location")
+        Utils.check_id_raise(chat_id)
         data = {
             "chat_id": chat_id,
             "latitude": latitude,
@@ -592,6 +596,7 @@ class Client:
     ) -> msg_update:
         """sending contact to chat id / ارسال مخاطب به یک چت آیدی"""
         self.logger.info("استفاده از متود send_contact")
+        Utils.check_id_raise(chat_id)
         data = {
             "chat_id": chat_id,
             "first_name": first_name,
@@ -618,6 +623,7 @@ class Client:
     ) -> ChatModel:
         """geting info chat id info / گرفتن اطلاعات های یک چت"""
         self.logger.info("استفاده از متود get_chat")
+        Utils.check_id_raise(chat_id)
         data = {
             "chat_id": chat_id
         }
@@ -653,6 +659,8 @@ class Client:
         """get message by id / گرفتن پیام با آیدی"""
         if not message_id:
             raise ValueError("The Message Id not goted .")
+        if chat_id:
+            Utils.check_id_raise(chat_id)
         self.logger.info("در حال استفاده از متود get_message .")
         if search_by in ("all", "messages"):
             self.logger.info("در حال جستجو پیام در بین پیام های ذخیره شده ...")
@@ -708,6 +716,7 @@ class Client:
     ) -> Optional[List[Update]]:
         """get messages / گرفتن پیام ها"""
         self.logger.info("در حال استفاده از متود get_messages .")
+        Utils.check_id_raise(chat_id)
         messages = deque(maxlen=get_befor)
         if search_by in ("all", "messages"):
             self.logger.info("در حال جستجو پیام در بین پیام های ذخیره شده ...")
@@ -756,6 +765,8 @@ class Client:
     ) -> msg_update:
         """forwarding message to chat id / فوروارد پیام به یک چت آیدی"""
         self.logger.info("استفاده از متود forward_message")
+        Utils.check_id_raise(from_chat_id)
+        Utils.check_id_raise(to_chat_id)
         data = {
             "from_chat_id": from_chat_id,
             "message_id": message_id,
@@ -797,6 +808,7 @@ class Client:
     ) -> msg_update:
         """editing message text / ویرایش متن پیام"""
         self.logger.info("استفاده از متود edit_message_text")
+        Utils.check_id_raise(chat_id)
         metadata, text  = await self._parse_mode_text(text, parse_mode)
         data = {"chat_id": chat_id, "message_id": message_id, "text": text}
         data = Utils.data_format(data, inline_keypad, metadata=metadata, meta_data=meta_data)
@@ -873,6 +885,7 @@ class Client:
     ) -> props:
         """delete message / پاکسازی(حذف) یک پیام"""
         self.logger.info("استفاده از متود delete_message")
+        Utils.check_id_raise(chat_id)
         data = {
             "chat_id": chat_id,
             "message_id": message_id
@@ -953,6 +966,7 @@ class Client:
         """sending file by file id / ارسال فایل با آیدی فایل"""
         self.logger.info("استفاده از متود send_file_by_file_id")
         metadata = []
+        Utils.check_id_raise(chat_id)
         if text:
             metadata, text  = await self._parse_mode_text(text, parse_mode)
         data = {
@@ -1322,6 +1336,7 @@ class Client:
     ) -> msg_update:
         """sending sticker by id / ارسال استیکر با آیدی"""
         self.logger.info("استفاده از متود send_sticker")
+        Utils.check_id_raise(chat_id)
         data = {
             "chat_id": chat_id,
             "sticker_id": id_sticker,
@@ -1403,6 +1418,8 @@ class Client:
         user_id: str
     ) -> props:
         """ban member in chat / بن کردن کاربر در چت"""
+        Utils.check_id_raise(chat_id)
+        Utils.check_id_raise(user_id)
         data = {
             "chat_id": chat_id,
             "user_id": user_id
@@ -1417,6 +1434,8 @@ class Client:
         user_id: str
     ) -> props:
         """un ban member in chat / آنبن کردن کاربر در چت"""
+        Utils.check_id_raise(chat_id)
+        Utils.check_id_raise(user_id)
         data = {
             "chat_id": chat_id,
             "user_id": user_id
@@ -1445,6 +1464,8 @@ class Client:
         chunk_size: int = 64 * 1024
     ) -> msg_update:
         """re send message / ارسال مجدد پیام"""
+        Utils.check_id_raise(from_chat_id)
+        Utils.check_id_raise(to_chat_id)
         msg = await self.get_message_by_id(from_chat_id, message_id)
         if msg:
             text = msg.text
@@ -1732,9 +1753,9 @@ class Client:
         از حالت ایسینک(run) استفاده کنید تا لوپ بر عهده سورس شما باشد نه کتابخانه"""
         asyncio.run(self.run())
 
-    def stop(
+    def cloes(
         self,
-        type_stop: Literal["all", "running"] = "running"
+        type_stop: Literal["all", "running"] = "all"
     ):
         """خاموش کردن گرفتن آپدیت ها / off the getting updates"""
         self.logger.info("ربات متوقف شد !")
@@ -1750,6 +1771,12 @@ class Client:
             del self.urls
             del self.main_url
             del self.session
+    
+    def stop(
+        self
+    ):
+        """stop getting updates / متوقف شدن گرفتن آپدیت ها"""
+        self.cloes(type_stop="running")
     
     def add_handler(
         self,
@@ -1803,14 +1830,14 @@ class Client:
         return self
     
     def __exit__(self, exc_type, exc_val, exc_tb):
-        self.stop(type_stop="all")
+        self.cloes()
     
     async def __aenter__(self):
         await self.start()
         return self
     
     async def __aexit__(self, exc_type, exc_val, exc_tb):
-        self.stop(type_stop="all")
+        self.cloes()
 
 
 Robot = Client
