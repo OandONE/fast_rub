@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="fastrub",
-    version="3.0.6",
+    version="3.0.8",
     author="seyyed mohamad hosein moosavi raja(01)",
     author_email="mohamadhosein159159@gmail.com",
     description="The fastest library for writing Rubika messenger bots both synchronously and asynchronously ⚡",
