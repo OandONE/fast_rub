@@ -17,9 +17,17 @@ Fast Rub means the fastest library for Rubika bots. If you want your Rubika bot 
 pip install --upgrade fastrub
 ```
 
+## نحوه نصب در صورت ملی بودن نت :
+```bash
+pip install -i https://mirror-pypi.runflare.com/simple fastrub
+```
+
 [Documents - مستندات](https://fast-rub.ParsSource.ir/index.html)
 
 [GitHub - گیت هاب](https://github.com/OandONE/fast_rub)
+
+[PyPI - پای پی آی](https://pypi.org/project/fastrub)
+
 
 قسمت PyRubi این کتابخانه فورک کتابخانه [پایروبی](https://github.com/AliGanji1/pyrubi) است
 
@@ -32,13 +40,18 @@ from fast_rub import Client
 from fast_rub.type import Update
 import asyncio
 
-bot = Client("name_session")
+async def robot():
+  bot = Client("name_session", run_start=False)
 
-@bot.on_message()
-async def getting(message:Update):
-    await message.reply("__Hello__ *from* **FastRub** !")
+  await bot.start()
 
-asyncio.run(bot.run())
+  @bot.on_message()
+  async def getting(message:Update):
+      await message.reply("__Hello__ *from* **FastRub** !")
+
+  await bot.run()
+
+asyncio.run(robot())
 ```
 
 ### گرفتن آپدیت پیام ها - وبهوک
@@ -47,31 +60,39 @@ from fast_rub import Client
 from fast_rub.type import Update
 import asyncio
 
-bot = Client("name_session")
-# در صورتی که میخواید از endpoint خودتون استفاده کنید » 
-# url_webhook_on_message = "https://..."
-# bot = Client("name_session", use_to_fastrub_webhook_on_message = url_webhook_on_message)
+async def robot():
+  bot = Client("name_session", run_start=False)
+  # در صورتی که میخواید از endpoint خودتون استفاده کنید » 
+  # url_webhook_on_message = "https://..."
+  # bot = Client("name_session", use_to_fastrub_webhook_on_message = url_webhook_on_message)
 
-@bot.on_message_updates()
-async def getting(message:Update):
-    await message.reply("__Hello__ *from* **FastRub** !")
+  await bot.start()
 
-asyncio.run(bot.run())
+  @bot.on_message_updates()
+  async def getting(message:Update):
+      await message.reply("__Hello__ *from* **FastRub** !")
+
+  await bot.run()
+
+asyncio.run(robot())
 ```
 
-### گرفتن کلیک های دکمه های اینلاین
+### گرفتن کلیک های دکمه های اینلاین(شیشه ای)
 ```python
 from fast_rub import Client
 from fast_rub.type import UpdateButton
 import asyncio
 
-bot = Client("name_session")
-# در صورتی که میخواید از endpoint خودتون استفاده کنید » 
-# url_webhook_on_button = "https://..."
-# bot = Client("name_session", use_to_fastrub_webhook_on_button = url_webhook_on_button)
+async def robot():
+  bot = Client("name_session", run_start=False)
+  # در صورتی که میخواید از endpoint خودتون استفاده کنید » 
+  # url_webhook_on_button = "https://..."
+  # bot = Client("name_session", use_to_fastrub_webhook_on_button = url_webhook_on_button)
 
-@bot.on_button()
-async def getting(message: UpdateButton):
+  await bot.start()
+
+  @bot.on_button()
+  async def getting(message: UpdateButton):
     print(f"""button id » {message.button_id}
 text » {message.text}
 chat id » {message.chat_id}
@@ -80,7 +101,9 @@ sender_id » {message.sender_id}
 
 ====================""")
 
-asyncio.run(bot.run())
+  await bot.run()
+
+asyncio.run(robot())
 ```
 
 ### توقف گرفتن آپدیت ها
@@ -89,15 +112,20 @@ from fast_rub import Client
 from fast_rub.type import Update
 import asyncio
 
-bot = Client("name_session")
+async def robot():
+  bot = Client("name_session", run_start=False)
 
-@bot.on_message()
-async def getting(message:Update):
+  await bot.start()
+
+  @bot.on_message()
+  async def getting(message:Update):
     if message.text == "/off":
         await message.reply("**OK**")
         bot.stop()
 
-asyncio.run(bot.run())
+  await bot.run()
+
+asyncio.run(robot())
 ```
 
 ## دستورات
@@ -108,9 +136,11 @@ asyncio.run(bot.run())
 from fast_rub import Client
 import asyncio
 
-bot = Client("test")
-
 async def setting():
+    bot = Client("test", run_start=False)
+
+    await bot.start()
+
     await bot.add_commands("/start","َشروع")
     await bot.add_commands("/help","راهنما")
     await bot.set_commands()
@@ -123,9 +153,11 @@ asyncio.run(setting())
 from fast_rub import Client
 import asyncio
 
-bot = Client("test")
-
 async def setting():
+    bot = Client("test", run_start=False)
+
+    await bot.start()
+
     await bot.delete_commands()
 
 asyncio.run(setting())
@@ -138,9 +170,11 @@ from fast_rub import Client
 from fast_rub.button import KeyPad
 import asyncio
 
-bot = Client("test")
-
 async def setting():
+    bot = Client("test", run_start=False)
+
+    await bot.start()
+
     button = KeyPad()
     button.append(
         button.simple("button id 1", "text 1")
@@ -149,7 +183,7 @@ async def setting():
         button.simple("button id 2", "text 2"),
         button.simple("button id 3", "text 3")
     )
-    await bot.send_text("test KeyPad",keypad=button.get())
+    await bot.send_text("test KeyPad", keypad=button.get())
 
 asyncio.run(setting())
 ```
@@ -160,9 +194,11 @@ from fast_rub import Client
 from fast_rub.button import KeyPad
 import asyncio
 
-bot = Client("test")
-
 async def setting():
+    bot = Client("test", run_start=False)
+
+    await bot.start()
+
     button = KeyPad()
     button.append(
         button.simple("button id 1", "text 1")
@@ -171,7 +207,7 @@ async def setting():
         button.simple("button id 2", "text 2"),
         button.simple("button id 3", "text 3")
     )
-    await bot.send_text("test KeyPad Inline",inline_keypad=button.get())
+    await bot.send_text("test KeyPad", inline_keypad=button.get())
 
 asyncio.run(setting())
 ```
@@ -183,13 +219,15 @@ asyncio.run(setting())
 from fast_rub import Client
 import asyncio
 
-bot = Client("test")
-
-chat_id = "b..."
-file = "..."
-text = None
-
 async def send_file():
+    chat_id = "b..."
+    file = "..."
+    text = None
+
+    bot = Client("test", run_start=False)
+
+    await bot.start()
+
     await bot.send_file(chat_id,file,text=text)
 
 asyncio.run(send_file())
@@ -202,13 +240,17 @@ import asyncio
 
 bot = Client("test")
 
-chat_id = "b..."
-image = "..."
-video = "..."
-voice = "..."
-text = None
-
 async def send_medias():
+    chat_id = "b..."
+    image = "..."
+    video = "..."
+    voice = "..."
+    text = None
+
+    bot = Client("test", run_start=False)
+
+    await bot.start()
+
     await bot.send_image(chat_id,image,text=text)
     await bot.send_video(chat_id,video,text=text)
     await bot.send_voice(chat_id,video,text=text)
@@ -229,6 +271,13 @@ id_sticker = "..."
 
 
 async def send_sticker():
+    chat_id = "b..."
+    id_sticker = "..."
+
+    bot = Client("test", run_start=False)
+
+    await bot.start()
+    
     await bot.send_sticker(chat_id,id_sticker)
 
 asyncio.run(send_sticker())
@@ -243,11 +292,13 @@ asyncio.run(send_sticker())
 from fast_rub import Client
 import asyncio
 
-bot = Client("test")
-
-id_file = "..."
-
 async def get_download_file_url():
+    id_file = "..."
+
+    bot = Client("test", run_start=False)
+
+    await bot.start()
+
     link_download = await bot.get_download_file_url(id_file)
     print(f"the link download of file » {id_file} is » {link_download}")
 
@@ -259,12 +310,14 @@ asyncio.run(get_download_file_url())
 from fast_rub import Client
 import asyncio
 
-bot = Client("test")
-
-id_file = "..."
-path_save = "test.bin"
-
 async def download_file():
+    id_file = "..."
+    path_save = "test.bin"
+
+    bot = Client("test", run_start=False)
+
+    await bot.start()
+
     await bot.download_file(id_file,path_save)
 
 asyncio.run(download_file())
@@ -279,12 +332,14 @@ asyncio.run(download_file())
 from fast_rub import Client
 import asyncio
 
-bot = Client("test")
-
-url_endpoint = "https://..."
-type_endpoint = "ReceiveUpdate"
-
 async def set_endpoint():
+    url_endpoint = "https://..."
+    type_endpoint = "ReceiveUpdate"
+
+    bot = Client("test", run_start=False)
+
+    await bot.start()
+
     await bot.set_endpoint(url_endpoint,type_endpoint)
 
 asyncio.run(set_endpoint())
@@ -299,14 +354,14 @@ asyncio.run(set_endpoint())
 ویرایش خودکار پیام بعد از x ثانیه
 
 `auto_edit(
-        chat_id: str,
-        message_id: str,
-        text: str,
-        aute_edit: int,
-        inline_keypad: Optional[list] = None,
-        parse_mode: Literal["Markdown","HTML",None] = "Markdown",
-        meta_data: Optional[list] = None
-    )`
+    chat_id: str,
+    message_id: str,
+    text: str,
+    aute_edit: int,
+    inline_keypad: Optional[list] = None,
+    parse_mode: Literal["Markdown","HTML",None] = "Markdown",
+    meta_data: Optional[list] = None
+)`
 
 گرفتن اطلاعات ربات
 
@@ -319,93 +374,89 @@ asyncio.run(set_endpoint())
 ارسال متن
 
 `send_text(text: str,
-        chat_id: str,
-        inline_keypad: Optional[list] = None,
-        keypad: Optional[list] = None,
-        disable_notification: Optional[bool] = False,
-        reply_to_message_id: Optional[str] = None,
-        auto_delete: Optional[int] = None,
-        parse_mode: Literal["Markdown","HTML",None] = "Markdown",
-        meta_data: Optional[list] = None)`
+chat_id: str,
+inline_keypad: Optional[list] = None,
+keypad: Optional[list] = None,
+disable_notification: Optional[bool] = False,
+reply_to_message_id: Optional[str] = None,
+auto_delete: Optional[int] = None,
+parse_mode: Literal["Markdown","HTML",None] = "Markdown",
+meta_data: Optional[list] = None)`
 
 ارسال نظرسنجی
 
 `send_poll(chat_id: str,
-        question: str,
-        options: list,
-        type_poll: Literal["Regular", "Quiz"] = "Regular",
-        is_anonymous: bool = True,
-        correct_option_index: Optional[int] = None,
-        allows_multiple_answers: bool = False,
-        hint: Optional[str] = None,
-        disable_notification: bool = False,
-        reply_to_message_id: Optional[str] = None,
-        auto_delete: Optional[int] = None)`
+question: str,
+options: list,
+type_poll: Literal["Regular", "Quiz"] = "Regular",
+is_anonymous: bool = True,
+correct_option_index: Optional[int] = None,
+allows_multiple_answers: bool = False,
+hint: Optional[str] = None,
+disable_notification: bool = False,
+reply_to_message_id: Optional[str] = None,
+auto_delete: Optional[int] = None)`
 
 ارسال موقعیت مکانی(لوکیشن)
 
 `send_location(chat_id: str,
-        latitude: str,
-        longitude: str,
-        chat_keypad : Optional[str] = None,
-        disable_notification: Optional[bool] = False,
-        reply_to_message_id: Optional[str] = None,
-        chat_keypad_type: Optional[str] = None,
-        auto_delete: Optional[int] = None)`
+latitude: str,
+longitude: str,
+chat_keypad : Optional[str] = None,
+disable_notification: Optional[bool] = False,
+reply_to_message_id: Optional[str] = None,
+chat_keypad_type: Optional[str] = None,
+auto_delete: Optional[int] = None)`
 
 ارسال مخاطب
 
 `send_contact(chat_id: str,
-        first_name: str,
-        last_name: str,
-        phone_number: str,
-        chat_keypad : Optional[str] = None,
-        chat_keypad_type: Optional[str] = None,
-        inline_keypad: Optional[str] = None,
-        reply_to_message_id: Optional[str] = None,
-        disable_notificatio: Optional[bool] = False,
-        auto_delete: Optional[int] = None)`
+first_name: str,
+last_name: str,
+phone_number: str,
+chat_keypad : Optional[str] = None,
+chat_keypad_type: Optional[str] = None,
+inline_keypad: Optional[str] = None,
+reply_to_message_id: Optional[str] = None,
+disable_notificatio: Optional[bool] = False,
+auto_delete: Optional[int] = None)`
 
 ارسال انواع پیام
 
 `send_message(chat_id: str,
-        text: Optional[str] = None,
-        inline_keypad: Optional[list] = None,
-        keypad: Optional[list] = None,
-        resize_keyboard: Optional[bool] = True,
-        on_time_keyboard: Optional[bool] = False,
-        disable_notification: bool = False,
-        reply_to_message_id: Optional[str] = None,
-        auto_delete: Optional[int] = None,
-        parse_mode: Literal["Markdown","HTML",None] = "Markdown",
-        meta_data: Optional[list] = None,
-        # file
-        file: Union[str , Path , bytes , None] = None,
-        name_file: Optional[str] = None,
-        type_file: Literal["File", "Image", "Voice", "Music", "Gif" , "Video"] = "File",
-        file_id: Optional[str] = None,
-        show_progress: bool = True,
-        # poll
-        question: Optional[str] = None,
-        options: Optional[list] = None,
-        type_poll: Literal["Regular", "Quiz"] = "Regular",
-        is_anonymous: bool = True,
-        correct_option_index: Optional[int] = None,
-        allows_multiple_answers: bool = False,
-        hint: Optional[str] = None,
-        # location
-        latitude: Optional[str] = None,
-        longitude: Optional[str] = None,
-        # contact
-        first_name: Optional[str] = None,
-        last_name: Optional[str] = None,
-        phone_number: Optional[str] = None)`
+text: Optional[str] = None,
+inline_keypad: Optional[list] = None,
+keypad: Optional[list] = None,
+resize_keyboard: Optional[bool] = True,
+on_time_keyboard: Optional[bool] = False,
+disable_notification: bool = False,
+reply_to_message_id: Optional[str] = None,
+auto_delete: Optional[int] = None,
+parse_mode: Literal["Markdown","HTML",None] = "Markdown",
+meta_data: Optional[list] = None,
+file: Union[str , Path , bytes , None] = None,
+name_file: Optional[str] = None,
+type_file: Literal["File", "Image", "Voice", "Music", "Gif" , "Video"] = "File",
+file_id: Optional[str] = None,
+show_progress: bool = True,
+question: Optional[str] = None,
+options: Optional[list] = None,
+type_poll: Literal["Regular", "Quiz"] = "Regular",
+is_anonymous: bool = True,
+correct_option_index: Optional[int] = None,
+allows_multiple_answers: bool = False,
+hint: Optional[str] = None,
+latitude: Optional[str] = None,
+longitude: Optional[str] = None,
+first_name: Optional[str] = None,
+last_name: Optional[str] = None,
+phone_number: Optional[str] = None)`
 
 گرفتن اطلاعات چت
 
 `get_chat(chat_id: str)`
 
-گرفتن آپدیت ها(از بالا)
+گرفتن آپدیت ها(از اولین پیام)
 
 `get_updates(limit : Optional[int] = None, offset_id : Optional[str] = None)`
 
@@ -420,32 +471,32 @@ asyncio.run(set_endpoint())
 فوروارد پیام
 
 `forward_message(from_chat_id: str,
-        message_id: str,
-        to_chat_id: str,
-        disable_notification : Optional[bool] = False,
-        auto_delete: Optional[int] = None)`
+message_id: str,
+to_chat_id: str,
+disable_notification : Optional[bool] = False,
+auto_delete: Optional[int] = None)`
 
 فوروارد چند پیام
 
 `forward_messages(from_chat_id: str,
-        message_ids: list,
-        to_chat_id: str,
-        disable_notification : Optional[bool] = False,
-        auto_delete: Optional[int] = None)`
+message_ids: list,
+to_chat_id: str,
+disable_notification : Optional[bool] = False,
+auto_delete: Optional[int] = None)`
 
 ویرایش متن پیام
 
 `edit_message_text(chat_id: str,
-        message_id: str,
-        text: str,
-        inline_keypad: Optional[list] = None,
-        parse_mode: Literal["Markdown","HTML",None] = "Markdown",
-        meta_data: Optional[list] = None)`
+message_id: str,
+text: str,
+inline_keypad: Optional[list] = None,
+parse_mode: Literal["Markdown","HTML",None] = "Markdown",
+meta_data: Optional[list] = None)`
 
 حذف پیام
 
 `delete_message(chat_id: str,
-        message_id: str)`
+message_id: str)`
 
 آپلود فایل در سرور روبیکا
 
@@ -454,32 +505,36 @@ asyncio.run(set_endpoint())
 ارسال فایل با آیدی
 
 `send_file_by_file_id(chat_id: str,
-        file_id: str,
-        text: Optional[str] = None,
-        reply_to_message_id: Optional[str] = None,
-        disable_notification: Optional[bool] = None,
-        auto_delete: Optional[int] = None,
-        parse_mode: Literal["Markdown","HTML",None] = "Markdown")`
+file_id: str,
+text: Optional[str] = None,
+reply_to_message_id: Optional[str] = None,
+disable_notification: Optional[bool] = None,
+auto_delete: Optional[int] = None,
+parse_mode: Literal["Markdown","HTML",None] = "Markdown")`
 
 بن کاربر
 
 `ban_chat_member(chat_id: str,
-        user_id: str)`
+user_id: str)`
 
 آنبن کاربر
 
 `unban_chat_member(chat_id: str,
-        user_id: str)`
+user_id: str)`
 
 
 ران کردن دکوراتور های گرفتن پیام
 
-`run()` # async -> asyncio.run(client.run())
+`run()` # async -> await client.run()
 `run_sync()` # sync -> client.run_sync()
 
 توقف پروسس های گرفتن پیام
 
 `stop()`
+
+توقف کامل ربات و آزاد سازی منابع
+
+`cloes()`
 
 ## کلاس های Update و UpdateButton
 
@@ -537,8 +592,8 @@ asyncio.run(set_endpoint())
 شرط ریجکس
 
 `regex(pattern: str,
-        flags: int = 0,
-        text: Optional[str] = None)` # sync
+flags: int = 0,
+text: Optional[str] = None)` # sync
 
 گرفتن اطلاعات چت آیدی
 
@@ -547,104 +602,99 @@ asyncio.run(set_endpoint())
 ریپلای پیام
 
 `reply(
-        self,
-        text: Optional[str] = None,
-        keypad_inline: Optional[list] = None,
-        inline_keypad: Optional[list] = None,
-        keypad: Optional[list] = None,
-        resize_keyboard: bool | None = True,
-        on_time_keyboard: bool | None = False,
-        auto_delete: Optional[int] = None,
-        parse_mode: Literal['Markdown', 'HTML', None] = "Markdown",
-        meta_data: Optional[list] = None,
-        # file
-        file: Union[str , Path , bytes , None] = None,
-        name_file: Optional[str] = None,
-        type_file: Literal["File", "Image", "Voice", "Music", "Gif" , "Video"] = "File",
-        file_id: Optional[str] = None,
-        show_progress: bool = True,
-        # poll
-        question: Optional[str] = None,
-        options: Optional[list] = None,
-        type_poll: Literal["Regular", "Quiz"] = "Regular",
-        is_anonymous: bool = True,
-        correct_option_index: Optional[int] = None,
-        allows_multiple_answers: bool = False,
-        hint: Optional[str] = None,
-        # location
-        latitude: Optional[str] = None,
-        longitude: Optional[str] = None,
-        # contact
-        first_name: Optional[str] = None,
-        last_name: Optional[str] = None,
-        phone_number: Optional[str] = None,  
-        chat_id: Optional[str] = None,
-        reply_to_message_id: Optional[str] = None
-    )`
+text: Optional[str] = None,
+keypad_inline: Optional[list] = None,
+inline_keypad: Optional[list] = None,
+keypad: Optional[list] = None,
+resize_keyboard: bool | None = True,
+on_time_keyboard: bool | None = False,
+auto_delete: Optional[int] = None,
+parse_mode: Literal['Markdown', 'HTML', None] = "Markdown",
+meta_data: Optional[list] = None,
+file: Union[str , Path , bytes , None] = None,
+name_file: Optional[str] = None,
+type_file: Literal["File", "Image", "Voice", "Music", "Gif" , "Video"] = "File",
+file_id: Optional[str] = None,
+show_progress: bool = True,
+question: Optional[str] = None,
+options: Optional[list] = None,
+type_poll: Literal["Regular", "Quiz"] = "Regular",
+is_anonymous: bool = True,
+correct_option_index: Optional[int] = None,
+allows_multiple_answers: bool = False,
+hint: Optional[str] = None,
+latitude: Optional[str] = None,
+longitude: Optional[str] = None,
+first_name: Optional[str] = None,
+last_name: Optional[str] = None,
+phone_number: Optional[str] = None,  
+chat_id: Optional[str] = None,
+reply_to_message_id: Optional[str] = None
+)`
 
 ریپلای متن
 
-`reply_text(text: str,keypad_inline: Optional[list] = None,
-        keypad: Optional[list] = None,
-        resize_keyboard: bool | None = True,
-        on_time_keyboard: bool | None = False,,auto_delete: Optional[int] = None,parse_mode: Literal['Markdown', 'HTML', None] = "Markdown",
-        meta_data: Optional[list] = None,
-        chat_id: Optional[str] = None,
-        reply_to_message_id: Optional[str] = None)`
+`reply_text(text: str, keypad_inline: Optional[list] = None,
+keypad: Optional[list] = None,
+resize_keyboard: bool | None = True,
+on_time_keyboard: bool | None = False,,auto_delete: Optional[int] = None,parse_mode: Literal['Markdown', 'HTML', None] = "Markdown",
+meta_data: Optional[list] = None,
+chat_id: Optional[str] = None,
+reply_to_message_id: Optional[str] = None)`
 
 ریپلای نظرسنجی
 
 `reply_poll(
-    question: str,
-    options: list,
-    type_poll: Literal["Regular", "Quiz"] = "Regular",
-    is_anonymous: bool = True,
-    correct_option_index: Optional[int] = None,
-    allows_multiple_answers: bool = False,
-    hint: Optional[str] = None,
-    auto_delete: Optional[int] = None,
-    chat_id: Optional[str] = None,
-        reply_to_message_id: Optional[str] = None
+question: str,
+options: list,
+type_poll: Literal["Regular", "Quiz"] = "Regular",
+is_anonymous: bool = True,
+correct_option_index: Optional[int] = None,
+allows_multiple_answers: bool = False,
+hint: Optional[str] = None,
+auto_delete: Optional[int] = None,
+chat_id: Optional[str] = None,
+reply_to_message_id: Optional[str] = None
 )`
 
 ریپلای مخاطب
 
 `reply_contact(first_name: str, phone_number: str, last_name: Union[str,str] = "",auto_delete: Optional[int] = None,chat_id: Optional[str] = None,
-        reply_to_message_id: Optional[str] = None)`
+reply_to_message_id: Optional[str] = None)`
 
 ریپلای موقعیت مکانی(لوکیشن)
 
 `reply_location(latitude: str, longitude: str,auto_delete: Optional[int] = None,chat_id: Optional[str] = None,
-        reply_to_message_id: Optional[str] = None)`
+reply_to_message_id: Optional[str] = None)`
 
 ریپلای فایل
 
 `reply_file(
-    file: Union[str , Path , bytes],
-        name_file: Optional[str] = None,
-        text: Optional[str] = None,
-        type_file: Literal["File", "Image", "Voice", "Music", "Gif","Video"] = "File",
-        disable_notification: Optional[bool] = False,
-        auto_delete: Optional[int] = None,
-        parse_mode: Literal['Markdown', 'HTML', None] = "Markdown",
-        meta_data: Optional[list] = None,
-        inline_keypad: Optional[list] = None,
-        keypad: Optional[list] = None,
-        resize_keyboard: Optional[bool] = True,
-        on_time_keyboard: Optional[bool] = False,
-        upload_by: Literal["aiohttp", "httpx"] = "aiohttp",
-        show_progress: bool = True,
-        chat_id: Optional[str] = None,
-        reply_to_message_id: Optional[str] = None
+file: Union[str , Path , bytes],
+name_file: Optional[str] = None,
+text: Optional[str] = None,
+type_file: Literal["File", "Image", "Voice", "Music", "Gif","Video"] = "File",
+disable_notification: Optional[bool] = False,
+auto_delete: Optional[int] = None,
+parse_mode: Literal['Markdown', 'HTML', None] = "Markdown",
+meta_data: Optional[list] = None,
+inline_keypad: Optional[list] = None,
+keypad: Optional[list] = None,
+resize_keyboard: Optional[bool] = True,
+on_time_keyboard: Optional[bool] = False,
+upload_by: Literal["aiohttp", "httpx"] = "aiohttp",
+show_progress: bool = True,
+chat_id: Optional[str] = None,
+reply_to_message_id: Optional[str] = None
 ) # فایل`
 
 `reply_image(
-    image: Union[str , Path , bytes],
-    name_file: Optional[str] = None,
-    text: Optional[str] = None,
-    disable_notification: Optional[bool] = False,
-    auto_delete: Optional[int] = None,
-    parse_mode: Literal['Markdown', 'HTML', None] = "Markdown"
+image: Union[str , Path , bytes],
+name_file: Optional[str] = None,
+text: Optional[str] = None,
+disable_notification: Optional[bool] = False,
+auto_delete: Optional[int] = None,
+parse_mode: Literal['Markdown', 'HTML', None] = "Markdown"
 ) # تصویر`
 
 `reply_voice(...) # ویس`
@@ -662,8 +712,8 @@ asyncio.run(set_endpoint())
 دانلود فایل
 
 `download(path : str = "file",
-        file_id: Optional[str] = None,
-        show_progress: bool = True)`
+file_id: Optional[str] = None,
+show_progress: bool = True)`
 
 گرفتن لینک دانلود فایل
 `get_download_file_url(file_id: Optional[str] = None)`
@@ -672,28 +722,28 @@ asyncio.run(set_endpoint())
 
 `delete()`
 
-بن کاربر
+بن(اخراج) کاربر
 
 `ban(chat_id: Optional[str] = None,
-        user_id: Optional[str] = None)`
+user_id: Optional[str] = None)`
 
-آنبن کاربر
+آنبن(لغو اخراج) کاربر
 
 `unban(chat_id: Optional[str] = None,
-        user_id: Optional[str] = None)`
+user_id: Optional[str] = None)`
 
-بن کاربر ریپلای شده
+بن(اخراج) کاربر ریپلای شده
 
 `ban_reply(chat_id: Optional[str] = None)`
 
-آنبن کاربر ریپلای شده
+آنبن(لغو اخراج) کاربر ریپلای شده
 
 `unban_reply(chat_id: Optional[str] = None)`
 
 گرفتن پیام ریپلای شده
 
 `get_reply(chat_id: Optional[str] = None,
-        message_id: Optional[str] = None)`
+message_id: Optional[str] = None)`
 
 تبدیل پیام به دیکشنری
 
@@ -715,51 +765,51 @@ asyncio.run(set_endpoint())
 ارسال متن
 
 `send_text(text:str,keypad:dict:Optional[list] = None,keypad: Optional[list] = None,
-        resize_keyboard: Optional[bool] = True,
-        on_time_keyboard: Optional[bool] = False,auto_delete: Optional[int] = None,reply_to_message_id: Optional[str] = None,parse_mode: Literal['Markdown', 'HTML'] = "Markdown")`
+resize_keyboard: Optional[bool] = True,
+on_time_keyboard: Optional[bool] = False,auto_delete: Optional[int] = None,reply_to_message_id: Optional[str] = None,parse_mode: Literal['Markdown', 'HTML'] = "Markdown")`
 
 ارسال نظرسنجی
 
 `send_pool(
-    question: str,
-    options : list,
-    type_poll: Literal['Regular', 'Quiz'] = "Regular",
-    is_anonymous: bool = True,
-    correct_option_index: int | None = None,
-    allows_multiple_answers: bool = False,
-    hint: str | None = None,
-    auto_delete: Optional[int] = None
+question: str,
+options : list,
+type_poll: Literal['Regular', 'Quiz'] = "Regular",
+is_anonymous: bool = True,
+correct_option_index: int | None = None,
+allows_multiple_answers: bool = False,
+hint: str | None = None,
+auto_delete: Optional[int] = None
 )`
 
 ارسال مخاطب
 
 `send_contact(first_name: str,
-        last_name: str,
-        phone_number: str,
-        auto_delete: Optional[int] = None,
-        reply_to_message_id: Optional[str] = None)`
+last_name: str,
+phone_number: str,
+auto_delete: Optional[int] = None,
+reply_to_message_id: Optional[str] = None)`
 
 ارسال موقعیت مکانی(لوکیشن)
 
 `send_location(latitude: str,
-        longitude: str,
-        auto_delete: Optional[int] = None,
-        reply_to_message_id: Optional[str] = None)`
+longitude: str,
+auto_delete: Optional[int] = None,
+reply_to_message_id: Optional[str] = None)`
 
 ارسال فایل
 
 `send_file(file: Union[str , Path , bytes],
-        name_file: Optional[str] = None,
-        text: Optional[str] = None,
-        type_file: Literal['File', 'Image', 'Voice', 'Music', 'Gif', 'Video'] = "File",
-        auto_delete: Optional[int] = None,
-        reply_to_message_id: Optional[str] = None) # فایل`
+name_file: Optional[str] = None,
+text: Optional[str] = None,
+type_file: Literal['File', 'Image', 'Voice', 'Music', 'Gif', 'Video'] = "File",
+auto_delete: Optional[int] = None,
+reply_to_message_id: Optional[str] = None) # فایل`
 
 `send_image(image: Union[str , Path , bytes],
-        name_file: Optional[str] = None,
-        text: Optional[str] = None,
-        auto_delete: Optional[int] = None,
-        reply_to_message_id: Optional[str] = None) # تصویر`
+name_file: Optional[str] = None,
+text: Optional[str] = None,
+auto_delete: Optional[int] = None,
+reply_to_message_id: Optional[str] = None) # تصویر`
 
 `send_video(...) # ویدیو`
 
@@ -779,13 +829,17 @@ from fast_rub import Client, filters
 from fast_rub.type import Update
 import asyncio
 
-bot = Client("test")
+async def robot():
+    bot = Client("test", run_start=False)
 
-@bot.on_message(filters.text("تست"))
-async def test_filters(msg:Update):
-    await msg.reply("__hello__ *from* **fast_rub**")
+    await bot.start()
+    @bot.on_message(filters.text("تست"))
+    async def test_filters(msg: Update):
+        await msg.reply("__hello__ *from* **fast_rub**")
+    
+    await bot.run()
 
-asyncio.run(bot.run())
+asyncio.run(robot())
 ```
 
 ### فیلتر ها
@@ -993,8 +1047,6 @@ from fast_rub import Client, filters
 from fast_rub.type import Update
 import asyncio
 
-bot = Client("test")
-
 class stiker_emoji_filter(filters.Filter):
     """فیلتر تشخیص ایموجی استیکر"""
     def __init__(self, sticker_emoji_character: str):
@@ -1002,11 +1054,18 @@ class stiker_emoji_filter(filters.Filter):
     def __call__(self, update: Update) -> bool:
         return str(update.sticker_emoji_character) == self.sticker_emoji_character
 
-@bot.on_message(stiker_emoji_filter("😂"))
-async def test_filters(msg: Update):
-    await msg.reply("خخخ")
+async def robot():
+    bot = Client("test", run_start=False)
 
-asyncio.run(bot.run())
+    await bot.start()
+
+    @bot.on_message(stiker_emoji_filter("😂"))
+    async def test_filters(msg: Update):
+        await msg.reply("خخخ")
+    
+    await bot.run()
+
+asyncio.run(robot())
 ```
 
 
