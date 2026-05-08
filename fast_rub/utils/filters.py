@@ -8,6 +8,14 @@ if TYPE_CHECKING:
 class Filter:
     def __call__(self, update: 'Update') -> bool:
         raise NotImplementedError
+    async def __acall__(self, update: 'Update') -> bool:
+        return self(update)
+
+class AsyncFilter(Filter):
+    def __call__(self, update: 'Update') -> bool:
+        raise RuntimeError("The Class Is Async. Sync -> Filter class")
+    async def __acall__(self, update: 'Update') -> bool:
+        raise NotImplementedError
 
 class text(Filter):
     """filter text message by text /  فیلتر کردن متن پیام بر اساس متنی"""
