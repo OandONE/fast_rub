@@ -3,6 +3,7 @@ from pathlib import Path
 import aiofiles
 from .colors import cprint, Colors
 import time
+from ..type.errors import InvalidID
 if TYPE_CHECKING:
     from ..network.network import Network
 
@@ -139,4 +140,17 @@ class Utils:
             if suffix in suf:
                 return tp # pyright: ignore[reportReturnType]
         return "File"
+    
+    @staticmethod
+    def check_id(id: str) -> bool:
+        st = id.startswith("b") or id.startswith("u") or id.startswith("g")
+        if st:
+            if len(id) == 32:
+                return True
+        return False
+
+    @staticmethod
+    def check_id_raise(id: str):
+        if not Utils.check_id(id=id):
+            raise InvalidID('Invalid Id. The ID must be 32 characters long and must also start with one of the letters "b", "u", or "g".')
 
