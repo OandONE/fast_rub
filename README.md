@@ -1047,6 +1047,7 @@ from fast_rub import Client, filters
 from fast_rub.type import Update
 import asyncio
 
+# Sync
 class stiker_emoji_filter(filters.Filter):
     """فیلتر تشخیص ایموجی استیکر"""
     def __init__(self, sticker_emoji_character: str):
@@ -1054,14 +1055,25 @@ class stiker_emoji_filter(filters.Filter):
     def __call__(self, update: Update) -> bool:
         return str(update.sticker_emoji_character) == self.sticker_emoji_character
 
+# Async
+import database as db # مثال
+class is_admin_filter(filters.AsyncFilter):
+    """فیلتر ادمین بودن کاربر"""
+    async def __acall__(self, update: Update) -> bool:
+        return bool(await db.find("admins", {"chat_id": update.chat_id}))
+
 async def robot():
     bot = Client("test", run_start=False)
 
     await bot.start()
 
     @bot.on_message(stiker_emoji_filter("😂"))
-    async def test_filters(msg: Update):
+    async def test_filter1(msg: Update):
         await msg.reply("خخخ")
+    
+    @bot.on_message(is_admin_filter())
+    async def test_filter2(msg: Update):
+        await msg.reply("شما ادمین میباشید")
     
     await bot.run()
 
