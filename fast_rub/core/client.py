@@ -1629,9 +1629,15 @@ class Client:
                         elif deleted_messages_option == True and not is_deleted:
                             continue
                         filters = handler_info["filters"]
+                        
                         if filters is not None:
                             try:
-                                if not filters(update):
+                                filter_class = type(filters)
+                                if "__acall__" in filter_class.__dict__:
+                                    result = await filters.__acall__(update)
+                                else:
+                                    result = filters(update)
+                                if not result:
                                     continue
                             except Exception as e:
                                 print(f"[FILTER ERROR] {filters} -> {e}")
