@@ -22,8 +22,8 @@
   <meta name="twitter:description" content="کتابخانه Fast Rub مخصوص توسعه سریع ربات‌های روبیکا با پشتیبانی از sync و async.">
   <meta name="twitter:image" content="icon.jpg">
   <link rel="icon" type="image/png" href="icon.jpg">
-  <link rel="stylesheet" href="/main.7a952b86.min.css">
-  <link rel="stylesheet" href="/palette.cbb835fc.min.css">
+  <link rel="stylesheet" href="main.7a952b86.min.css">
+  <link rel="stylesheet" href="palette.cbb835fc.min.css">
   <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin="">
   <style>
     :root {
@@ -168,7 +168,7 @@
                   </li>
                   <li class="md-nav__item">
                     <a href="pyrubi/index.html" class="md-nav__link">
-                      فورک پایروبی
+                      یوزر بات
                     </a>
                   </li>
                 </ul>
@@ -209,10 +209,11 @@
             <div class="lib-image-box">
               <img src="./icon.jpg" alt="کتابخانه فست روب" class="lib-image">
             </div>
+            <p style="font-size: 1.5em; font-weight: bold;">سرعت, قدرت و بهینگی در یک کتابخانه ⚡</p>
             <h1>معرفی</h1>
 
-            <p>این کتابخانه که از کد های سینک و ایسینک(sync/async) پشتیبانی میکند و با سرعت بالایی میتوانید ریکوست ها را ارسال کند و نیز با حجم کم آن و وابستگی های کم آن و مصرف پایین رم و سی پی یو و ... میتواند برای ربات های سنگین روی سرور های سبک با سرعت ویژه ای شروع به کار کند این کتابخانه مجهز به سیستم لاگ گیری دقیق میباشد
-
+            <p>این کتابخانه که از کد های سینک و ایسینک(sync/async) پشتیبانی میکند و با سرعت بالایی میتوانید درخواست ها را ارسال و پردازش کند همچنین با حجم کم آن و وابستگی های کم آن و مصرف پایین رم و پردازنده و ... می تواند برای ربات های سنگین روی سرور های سبک با سرعت ویژه ای شروع به کار کند این کتابخانه مجهز به سیستم لاگ گیری میباشد
+این کتابخانه به طور اصلی برای بات ها نوشته شده و همچنین از یوزر بات ها هم پشتیبانی می کند.
 این کتابخانه در حال حاظر در پایتون است و بزودی در سی شارپ هم به مرحله انتشار میرسد</p>
             <h2 id="_1">مراحل استفاده<a class="headerlink" href="#_1" title="Permanent link"></a>
             </h2>
@@ -236,36 +237,52 @@
                 </button>
             </div>
             </ul>
-            <p>نمونه کد برای استفاده از آپدیت ها :</p>
+            <p>شروع سریع 🚀</p>
             <div class="code-container" role="region" aria-label="نمونه کد">
 <pre class="code-block"><code class="language-python"><span class="keyword">from</span> <span class="fast_rub">fast_rub</span> <span class="keyword">import</span> <span class="class-name">Client</span> <span class="comment"># ایمپورت کلاس کلاینت از کتابخانه</span>
 <span class="keyword">from</span> <span class="fast_rub">fast_rub</span>.<span class="type">types</span> <span class="keyword">import</span> <span class="class-name">Message</span> <span class="comment"># ایمپورت آپدیت برای تحلیل بهتر پیام ها</span>
 <span class="keyword">import</span> <span class="fast_rub">asyncio</span>
 
-<span class="bot">bot</span> = <span class="class-name">Client</span>(<span class="string">"my_bot"</span>) <span class="comment"># ساخت کلاینت</span>
+<span class="async">async</span> <span class="def">def</span> <span class="function">robot</span>():
+  <span class="bot">bot</span> = <span class="class-name">Client</span>(<span class="string">"my_bot"</span>, <span class="message">run_start</span>=<span class="message">False</span>) <span class="comment"># ساخت کلاینت</span>
 
-@<span class="bot">bot</span>.<span class="on_message">on_message</span>()
-<span class="async">async</span> <span class="def">def</span> <span class="function">test_update</span>(<span class="message">msg</span>: <span class="class-name">Message</span>):
-    <span class="function">print</span>(<span class="string">f"msg : {<span class="message">msg</span>}"</span>)
-    <span class="function">print</span>(<span class="string">f"text msg : {<span class="message">msg</span>.<span class="text">text</span>}"</span>)
-    <span class="await">await</span> <span class="message">msg</span>.<span class="reply">reply</span>(<span class="string">"**this** ||is|| a ~~test~~ `from` *fast_rub* !"</span>)
+  <span class="await">await</span> <span class="bot">bot</span>.<span class="reply">start</span>()
 
-<span class="fast_rub">asyncio</span>.<span class="run">run</span>(<span class="bot">bot</span>.<span class="run">run</span>()) <span class="comment"># اجرا ربات</span></code></pre>
+  @<span class="bot">bot</span>.<span class="on_message">on_message</span>()
+  <span class="async">async</span> <span class="def">def</span> <span class="function">test_update</span>(<span class="message">msg</span>: <span class="class-name">Message</span>):
+      <span class="function">print</span>(<span class="string">f"msg : {<span class="message">msg</span>}"</span>)
+      <span class="function">print</span>(<span class="string">f"text msg : {<span class="message">msg</span>.<span class="text">text</span>}"</span>)
+      <span class="await">await</span> <span class="message">msg</span>.<span class="reply">reply</span>(<span class="string">"*this* ||is|| a ~~test~~ `from` **fast_rub** !"</span>)
+  
+  <span class="bot">bot</span>.<span class="run">run</span>()
+
+<span class="fast_rub">asyncio</span>.<span class="run">run</span>(<span class="run">robot</span>()) <span class="comment"># اجرا ربات</span></code></pre>
                 <button class="copy-btn" aria-label="کپی کردن کد" title="کپی کردن کد به حافظه" data-clipboard-target=".code-block">
                     <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
                     </svg>
                 </button>
             </div>
             <h2 id="_2">چرا باید از فست روب استفاده کنیم؟<a class="headerlink" href="#_2" title="Permanent link"></a></h2>
+            <div class="features">
+              <div class="feature">
+                  <h3>⚡ سریع‌ترین</h3>
+                  <p>با HTTP/2 و httpx، پیام‌ها رو با سرعت نور ارسال کن</p>
+              </div>
+              <div class="feature">
+                  <h3>🧠 هوشمندترین</h3>
+                  <p>سیستم فیلترینگ پیشرفته با پشتیبانی از Async Filter</p>
+              </div>
+              <div class="feature">
+                  <h3>🗃️ سبک و کم‌مصرف</h3>
+                  <p>روی سرورهای ضعیف هم مثل لینوکس کار می‌کنه</p>
+              </div>
+          </div>
             <ul>
-                <li>•  سریع ترین کتابخانه برای ربات های روبیکا ⚡</li>
-                <li>•  حجم بسیار پایین 🗃️</li>
                 <li>•  داکیومنت ساده 🆗</li>
                 <li>•  استفاده آسان ✨</li>
                 <li>•  سیستم لاگ گیری دقیق ⚠️</li>
                 <li>•  مستقل 1️⃣</li>
                 <li>•  همیشه بروز 🆙</li>
-                <li>•  بهینه و پیشرفته 💎</li>
                 <li>•  هم برای بات 🤖 و هم برای اکانت 👤</li>
                 <li>•  امنیت قوی 🔒</li>
                 <li>•  کاملا متن باز بدون محدودیت 🍴</li>
