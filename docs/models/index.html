@@ -47,7 +47,7 @@
     "description": "مستندات کامل مدل‌ها و کلاس‌های کمکی Fast Rub برای بات روبیکا",
     "author": {
       "@type": "Organization",
-      "name": "Fast Rub Team"
+      "name": "Seyyed Mohamad Hosein Moosave Raja"
     },
     "datePublished": "2025-01-01",
     "dateModified": "2025-12-01",
@@ -340,7 +340,7 @@
         <li><a href="../index.html">معرفی</a></li>
         <li><a href="index.html">متد‌ها</a></li>
         <li><a href="#" class="active">مدل‌ها</a></li>
-        <li><a href="pyrubi/index.html">فورک پایروبی</a></li>
+        <li><a href="pyrubi/index.html">یوزر بات</a></li>
       </ul>
       <div class="toc-title">📌 فهرست مدل‌ها</div>
       <ul id="toc-list" class="toc-list"></ul>
@@ -353,8 +353,8 @@
       </div>
       <div id="models-container"></div>
       <footer class="footer">
-        <a href="index.html">→ متد‌ها</a>
-        <a href="pyrubi/index.html">فورک پایروبی ←</a>
+        <a href="../methods/index.html">→ متد‌ها</a>
+        <a href="pyrubi/index.html">یوزر بات ←</a>
       </footer>
     </main>
   </div>
@@ -389,7 +389,7 @@
           { name: "__iter__", signature: "__iter__() -> Iterator", description: "ردیف‌ها را پیمایش می‌کند.", params: [], returns: "Iterator" },
           { name: "__len__", signature: "__len__() -> int", description: "تعداد ردیف‌های دکمه.", params: [], returns: "int" }
         ],
-        example: `from fast_rub import KeyPad\n\nkey = KeyPad()\nkey.append(key.simple("btn1", "دکمه اول"))\nkey.append(key.simple("btn2", "دکمه دوم"), key.simple("btn3", "سوم"))\nprint(key.get())\nbtn = key.get_data_by_id("btn1")`
+        example: `from fast_rub.button import KeyPad\n\nkey = KeyPad()\nkey.append(\n    key.simple("btn1", "دکمه اول")\n)\nkey.append(\n    key.simple("btn2", "دکمه دوم"),\n    key.simple("btn3", "سوم")\n)\nprint(key.build())\nbtn = key.get_data_by_id("btn1")`
       },
 
       // ============ ۲. Update (Message) ============
@@ -430,7 +430,7 @@
           { name: "sticker_sticker_id", type: "str | None", description: "آیدی استیکر" },
           { name: "sticker_file", type: "File | dict", description: "فایل استیکر" },
           { name: "removed_message_id", type: "str | None", description: "آیدی پیام حذف شده (در آپدیت حذف)" },
-          { name: "update_time", type: "int | None", description: "زمان آپدیت (برای حذف)" }
+          { name: "update_time", type: "int | None", description: "زمان آپدیت (برای ویرایش)" }
         ],
         // ============ متدهای کلاس Message (Update) با تمام پارامترها ============
         methods: [
@@ -455,7 +455,7 @@
             params: [
               ["chat_id", "Optional[str]", "چت‌آیدی - پیشفرض chat_id خود پیام"]
             ],
-            returns: "Chat"
+            returns: "<a href='#base_models'>Chat</a>"
           },
           
           // ----- reply (متد جامع) -----
@@ -473,6 +473,8 @@
               ["auto_delete", "Optional[int]", "پاکسازی خودکار بر حسب ثانیه"],
               ["parse_mode", "Literal['Markdown', 'HTML', None]", "پارس مود (پیشفرض 'Markdown')"],
               ["meta_data", "list", "لیست متادیتا (پیشفرض [])"],
+              ["wait_send", "float | None", "زمان ایستادن برای قبل از ارسال درخواست"],
+              ["return_task", "bool = False", "برگرشتن تسک جدید"],
               ["file", "Union[str, Path, bytes, None]", "مسیر فایل یا خود فایل"],
               ["name_file", "Optional[str]", "نام فایل (پیشفرض None)"],
               ["type_file", "Literal['File', 'Image', 'Voice', 'Music', 'Gif', 'Video']", "نوع فایل (پیشفرض 'File')"],
@@ -494,7 +496,7 @@
               ["chat_id", "Optional[str]", "چت‌آیدی مقصد (پیشفرض chat_id پیام)"],
               ["reply_to_message_id", "Optional[str]", "آیدی پیام ریپلای شده (پیشفرض message_id خود پیام)"]
             ],
-            returns: "msg_update"
+            returns: "<a href='#msg_update'>msg_update</a>"
           },
           
           // ----- reply_text -----
@@ -511,10 +513,12 @@
               ["auto_delete", "Optional[int]", "پاکسازی خودکار بر حسب ثانیه"],
               ["parse_mode", "Literal['Markdown', 'HTML', None]", "پارس مود (پیشفرض 'Markdown')"],
               ["meta_data", "list", "لیست متادیتا (پیشفرض [])"],
+              ["wait_send", "float | None", "زمان ایستادن برای قبل از ارسال درخواست"],
+              ["return_task", "bool = False", "برگرشتن تسک جدید"],
               ["chat_id", "Optional[str]", "چت‌آیدی مقصد (پیشفرض chat_id پیام)"],
               ["reply_to_message_id", "Optional[str]", "آیدی پیام ریپلای شده (پیشفرض message_id خود پیام)"]
             ],
-            returns: "msg_update"
+            returns: "<a href='#msg_update'>msg_update</a>"
           },
           
           // ----- reply_poll -----
@@ -531,10 +535,12 @@
               ["allows_multiple_answers", "bool", "چند انتخابی (پیشفرض False)"],
               ["hint", "Optional[str]", "راهنمایی پاسخ"],
               ["auto_delete", "Optional[int]", "پاکسازی خودکار"],
+              ["wait_send", "float | None", "زمان ایستادن برای قبل از ارسال درخواست"],
+              ["return_task", "bool = False", "برگرشتن تسک جدید"],
               ["chat_id", "Optional[str]", "چت‌آیدی مقصد"],
               ["reply_to_message_id", "Optional[str]", "آیدی پیام ریپلای شده"]
             ],
-            returns: "msg_update"
+            returns: "<a href='#msg_update'>msg_update</a>"
           },
           
           // ----- reply_contact -----
@@ -547,10 +553,12 @@
               ["phone_number", "str", "شماره تلفن"],
               ["last_name", "str", "نام خانوادگی (پیشفرض '')"],
               ["auto_delete", "Optional[int]", "پاکسازی خودکار"],
+              ["wait_send", "float | None", "زمان ایستادن برای قبل از ارسال درخواست"],
+              ["return_task", "bool = False", "برگرشتن تسک جدید"],
               ["chat_id", "Optional[str]", "چت‌آیدی مقصد"],
               ["reply_to_message_id", "Optional[str]", "آیدی پیام ریپلای شده"]
             ],
-            returns: "msg_update"
+            returns: "<a href='#msg_update'>msg_update</a>"
           },
           
           // ----- reply_location -----
@@ -562,10 +570,12 @@
               ["latitude", "str", "عرض جغرافیایی"],
               ["longitude", "str", "طول جغرافیایی"],
               ["auto_delete", "Optional[int]", "پاکسازی خودکار"],
+              ["wait_send", "float | None", "زمان ایستادن برای قبل از ارسال درخواست"],
+              ["return_task", "bool = False", "برگرشتن تسک جدید"],
               ["chat_id", "Optional[str]", "چت‌آیدی مقصد"],
               ["reply_to_message_id", "Optional[str]", "آیدی پیام ریپلای شده"]
             ],
-            returns: "msg_update"
+            returns: "<a href='#msg_update'>msg_update</a>"
           },
           
           // ----- reply_file (عمومی) -----
@@ -588,11 +598,13 @@
               ["on_time_keyboard", "bool", "کیبورد یکبار مصرف"],
               ["upload_by", "Literal['aiohttp', 'httpx']", "کتابخانه آپلود"],
               ["show_progress", "bool", "نمایش پیشرفت"],
+              ["wait_send", "float | None", "زمان ایستادن برای قبل از ارسال درخواست"],
+              ["return_task", "bool = False", "برگرشتن تسک جدید"],
               ["chat_id", "Optional[str]", "چت‌آیدی مقصد"],
               ["reply_to_message_id", "Optional[str]", "آیدی پیام ریپلای شده"],
               ["chunk_size", "int", "سایز چانک"]
             ],
-            returns: "msg_update"
+            returns: "<a href='#msg_update'>msg_update</a>"
           },
           
           // ----- reply_image -----
@@ -614,11 +626,13 @@
               ["on_time_keyboard", "bool", "کیبورد یکبار مصرف"],
               ["upload_by", "Literal['aiohttp', 'httpx']", "کتابخانه آپلود"],
               ["show_progress", "bool", "نمایش پیشرفت"],
+              ["wait_send", "float | None", "زمان ایستادن برای قبل از ارسال درخواست"],
+              ["return_task", "bool = False", "برگرشتن تسک جدید"],
               ["chat_id", "Optional[str]", "چت‌آیدی مقصد"],
               ["reply_to_message_id", "Optional[str]", "آیدی پیام ریپلای شده"],
               ["chunk_size", "int", "سایز چانک"]
             ],
-            returns: "msg_update"
+            returns: "<a href='#msg_update'>msg_update</a>"
           },
           
           // ----- reply_video -----
@@ -640,11 +654,13 @@
               ["on_time_keyboard", "bool", "کیبورد یکبار مصرف"],
               ["upload_by", "Literal['aiohttp', 'httpx']", "کتابخانه آپلود"],
               ["show_progress", "bool", "نمایش پیشرفت"],
+              ["wait_send", "float | None", "زمان ایستادن برای قبل از ارسال درخواست"],
+              ["return_task", "bool = False", "برگرشتن تسک جدید"],
               ["chat_id", "Optional[str]", "چت‌آیدی مقصد"],
               ["reply_to_message_id", "Optional[str]", "آیدی پیام ریپلای شده"],
               ["chunk_size", "int", "سایز چانک"]
             ],
-            returns: "msg_update"
+            returns: "<a href='#msg_update'>msg_update</a>"
           },
           
           // ----- reply_voice -----
@@ -666,11 +682,13 @@
               ["on_time_keyboard", "bool", "کیبورد یکبار مصرف"],
               ["upload_by", "Literal['aiohttp', 'httpx']", "کتابخانه آپلود"],
               ["show_progress", "bool", "نمایش پیشرفت"],
+              ["wait_send", "float | None", "زمان ایستادن برای قبل از ارسال درخواست"],
+              ["return_task", "bool = False", "برگرشتن تسک جدید"],
               ["chat_id", "Optional[str]", "چت‌آیدی مقصد"],
               ["reply_to_message_id", "Optional[str]", "آیدی پیام ریپلای شده"],
               ["chunk_size", "int", "سایز چانک"]
             ],
-            returns: "msg_update"
+            returns: "<a href='#msg_update'>msg_update</a>"
           },
           
           // ----- reply_music -----
@@ -692,11 +710,13 @@
               ["on_time_keyboard", "bool", "کیبورد یکبار مصرف"],
               ["upload_by", "Literal['aiohttp', 'httpx']", "کتابخانه آپلود"],
               ["show_progress", "bool", "نمایش پیشرفت"],
+              ["wait_send", "float | None", "زمان ایستادن برای قبل از ارسال درخواست"],
+              ["return_task", "bool = False", "برگرشتن تسک جدید"],
               ["chat_id", "Optional[str]", "چت‌آیدی مقصد"],
               ["reply_to_message_id", "Optional[str]", "آیدی پیام ریپلای شده"],
               ["chunk_size", "int", "سایز چانک"]
             ],
-            returns: "msg_update"
+            returns: "<a href='#msg_update'>msg_update</a>"
           },
           
           // ----- reply_gif -----
@@ -718,11 +738,13 @@
               ["on_time_keyboard", "bool", "کیبورد یکبار مصرف"],
               ["upload_by", "Literal['aiohttp', 'httpx']", "کتابخانه آپلود"],
               ["show_progress", "bool", "نمایش پیشرفت"],
+              ["wait_send", "float | None", "زمان ایستادن برای قبل از ارسال درخواست"],
+              ["return_task", "bool = False", "برگرشتن تسک جدید"],
               ["chat_id", "Optional[str]", "چت‌آیدی مقصد"],
               ["reply_to_message_id", "Optional[str]", "آیدی پیام ریپلای شده"],
               ["chunk_size", "int", "سایز چانک"]
             ],
-            returns: "msg_update"
+            returns: "<a href='#msg_update'>msg_update</a>"
           },
           
           // ----- forward -----
@@ -733,10 +755,12 @@
             params: [
               ["to_chat_id", "str", "چت‌آیدی مقصد"],
               ["auto_delete", "Optional[int]", "پاکسازی خودکار"],
+              ["wait_send", "float | None", "زمان ایستادن برای قبل از ارسال درخواست"],
+              ["return_task", "bool = False", "برگرشتن تسک جدید"],
               ["from_chat_id", "Optional[str]", "چت‌آیدی مبدأ (پیشفرض chat_id پیام)"],
               ["message_id", "Optional[str]", "آیدی پیام (پیشفرض message_id خود پیام)"]
             ],
-            returns: "msg_update"
+            returns: "<a href='#msg_update'>msg_update</a>"
           },
           
           // ----- download -----
@@ -747,7 +771,9 @@
             params: [
               ["path", "str", "مسیر ذخیره فایل (پیشفرض 'file')"],
               ["file_id", "Optional[str]", "آیدی فایل (پیشفرض file_id خود پیام)"],
-              ["show_progress", "bool", "نمایش نوار پیشرفت (پیشفرض True)"]
+              ["show_progress", "bool", "نمایش نوار پیشرفت (پیشفرض True)"],
+              ["wait_send", "float | None", "زمان ایستادن برای قبل از ارسال درخواست"],
+              ["return_task", "bool = False", "برگرشتن تسک جدید"],
             ],
             returns: "None"
           },
@@ -758,7 +784,9 @@
             signature: "async get_download_file_url(file_id: Optional[str] = None) -> Optional[str]",
             description: "دریافت لینک دانلود فایل",
             params: [
-              ["file_id", "Optional[str]", "آیدی فایل (پیشفرض file_id خود پیام)"]
+              ["file_id", "Optional[str]", "آیدی فایل (پیشفرض file_id خود پیام)"],
+              ["wait_send", "float | None", "زمان ایستادن برای قبل از ارسال درخواست"],
+              ["return_task", "bool = False", "برگرشتن تسک جدید"],
             ],
             returns: "Optional[str]"
           },
@@ -769,6 +797,8 @@
             signature: "async delete(chat_id: Optional[str] = None, message_id: Optional[str] = None) -> props",
             description: "حذف پیام",
             params: [
+              ["wait_send", "float | None", "زمان ایستادن برای قبل از ارسال درخواست"],
+              ["return_task", "bool = False", "برگرشتن تسک جدید"],
               ["chat_id", "Optional[str]", "چت‌آیدی (پیشفرض chat_id خود پیام)"],
               ["message_id", "Optional[str]", "آیدی پیام (پیشفرض message_id خود پیام)"]
             ],
@@ -781,6 +811,8 @@
             signature: "async ban(chat_id: Optional[str] = None, user_id: Optional[str] = None)",
             description: "مسدود کردن کاربر در چت",
             params: [
+              ["wait_send", "float | None", "زمان ایستادن برای قبل از ارسال درخواست"],
+              ["return_task", "bool = False", "برگرشتن تسک جدید"],
               ["chat_id", "Optional[str]", "چت‌آیدی (پیشفرض chat_id خود پیام)"],
               ["user_id", "Optional[str]", "آیدی کاربر (پیشفرض sender_id خود پیام)"]
             ],
@@ -793,6 +825,8 @@
             signature: "async unban(chat_id: Optional[str] = None, user_id: Optional[str] = None)",
             description: "رفع مسدودیت کاربر",
             params: [
+              ["wait_send", "float | None", "زمان ایستادن برای قبل از ارسال درخواست"],
+              ["return_task", "bool = False", "برگرشتن تسک جدید"],
               ["chat_id", "Optional[str]", "چت‌آیدی (پیشفرض chat_id خود پیام)"],
               ["user_id", "Optional[str]", "آیدی کاربر (پیشفرض sender_id خود پیام)"]
             ],
@@ -805,6 +839,8 @@
             signature: "async ban_reply(chat_id: Optional[str] = None)",
             description: "مسدود کردن کاربر پیام ریپلای شده",
             params: [
+              ["wait_send", "float | None", "زمان ایستادن برای قبل از ارسال درخواست"],
+              ["return_task", "bool = False", "برگرشتن تسک جدید"],
               ["chat_id", "Optional[str]", "چت‌آیدی (پیشفرض chat_id خود پیام)"]
             ],
             returns: "Optional[props]"
@@ -816,6 +852,8 @@
             signature: "async unban_reply(chat_id: Optional[str] = None)",
             description: "رفع مسدودیت کاربر پیام ریپلای شده",
             params: [
+              ["wait_send", "float | None", "زمان ایستادن برای قبل از ارسال درخواست"],
+              ["return_task", "bool = False", "برگرشتن تسک جدید"],
               ["chat_id", "Optional[str]", "چت‌آیدی (پیشفرض chat_id خود پیام)"]
             ],
             returns: "Optional[props]"
@@ -827,6 +865,8 @@
             signature: "async get_reply(chat_id: Optional[str] = None, message_id: Optional[str] = None) -> Optional[Update]",
             description: "گرفتن آبجکت پیام ریپلای شده",
             params: [
+              ["wait_send", "float | None", "زمان ایستادن برای قبل از ارسال درخواست"],
+              ["return_task", "bool = False", "برگرشتن تسک جدید"],
               ["chat_id", "Optional[str]", "چت‌آیدی (پیشفرض chat_id خود پیام)"],
               ["message_id", "Optional[str]", "آیدی پیام (پیشفرض reply_to_message_id خود پیام)"]
             ],
@@ -890,7 +930,7 @@
               ["meta_data", "list", "لیست متادیتا (پیشفرض [])"],
               ["chat_id", "Optional[str]", "چت‌آیدی مقصد (پیشفرض chat_id خود کلیک)"]
             ],
-            returns: "msg_update"
+            returns: "<a href='#msg_update'>msg_update</a>"
           },
           
           // ----- send_message (متد جامع) -----
@@ -928,7 +968,7 @@
               ["phone_number", "Optional[str]", "شماره تلفن مخاطب"],
               ["chat_id", "Optional[str]", "چت‌آیدی مقصد (پیشفرض chat_id خود کلیک)"]
             ],
-            returns: "msg_update"
+            returns: "<a href='#msg_update'>msg_update</a>"
           },
           
           // ----- send_pool (نظرسنجی) - توجه: اشتباه تایپی در کد اصلی pool است نه poll
@@ -948,7 +988,7 @@
               ["reply_to_message_id", "Optional[str]", "آیدی پیام برای ریپلای"],
               ["chat_id", "Optional[str]", "چت‌آیدی مقصد (پیشفرض chat_id خود کلیک)"]
             ],
-            returns: "msg_update"
+            returns: "<a href='#msg_update'>msg_update</a>"
           },
           
           // ----- send_contact -----
@@ -965,7 +1005,7 @@
               ["inline_keypad", "Optional[list]", "دکمه‌های شیشه‌ای"],
               ["chat_id", "Optional[str]", "چت‌آیدی مقصد (پیشفرض chat_id خود کلیک)"]
             ],
-            returns: "msg_update"
+            returns: "<a href='#msg_update'>msg_update</a>"
           },
           
           // ----- send_location -----
@@ -980,7 +1020,7 @@
               ["reply_to_message_id", "Optional[str]", "آیدی پیام برای ریپلای"],
               ["chat_id", "Optional[str]", "چت‌آیدی مقصد (پیشفرض chat_id خود کلیک)"]
             ],
-            returns: "msg_update"
+            returns: "<a href='#msg_update'>msg_update</a>"
           },
           
           // ----- send_file (عمومی) -----
@@ -1006,7 +1046,7 @@
               ["chat_id", "Optional[str]", "چت‌آیدی مقصد (پیشفرض chat_id خود کلیک)"],
               ["chunk_size", "int", "سایز چانک (پیشفرض 64*1024)"]
             ],
-            returns: "msg_update"
+            returns: "<a href='#msg_update'>msg_update</a>"
           },
           
           // ----- send_document (فایل معمولی) -----
@@ -1031,7 +1071,7 @@
               ["chat_id", "Optional[str]", "چت‌آیدی مقصد (پیشفرض chat_id خود کلیک)"],
               ["chunk_size", "int", "سایز چانک (پیشفرض 64*1024)"]
             ],
-            returns: "msg_update"
+            returns: "<a href='#msg_update'>msg_update</a>"
           },
           
           // ----- send_image -----
@@ -1056,7 +1096,7 @@
               ["chat_id", "Optional[str]", "چت‌آیدی مقصد (پیشفرض chat_id خود کلیک)"],
               ["chunk_size", "int", "سایز چانک (پیشفرض 64*1024)"]
             ],
-            returns: "msg_update"
+            returns: "<a href='#msg_update'>msg_update</a>"
           },
           
           // ----- send_video -----
@@ -1081,7 +1121,7 @@
               ["chat_id", "Optional[str]", "چت‌آیدی مقصد (پیشفرض chat_id خود کلیک)"],
               ["chunk_size", "int", "سایز چانک (پیشفرض 64*1024)"]
             ],
-            returns: "msg_update"
+            returns: "<a href='#msg_update'>msg_update</a>"
           },
           
           // ----- send_voice -----
@@ -1106,7 +1146,7 @@
               ["chat_id", "Optional[str]", "چت‌آیدی مقصد (پیشفرض chat_id خود کلیک)"],
               ["chunk_size", "int", "سایز چانک (پیشفرض 64*1024)"]
             ],
-            returns: "msg_update"
+            returns: "<a href='#msg_update'>msg_update</a>"
           },
           
           // ----- send_music -----
@@ -1131,7 +1171,7 @@
               ["chat_id", "Optional[str]", "چت‌آیدی مقصد (پیشفرض chat_id خود کلیک)"],
               ["chunk_size", "int", "سایز چانک (پیشفرض 64*1024)"]
             ],
-            returns: "msg_update"
+            returns: "<a href='#msg_update'>msg_update</a>"
           },
           
           // ----- send_gif -----
@@ -1156,7 +1196,7 @@
               ["chat_id", "Optional[str]", "چت‌آیدی مقصد (پیشفرض chat_id خود کلیک)"],
               ["chunk_size", "int", "سایز چانک (پیشفرض 64*1024)"]
             ],
-            returns: "msg_update"
+            returns: "<a href='#msg_update'>msg_update</a>"
           },
           
           // ----- to_dict -----
@@ -1183,7 +1223,7 @@
           {
             name: "update_data",
             type: "dict",
-            description: "داده خام دریافتی از سرور"
+            description: "دیتا خام دریافتی از سرور"
           }
         ],
         // ============ متدهای کلاس msg_update با تمام پارامترها ============
@@ -1198,16 +1238,16 @@
               ["inline_keypad", "Optional[list]", "دکمه‌های شیشه‌ای جدید (پیشفرض None)"],
               ["parse_mode", "Literal['Markdown', 'HTML'] | None", "پارس مود (پیشفرض 'Markdown')"]
             ],
-            returns: "msg_update"
+            returns: "<a href='#msg_update'>msg_update</a>"
           },
           
           // ----- get_message -----
           {
             name: "get_message",
             signature: "async get_message() -> Optional[Update]",
-            description: "گرفتن اطلاعات کامل پیام (آبجکت Update)",
+            description: "گرفتن اطلاعات کامل پیام (شی Update)",
             params: [],
-            returns: "Optional[Update]"
+            returns: "Optional[<a href='#update'>Update</a>]"
           },
           
           // ----- delete_message -----
@@ -1228,7 +1268,6 @@
             returns: "dict"
           }
         ],
-        note: "همچنین می‌توان با `msg_update.attribute_name` به هر فیلدی از پاسخ سرور دسترسی داشت (مثلاً `msg_update.status`).",
         example: `sent = await bot.send_text("سلام", chat_id)\nprint(sent.message_id)\nawait sent.edit_text("سلام عزیز")`
       },
 
@@ -1254,11 +1293,12 @@
             subtitle: "Chat",
             class_signature: "class Chat(_BaseModels)",
             properties: [
-              { name: "first_name", type: "str", description: "نام کاربر (در PV)" },
+              { name: "first_name", type: "str", description: "نام کاربر (چت کاربر)" },
               { name: "title", type: "str", description: "عنوان گروه/کانال" },
               { name: "user_id", type: "str", description: "آیدی کاربر" },
               { name: "chat_id", type: "str", description: "چت‌آیدی" },
-              { name: "last_name", type: "str", description: "نام خانوادگی کاربر" }
+              { name: "last_name", type: "str", description: "نام خانوادگی کاربر" },
+              { name: "username", type: "str", description: "نام کاربری کاربر" }
             ]
           }
         ],
@@ -1276,11 +1316,11 @@
             filters: [
               { name: "text(pattern)", description: "برابری دقیق متن پیام با pattern", params: [["pattern", "str"]] },
               { name: "regex(pattern, flags=0)", description: "انطباق متن با الگوی regex", params: [["pattern", "str"], ["flags", "int"]] },
-              { name: "in_text(text)", description: "وجود یک زیرمتن در پیام", params: [["text", "str"]] },
+              { name: "in_text(text)", description: "وجود یک متن در متن پیام", params: [["text", "str"]] },
               { name: "starts_with(prefix)", description: "شروع شدن با prefix", params: [["prefix", "str"]] },
               { name: "ends_with(suffix)", description: "پایان یافتن با suffix", params: [["suffix", "str"]] },
               { name: "text_length(min_len=0, max_len=inf)", description: "طول متن در بازه", params: [["min_len", "int"], ["max_len", "float"]] },
-              { name: "is_text", description: "پیام دارای متن است (فقط فیلتر بدون پارامتر)", params: [] }
+              { name: "is_text", description: "پیام دارای متن است", params: [] }
             ]
           },
           {
@@ -1361,8 +1401,119 @@
             ]
           }
         ],
-        note: "مثال: @bot.on_message(filters.text('/start'))"
+        example: "@bot.on_message(filters.text('/start'))"
+      },
+
+      // ============ 7. ویت منیجر ============
+      {
+        id: "WaitManager",
+        title: "🔹 مدیریت کننده انتظار",
+        description: "این کلاس برای ربات های نسبتا بزرگ است که نیازمند تنظیم مقدار انتظار برای ارسال درخواست ها هستند تا ربات در چت محدود نشود.\nویژگی های این کلاس نسبت به sleep معمولی: پیام های هر چت جداگانه می تواند محاسبه شود - ترافیک ها نوع های مختفی دارند و میتوانند توسط کاربر یا متود ها اضافه شوند",
+        class_signature: "class WaitManager",
+        init_params: [
+          ["low_traffic", "int = 60", "حداکثر تعداد پیام در پنجره زمانی برای 'ترافیک کم'"],
+          ["medium_traffic", "int = 100", "حداکثر تعداد پیام برای 'ترافیک متوسط' (بیشتر از این = زیاد)"],
+          ["low_wait", "float = 0.0", "تاخیر/ثانیه در ترافیک کم"],
+          ["medium_wait", "float = 0.0", "تاخیر/ثانیه در ترافیک متوسط"],
+          ["high_wait", "float = 3.0", "تاخیر/ثانیه در ترافیک زیاد"],
+          ["time_window", "float = 60", "بازه زمانی/ثانیه برای شمارش پیام ها"],
+          ["auto_track", "bool = False", "اگر مقدار True باشد هر پیام که دریافت شود یک پیام به کانال sending اضافه می شود"],
+          ["per_chat", "bool = True", "ترافیک هر چت جداگانه محاسبه شود"],
+          ["track_after_send", "bool = False", "ترافیک بعد از ارسال پیام ثبت شود"],
+          ["sending", "bool = True", "کانال 'ارسال پیام' فعال باشد"],
+          ["banning", "bool = False", "کانال 'اخراج(بن) کردن' فعال باشد"],
+          ["forwarding", "bool = False", "کانال 'فوروارد' فعال باشد"],
+          ["uploading", "bool = False", "کانال 'آپلود فایل' فعال باشد"],
+          ["editing", "bool = False", "کانال 'ویرایش پیام' فعال باشد"],
+          ["deleting", "bool = False", "کانال 'حذف پیام' فعال باشد"],
+          // ["", "", ""],
+        ],
+        methods: [
+          {
+            name: "add_traffic",
+            signature: "add_traffic(count, channel, chat_id)",
+            description: "ویرایش متن پیام ارسال شده",
+            params: [
+              ["count", "int = 1", "تعداد مقدار ترافیک"],
+              ["channel", '"sending" | "banning" | "forwarding" | "uploading" | "editing" | "deleting" = "sending"', "کانال مورد نظر"],
+              ["chat_id", "Literal['Markdown', 'HTML'] | None", "چت آیدی(اگه per_chat = False)"]
+            ],
+          },
+          {
+            name: "get_time",
+            signature: "get_time(channel, chat_id)",
+            description: "دریافت مقدار wait_send مناسب برای کانال و چت مورد نظر",
+            params: [
+              ["channel", '"sending" | "banning" | "forwarding" | "uploading" | "editing" | "deleting" = "sending"', "کانال مورد نظر"],
+              ["chat_id", "Literal['Markdown', 'HTML'] | None", "چت آیدی"]
+            ],
+            returns: "float",
+          },
+          {
+            name: "reset",
+            signature: "reset(channel, chat_id)",
+            description: "پاک کردن تاریخچه ترافیک",
+            params: [
+              ["channel", '"sending" | "banning" | "forwarding" | "uploading" | "editing" | "deleting" = "sending"', "کانال مورد نظر(None = همه کانال ها)"],
+              ["chat_id", "Literal['Markdown', 'HTML'] | None", "چت آیدی(اگه ورودی بدهید فقط همان چت ریست می شود)"]
+            ],
+          },
+        ],
+        example: `# مثال ساده
+from fast_rub import Client, WaitManager
+
+wm = WaitManager(
+    low_traffic=30,
+    medium_traffic=50,
+    low_wait=0.0,
+    medium_wait=0.5,
+    high_wait=2.0,
+    time_window=30.0,
+    auto_track=True,
+)
+
+bot = Client("my_bot", token="...", wait_manager=wm)
+
+@bot.on_message()
+async def handler(msg: Message):
+    # auto_track فعاله، هر پیام خودکار ثبت میشه
+    # wait_send خودکار از WaitManager خونده میشه
+    await msg.reply("سلام!")
+
+# کنترل دستی با کانال های جداگانه
+
+wm = WaitManager(
+    sending=True,   # ارسال پیام
+    banning=True,   # بن کردن
+    forwarding=False,
+    per_chat=True,  # هر گروه جداگانه
+    track_after_send=False,  # قبل از ارسال پیش‌بینی کن
+)
+
+bot = Client("my_bot", token="...", wait_manager=wm)
+
+@bot.on_message(filters.commands(["ban"]))
+async def ban_handler(msg: Message):
+    # ثبت ترافیک در کانال banning
+    bot.wait_manager.add_traffic(channel="banning", chat_id=msg.chat_id)
+
+    # بن کردن (wait_send خودکار از کانال banning خونده میشه)
+    await bot.ban_chat_member(msg.chat_id, msg.reply_to_message_id)
+    await msg.reply("کاربر بن شد!")
+
+
+# ریست کردن ترافیک هر ساعت
+
+import asyncio
+
+async def reset_hourly(wm):
+    while True:
+        await asyncio.sleep(3600) # 1 ساعت
+        wm.reset()
+
+asyncio.create_task(reset_hourly(bot.wait_manager))`
       }
+
     ];
 
     function renderModels() {
@@ -1392,6 +1543,22 @@
           sig.className = 'class-signature';
           sig.textContent = section.class_signature;
           sectionEl.appendChild(sig);
+        }
+
+        if (section.init_params && section.init_params.length > 0) {
+          const paramsTitle = document.createElement('h3');
+          paramsTitle.textContent = '📥 ورودی‌های';
+          sectionEl.appendChild(paramsTitle);
+
+          const div = document.createElement('div');
+          div.className = 'table-responsive';
+          let table = `<table><thead><tr><th>فیلد</th><th>نوع</th><th>توضیحات</th></tr></thead><tbody>`;
+          section.init_params.forEach(p => {
+            table += `<tr><td><code>${p[0]}</code></td><td>${p[1]}</td><td>${p[2]}</td></tr>`;
+          });
+          table += `</tbody></table>`;
+          div.innerHTML = table;
+          sectionEl.appendChild(div);
         }
 
         if (section.properties && section.properties.length > 0) {
