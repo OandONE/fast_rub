@@ -63,8 +63,10 @@ class Utils:
         resize_keyboard: Optional[bool] = True,
         on_time_keyboard: Optional[bool] = False,
         metadata: Optional[list] = None,
-        meta_data: list = []
+        meta_data: Optional[list] = None
     ) -> dict:
+        if meta_data is None:
+            meta_data = []
         if inline_keypad:
             data["inline_keypad"] = {"rows": inline_keypad}
         if keypad:
@@ -154,3 +156,22 @@ class Utils:
         if not Utils.check_id(id=id):
             raise InvalidID('Invalid Id. The ID must be 32 characters long and must also start with one of the letters "b", "u", or "g".')
 
+    @staticmethod
+    def clean_dict(data: dict) -> dict:
+        if not isinstance(data, dict):
+            return data
+        result = {}
+        for key, value in data.items():
+            if value is None:
+                continue
+            if isinstance(value, list) and len(value) == 0:
+                continue
+            if isinstance(value, dict) and len(value) == 0:
+                continue
+            if isinstance(value, dict):
+                cleaned = Utils.clean_dict(value)
+                if cleaned:
+                    result[key] = cleaned
+            else:
+                result[key] = value
+        return result
