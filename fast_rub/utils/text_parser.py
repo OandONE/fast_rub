@@ -2,6 +2,16 @@ import re
 from typing import List, Dict, Any, Tuple
 
 
+def _build_utf16_prefix_lengths(text: str) -> List[int]:
+    """آرایه طول‌های تجمعی UTF-16 برای هر کاراکتر"""
+    prefix = [0]
+    total = 0
+    for char in text:
+        total += 2 if ord(char) > 0xFFFF else 1
+        prefix.append(total)
+    return prefix
+
+
 def _collect_matches(text: str, patterns: Dict[str, List[str]], priority: Dict[str, int]) -> List[Dict[str, Any]]:
     matches = []
     for style, pats in patterns.items():
@@ -41,6 +51,7 @@ def _collect_matches(text: str, patterns: Dict[str, List[str]], priority: Dict[s
                 })
     return matches
 
+
 def _allow_match(chosen: List[Dict[str, Any]], candidate: Dict[str, Any]) -> bool:
     s, e = candidate["start"], candidate["end"]
     for c in chosen:
@@ -51,6 +62,7 @@ def _allow_match(chosen: List[Dict[str, Any]], candidate: Dict[str, Any]) -> boo
             return False
     return True
 
+
 def _pick_matches_allowing_nested(matches: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     matches_sorted = sorted(matches, key=lambda m: (m['priority'], m['start']))
     chosen = []
@@ -60,132 +72,82 @@ def _pick_matches_allowing_nested(matches: List[Dict[str, Any]]) -> List[Dict[st
     chosen.sort(key=lambda m: m['start'])
     return chosen
 
+
 class TextParser:
     @staticmethod
     def checkMarkdown(text: str) -> Tuple[List[Dict[str, Any]], str]:
-        """
-        Parse Markdown and return flat metadata list + plain text.
-        - Nested styles are preserved as separate metadata entries (flat list).
-        - Partial/cross overlaps are rejected.
-        """
         if not text:
             return [], ""
 
         patterns = {
             "Pre": [r"```(?:[^\n]*\n)?([\s\S]*?)```"],
-            "Link": [r"\[([^\]]+?)\]\((https?://[^)]+)\)"],  # [text](http... یا https...)
-            "Mention": [r"\[([^\]]+?)\]\((u[a-zA-Z0-9]+)\)"],  # [text](bxxxxx) - منشن کاربر
+            "Link": [r"\[([^\]]+?)\]\((https?://[^)]+)\)"],
+            "Mention": [r"\[([^\]]+?)\]\((u[a-zA-Z0-9]+)\)"],
             "CodeInline": [r"`([^`]+?)`"],
             "Spoiler": [r"\|\|([^|]+?)\|\|"],
-            "Bold": [r"\*\*([^\*]+?)\*\*", r"__(?<!_)([^_]+?)__(?!_)"],
+            "Bold": [r"\*\*([^\*]+?)\*\*"],
             "Strike": [r"~~([^~]+?)~~"],
-            "Underline": [r"__(?<!_)([^_]+?)__(?!_)"],
+            "Underline": [r"__([^_]+?)__"],
             "Italic": [r"(?<!\*)\*([^*\n]+?)\*(?!\*)", r"(?<!_)_([^_\n]+?)_(?!_)"],
             "Blockquote": [r"(^> .+(?:\n> .+)*)"]
         }
 
         priority = {
-            "Pre": 0,
-            "Link": 1,
-            "Mention": 1,
-            "CodeInline": 2,
-            "Spoiler": 3,
-            "Bold": 4,
-            "Strike": 5,
-            "Underline": 6,
-            "Italic": 7,
-            "Blockquote": 8
+            "Pre": 0, "Link": 1, "Mention": 1, "CodeInline": 2,
+            "Spoiler": 3, "Bold": 4, "Strike": 5, "Underline": 6,
+            "Italic": 7, "Blockquote": 8
         }
 
         all_matches = _collect_matches(text, patterns, priority)
         chosen = _pick_matches_allowing_nested(all_matches)
+        chosen = _pick_matches_allowing_nested(all_matches)
 
-        out_parts: List[str] = []
-        metadata: List[Dict[str, Any]] = []
+        utf16_prefix = _build_utf16_prefix_lengths(text)
+
+        out_parts = []
+        metadata = []
         last = 0
-        out_length = 0
+        offset = 0
 
         for m in chosen:
             if last < m['start']:
-                plain_part = text[last:m['start']]
-                out_parts.append(plain_part)
-                out_length += len(plain_part)
+                out_parts.append(text[last:m['start']])
             
-            current_index = out_length
             content = m['content']
-            out_parts.append(content)
-            out_length += len(content)
-            
-            length = len(content)
             st = m['style']
-
-            if st == "Link":
-                metadata.append({
-                    "type": "Link",
-                    "from_index": current_index,
-                    "length": length,
-                    "link_url": m['extra']
-                })
-            elif st == "Mention":
-                user_id = m['extra']
-                metadata.append({
-                    "type": "MentionText",
-                    "from_index": current_index,
-                    "length": length,
-                    "mention_text_object_guid": user_id,
-                    "mention_text_user_id": user_id,
-                    "mention_text_object_type": "user"
-                })
-            elif st == "CodeInline":
-                metadata.append({
-                    "type": "Mono",
-                    "from_index": current_index,
-                    "length": length
-                })
-            elif st == "Pre":
-                metadata.append({
-                    "type": "Pre",
-                    "from_index": current_index,
-                    "length": length
-                })
-            elif st == "Blockquote":
-                lines = re.sub(r"^> ?", "", m['content'], flags=re.MULTILINE)
-                metadata.append({
-                    "type": "Blockquote",
-                    "from_index": current_index,
-                    "length": length
-                })
-            else:
-                map_types = {
-                    "Bold": "Bold",
-                    "Italic": "Italic",
-                    "Underline": "Underline",
-                    "Strike": "Strike",
-                    "Spoiler": "Spoiler"
-                }
-                meta_type = map_types.get(st, st)
-                metadata.append({
-                    "type": meta_type,
-                    "from_index": current_index,
-                    "length": length
-                })
-
+            
+            from_index = utf16_prefix[m['start']] - offset
+            content_end = m['start'] + len(content)
+            length = utf16_prefix[content_end] - utf16_prefix[m['start']]
+            
+            out_parts.append(content)
+            
+            full_utf16 = utf16_prefix[m['end']] - utf16_prefix[m['start']]
+            offset += full_utf16 - length
+            
             last = m['end']
+            
+            if st == "Link":
+                metadata.append({"type": "Link", "from_index": from_index, "length": length, "link_url": m['extra']})
+            elif st == "Mention":
+                metadata.append({"type": "MentionText", "from_index": from_index, "length": length, "mention_text_object_guid": m['extra'], "mention_text_user_id": m['extra'], "mention_text_object_type": "user"})
+            elif st == "CodeInline":
+                metadata.append({"type": "Mono", "from_index": from_index, "length": length})
+            elif st == "Pre":
+                metadata.append({"type": "Pre", "from_index": from_index, "length": length})
+            elif st == "Blockquote":
+                metadata.append({"type": "Blockquote", "from_index": from_index, "length": length})
+            else:
+                map_types = {"Bold": "Bold", "Italic": "Italic", "Underline": "Underline", "Strike": "Strike", "Spoiler": "Spoiler"}
+                metadata.append({"type": map_types.get(st, st), "from_index": from_index, "length": length})
 
         if last < len(text):
-            plain_part = text[last:]
-            out_parts.append(plain_part)
-
-        real_text_final = "".join(out_parts)
-        return metadata, real_text_final
-
+            out_parts.append(text[last:])
+        resukt_text = "".join(out_parts)
+        return metadata, resukt_text
+    
     @staticmethod
     def checkHTML(text: str) -> Tuple[List[Dict[str, Any]], str]:
-        """
-        Parse simple HTML-like tags and return flat metadata + plain text.
-        Supports <b>, <strong>, <i>, <em>, <code>, <s>, <del>, <u>, <pre>, <span class="tg-spoiler">,
-        <a href="...">text</a>, <mention objectId="...">text</mention>, and rubika:// links.
-        """
         if text is None:
             return [], ""
 
@@ -203,8 +165,7 @@ class TextParser:
 
         priority = {
             "PreHTML": 0,
-            "HTMLLink": 1,
-            "MentionHTML": 1,
+            "HTMLLink": 1, "MentionHTML": 1,
             "CodeInlineHTML": 2,
             "SpoilerHTML": 3,
             "BoldHTML": 4,
@@ -216,91 +177,55 @@ class TextParser:
         all_matches = _collect_matches(text, patterns, priority)
         chosen = _pick_matches_allowing_nested(all_matches)
 
+        utf16_prefix = _build_utf16_prefix_lengths(text)
+
         out_parts: List[str] = []
         metadata: List[Dict[str, Any]] = []
-        last = 0
-        out_length = 0
+        last_utf8 = 0
+        offset_utf16 = 0
 
         for m in chosen:
-            if last < m['start']:
-                plain_part = text[last:m['start']]
-                out_parts.append(plain_part)
-                out_length += len(plain_part)
-            
-            current_index = out_length
+            start_utf8 = m['start']
+            end_utf8 = m['end']
             content = m['content']
-            out_parts.append(content)
-            out_length += len(content)
-            
-            length = len(content)
             st = m['style']
+
+            if last_utf8 < start_utf8:
+                out_parts.append(text[last_utf8:start_utf8])
+
+            from_index = utf16_prefix[start_utf8] - offset_utf16
+            content_end_utf8 = start_utf8 + len(content)
+            length = utf16_prefix[content_end_utf8] - utf16_prefix[start_utf8]
+
+            out_parts.append(content)
+
+            full_len_utf16 = utf16_prefix[end_utf8] - utf16_prefix[start_utf8]
+            offset_utf16 += full_len_utf16 - length
+
+            last_utf8 = end_utf8
 
             if st == "HTMLLink":
                 url = m['extra']
                 if url and url.startswith("rubika://"):
                     uid = url.replace("rubika://", "")
-                    metadata.append({
-                        "type": "MentionText",
-                        "from_index": current_index,
-                        "length": length,
-                        "mention_text_object_guid": uid,
-                        "mention_text_user_id": uid,
-                        "mention_text_object_type": "user"
-                    })
+                    metadata.append({"type": "MentionText", "from_index": from_index, "length": length, "mention_text_object_guid": uid, "mention_text_user_id": uid, "mention_text_object_type": "user"})
                 else:
-                    metadata.append({
-                        "type": "Link",
-                        "from_index": current_index,
-                        "length": length,
-                        "link_url": url
-                    })
+                    metadata.append({"type": "Link", "from_index": from_index, "length": length, "link_url": url})
             elif st == "MentionHTML":
                 object_id = m['extra'] or m['content']
-                metadata.append({
-                    "type": "MentionText",
-                    "from_index": current_index,
-                    "length": length,
-                    "mention_text_object_guid": object_id,
-                    "mention_text_user_id": object_id,
-                    "mention_text_object_type": "group"
-                })
+                metadata.append({"type": "MentionText", "from_index": from_index, "length": length, "mention_text_object_guid": object_id, "mention_text_user_id": object_id, "mention_text_object_type": "group"})
             elif st == "CodeInlineHTML":
-                metadata.append({
-                    "type": "Mono",
-                    "from_index": current_index,
-                    "length": length
-                })
+                metadata.append({"type": "Mono", "from_index": from_index, "length": length})
             elif st == "PreHTML":
-                metadata.append({
-                    "type": "Pre",
-                    "from_index": current_index,
-                    "length": length
-                })
+                metadata.append({"type": "Pre", "from_index": from_index, "length": length})
             elif st == "SpoilerHTML":
-                metadata.append({
-                    "type": "Spoiler",
-                    "from_index": current_index,
-                    "length": length
-                })
+                metadata.append({"type": "Spoiler", "from_index": from_index, "length": length})
             else:
-                map_html = {
-                    "BoldHTML": "Bold",
-                    "ItalicHTML": "Italic",
-                    "UnderlineHTML": "Underline",
-                    "StrikeHTML": "Strike"
-                }
-                meta_type = map_html.get(st, st)
-                metadata.append({
-                    "type": meta_type,
-                    "from_index": current_index,
-                    "length": length
-                })
+                map_html = {"BoldHTML": "Bold", "ItalicHTML": "Italic", "UnderlineHTML": "Underline", "StrikeHTML": "Strike"}
+                metadata.append({"type": map_html.get(st, st), "from_index": from_index, "length": length})
 
-            last = m['end']
-
-        if last < len(text):
-            plain_part = text[last:]
-            out_parts.append(plain_part)
+        if last_utf8 < len(text):
+            out_parts.append(text[last_utf8:])
 
         real_text_final = "".join(out_parts)
         return metadata, real_text_final
