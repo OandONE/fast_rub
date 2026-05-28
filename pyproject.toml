@@ -1,0 +1,45 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "fastrub"
+version = "3.4.1"
+authors = [
+    {name = "seyyed mohamad hosein moosavi raja(01)", email = "mohamadhosein159159@gmail.com"},
+]
+description = "The fastest library for writing Rubika messenger bots both synchronously and asynchronously ⚡"
+readme = {file = "README.md", content-type = "text/markdown"}
+requires-python = ">=3.10"
+license = {text = "MIT"}
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Intended Audience :: Developers",
+    "Topic :: Communications :: Chat",
+    "Topic :: Software Development :: Libraries",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: Microsoft :: Windows",
+    "Operating System :: POSIX :: Linux",
+]
+dependencies = [
+    "httpx[http2]<=0.28.1",
+    "aiohttp<=3.9.0",
+    "aiofiles<=24.1.0",
+    "aiosqlite<=0.21.0",
+    "filetype",
+    "mutagen",
+    "pycryptodome",
+    "tqdm",
+    "websocket-client",
+]
+
+[project.urls]
+Homepage = "https://github.com/OandONE/fast_rub"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["fast_rub", "fast_rub.*"]
