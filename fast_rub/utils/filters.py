@@ -2,6 +2,8 @@ from typing import TYPE_CHECKING
 import re
 import time as ti
 
+from fast_rub.type import Update
+
 if TYPE_CHECKING:
     from ..type import Update
 
@@ -11,11 +13,54 @@ class Filter:
     async def __acall__(self, update: 'Update') -> bool:
         return self(update)
 
+    def __and__(self, other: 'Filter') -> '_AndFilter':
+        return _AndFilter(self, other)
+    
+    def __or__(self, other: 'Filter') -> '_OrFilter':
+        return _OrFilter(self, other)
+
+    def __invert__(self) -> 'Filter':
+        return _NotFilter(self)
+
 class AsyncFilter(Filter):
     def __call__(self, update: 'Update') -> bool:
         raise RuntimeError("The Class Is Async. Sync -> Filter class")
     async def __acall__(self, update: 'Update') -> bool:
         raise NotImplementedError
+
+class _AndFilter(Filter):
+    def __init__(
+        self,
+        left: Filter,
+        right: Filter
+    ) -> None:
+        self.left = left
+        self.right = right
+    
+    def __call__(self, update: Update) -> bool:
+        return self.left(update) and self.right(update)
+
+class _OrFilter(Filter):
+    def __init__(
+        self,
+        left: Filter,
+        right: Filter
+    ) -> None:
+        self.left = left
+        self.right = right
+    
+    def __call__(self, update: Update) -> bool:
+        return self.left(update) or self.right(update)
+
+class _NotFilter(Filter):
+    def __init__(
+        self,
+        filter: Filter
+    ) -> None:
+        self.filter = filter
+    
+    def __call__(self, update: Update) -> bool:
+        return not self.filter(update)
 
 class text(Filter):
     """filter text message by text /  فیلتر کردن متن پیام بر اساس متنی"""
@@ -33,22 +78,22 @@ class sender_id(Filter):
     def __call__(self, update: 'Update') -> bool:
         return update.sender_id == self.sender_id
 
-class is_user(Filter):
+class IsUser(Filter):
     """filter type sender message by is PV(user) / فیلتر کردن تایپ ارسال کننده پیام با پیوی"""
     def __call__(self, update: 'Update') -> bool:
         return update.sender_type == "User"
 
-class is_group(Filter):
+class IsGroup(Filter):
     """filter type sender message by is group / فیلتر کردن تایپ ارسال کننده پیام با گروه"""
     def __call__(self, update: 'Update') -> bool:
         return update.sender_type == "Group"
 
-class is_channel(Filter):
+class IsChannel(Filter):
     """filter type sender message by is channel / فیلتر کردن تایپ ارسال کننده پیام با کانال"""
     def __call__(self, update: 'Update') -> bool:
         return update.sender_type == "Channel"
 
-class is_file(Filter):
+class IsFile(Filter):
     """filter by file / فیلتر با فایل"""
     def __call__(self, update:'Update'):
         return True if update.file else False
@@ -67,55 +112,55 @@ class size_file(Filter):
     def __call__(self, update:'Update'):
         return True if update.size_file==self.size else False
 
-class is_video(Filter):
+class IsVideo(Filter):
     """filter by video / فیلتر با ویدیو"""
     def __call__(self, update:'Update'):
         return True if update.type_file=="video" else False
 
-class is_image(Filter):
+class IsImage(Filter):
     """filter by image / فیلتر با عکس"""
     def __call__(self, update:'Update'):
         return True if update.type_file=="image" else False
 
-class is_audio(Filter):
+class IsAudio(Filter):
     """filter by audio / فیلتر با آودیو"""
     def __call__(self, update:'Update'):
         return True if update.type_file=="audio" else False
 
-class is_voice(Filter):
+class IsVoice(Filter):
     """filter by voice / فیلتر با ویس"""
     def __call__(self, update:'Update'):
         return True if update.type_file=="voice" else False
 
-class is_document(Filter):
+class IsDocument(Filter):
     """filter by document / فیلتر با داکیومنت"""
     def __call__(self, update:'Update'):
         return True if update.type_file=="document" else False
 
-class is_web(Filter):
+class IsWeb(Filter):
     """filter by web files / فیلتر با فایل های وب"""
     def __call__(self, update:'Update'):
         return True if update.type_file=="web" else False
 
-class is_code(Filter):
+class IsCode(Filter):
     """filter by code files / فیلتر با فایل های کد"""
     def __call__(self, update:'Update'):
         return True if update.type_file=="code" else False
 
-class is_archive(Filter):
+class IsArchive(Filter):
     """filter by archive files / فیلتر با فایل های آرشیو"""
     def __call__(self, update:'Update'):
         return True if update.type_file=="archive" else False
 
-class is_executable(Filter):
+class IsExecutable(Filter):
     """filter by executable files / فیلتر با فایل های نصبی"""
     def __call__(self, update:'Update'):
         return True if update.type_file=="executable" else False
 
-class is_text(Filter):
+class IsText(Filter):
     """filter by had text / فیلتر با داشتن متن"""
     def __call__(self, update:'Update'):
-        return True if update.text!=None else False
+        return True if not update.text is None else False
 
 class regex(Filter):
     """filter text message by regex pattern / فیلتر متن پیام با regex"""
@@ -159,6 +204,8 @@ class sender_ids(Filter):
                 return True
         return False
 
+user_ids = sender_ids
+
 class chat_ids(Filter):
     """filter chat_id message by chat ids / فیلتر کردن چت آیدی پیام ارسال شده با چت آیدی ها"""
     def __init__(self, ids: list):
@@ -191,72 +238,72 @@ class is_metadata_type(Filter):
                 return True
         return False
 
-class has_bold(Filter):
+class HasBold(Filter):
     """check for has bold text / چک وجود داشتن متن بولد"""
     def __call__(self, update: 'Update') -> bool:
         return has_metadata_type("bold")(update)
 
-class has_italic(Filter):
+class HasItalic(Filter):
     """check for has italic text / چک وجود داشتن متن ایتالیک"""
     def __call__(self, update: 'Update') -> bool:
         return has_metadata_type("italic")(update)
 
-class has_underline(Filter):
+class HasUnderline(Filter):
     """check for has underline text / چک وجود داشتن متن آندرلایبن"""
     def __call__(self, update: 'Update') -> bool:
         return has_metadata_type("underline")(update)
 
-class has_strike(Filter):
+class HasStrike(Filter):
     """check for has strike text / چک وجود داشتن متن خط خورده"""
     def __call__(self, update: 'Update') -> bool:
         return has_metadata_type("strike")(update)
 
-class has_mono(Filter):
+class HasMono(Filter):
     """check for has mono text / چک وجود داشتن متن کپی"""
     def __call__(self, update: 'Update') -> bool:
         return has_metadata_type("mono")(update)
 
-class has_spoiler(Filter):
+class HasSpoiler(Filter):
     """check for has spoiler text / چک وجود داشتن متن اسپویلر"""
     def __call__(self, update: 'Update') -> bool:
         return has_metadata_type("spoiler")(update)
 
-class has_link(Filter):
+class HasLink(Filter):
     """check for has link text / چک وجود داشتن متن هایپر لینک"""
     def __call__(self, update: 'Update') -> bool:
         return has_metadata_type("link")(update)
 
-class is_bold(Filter):
+class IsBold(Filter):
     """all text is bold / بولد بودن تمام متن"""
     def __call__(self, update: 'Update') -> bool:
         return is_metadata_type("bold")(update)
 
-class is_italic(Filter):
+class IsItalic(Filter):
     """all text is italic / ایتالیک بودن تمام متن"""
     def __call__(self, update: 'Update') -> bool:
         return is_metadata_type("italic")(update)
 
-class is_underline(Filter):
+class IsUnderline(Filter):
     """all text is underline / آندرلاین بودن تمام متن"""
     def __call__(self, update: 'Update') -> bool:
         return is_metadata_type("underline")(update)
 
-class is_strike(Filter):
+class IsStrike(Filter):
     """all text is strike / خط خورده بودن تمام متن"""
     def __call__(self, update: 'Update') -> bool:
         return is_metadata_type("strike")(update)
 
-class is_mono(Filter):
+class IsMono(Filter):
     """all text is mono / متن کپی بودن تمام متن"""
     def __call__(self, update: 'Update') -> bool:
         return is_metadata_type("mono")(update)
 
-class is_spoiler(Filter):
+class IsSpoiler(Filter):
     """all text is spoiler / اسپویلر بودن تمام متن"""
     def __call__(self, update: 'Update') -> bool:
         return is_metadata_type("spoiler")(update)
 
-class is_link(Filter):
+class IsLink(Filter):
     """all text is link / هایپر لینک بودن تمام متن"""
     def __call__(self, update: 'Update') -> bool:
         return is_metadata_type("link")(update)
@@ -272,12 +319,12 @@ class in_text(Filter):
             return True
         return False
 
-class is_forward(Filter):
+class IsForward(Filter):
     """message is forward / پیام فوروارد شده"""
     def __call__(self, update: 'Update') -> bool:
         return update.is_fowrard
 
-class is_reply(Filter):
+class IsReply(Filter):
     """message has reply / پیام دارای ریپلای"""
     def __call__(self, update: 'Update') -> bool:
         return update.reply_to_message_id != None
@@ -306,16 +353,20 @@ class ends_with(Filter):
     def __call__(self, update: 'Update') -> bool:
         return update.text != None and update.text.endswith(self.suffix)
 
-class is_sticker(Filter):
+class IsSticker(Filter):
     """filter by sticker / فیلتر استیکر"""
     def __call__(self, update: 'Update') -> bool:
         return update.is_sticker
 
-class is_contact(Filter):
+class IsContact(Filter):
     """filter by contact / فیلتر مخاطب"""
     def __call__(self, update: 'Update') -> bool:
         return update.is_contact
 
+class HasUserName(Filter):
+    """filter by has username in text / فیلتر داشتن نام کاربری(آیدی) در متن پیام"""
+    def __call__(self, update: 'Update') -> bool:
+        return bool(re.compile(r"").search(str(update.text))) # TODO
 
 
 class and_filter(Filter):
@@ -340,3 +391,44 @@ class not_filter(Filter):
         self.filter = filter
     def __call__(self, update: 'Update') -> bool:
         return not self.filter(update)
+
+is_user = IsUser()
+is_group = IsGroup()
+is_channel = IsChannel()
+
+is_reply = IsReply()
+is_forward = IsForward()
+
+is_link = IsLink()
+is_spoiler = IsSpoiler()
+is_mono = IsMono()
+is_strike = IsStrike()
+is_underline = IsUnderline()
+is_italic = IsItalic()
+is_bold = IsBold()
+has_spoiler = HasSpoiler()
+has_mono = HasMono()
+has_strike = HasStrike()
+has_underline = HasUnderline()
+has_italic = HasItalic()
+has_bold = HasBold()
+
+is_contact = IsContact()
+is_sticker = IsSticker()
+
+is_text = IsText()
+is_file = IsFile()
+
+is_video = IsVideo()
+is_image = IsImage()
+is_audio = IsAudio()
+is_archive = IsArchive()
+is_voice = IsVoice()
+is_document = IsDocument()
+is_code = IsCode()
+is_web = IsWeb()
+is_executable = IsExecutable()
+
+has_username = HasUserName()
+is_username = has_username
+
