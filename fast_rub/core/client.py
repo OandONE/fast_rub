@@ -6,12 +6,16 @@ from functools import wraps
 from pathlib import Path
 from collections import deque
 from typing import (Any, Dict, List, Literal, Optional, Tuple,
-                    Union, Callable)
+                    Union, Callable, TYPE_CHECKING)
+from traceback import format_exc
 
 import aiofiles
 import httpx
 
 from .async_sync import async_to_sync
+if TYPE_CHECKING:
+    from .converstaion import Conversation
+from .middleware import MiddlewareManager
 from ..utils.filters import Filter
 from ..network.network import Network
 from ..type import Update, UpdateButton, msg_update
@@ -25,6 +29,7 @@ from ..utils.text_parser import TextParser
 from ..utils.wait_manager import WaitManager
 from ..db.session import Session
 from ..db.message_keeper import MessageKeeper
+from ..pyrubi import Client as PyrubiClient
 
 
 class Client:
@@ -173,6 +178,11 @@ class Client:
         self.keeper_messages_db = keeper_messages_db
         self.wait_manager = wait_manager
         self.defult_wait = defult_wait
+        self._on_ready_handlers = []
+        self._on_start_handlers = []
+        from .converstaion import ConversationManager
+        self._conversation_manager = ConversationManager()
+        self._middleware_manager = MiddlewareManager()
         if logger:
             self.logger = logger
         else:
@@ -233,7 +243,6 @@ class Client:
             self._button_url = self.use_to_fastrub_webhook_on_button
         else:
             self._button_url = f"https://fast-rub.ParsSource.ir/api/geting_button_updates/get?token={self.token}"
-        
         self.main_url = self.urls[0]
         self.urls = Utils.format_url(self.urls)
         self.next_offset_id = self.session.offset_id
@@ -246,7 +255,16 @@ class Client:
             proxy=self.proxy,
             base_urls=self.urls
         )
-        setup_logging(log_to_console=self.log_to_console,log_to_file=self.log_to_file)
+        self._on_error_handlers = []
+        self._on_run_handlers = []
+        self._on_live_handlers = []
+        self._is_live = False
+        setup_logging(
+            log_to_console=self.log_to_console,
+            log_to_file=self.log_to_file
+        )
+        await self._process_on_start()
+        await self._process_on_ready()
         if self.display_welcome:
             Utils.print_time("Welcome To FastRub", color=Colors.GREEN)
         self.logger.info("سشن اماده است")
@@ -271,7 +289,7 @@ class Client:
     async def _send_req(
         self,
         method: str,
-        data: Optional[Union[Dict[str, Any], List[Any]]] = None
+        data: Optional[Dict[str, Any]] = None
     ) -> dict:
         response = await self.network.send_request(
             method=method,
@@ -283,7 +301,7 @@ class Client:
     async def send_requests(
         self,
         method: str,
-        data_: Optional[Union[Dict[str, Any], List[Any]]] = None
+        data_: Optional[Dict[str, Any]] = None
     ) -> dict:
         """ارسال درخواست ها / send request to methods with retry mechanism"""
         return await self._send_req(
@@ -332,11 +350,37 @@ class Client:
             )
 
     @async_to_sync
-    async def get_me(self) -> BotModel:
+    async def get_me(
+        self
+    ) -> BotModel:
         """geting info accont bot / گرفتن اطلاعات اکانت ربات"""
         self.logger.info("استفاده از متود get_me")
         result = await self._send_req(method="getMe")
-        return BotModel(data=result)
+        bot = result["bot"]
+        return BotModel(data=bot)
+
+    @async_to_sync
+    async def download_me_profile(
+        self,
+        name_file: str = "bot_avatar.jpg",
+        show_progress: bool = True,
+        wait_send: float | None = None,
+        return_task: bool = False
+    ) -> bool:
+        self.logger.info("استفاده از متود download_me_profile")
+        bot = await self.get_me()
+        avator_file_id = bot.avatar_file_id
+        if avator_file_id:
+            await self.download_file(
+                id_file=avator_file_id,
+                path=name_file,
+                show_progress=show_progress,
+                wait_send=wait_send,
+                return_task=return_task
+            )
+            self.logger.info("پروفایل ربات دانلود شد")
+            return True
+        return False
 
     @async_to_sync
     async def set_main_parse_mode(self,parse_mode: Literal['Markdown', 'HTML', 'Null', None]) -> None:
@@ -784,7 +828,7 @@ class Client:
                         update_data=finder,
                         client=self
                     )
-            self.logger.warn("پیام در بین پیام های ذخیره شده و دیتابیس پیدا نشد !")
+            self.logger.warning("پیام در بین پیام های ذخیره شده و دیتابیس پیدا نشد !")
         if search_by in ("all", "get_updates"):
             self.logger.info("در حال جستجو پیام با get_updates ...")
             updates = await self.get_updates(limit_search,self.next_offset_id_get_message)
@@ -795,7 +839,7 @@ class Client:
                     if message.chat_id == chat_id or chat_id is None:
                         self.logger.info("پیام در get_updates پیدا شد !")
                         return message
-            self.logger.warn("پیام در بین get_updates پیدا نشد !")
+            self.logger.warning("پیام در بین get_updates پیدا نشد !")
             if self.geted_u >= 40:
                 try:
                     self.next_offset_id_get_message = updates["next_offset_id"]
@@ -831,7 +875,7 @@ class Client:
                             self.logger.info("پیام ها در بین پیام های ذخیره شده پیدا شد !")
                             return messages # pyright: ignore[reportReturnType]
             messages.clear()
-            self.logger.warn("پیام ها در بین پیام های ذخیره شده پیدا نشد !")
+            self.logger.warning("پیام ها در بین پیام های ذخیره شده پیدا نشد !")
         if search_by in ("all", "get_updates"):
             self.logger.info("در حال جستجو پیام با get_updates ...")
             updates = await self.get_updates(limit_search,self.next_offset_id_get_message)
@@ -843,7 +887,7 @@ class Client:
                         if message.chat_id == chat_id or chat_id is None:
                             self.logger.info("پیام ها در get_updates پیدا شدند !")
                             return messages # pyright: ignore[reportReturnType]
-            self.logger.warn("پیام ها در بین get_updates پیدا نشدند !")
+            self.logger.warning("پیام ها در بین get_updates پیدا نشدند !")
             if self.geted_u >= 40:
                 try:
                     self.next_offset_id_get_message = updates["next_offset_id"]
@@ -1674,7 +1718,7 @@ class Client:
             self.logger.info("توکن با موفقیت در پیامگیر ثبت شد")
             return True
         except Exception as e:
-            self.logger.warn(f"خطا در ثبت توکن در پیامگیر فست روب : {e}")
+            self.logger.warning(f"خطا در ثبت توکن در پیامگیر فست روب : {e}")
             return False
     
     @async_to_sync
@@ -1800,10 +1844,10 @@ class Client:
                         chunk_size=chunk_size,
                         type_file=type_file
                     )
-                self.logger.warn("Can't Find Message !")
+                self.logger.warning("Can't Find Message !")
                 raise KeyError("Can't Find Message !")
             else:
-                self.logger.warn("Can't Find Message !")
+                self.logger.warning("Can't Find Message !")
                 raise KeyError("Can't Find Message !")
         if return_task:
             return asyncio.create_task(_active()) # type: ignore
@@ -1812,14 +1856,52 @@ class Client:
 
     copy_message = resend_message
 
+    @async_to_sync
+    async def check_join(
+        self,
+        chat_id: str,
+        guid_channel: str,
+        client: PyrubiClient
+    ) -> bool:
+        user = await self.get_chat(chat_id)
+        search_by = user.username
+        if not search_by:
+            search_by = user.first_name
+        info_members: dict = await client.get_all_members(
+            object_guid=guid_channel,
+            search_text=search_by
+        ) # type: ignore
+        members: list[dict] = info_members.get('in_chat_members', [])
+        return any((m.get('username') == user.username or m.get("first_name") == user.first_name) for m in members)
+
+    def add_conversation(
+        self,
+        conversation: 'Conversation'
+    ):
+        self._conversation_manager.add(conversation)
+
     # decorators
 
-    def _schedule_handler(self, handler, update):
-        async def _wrapped():
+    def _schedule_handler(
+        self,
+        handler,
+        update: Union[Update, UpdateButton]
+    ):
+        async def _run_handler(
+            upd: Union[Update, UpdateButton]
+        ):
             try:
-                await handler(update)
-            except Exception:
-                self.logger.exception("Error in handler")
+                await handler(upd)
+            except Exception as e:
+                await self._process_on_error(
+                    e=e,
+                    update=upd
+                )
+        async def _wrapped():
+            if self._middleware_manager.count > 0 and isinstance(update, Update):
+                await self._middleware_manager.execute(update, _run_handler)
+            else:
+                await _run_handler(update)
         asyncio.create_task(_wrapped())
 
     def on_message(self,
@@ -1925,10 +2007,15 @@ class Client:
                 for message in messages:
                     if message["type"] not in ["NewMessage", "UpdatedMessage", "RemoveMessage"]:
                         continue
-                    if self.wait_manager and self.wait_manager.auto_track:
-                        self.wait_manager.track()
                     update = Update(message, self)
                     if not update.time + 5 > time.time():
+                        continue
+                    if not self._is_live:
+                        await self._process_on_live()
+                        self._is_live = True
+                    if self.wait_manager and self.wait_manager.auto_track:
+                        self.wait_manager.track()
+                    if await self._conversation_manager.handle(update, self):
                         continue
                     is_edited = message["type"] == "UpdatedMessage"
                     is_deleted = message["type"] == "RemoveMessage"
@@ -1983,6 +2070,8 @@ class Client:
                         if self.wait_manager and self.wait_manager.auto_track:
                             self.wait_manager.track()
                         update = Update(result, self)
+                        if await self._conversation_manager.handle(update, self):
+                            continue
                         is_edited = result["type"] == "UpdatedMessage"
                         is_deleted = result["type"] == "RemovedMessage"
                         for handler_info in self._message_handlers_webhook:
@@ -2036,6 +2125,135 @@ class Client:
                     await self.set_token_fast_rub()
             await asyncio.sleep(0.1)
     
+    
+    def on_ready(self):
+        """when client read for sending requests and no has problem for sending requests / زمانی که کلاینت آماده برای ارسال درخواست ها شده و مشکلی برای ارسال درخواست ها ندارد"""
+        def decorator(func):
+            self.add_handler(
+                handler=func,
+                type_handler="ready"
+            )
+            return func
+        return decorator
+    
+    def on_start(self):
+        """when client read for sending requests / زمانی که کلاینت آماده برای ارسال درخواست ها شد"""
+        def decorator(func):
+            self.add_handler(
+                handler=func,
+                type_handler="start"
+            )
+            return func
+        return decorator
+    
+    on_startup = on_start
+
+    def on_run(self):
+        """when start getting messages / زمانی که گرفتن پیام ها شروع می شود"""
+        def decorator(func):
+            self.add_handler(
+                handler=func,
+                type_handler="run"
+            )
+            return func
+        return decorator
+
+    def on_live(self):
+        """when mode polling , getting new messages / زمانی که در حالت پولینگ به پیام های جدید می رسد"""
+        def decorator(func):
+            self.add_handler(
+                handler=func,
+                type_handler="live"
+            )
+            return func
+        return decorator
+    
+    def on_error(
+        self,
+        error_detail: Literal["full", "message", "type"] = "message"
+    ):
+        """Manage errors in handlers / مدیریت خطا های پیش بینی نشده در هندلر ها"""
+        def decorator(func):
+            self.add_handler(
+                handler=func,
+                type_handler="error",
+                error_detail=error_detail
+            )
+            return func
+        return decorator
+
+
+    async def _process_on_start(self):
+        for handler in self._on_start_handlers:
+            try:
+                await handler()
+            except Exception as e:
+                self.logger.error(f"on_start error : {e}")
+    
+    async def _process_on_ready(self):
+        if self._on_ready_handlers:
+            try:
+                me = await self.get_me()
+                self.logger.info("دکوراتور های on ready با موفقیت در حال اجرا هستند")
+                self.logger.info(f"bot info :\n{me}")
+                is_ok = True
+            except:
+                is_ok = False
+            if is_ok:
+                for handler in self._on_ready_handlers:
+                    try:
+                        await handler()
+                    except Exception as e:
+                        self.logger.error(f"on_ready error : {e}")
+            else:
+                raise httpx.NetworkError("Can't Cannecting To Server BotAPI for GetMe !")
+
+    async def _process_on_run(self):
+        for handler in self._on_run_handlers:
+            try:
+                await handler()
+            except Exception as e:
+                self.logger.error(f"on_run error : {e}")
+    
+    async def _process_on_live(self):
+        for handler in self._on_live_handlers:
+            try:
+                await handler()
+            except Exception as e:
+                self.logger.error(f"on_live error : {e}")
+
+    async def _process_on_error(
+        self,
+        e: Exception,
+        update: Union[Update, UpdateButton, None] = None
+    ):
+        if self._on_error_handlers:
+            for handler_info in self._on_error_handlers:
+                try:
+                    error_handler = handler_info["handler"]
+                    type_error = handler_info["error_detail"]
+                    if type_error == "full":
+                        error = format_exc()
+                    elif type_error == "message":
+                        error = e
+                    elif type_error == "type":
+                        error = type(e).__name__
+                    else:
+                        error = "error invalid input"
+                        self.logger.warning(error)
+                    await error_handler(error, update)
+                except Exception as exc:
+                    self.logger.error(f"Error in on_error handler : {exc}")
+        else:
+            self.logger.error(f"Handler error : {e}", exc_info=True)
+
+    def middleware(self):
+        """دکوراتور برای ثبت Middleware"""
+        def decorator(func: Callable):
+            self._middleware_manager.add(func)
+            return func
+        return decorator
+
     # Run
 
     async def _run_all(self):
@@ -2053,6 +2271,8 @@ class Client:
             self.next_offset_id_get_message = messages["next_offset_id"]
         except KeyError:
             pass
+        if tasks:
+            await self._process_on_run()
         await asyncio.gather(*tasks)
 
     async def run(self):
@@ -2071,7 +2291,8 @@ class Client:
 
         self._running = True
         self.logger.info("ربات در حال دریافت پیام ها")
-        Utils.print_time("Start", color = Colors.BLUE)
+        if self.display_welcome:
+            Utils.print_time("Start", color=Colors.BLUE)
         await self._run_all()
     
     def run_sync(self):
@@ -2082,7 +2303,7 @@ class Client:
         از حالت ایسینک(run) استفاده کنید تا لوپ بر عهده سورس شما باشد نه کتابخانه"""
         asyncio.run(self.run())
 
-    def cloes(
+    def close(
         self,
         type_stop: Literal["all", "running"] = "all"
     ):
@@ -2101,21 +2322,33 @@ class Client:
             del self.main_url
             del self.session
     
+    cloes = close
+
     def stop(
         self
     ):
         """stop getting updates / متوقف شدن گرفتن آپدیت ها"""
-        self.cloes(type_stop="running")
+        self.close(type_stop="running")
     
     def add_handler(
         self,
         handler: Callable,
-        type_handler: Literal["polling", "webhook", "button"],
+        type_handler: Literal[
+            "polling",
+            "webhook",
+            "button",
+            "start",
+            "ready",
+            "run",
+            "live",
+            "error"
+        ],
         filters: Optional[Filter] = None,
         edited_messages: Literal[False, True, "both"] = False,
-        deleted_messages: Literal[False, True, "both"] = False
+        deleted_messages: Literal[False, True, "both"] = False,
+        **values
     ):
-        if type_handler in ["polling", "webhook"]:
+        if type_handler in ("polling", "webhook"):
             self._fetch_messages = True
             @wraps(handler)
             async def wrapped(update):
@@ -2125,7 +2358,9 @@ class Client:
                             if not filters(update):
                                 return
                         except Exception as e:
-                            print(f"[FILTER ERROR] {filters} -> {e}")
+                            await self._process_on_error(
+                                e=e
+                            )
                             return
 
                     if inspect.iscoroutinefunction(handler):
@@ -2134,7 +2369,9 @@ class Client:
                         return handler(update)
 
                 except Exception as e:
-                    print(f"[HANDLER ERROR] {handler.__name__} -> {e}")
+                    await self._process_on_error(
+                        e=e
+                    )
                     return None
             handler_info = {
                 "handler": wrapped,
@@ -2151,22 +2388,40 @@ class Client:
                 self._fetch_messages_webhook = True
                 self._message_handlers_webhook.append(handler_info)
             return wrapped
-        else:
+        elif type_handler == "button":
             self._fetch_buttons = True
             self._button_handlers.append(handler)
+        elif type_handler == "start":
+            self._on_start_handlers.append(handler)
+        elif type_handler == "ready":
+            self._on_ready_handlers.append(handler)
+        elif type_handler == "run":
+            self._on_run_handlers.append(handler)
+        elif type_handler == "live":
+            self._on_live_handlers.append(handler)
+        elif type_handler == "error":
+            handler_info = {
+                "handler": handler
+            }
+            handler_info.update(
+                values
+            )
+            self._on_error_handlers.append(
+                handler_info
+            )
     
     def __enter__(self):
         return self
     
     def __exit__(self, exc_type, exc_val, exc_tb):
-        self.cloes()
+        self.close()
     
     async def __aenter__(self):
         await self.start()
         return self
     
     async def __aexit__(self, exc_type, exc_val, exc_tb):
-        self.cloes()
+        self.close()
 
 
 Robot = Client
