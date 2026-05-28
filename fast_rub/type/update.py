@@ -240,6 +240,8 @@ class Update:
         auto_delete: Optional[int] = None,
         parse_mode: Literal['Markdown', 'HTML', None] = "Markdown",
         meta_data: list = [],
+        wait_send: Optional[float] = None,
+        return_task: bool = False,
         # file
         file: Union[str , Path , bytes , None] = None,
         name_file: Optional[str] = None,
@@ -265,7 +267,7 @@ class Update:
 
         chat_id: Optional[str] = None,
         reply_to_message_id: Optional[str] = None
-    ) -> 'msg_update':
+    ) -> Union['msg_update', asyncio.Task['msg_update']]:
         """reply message / ریپلای پیام"""
         return await self._client.send_message(
             text=text,
@@ -295,7 +297,9 @@ class Update:
             first_name=first_name,
             last_name=last_name,
             phone_number=phone_number,
-            chunk_size=chunk_size
+            chunk_size=chunk_size,
+            wait_send=wait_send,
+            return_task=return_task
         )
 
     @auto_async
@@ -309,9 +313,11 @@ class Update:
         auto_delete: Optional[int] = None,
         parse_mode: Literal['Markdown', 'HTML', None] = "Markdown",
         meta_data: list = [],
+        wait_send: Optional[float] = None,
+        return_task: bool = False,
         chat_id: Optional[str] = None,
         reply_to_message_id: Optional[str] = None
-    ) -> 'msg_update':
+    ) -> Union['msg_update', asyncio.Task['msg_update']]:
         """reply text / ریپلای متن"""
         return await self._client.send_text(
             text=text,
@@ -323,7 +329,9 @@ class Update:
             keypad=keypad,
             on_time_keyboard=on_time_keyboard,
             resize_keyboard=resize_keyboard,
-            meta_data=meta_data
+            meta_data=meta_data,
+            wait_send=wait_send,
+            return_task=return_task
         )
 
     @auto_async
@@ -337,9 +345,11 @@ class Update:
         allows_multiple_answers: bool = False,
         hint: Optional[str] = None,
         auto_delete: Optional[int] = None,
+        wait_send: Optional[float] = None,
+        return_task: bool = False,
         chat_id: Optional[str] = None,
         reply_to_message_id: Optional[str] = None
-    ) -> 'msg_update':
+    ) -> Union['msg_update', asyncio.Task['msg_update']]:
         """reply poll / ریپلای نظرسنجی"""
         return await self._client.send_poll(
             chat_id=Utils.prefer_first(chat_id, self.chat_id),
@@ -351,7 +361,9 @@ class Update:
             allows_multiple_answers=allows_multiple_answers,
             hint=hint,
             auto_delete=auto_delete,
-            reply_to_message_id=Utils.prefer_first(reply_to_message_id, self.message_id)
+            reply_to_message_id=Utils.prefer_first(reply_to_message_id, self.message_id),
+            wait_send=wait_send,
+            return_task=return_task
         )
 
     @auto_async
@@ -361,9 +373,11 @@ class Update:
         phone_number: str,
         last_name: str = "",
         auto_delete: Optional[int] = None,
+        wait_send: Optional[float] = None,
+        return_task: bool = False,
         chat_id: Optional[str] = None,
         reply_to_message_id: Optional[str] = None
-    ) -> 'msg_update':
+    ) -> Union['msg_update', asyncio.Task['msg_update']]:
         """reply contact / ریپلای مخاطب"""
         return await self._client.send_contact(
             chat_id=Utils.prefer_first(chat_id, self.chat_id),
@@ -371,7 +385,9 @@ class Update:
             last_name=last_name,
             phone_number=phone_number,
             reply_to_message_id=Utils.prefer_first(reply_to_message_id, self.message_id),
-            auto_delete=auto_delete
+            auto_delete=auto_delete,
+            wait_send=wait_send,
+            return_task=return_task
         )
 
     @auto_async
@@ -380,16 +396,20 @@ class Update:
         latitude: str,
         longitude: str,
         auto_delete: Optional[int] = None,
+        wait_send: Optional[float] = None,
+        return_task: bool = False,
         chat_id: Optional[str] = None,
         reply_to_message_id: Optional[str] = None
-    ) -> 'msg_update':
+    ) -> Union['msg_update', asyncio.Task['msg_update']]:
         """reply location / ریپلای موقعیت مکانی"""
         return await self._client.send_location(
             chat_id=Utils.prefer_first(chat_id, self.chat_id),
             latitude=latitude,
             longitude=longitude,
             reply_to_message_id=Utils.prefer_first(reply_to_message_id, self.message_id),
-            auto_delete=auto_delete
+            auto_delete=auto_delete,
+            wait_send=wait_send,
+            return_task=return_task
         )
 
     @auto_async
@@ -409,10 +429,12 @@ class Update:
         on_time_keyboard: Optional[bool] = False,
         upload_by: Literal["aiohttp", "httpx"] = "aiohttp",
         show_progress: bool = True,
+        wait_send: Optional[float] = None,
+        return_task: bool = False,
+        chunk_size: int = 64 * 1024,
         chat_id: Optional[str] = None,
         reply_to_message_id: Optional[str] = None,
-        chunk_size: int = 64 * 1024
-    ) -> 'msg_update':
+    ) -> Union['msg_update', asyncio.Task['msg_update']]:
         """reply file / ریپلای فایل"""
         return await self._client.base_send_file(
             chat_id=Utils.prefer_first(chat_id, self.chat_id),
@@ -431,50 +453,12 @@ class Update:
             on_time_keyboard=on_time_keyboard,
             upload_by=upload_by,
             show_progress=show_progress,
-            chunk_size=chunk_size
+            chunk_size=chunk_size,
+            wait_send=wait_send,
+            return_task=return_task
         )
     
-    @auto_async
-    async def reply_document(
-        self,
-        file: Union[str , Path , bytes],
-        name_file: Optional[str] = None,
-        text: Optional[str] = None,
-        type_file: Literal["File", "Image", "Voice", "Music", "Gif","Video"] = "File",
-        disable_notification: Optional[bool] = False,
-        auto_delete: Optional[int] = None,
-        parse_mode: Literal['Markdown', 'HTML', None] = "Markdown",
-        meta_data: list = [],
-        inline_keypad: Optional[list] = None,
-        keypad: Optional[list] = None,
-        resize_keyboard: Optional[bool] = True,
-        on_time_keyboard: Optional[bool] = False,
-        upload_by: Literal["aiohttp", "httpx"] = "aiohttp",
-        show_progress: bool = True,
-        chat_id: Optional[str] = None,
-        reply_to_message_id: Optional[str] = None,
-        chunk_size: int = 64 * 1024
-    ) -> 'msg_update':
-        """reply file / ریپلای فایل"""
-        return await self._client.base_send_file(
-            chat_id=Utils.prefer_first(chat_id, self.chat_id),
-            file=file,
-            name_file=name_file,
-            text=text,
-            reply_to_message_id=Utils.prefer_first(reply_to_message_id, self.message_id),
-            type_file=type_file,
-            disable_notification=disable_notification,
-            auto_delete=auto_delete,
-            parse_mode=parse_mode,
-            meta_data=meta_data,
-            inline_keypad=inline_keypad,
-            keypad=keypad,
-            resize_keyboard=resize_keyboard,
-            on_time_keyboard=on_time_keyboard,
-            upload_by=upload_by,
-            show_progress=show_progress,
-            chunk_size=chunk_size
-        )
+    reply_document = reply_file
 
     @auto_async
     async def reply_image(
@@ -492,10 +476,12 @@ class Update:
         on_time_keyboard: Optional[bool] = False,
         upload_by: Literal["aiohttp", "httpx"] = "aiohttp",
         show_progress: bool = True,
+        chunk_size: int = 64 * 1024,
+        wait_send: Optional[float] = None,
+        return_task: bool = False,
         chat_id: Optional[str] = None,
-        reply_to_message_id: Optional[str] = None,
-        chunk_size: int = 64 * 1024
-    ) -> 'msg_update':
+        reply_to_message_id: Optional[str] = None
+    ) -> Union['msg_update', asyncio.Task['msg_update']]:
         """reply image / رپیلای تصویر"""
         return await self._client.send_image(
             chat_id=Utils.prefer_first(chat_id, self.chat_id),
@@ -513,7 +499,9 @@ class Update:
             on_time_keyboard=on_time_keyboard,
             upload_by=upload_by,
             show_progress=show_progress,
-            chunk_size=chunk_size
+            chunk_size=chunk_size,
+            wait_send=wait_send,
+            return_task=return_task
         )
 
     @auto_async
@@ -532,10 +520,12 @@ class Update:
         on_time_keyboard: Optional[bool] = False,
         upload_by: Literal["aiohttp", "httpx"] = "aiohttp",
         show_progress: bool = True,
+        chunk_size: int = 64 * 1024,
+        wait_send: Optional[float] = None,
+        return_task: bool = False,
         chat_id: Optional[str] = None,
-        reply_to_message_id: Optional[str] = None,
-        chunk_size: int = 64 * 1024
-    ) -> 'msg_update':
+        reply_to_message_id: Optional[str] = None
+    ) -> Union['msg_update', asyncio.Task['msg_update']]:
         """reply voice / رپیلای ویس"""
         return await self._client.send_voice(
             chat_id=Utils.prefer_first(chat_id, self.chat_id),
@@ -553,7 +543,9 @@ class Update:
             on_time_keyboard=on_time_keyboard,
             upload_by=upload_by,
             show_progress=show_progress,
-            chunk_size=chunk_size
+            chunk_size=chunk_size,
+            wait_send=wait_send,
+            return_task=return_task
         )
 
     @auto_async
@@ -573,9 +565,11 @@ class Update:
         upload_by: Literal["aiohttp", "httpx"] = "aiohttp",
         show_progress: bool = True,
         chat_id: Optional[str] = None,
-        reply_to_message_id: Optional[str] = None,
-        chunk_size: int = 64 * 1024
-    ) -> 'msg_update':
+        chunk_size: int = 64 * 1024,
+        wait_send: Optional[float] = None,
+        return_task: bool = False,
+        reply_to_message_id: Optional[str] = None
+    ) -> Union['msg_update', asyncio.Task['msg_update']]:
         """reply voice / رپیلای موزیک"""
         return await self._client.send_music(
             chat_id=Utils.prefer_first(chat_id, self.chat_id),
@@ -593,7 +587,9 @@ class Update:
             on_time_keyboard=on_time_keyboard,
             upload_by=upload_by,
             show_progress=show_progress,
-            chunk_size=chunk_size
+            chunk_size=chunk_size,
+            wait_send=wait_send,
+            return_task=return_task
         )
 
     @auto_async
@@ -612,10 +608,12 @@ class Update:
         on_time_keyboard: Optional[bool] = False,
         upload_by: Literal["aiohttp", "httpx"] = "aiohttp",
         show_progress: bool = True,
+        chunk_size: int = 64 * 1024,
+        wait_send: Optional[float] = None,
+        return_task: bool = False,
         chat_id: Optional[str] = None,
-        reply_to_message_id: Optional[str] = None,
-        chunk_size: int = 64 * 1024
-    ) -> 'msg_update':
+        reply_to_message_id: Optional[str] = None
+    ) -> Union['msg_update', asyncio.Task['msg_update']]:
         """reply voice / رپیلای گیف"""
         return await self._client.send_gif(
             chat_id=Utils.prefer_first(chat_id, self.chat_id),
@@ -633,7 +631,9 @@ class Update:
             on_time_keyboard=on_time_keyboard,
             upload_by=upload_by,
             show_progress=show_progress,
-            chunk_size=chunk_size
+            chunk_size=chunk_size,
+            wait_send=wait_send,
+            return_task=return_task
         )
 
     @auto_async
@@ -652,10 +652,12 @@ class Update:
         on_time_keyboard: Optional[bool] = False,
         upload_by: Literal["aiohttp", "httpx"] = "aiohttp",
         show_progress: bool = True,
+        chunk_size: int = 64 * 1024,
+        wait_send: Optional[float] = None,
+        return_task: bool = False,
         chat_id: Optional[str] = None,
-        reply_to_message_id: Optional[str] = None,
-        chunk_size: int = 64 * 1024
-    ) -> 'msg_update':
+        reply_to_message_id: Optional[str] = None
+    ) -> Union['msg_update', asyncio.Task['msg_update']]:
         """reply voice / رپیلای ویدیو"""
         return await self._client.send_video(
             chat_id=Utils.prefer_first(chat_id, self.chat_id),
@@ -673,7 +675,9 @@ class Update:
             on_time_keyboard=on_time_keyboard,
             upload_by=upload_by,
             show_progress=show_progress,
-            chunk_size=chunk_size
+            chunk_size=chunk_size,
+            wait_send=wait_send,
+            return_task=return_task
         )
 
     @auto_async
@@ -681,15 +685,19 @@ class Update:
         self,
         to_chat_id: str,
         auto_delete: Optional[int] = None,
+        wait_send: Optional[float] = None,
+        return_task: bool = False,
         from_chat_id: Optional[str] = None,
         message_id: Optional[str] = None
-    ) -> 'msg_update':
+    ) -> Union['msg_update', asyncio.Task['msg_update']]:
         """forward / فوروارد"""
         return await self._client.forward_message(
             from_chat_id=Utils.prefer_first(from_chat_id, self.chat_id),
             message_id=Utils.prefer_first(message_id, self.message_id),
             to_chat_id=to_chat_id,
-            auto_delete=auto_delete
+            auto_delete=auto_delete,
+            wait_send=wait_send,
+            return_task=return_task
         )
 
     @auto_async
@@ -697,7 +705,9 @@ class Update:
         self,
         path : str = "file",
         file_id: Optional[str] = None,
-        show_progress: bool = True
+        show_progress: bool = True,
+        wait_send: Optional[float] = None,
+        return_task: bool = False,
     ) -> None:
         """download / دانلود"""
         final_id = file_id or self.file_id
@@ -706,37 +716,49 @@ class Update:
         await self._client.download_file(
             id_file=final_id,
             path=path,
-            show_progress=show_progress
+            show_progress=show_progress,
+            wait_send=wait_send,
+            return_task=return_task
         )
     
     @auto_async
     async def get_download_file_url(
         self,
-        file_id: Optional[str] = None
-    ) -> Optional[str]:
+        file_id: Optional[str] = None,
+        wait_send: Optional[float] = None,
+        return_task: bool = False,
+    ) -> Union[Optional[str], asyncio.Task[Optional[str]]]:
         """getting url download file / گرفتن لینک دانلود فایل"""
         final_id = file_id or self.file_id
         if final_id is None:
             raise TypeError("Message is not file and you not got the file_id Arg.")
         return await self._client.get_download_file_url(
-            id_file=final_id
+            id_file=final_id,
+            wait_send=wait_send,
+            return_task=return_task
         )
 
     @auto_async
     async def delete(
         self,
+        wait_send: Optional[float] = None,
+        return_task: bool = False,
         chat_id: Optional[str] = None,
         message_id: Optional[str] = None
-    ) -> props:
+    ) -> Union[props, asyncio.Task[props]]:
         """delete / حذف"""
         return await self._client.delete_message(
             chat_id=Utils.prefer_first(chat_id, self.chat_id),
-            message_id=Utils.prefer_first(message_id, self.message_id)
+            message_id=Utils.prefer_first(message_id, self.message_id),
+            wait_send=wait_send,
+            return_task=return_task
         )
     
     @auto_async
     async def ban(
         self,
+        wait_send: Optional[float] = None,
+        return_task: bool = False,
         chat_id: Optional[str] = None,
         user_id: Optional[str] = None
     ):
@@ -744,11 +766,15 @@ class Update:
         return await self._client.ban_chat_member(
             chat_id=Utils.prefer_first(chat_id, self.chat_id),
             user_id=Utils.prefer_first(user_id, self.sender_id),
+            wait_send=wait_send,
+            return_task=return_task
         )
     
     @auto_async
     async def unban(
         self,
+        wait_send: Optional[float] = None,
+        return_task: bool = False,
         chat_id: Optional[str] = None,
         user_id: Optional[str] = None
     ):
@@ -756,11 +782,15 @@ class Update:
         return await self._client.unban_chat_member(
             chat_id=Utils.prefer_first(chat_id, self.chat_id),
             user_id=Utils.prefer_first(user_id, self.sender_id),
+            wait_send=wait_send,
+            return_task=return_task
         )
 
     @auto_async
     async def ban_reply(
         self,
+        wait_send: Optional[float] = None,
+        return_task: bool = False,
         chat_id: Optional[str] = None,
     ):
         if not self.reply_to_message_id:
@@ -773,12 +803,16 @@ class Update:
             return None
         return await self._client.ban_chat_member(
             chat_id=self.chat_id,
-            user_id=msg.sender_id
+            user_id=msg.sender_id,
+            wait_send=wait_send,
+            return_task=return_task
         )
 
     @auto_async
     async def unban_reply(
         self,
+        wait_send: Optional[float] = None,
+        return_task: bool = False,
         chat_id: Optional[str] = None
     ):
         if not self.reply_to_message_id:
@@ -791,7 +825,9 @@ class Update:
             return None
         return await self._client.unban_chat_member(
             chat_id=self.chat_id,
-            user_id=msg.sender_id
+            user_id=msg.sender_id,
+            wait_send=wait_send,
+            return_task=return_task
         )
 
     @auto_async
@@ -818,7 +854,9 @@ class Update:
         meta_data: list = [],
         name_save_file: Optional[str] = None,
         show_progress: bool = True,
-        chunk_size: int = 64 * 1024
+        chunk_size: int = 64 * 1024,
+        wait_send: Optional[float] = None,
+        return_task: bool = False,
     ):
         to_chat_id = to_chat_id if to_chat_id else self.chat_id
         return await self._client.resend_message(
@@ -830,7 +868,9 @@ class Update:
             meta_data=meta_data,
             name_save_file=name_save_file,
             show_progress=show_progress,
-            chunk_size=chunk_size
+            chunk_size=chunk_size,
+            wait_send=wait_send,
+            return_task=return_task
         )
     
     copy_message = resend_message
