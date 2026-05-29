@@ -1,5 +1,5 @@
 from typing import TYPE_CHECKING
-import re
+import re as _re
 import time as ti
 
 from fast_rub.type import Update
@@ -164,8 +164,8 @@ class IsText(Filter):
 
 class regex(Filter):
     """filter text message by regex pattern / فیلتر متن پیام با regex"""
-    def __init__(self, pattern: str, flags=0):
-        self.pattern = re.compile(pattern, flags)
+    def __init__(self, pattern: str, flags: int = 0):
+        self.pattern = _re.compile(pattern, flags)
     def __call__(self, update: 'Update') -> bool:
         if not hasattr(update, "text") or update.text is None:
             return False
@@ -173,10 +173,14 @@ class regex(Filter):
 
 class time(Filter):
     """filter by time / فیلتر با زمان"""
-    def __init__(self,from_time:float=0,end_time=float("inf")):
+    def __init__(
+        self,
+        from_time: float = 0,
+        end_time: float = float("inf")
+    ):
         self.from_time = from_time
         self.end_time = end_time
-    def __call__(self, update:'Update'):
+    def __call__(self, update: 'Update'):
         if ti.time() > self.from_time and ti.time() < self.end_time:
             return True
         return False
@@ -366,7 +370,7 @@ class IsContact(Filter):
 class HasUserName(Filter):
     """filter by has username in text / فیلتر داشتن نام کاربری(آیدی) در متن پیام"""
     def __call__(self, update: 'Update') -> bool:
-        return bool(re.compile(r"").search(str(update.text))) # TODO
+        return bool(_re.compile(r"").search(str(update.text))) # TODO
 
 
 class and_filter(Filter):
@@ -431,4 +435,6 @@ is_executable = IsExecutable()
 
 has_username = HasUserName()
 is_username = has_username
+
+re = regex
 
