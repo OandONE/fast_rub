@@ -1,57 +1,47 @@
-from typing import Callable, Optional, List
-from ..types import Update
-
+from typing import Callable, Optional
+from ..utils.filters import Filter
+from ..type import Update
 
 class MiddlewareManager:
-    """مدیریت Middlewareها"""
-    
     def __init__(self):
-        self._middlewares: List[Callable] = []
+        self._middlewares: list = []
     
     def add(
         self,
-        middleware: Callable
+        middleware: Callable,
+        filters: Optional[Filter] = None
     ):
-        """اضافه کردن یه Middleware"""
-        self._middlewares.append(middleware)
+        """اضافه کردن Middleware"""
+        self._middlewares.append({
+            "handler": middleware,
+            "filters": filters
+        })
     
-    def remove(
-        self,
-        middleware: Callable
-    ):
-        """حذف یه Middleware"""
-        if middleware in self._middlewares:
-            self._middlewares.remove(middleware)
+    def remove(self, middleware: Callable):
+        for item in self._middlewares:
+            if item["handler"] == middleware:
+                self._middlewares.remove(item)
+                break
     
-    async def execute(
-        self,
-        update: Update,
-        handler: Callable,
-        *args,
-        **kwargs
-    ):
-        """
-        اجرای زنجیره‌ای Middlewareها و هندلر اصلی.
-        
-        هر Middleware می‌تونه:
-        - await next_handler(update) رو صدا بزنه (ادامه بده)
-        - یه کار دیگه بکنه (بلاک کنه)
-        """
-        # ساخت زنجیره
+    async def execute(self, update: Update, handler: Callable):
+        """اجرای زنجیره Middlewareها"""
         chain = handler
-        for middleware in reversed(self._middlewares):
-            chain = self._wrap_middleware(middleware, chain)
-        
-        # اجرا
+        for item in reversed(self._middlewares):
+            middleware_func = item["handler"]
+            filters = item["filters"]
+            chain = self._wrap_middleware(middleware_func, filters, chain)
         await chain(update)
     
-    def _wrap_middleware(
-        self,
-        middleware: Callable,
-        next_handler: Callable
-    ) -> Callable:
-        """یه Middleware رو دور next_handler می‌پیچه"""
-        async def wrapped(update: Update):
+    def _wrap_middleware(self, middleware: Callable, filters: Optional[Filter], next_handler: Callable):
+        async def wrapped(update):
+            if filters is not None:
+                try:
+                    if not filters(update):
+                        await next_handler(update)
+                        return
+                except Exception:
+                    await next_handler(update)
+                    return
             await middleware(update, next_handler)
         return wrapped
     
@@ -60,5 +50,4 @@ class MiddlewareManager:
         return len(self._middlewares)
     
     def clear(self):
-        """حذف همه Middlewareها"""
         self._middlewares.clear()
