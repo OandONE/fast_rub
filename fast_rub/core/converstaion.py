@@ -1,6 +1,7 @@
 from typing import Dict, Callable, Optional, List
 from ..types import Update
 from .client import Client
+from ..utils.filters import Filter
 
 class Conversation:
     END = "__END__"
@@ -18,15 +19,46 @@ class Conversation:
     
     def entry(
         self,
-        commands: Optional[list[str]] = None,
-        text: Optional[str] = None
+        commands: Optional[list] = None,
+        text: Optional[str] = None,
+        filters: Optional[Filter] = None
     ):
-        """دکوراتور برای نقطه ورود مکالمه"""
-        def decorator(func: Callable):
+        """دکوراتور برای نقطه ورود مکالمه."""
+        def decorator(func):
             self._entry_handler = func
-            self._entry_filters = {"commands": commands, "text": text}
+            self._entry_filters = {
+                "commands": commands,
+                "text": text,
+                "filters": filters
+            }
             return func
         return decorator
+    
+    def _is_entry(self, update: Update) -> bool:
+        if not self._entry_filters:
+            return False
+        commands: Optional[List[str]] = self._entry_filters.get("commands")
+        text = self._entry_filters.get("text")
+        filters = self._entry_filters.get("filters")
+        if filters is not None:
+            try:
+                if not filters(update):
+                    return False
+            except Exception:
+                return False
+        
+        if commands is not None and update.text:
+            for cmd in commands:
+                if update.text == cmd or update.text == f"/{cmd}":
+                    return True
+        
+        if text is not None and update.text == text:
+            return True
+        
+        if filters is not None:
+            return True
+        
+        return False
     
     def state(
         self,
@@ -43,10 +75,7 @@ class Conversation:
         update: Update,
         client: Client
     ) -> bool:
-        """
-        پردازش یه آپدیت توی مکالمه.
-        برمی‌گردونه True اگه مکالمه هنوز ادامه داره، False اگه تموم شده.
-        """
+        """پردازش یه آپدیت توی مکالمه.برمی‌گردونه True اگه مکالمه هنوز ادامه داره، False اگه تموم شده."""
         chat_id = update.chat_id
         if chat_id not in self._user_states:
             if self._is_entry(update):
@@ -70,19 +99,6 @@ class Conversation:
                 self._cleanup(chat_id)
                 return False
             self._user_states[chat_id] = next_state
-            return True
-        return False
-    
-    def _is_entry(self, update: Update) -> bool:
-        if not self._entry_filters:
-            return False
-        commands: Optional[List[str]] = self._entry_filters.get("commands")
-        text: Optional[str] = self._entry_filters.get("text")
-        if commands is not None and update.text is not None:
-            for cmd in commands:
-                if update.text == cmd or update.text == f"/{cmd}":
-                    return True
-        if text is not None and update.text == text:
             return True
         return False
     
