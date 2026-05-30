@@ -2,9 +2,15 @@ from typing import Callable, Optional
 from ..utils.filters import Filter
 from ..type import Update
 
+import logging
+
 class MiddlewareManager:
-    def __init__(self):
+    def __init__(
+        self,
+        logger: Optional[logging.Logger] = None
+    ):
         self._middlewares: list = []
+        self.logger = logger if logger else logging.Logger("Middleware.Fast_Rub")
     
     def add(
         self,
@@ -39,10 +45,15 @@ class MiddlewareManager:
                     if not filters(update):
                         await next_handler(update)
                         return
-                except Exception:
+                except Exception as e:
+                    self.logger.error(f"middleware filter error: {e}")
                     await next_handler(update)
                     return
-            await middleware(update, next_handler)
+            try:
+                await middleware(update, next_handler)
+            except Exception as e:
+                self.logger.error(f"middleware error: {e}")
+                await next_handler(update)
         return wrapped
     
     @property
