@@ -218,7 +218,7 @@ class Update:
             )
         )
 
-    @auto_async
+    
     async def get_chat_id_info(
         self,
         chat_id: Optional[str] = None
@@ -228,7 +228,7 @@ class Update:
             chat_id=Utils.prefer_first(chat_id, self.chat_id)
         )
 
-    @auto_async
+    
     async def reply(
         self,
         text: Optional[str] = None,
@@ -302,7 +302,7 @@ class Update:
             return_task=return_task
         )
 
-    @auto_async
+    
     async def reply_text(
         self,
         text: str,
@@ -334,7 +334,7 @@ class Update:
             return_task=return_task
         )
 
-    @auto_async
+    
     async def reply_poll(
         self,
         question: str,
@@ -366,7 +366,7 @@ class Update:
             return_task=return_task
         )
 
-    @auto_async
+    
     async def reply_contact(
         self,
         first_name: str,
@@ -390,7 +390,7 @@ class Update:
             return_task=return_task
         )
 
-    @auto_async
+    
     async def reply_location(
         self,
         latitude: str,
@@ -412,7 +412,7 @@ class Update:
             return_task=return_task
         )
 
-    @auto_async
+    
     async def reply_file(
         self,
         file: Union[str , Path , bytes],
@@ -460,7 +460,7 @@ class Update:
     
     reply_document = reply_file
 
-    @auto_async
+    
     async def reply_image(
         self,
         image: Union[str , Path , bytes],
@@ -504,7 +504,7 @@ class Update:
             return_task=return_task
         )
 
-    @auto_async
+    
     async def reply_voice(
         self,
         voice: Union[str , Path , bytes],
@@ -548,7 +548,7 @@ class Update:
             return_task=return_task
         )
 
-    @auto_async
+    
     async def reply_music(
         self,
         music: Union[str , Path , bytes],
@@ -592,7 +592,7 @@ class Update:
             return_task=return_task
         )
 
-    @auto_async
+    
     async def reply_gif(
         self,
         gif: Union[str , Path , bytes],
@@ -636,7 +636,7 @@ class Update:
             return_task=return_task
         )
 
-    @auto_async
+    
     async def reply_video(
         self,
         video: Union[str , Path , bytes],
@@ -680,7 +680,7 @@ class Update:
             return_task=return_task
         )
 
-    @auto_async
+    
     async def forward(
         self,
         to_chat_id: str,
@@ -700,7 +700,7 @@ class Update:
             return_task=return_task
         )
 
-    @auto_async
+    
     async def download(
         self,
         path : str = "file",
@@ -721,7 +721,7 @@ class Update:
             return_task=return_task
         )
     
-    @auto_async
+    
     async def get_download_file_url(
         self,
         file_id: Optional[str] = None,
@@ -738,7 +738,7 @@ class Update:
             return_task=return_task
         )
 
-    @auto_async
+    
     async def delete(
         self,
         wait_send: Optional[float] = None,
@@ -754,7 +754,7 @@ class Update:
             return_task=return_task
         )
     
-    @auto_async
+    
     async def ban(
         self,
         wait_send: Optional[float] = None,
@@ -770,7 +770,7 @@ class Update:
             return_task=return_task
         )
     
-    @auto_async
+    
     async def unban(
         self,
         wait_send: Optional[float] = None,
@@ -786,7 +786,7 @@ class Update:
             return_task=return_task
         )
 
-    @auto_async
+    
     async def ban_reply(
         self,
         wait_send: Optional[float] = None,
@@ -808,7 +808,7 @@ class Update:
             return_task=return_task
         )
 
-    @auto_async
+    
     async def unban_reply(
         self,
         wait_send: Optional[float] = None,
@@ -830,7 +830,7 @@ class Update:
             return_task=return_task
         )
 
-    @auto_async
+    
     async def get_reply(
         self,
         chat_id: Optional[str] = None,
@@ -845,7 +845,7 @@ class Update:
         )
         return msg
     
-    @auto_async
+    
     async def resend_message(
         self,
         to_chat_id: Optional[str] = None,
@@ -960,7 +960,7 @@ class UpdateButton:
         """text for button clicked / متن دکمه شیشه ای که روی آن کلیک شده"""
         return self._data["inline_message"]["text"]
 
-    @auto_async
+    
     async def send_text(
         self,
         text: str,
@@ -988,7 +988,7 @@ class UpdateButton:
             meta_data=meta_data
         )
     
-    @auto_async
+    
     async def send_message(
         self,
         text: Optional[str] = None,
@@ -1057,7 +1057,7 @@ class UpdateButton:
             chunk_size=chunk_size
         )
 
-    @auto_async
+    
     async def send_pool(
         self,
         question: str,
@@ -1085,7 +1085,7 @@ class UpdateButton:
             reply_to_message_id=reply_to_message_id
         )
 
-    @auto_async
+    
     async def send_contact(
         self,
         first_name: str,
@@ -1107,7 +1107,7 @@ class UpdateButton:
             inline_keypad=inline_keypad
         )
 
-    @auto_async
+    
     async def send_location(
         self,
         latitude: str,
@@ -1125,7 +1125,7 @@ class UpdateButton:
             reply_to_message_id=reply_to_message_id
         )
 
-    @auto_async
+    
     async def send_file(
         self,
         file: Union[str , Path , bytes],
@@ -1165,7 +1165,7 @@ class UpdateButton:
             chunk_size=chunk_size
         )
     
-    @auto_async
+    
     async def send_document(
         self,
         file: Union[str , Path , bytes],
@@ -1203,7 +1203,7 @@ class UpdateButton:
             chunk_size=chunk_size
         )
 
-    @auto_async
+    
     async def send_image(
         self,
         image: Union[str , Path , bytes],
@@ -1241,7 +1241,7 @@ class UpdateButton:
             chunk_size=chunk_size
         )
 
-    @auto_async
+    
     async def send_video(
         self,
         video: Union[str , Path , bytes],
@@ -1279,7 +1279,7 @@ class UpdateButton:
             chunk_size=chunk_size
         )
 
-    @auto_async
+    
     async def send_voice(
         self,
         voice: Union[str , Path , bytes],
@@ -1317,7 +1317,7 @@ class UpdateButton:
             chunk_size=chunk_size
         )
 
-    @auto_async
+    
     async def send_music(
         self,
         music: Union[str , Path , bytes],
@@ -1355,7 +1355,7 @@ class UpdateButton:
             chunk_size=chunk_size
         )
 
-    @auto_async
+    
     async def send_gif(
         self,
         gif: Union[str , Path , bytes],
@@ -1411,6 +1411,8 @@ class UpdateButton:
     def __repr__(self) -> str:
         return self.__str__()
 
+wrap_all_async_methods(Update)
+wrap_all_async_methods(UpdateButton)
 
 Message = Update
 Updates = Update
