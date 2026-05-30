@@ -182,45 +182,45 @@ class Message:
                 return True
         return False
     
-    @auto_async
+    
     async def reply_info(self) -> Optional[ReplyInfo]:
         if not self.reply_message_id:
             return
         return ReplyInfo.from_json((await self.methods.getMessagesById(self.object_guid, [self.reply_message_id]))["messages"][0])
     
-    @auto_async
+    
     async def reply(self, text:str) -> dict:
         return await self.methods.sendText(objectGuid=self.object_guid, text=text, messageId=self.message_id)
 
-    @auto_async
+    
     async def reply_image(self,file:str, text:Optional[str], file_name:Optional[str] = None,thumbInline: Optional[str] = None,is_spoil: bool = False):
         return await self.methods.sendImage(self.object_guid,file,self.message_id,text,is_spoil,thumbInline,file_name)
     
-    @auto_async
+    
     async def reply_video(self,file:str, text:Optional[str], file_name:Optional[str] = None,thumbInline: Optional[str] = None,is_spoil: bool = False):
         return await self.methods.sendVideo(self.object_guid,file,self.message_id,text,is_spoil,thumbInline,file_name)
 
-    @auto_async
+    
     async def reply_gif(self,file:str, text:Optional[str], file_name:Optional[str] = None,thumbInline: Optional[str] = None):
         return await self.methods.sendGif(self.object_guid,file,self.message_id,text,thumbInline,file_name)
 
-    @auto_async
+    
     async def reply_music(self,file:str, text:Optional[str], file_name:Optional[str] = None,performer: Optional[str] = None):
         return await self.methods.sendMusic(self.object_guid,file,self.message_id,text,file_name,performer)
 
-    @auto_async
+    
     async def reply_voice(self,file:str, time:int = 0, text:Optional[str] = None, file_name:Optional[str] = None):
         return await self.methods.sendVoice(self.object_guid,file,time,self.message_id,text,file_name)
     
-    @auto_async
+    
     async def reply_location(self,latitude:int, longitude:int):
         return await self.methods.sendLocation(self.object_guid,latitude,longitude,self.message_id)
 
-    @auto_async
+    
     async def reply_video_message(self,file:str, text:Optional[str], file_name:Optional[str],thumbInline: Optional[str] = None):
         return await self.methods.sendVideoMessage(self.object_guid,file,self.message_id,text,thumbInline,file_name)
 
-    @auto_async
+    
     async def reply_poll(
         self,
         question: str,
@@ -243,35 +243,37 @@ class Message:
             hint=hint
         )
 
-    @auto_async
+    
     async def seen(self) -> dict:
         return await self.methods.seenChats(seenList={self.object_guid: self.message_id})
     
-    @auto_async
+    
     async def reaction(self, reaction: Union[int, str]) -> dict:
         return await self.methods.actionOnMessageReaction(objectGuid=self.object_guid, messageId=self.message_id, reactionId=reaction, action="Add")
     
-    @auto_async
+    
     async def delete(self, delete_for_all: bool = True) -> dict:
         return await self.methods.deleteMessages(objectGuid=self.object_guid, messageIds=[self.message_id], deleteForAll=delete_for_all)
     
-    @auto_async
+    
     async def pin(self) -> dict:
         return await self.methods.setPinMessage(objectGuid=self.object_guid, messageId=self.message_id,action="Pin")
     
-    @auto_async
+    
     async def forward(self, to_object_guid:str) -> dict:
         return await self.methods.forwardMessages(objectGuid=self.object_guid, messageIds=[self.message_id], toObjectGuid=to_object_guid)
     
-    @auto_async
+    
     async def ban(self) -> dict:
         return await self.methods.banChatMember(objectGuid=self.object_guid, memberGuid=self.author_guid,action="Set")
     
-    @auto_async
+    
     async def check_join(self, object_guid:str) -> Optional[bool]:
         return await self.methods.checkJoin(objectGuid=object_guid, userGuid=self.author_guid)
     
-    @auto_async
+    
     async def download(self, save: bool = False, save_as: Optional[str] = None) -> Optional[dict]:
         return await self.methods.download(objectGuid=self.object_guid, save=save, saveAs=save_as, fileInline=self.file_inline)
 
+
+wrap_all_async_methods(Message)
