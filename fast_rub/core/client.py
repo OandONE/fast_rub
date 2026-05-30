@@ -12,15 +12,17 @@ from traceback import format_exc
 import aiofiles
 import httpx
 
-from .async_sync import async_to_sync
+from .async_sync import wrap_all_async_methods
 from .middleware import MiddlewareManager
 from .plugins import PluginManager
+from .webhook_server import WebhookServer
 from ..utils.filters import Filter
 from ..network.network import Network
 from ..type import Update, UpdateButton, msg_update
 from ..type.errors import PollInvalid
 from ..type.props import props
 from ..type.models import Bot as BotModel, Chat as ChatModel
+from ..type import WebhookConfig
 from ..utils.colors import Colors
 from ..utils.logger import logging, setup_logging
 from ..utils.utils import Utils
@@ -48,7 +50,6 @@ class Client:
 
     این کلاس هم به صورت async و هم sync قابل استفاده است.
     بیشتر متدها به صورت async پیاده‌سازی شده‌اند اما با استفاده از
-    دکوراتور async_to_sync می‌توان آن‌ها را به شکل sync نیز فراخوانی کرد.
 
     مدل دریافت آپدیت‌ها:
     - on_message():
@@ -139,8 +140,8 @@ class Client:
         user_agent: Optional[str] = None,
         time_out: float = 60.0,
         display_welcome: bool = False,
-        use_to_fastrub_webhook_on_message: Union[str,bool] = True,
-        use_to_fastrub_webhook_on_button: Union[str,bool] = True,
+        # use_to_fastrub_webhook_on_message: Union[str,bool] = True,
+        # use_to_fastrub_webhook_on_button: Union[str,bool] = True,
         save_logs: Optional[bool] = None,
         view_logs: Optional[bool] = None,
         proxy: Optional[str] = None,
@@ -159,6 +160,8 @@ class Client:
         run_start: bool = True,
         wait_manager: Optional[WaitManager] = None,
         defult_wait: Optional[float] = None,
+        webhook: Optional[WebhookConfig] = None,
+        poll_interval: float = 0.0,
     ):
         """Client for login and setting robot / کلاینت برای لوگین و تنظیمات ربات"""
         self.name_session = name_session
@@ -173,8 +176,8 @@ class Client:
         self.main_parse_mode: Literal['Markdown', 'HTML', 'Null', None] = main_parse_mode
         self.max_retries = max_retries
         self.keeper_messages_ram = keeper_messages_ram
-        self.use_to_fastrub_webhook_on_message = use_to_fastrub_webhook_on_message
-        self.use_to_fastrub_webhook_on_button = use_to_fastrub_webhook_on_button
+        # self.use_to_fastrub_webhook_on_message = use_to_fastrub_webhook_on_message
+        # self.use_to_fastrub_webhook_on_button = use_to_fastrub_webhook_on_button
         self.urls: List[str] = base_urls
         self.offset_id = offset_id
         self.save_offset_id = save_offset_id
@@ -186,6 +189,8 @@ class Client:
         from .converstaion import ConversationManager
         self._conversation_manager = ConversationManager()
         self._middleware_manager = MiddlewareManager()
+        self.webhook = webhook
+        self.poll_interval = poll_interval
         if logger:
             self.logger = logger
         else:
@@ -193,7 +198,7 @@ class Client:
         if run_start:
             asyncio.run(self.start())
 
-    @async_to_sync
+    
     async def start(self):
         """تنظیمات شروع کردن ربات"""
         self._running = False
@@ -238,14 +243,14 @@ class Client:
         if self.log_to_console is None:
             self.log_to_console = False
         self.exists_wait_manager = bool(self.wait_manager)
-        if type(self.use_to_fastrub_webhook_on_message) is str:
-            self._on_url = self.use_to_fastrub_webhook_on_message
-        else:
-            self._on_url = f"https://fast-rub.ParsSource.ir/api/geting_button_updates/get_on?token={self.token}"
-        if type(self.use_to_fastrub_webhook_on_button) is str:
-            self._button_url = self.use_to_fastrub_webhook_on_button
-        else:
-            self._button_url = f"https://fast-rub.ParsSource.ir/api/geting_button_updates/get?token={self.token}"
+        # if type(self.use_to_fastrub_webhook_on_message) is str:
+        #     self._on_url = self.use_to_fastrub_webhook_on_message
+        # else:
+        #     self._on_url = f"https://fast-rub.ParsSource.ir/api/geting_button_updates/get_on?token={self.token}"
+        # if type(self.use_to_fastrub_webhook_on_button) is str:
+        #     self._button_url = self.use_to_fastrub_webhook_on_button
+        # else:
+        #     self._button_url = f"https://fast-rub.ParsSource.ir/api/geting_button_updates/get?token={self.token}"
         self.main_url = self.urls[0]
         self.urls = Utils.format_url(self.urls)
         self.next_offset_id = self.session.offset_id
@@ -258,10 +263,14 @@ class Client:
             proxy=self.proxy,
             base_urls=self.urls
         )
+        self._webhook_server = None
+        if self.webhook:
+            self._webhook_server = WebhookServer(client=self, config=self.webhook, logger=self.logger)
         self._on_error_handlers = []
         self._on_run_handlers = []
         self._on_live_handlers = []
         self._is_live = False
+        self._on_shutdown_handlers = []
         setup_logging(
             log_to_console=self.log_to_console,
             log_to_file=self.log_to_file
@@ -271,27 +280,34 @@ class Client:
         if self.display_welcome:
             Utils.print_time("Welcome To FastRub", color=Colors.GREEN)
         self.logger.info("سشن اماده است")
-    
+
     async def _run_all(self):
         tasks = []
-        if self._fetch_buttons:
-            tasks.append(self._fetch_button_updates())
-        if self._fetch_messages_webhook:
-            tasks.append(self._process_messages_webhook())
+        
+        if self._webhook_server and (self._message_handlers_webhook or self._button_handlers):
+            tasks.append(self._webhook_server.start())
+        
         if self._fetch_messages_polling and self._message_handlers_polling:
             tasks.append(self._process_messages_polling())
+        
         if not tasks:
             raise ValueError("No handlers registered. Use decorator first.")
+        
         try:
             messages = await self.get_updates(limit=100)
             self.next_offset_id_get_message = messages["next_offset_id"]
         except KeyError:
             pass
+        
         if tasks:
             await self._process_on_run()
+        
         await asyncio.gather(*tasks)
 
-    async def run(self):
+    async def run(
+        self,
+        poll_interval: float = 0.0
+    ):
         """اجرای اصلی بات - فقط اگر هندلرهای مربوطه ثبت شده باشند"""
         if not (self._fetch_messages_webhook or self._fetch_buttons or self._fetch_messages_polling or self._fetch_edit):
             raise ValueError("No update types selected. Use decorator first.")
@@ -305,21 +321,18 @@ class Client:
         if self._fetch_edit and not (self._message_handlers_polling or self._message_handlers_webhook):
             raise ValueError("Edit handlers registered but no message callbacks defined.")
 
+        if poll_interval != 0.0:
+            self.poll_interval = poll_interval
+
         self._running = True
         self.logger.info("ربات در حال دریافت پیام ها")
         if self.display_welcome:
             Utils.print_time("Start", color=Colors.BLUE)
         await self._run_all()
     
-    def run_sync(self):
-        """اجرای اصلی بات - فقط اگر هندلرهای مربوطه ثبت شده باشند(سینک)
-        
-        پیشنهاد »
+    run_sync = run
 
-        از حالت ایسینک(run) استفاده کنید تا لوپ بر عهده سورس شما باشد نه کتابخانه"""
-        asyncio.run(self.run())
-
-    def close(
+    async def close(
         self,
         type_stop: Literal["all", "running"] = "all"
     ):
@@ -332,33 +345,37 @@ class Client:
             del self.token
             del self.name_session
             del self.logger
-            del self._on_url
-            del self._button_url
+            # del self._on_url
+            # del self._button_url
             del self.urls
             del self.main_url
             del self.session
-    
-    cloes = close
+            await self._process_on_shutdown()
 
-    def stop(
+    async def cloes(self):
+        self.logger.warning("The 'warn' method is deprecated, "
+            "use 'warning' instead", DeprecationWarning, 2)
+        return await self.close()
+
+    async def stop(
         self
     ):
         """stop getting updates / متوقف شدن گرفتن آپدیت ها"""
-        self.close(type_stop="running")
+        await self.close(type_stop="running")
     
     def __enter__(self):
         self.start() # type: ignore
         return self
     
     def __exit__(self, exc_type, exc_val, exc_tb):
-        self.close()
+        self.close() # type: ignore
     
     async def __aenter__(self):
         await self.start()
         return self
     
     async def __aexit__(self, exc_type, exc_val, exc_tb):
-        self.close()
+        await self.close()
 
     @property
     def TOKEN(self):
@@ -390,7 +407,7 @@ class Client:
         )
         return response
     
-    @async_to_sync
+    
     async def _auto_delete(
         self,
         chat_id: str,
@@ -404,7 +421,7 @@ class Client:
         )
         return props(result)
     
-    @async_to_sync
+    
     async def _parse_mode_text(
         self,
         text: str,
@@ -493,7 +510,7 @@ class Client:
     # region 👤 Chat & User | مدیریت کاربر و چت
     # ═══════════════════════════════════
 
-    @async_to_sync
+    
     async def get_me(
         self
     ) -> BotModel:
@@ -503,7 +520,7 @@ class Client:
         bot = result["bot"]
         return BotModel(data=bot)
 
-    @async_to_sync
+    
     async def get_chat(
         self,
         chat_id: str
@@ -520,7 +537,7 @@ class Client:
         )
         return ChatModel(data=result["chat"])
 
-    @async_to_sync
+    
     async def ban_chat_member(
         self,
         chat_id: str,
@@ -549,7 +566,7 @@ class Client:
         else:
             return await _active()
 
-    @async_to_sync
+    
     async def unban_chat_member(
         self,
         chat_id: str,
@@ -585,7 +602,7 @@ class Client:
     ban_channel_member = ban_chat_member
     unban_channel_member = unban_chat_member
 
-    @async_to_sync
+    
     async def check_join(
         self,
         chat_id: str,
@@ -603,7 +620,7 @@ class Client:
         members: list[dict] = info_members.get('in_chat_members', [])
         return any((m.get('username') == user.username or m.get("first_name") == user.first_name) for m in members)
 
-    @async_to_sync
+    
     async def add_commands(self, command: str, description: str) -> None:
         """add command to commands list / افزودن دستور به لیست دستورات"""
         self.logger.info("استفاده از متود add_commands")
@@ -614,7 +631,7 @@ class Client:
             }
         )
 
-    @async_to_sync
+    
     async def set_commands(
         self,
         list_commands: Optional[list] = None
@@ -629,7 +646,7 @@ class Client:
         )
         return result
     
-    @async_to_sync
+    
     async def delete_commands(
         self
     ) -> dict:
@@ -645,7 +662,7 @@ class Client:
     # region 📩 File Download | دانلود فایل
     # ═══════════════════════════════════
 
-    @async_to_sync
+    
     async def download_me_profile(
         self,
         name_file: str = "bot_avatar.jpg",
@@ -668,7 +685,7 @@ class Client:
             return True
         return False
 
-    @async_to_sync
+    
     async def get_file(
         self,
         id_file: str
@@ -678,7 +695,7 @@ class Client:
         result = await self._send_req("getFile", {"file_id": id_file})
         return props(result)
 
-    @async_to_sync
+    
     async def get_download_file_url(
         self,
         id_file: str,
@@ -701,7 +718,7 @@ class Client:
         else:
             return await _active()
 
-    @async_to_sync
+    
     async def download_by_url(
         self,
         url: str,
@@ -716,7 +733,7 @@ class Client:
         else:
             self.logger.error("خطا در دانلود فایل !")
 
-    @async_to_sync
+    
     async def download_file(
         self,
         id_file: str ,
@@ -746,7 +763,7 @@ class Client:
     # region 📩 Sending Messages | ارسال پیام
     # ═══════════════════════════════════
 
-    @async_to_sync
+    
     async def send_text(
         self,
         text: str,
@@ -796,7 +813,7 @@ class Client:
         else:
             return await _active()
 
-    @async_to_sync
+    
     async def send_message(
         self,
         chat_id: str,
@@ -932,7 +949,7 @@ class Client:
             )
         raise ValueError("Please Write The Args !")
 
-    @async_to_sync
+    
     async def send_poll(
         self,
         chat_id: str,
@@ -985,7 +1002,7 @@ class Client:
         else:
             return await _active()
 
-    @async_to_sync
+    
     async def send_location(
         self,
         chat_id: str,
@@ -1030,7 +1047,7 @@ class Client:
         else:
             return await _active()
 
-    @async_to_sync
+    
     async def send_contact(
         self,
         chat_id: str,
@@ -1079,7 +1096,7 @@ class Client:
         else:
             return await _active()
 
-    @async_to_sync
+    
     async def forward_message(
         self,
         from_chat_id: str,
@@ -1119,7 +1136,7 @@ class Client:
         else:
             return await _active()
 
-    @async_to_sync
+    
     async def forward_messages(
         self,
         from_chat_id: str,
@@ -1150,7 +1167,7 @@ class Client:
     # region ✏️ Messaging | ویرایش و مدیریت پیام
     # ═══════════════════════════════════
 
-    @async_to_sync
+    
     async def edit_message_text(
         self,
         chat_id: str,
@@ -1191,7 +1208,7 @@ class Client:
     edit_text = edit_message_text
     edit_message = edit_message_text
     
-    @async_to_sync
+    
     async def auto_edit(
         self,
         chat_id: str,
@@ -1228,7 +1245,7 @@ class Client:
     # region ❌ Deleteing Message | حذف پیام
     # ═══════════════════════════════════
 
-    @async_to_sync
+    
     async def delete_message(
         self,
         chat_id: str,
@@ -1260,7 +1277,7 @@ class Client:
         else:
             return await _active()
 
-    @async_to_sync
+    
     async def auto_delete(
         self,
         chat_id: str,
@@ -1288,7 +1305,7 @@ class Client:
 
     # endregion
 
-    @async_to_sync
+    
     async def upload_file(
         self,
         url: str,
@@ -1311,7 +1328,7 @@ class Client:
             raise ValueError("The 'upload_by' Arg shoud 'aiohttp' or 'httpx'.")
         return response
     
-    @async_to_sync
+    
     async def send_file_by_file_id(
         self,
         chat_id: str,
@@ -1361,7 +1378,7 @@ class Client:
         else:
             return await _active()
     
-    @async_to_sync
+    
     async def request_send_file(
         self,
         type: Literal["File", "Image", "Voice", "Music", "Gif" , "Video"] = "File"
@@ -1455,7 +1472,7 @@ class Client:
         else:
             return await _active()
 
-    @async_to_sync
+    
     async def send_file(
         self,
         chat_id: str,
@@ -1504,7 +1521,7 @@ class Client:
 
     send_document = send_file
 
-    @async_to_sync
+    
     async def send_image(
         self,
         chat_id: str,
@@ -1552,7 +1569,7 @@ class Client:
     send_photo = send_image
     send_picture = send_image
 
-    @async_to_sync
+    
     async def send_video(
         self,
         chat_id: str,
@@ -1597,7 +1614,7 @@ class Client:
         )
         return result
 
-    @async_to_sync
+    
     async def send_voice(
         self,
         chat_id: str,
@@ -1642,7 +1659,7 @@ class Client:
         )
         return result
 
-    @async_to_sync
+    
     async def send_music(
         self,
         chat_id: str,
@@ -1687,7 +1704,7 @@ class Client:
         )
         return result
 
-    @async_to_sync
+    
     async def send_gif(
         self,
         chat_id: str,
@@ -1734,7 +1751,7 @@ class Client:
         )
         return result
 
-    @async_to_sync
+    
     async def send_sticker(
         self,
         chat_id: str,
@@ -1770,7 +1787,7 @@ class Client:
         else:
             return await _active()
     
-    @async_to_sync
+    
     async def resend_message(
         self,
         message_id: str,
@@ -2011,6 +2028,17 @@ class Client:
         """لود یه پلاگین خاص."""
         return PluginManager.load_single(self, filepath)
     
+    def on_shutdown(
+        self
+    ):
+        """دکوراتور برای زمانی که ربات خاموش می‌شود (هنگام close)."""
+        def decorator(func: Callable):
+            self.add_handler(func, "shutdown")
+            return func
+        return decorator
+    
+    on_close = on_shutdown
+    
     def add_handler(
         self,
         handler: Union[Callable, tuple],
@@ -2025,6 +2053,7 @@ class Client:
             "error",
             "conversation",
             "middleware",
+            "shutdown",
         ],
         filters: Optional[Filter] = None,
         edited_messages: Literal[False, True, "both"] = False,
@@ -2095,6 +2124,8 @@ class Client:
                 )
             elif type_handler == "middleware":
                 self._middleware_manager.add(handler, filters)
+            elif type_handler == "shutdown":
+                self._on_shutdown_handlers.append(handler)
         else:
             if type_handler == "conversation":
                 name, conv = handler
@@ -2173,74 +2204,55 @@ class Client:
                 await asyncio.sleep(5)
             except Exception as e:
                 self.logger.error(f"خطای ناشناخته در _process_messages_polling: {e}")
+            await asyncio.sleep(self.poll_interval)
 
-    async def _process_messages_webhook(self):
-        while self._running:
-            response = await self.network.request(self._on_url, timeout=self.time_out,type_send="GET")
-            result = response.json()
-            if result and result.get('status') is True and response.status_code == 200:
-                results = result.get('updates', [])
-                if results:
-                    for result in results:
-                        if result["type"] not in ["NewMessage", "UpdatedMessage", "RemovedMessage"]:
+    async def _process_webhook_push(self, data: dict, endpoint_type: str):
+        """پردازش وب‌هوک Push برای پیام‌های معمولی"""
+        updates = data if isinstance(data, list) else [data]
+        for result in updates:
+            if result.get("type") not in ["NewMessage", "UpdatedMessage", "RemovedMessage"]:
+                continue
+            if self.wait_manager and self.wait_manager.auto_track:
+                self.wait_manager.track()
+            update = Update(result, self)
+            if await self._conversation_manager.handle(update, self):
+                continue
+            is_edited = result["type"] == "UpdatedMessage"
+            is_deleted = result["type"] == "RemovedMessage"
+            for handler_info in self._message_handlers_webhook:
+                handler = handler_info["handler"]
+                edited_messages_option = handler_info["edited_messages"]
+                deleted_messages_option = handler_info["deleted_messages"]
+                if edited_messages_option == False and is_edited:
+                    continue
+                elif edited_messages_option == True and not is_edited:
+                    continue
+                if deleted_messages_option == False and is_deleted:
+                    continue
+                elif deleted_messages_option == True and not is_deleted:
+                    continue
+                filters = handler_info["filters"]
+                if filters is not None:
+                    try:
+                        if not filters(update):
                             continue
-                        if self.wait_manager and self.wait_manager.auto_track:
-                            self.wait_manager.track()
-                        update = Update(result, self)
-                        if await self._conversation_manager.handle(update, self):
-                            continue
-                        is_edited = result["type"] == "UpdatedMessage"
-                        is_deleted = result["type"] == "RemovedMessage"
-                        for handler_info in self._message_handlers_webhook:
-                            handler = handler_info["handler"]
-                            edited_messages_option = handler_info["edited_messages"]
-                            deleted_messages_option = handler_info["deleted_messages"]
-                            if edited_messages_option == False and is_edited:
-                                continue
-                            elif edited_messages_option == True and not is_edited:
-                                continue
-                            if deleted_messages_option == False and is_deleted:
-                                continue
-                            elif deleted_messages_option == True and not is_deleted:
-                                continue
-                            filters = handler_info["filters"]
-                            if filters is not None:
-                                try:
-                                    if not filters(update):
-                                        continue
-                                except Exception as e:
-                                    print(f"[FILTER ERROR] {filters} -> {e}")
-                                    continue
-                            self._schedule_handler(handler, update)
-                        if not is_edited and not is_deleted:
-                            self.messages.append(update)
-                            if self.keeper_messages_ram:
-                                self.messages.append(update)
-                            if self.keeper_messages_db:
-                                await self.messages_db.append(update)
-            else:
-                await self.set_token_fast_rub()
-            await asyncio.sleep(0.1)
+                    except Exception as e:
+                        self.logger.error(f"[FILTER ERROR] {e}")
+                        continue
+                self._schedule_handler(handler, update)
+            if not is_edited and not is_deleted:
+                if self.keeper_messages_ram:
+                    self.messages.append(update)
+                if self.keeper_messages_db:
+                    await self.messages_db.append(update)
 
-    async def _fetch_button_updates(self):
-        while self._running:
-            response = await self.network.request(
-                self._button_url,
-                timeout=self.time_out,
-                type_send="GET"
-            )
-            result = response.json()
-            if result and result.get('status') is True:
-                results = result.get('updates', [])
-                if results:
-                    for result in results:
-                        update = UpdateButton(result,self)
-                        for handler in self._button_handlers:
-                            self._schedule_handler(handler,update)
-            else:
-                if self.use_to_fastrub_webhook_on_button is True:
-                    await self.set_token_fast_rub()
-            await asyncio.sleep(0.1)
+    async def _process_button_push(self, data: dict):
+        """پردازش وب‌هوک Push برای کلیک دکمه‌های اینلاین"""
+        updates = data if isinstance(data, list) else [data]
+        for result in updates:
+            update = UpdateButton(result, self)
+            for handler in self._button_handlers:
+                self._schedule_handler(handler, update)
 
     async def _process_on_start(self):
         for handler in self._on_start_handlers:
@@ -2306,13 +2318,21 @@ class Client:
         else:
             self.logger.error(f"Handler error : {e}", exc_info=True)
     
+    
+    async def _process_on_shutdown(self):
+        for handler in self._on_shutdown_handlers:
+            try:
+                await handler()
+            except Exception as e:
+                self.logger.error(f"on_shutdown error : {e}")
+
     # endregion
 
     # ═══════════════════════════════════
     # region ⚙️ Utils | متدهای کمکی
     # ═══════════════════════════════════
 
-    @async_to_sync
+    
     async def set_main_parse_mode(self,parse_mode: Literal['Markdown', 'HTML', 'Null', None]) -> None:
         """setting parse mode main / تنظیم کردن مقدار اصلی پارس مود
 
@@ -2321,7 +2341,7 @@ class Client:
 در صورتی که میخواهید از این حالت خارج شود و از ورودی های متود ها پیروی کند مقدار آن را در متود ست مین پارس مود برابر 'Null' کنید"""
         self.main_parse_mode = parse_mode
 
-    @async_to_sync
+    
     async def version_botapi(self) -> str:
         """getting version botapi / گرفتن نسخه بات ای پی آی"""
         response = await self.network.request(
@@ -2332,7 +2352,7 @@ class Client:
         version = response.text
         return version
 
-    @async_to_sync
+    
     async def send_requests(
         self,
         method: str,
@@ -2350,7 +2370,7 @@ class Client:
     # region 🔍 Get Message | گرفتن پیام
     # ═══════════════════════════════════
 
-    @async_to_sync
+    
     async def get_updates(
         self,
         limit: Optional[int] = None,
@@ -2368,7 +2388,7 @@ class Client:
         )
         return props(result)
     
-    @async_to_sync
+    
     async def get_message(
         self,
         chat_id: Optional[str] = None,
@@ -2406,12 +2426,13 @@ class Client:
             self.logger.info("در حال جستجو پیام با get_updates ...")
             updates = await self.get_updates(limit_search,self.next_offset_id_get_message)
             self.geted_u = len(updates["updates"])
-            for message in updates["updates"]:
-                message = Update(message, self)
-                if message.message_id == message_id:
-                    if message.chat_id == chat_id or chat_id is None:
-                        self.logger.info("پیام در get_updates پیدا شد !")
-                        return message
+            for msg in updates["updates"]:
+                if msg["type"] == "NewMessage":
+                    message = Update(msg, self)
+                    if message.message_id == message_id:
+                        if message.chat_id == chat_id or chat_id is None:
+                            self.logger.info("پیام در get_updates پیدا شد !")
+                            return message
             self.logger.warning("پیام در بین get_updates پیدا نشد !")
             if self.geted_u >= 40:
                 try:
@@ -2425,7 +2446,7 @@ class Client:
     
     get_message_by_id = get_message
 
-    @async_to_sync
+    
     async def get_messages(
         self,
         chat_id: str,
@@ -2480,7 +2501,6 @@ class Client:
     # region ⚙️ WebHook Setting | تنظیمات وبهوک
     # ═══════════════════════════════════
 
-    @async_to_sync
     async def set_endpoint(
         self,
         url: str,
@@ -2504,27 +2524,51 @@ class Client:
     update_end_point = set_endpoint
     update_endpoint = set_endpoint
 
-    @async_to_sync
-    async def set_token_fast_rub(
-        self,
-        list_getted: List[Literal["ReceiveUpdate", "ReceiveInlineMessage"]] = ["ReceiveUpdate", "ReceiveInlineMessage"]
-    ) -> bool:
-        """seting token in fast_rub for getting click glass messages and updata messges / تنظیم توکن در فست روب برای گرفتن کلیک های روی پیام شیشه ای و آپدیت پیام ها"""
-        self.logger.info("استفاده از متود set_token_fast_rub")
-        try:
-            await self.network.request(f"https://fast-rub.ParsSource.ir/api/set_token?token={self.token}")
-            for get in list_getted:
-                url = f"https://fast-rub.ParsSource.ir/api/geting_button_updates/{self.token}/{get}"
-                await self.set_endpoint(url, get)
-            self.logger.info("توکن با موفقیت در پیامگیر ثبت شد")
-            return True
-        except Exception as e:
-            self.logger.warning(f"خطا در ثبت توکن در پیامگیر فست روب : {e}")
-            return False
+    
+    # async def set_token_fast_rub(
+    #     self,
+    #     list_getted: List[Literal["ReceiveUpdate", "ReceiveInlineMessage"]] = ["ReceiveUpdate", "ReceiveInlineMessage"]
+    # ) -> bool:
+    #     """seting token in fast_rub for getting click glass messages and updata messges / تنظیم توکن در فست روب برای گرفتن کلیک های روی پیام شیشه ای و آپدیت پیام ها"""
+    #     self.logger.info("استفاده از متود set_token_fast_rub")
+    #     try:
+    #         await self.network.request(f"https://fast-rub.ParsSource.ir/api/set_token?token={self.token}")
+    #         for get in list_getted:
+    #             url = f"https://fast-rub.ParsSource.ir/api/geting_button_updates/{self.token}/{get}"
+    #             await self.set_endpoint(url, get)
+    #         self.logger.info("توکن با موفقیت در پیامگیر ثبت شد")
+    #         return True
+    #     except Exception as e:
+    #         self.logger.warning(f"خطا در ثبت توکن در پیامگیر فست روب : {e}")
+    #         return False
+
+    async def setup_webhooks(self):
+        """خودکار Endpointها رو به روبیکا معرفی می‌کنه (فراخوانی توسط کاربر)"""
+        if not self._webhook_server:
+            raise RuntimeError("Webhook Server تنظیم نشده. اول webhook=WebhookConfig(...) رو به Client بده.")
+
+        base = self._webhook_server.config.url.rstrip("/")
+        prefix = self._webhook_server.config.path_prefix
+        
+        if self._webhook_server.config.use_token_in_url:
+            token = self.token
+            endpoints = {
+                "ReceiveUpdate": f"{base}{prefix}/message/{token}",
+                "ReceiveInlineMessage": f"{base}{prefix}/inline/{token}",
+            }
+        else:
+            endpoints = {
+                "ReceiveUpdate": f"{base}{prefix}/message",
+                "ReceiveInlineMessage": f"{base}{prefix}/inline",
+            }
+        
+        for endpoint_type, url in endpoints.items():
+            await self.update_endpoint(url, endpoint_type) # type: ignore
 
     # endregion
 
 
+wrap_all_async_methods(Client)
 
 Robot = Client
 Bot = Client
