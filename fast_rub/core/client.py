@@ -16,6 +16,7 @@ from .async_sync import wrap_all_async_methods
 from .middleware import MiddlewareManager
 from .plugins import PluginManager
 from .webhook_server import WebhookServer
+from .background import BackgroundManager
 from ..utils.filters import Filter
 from ..network.network import Network
 from ..type import Update, UpdateButton, msg_update
@@ -32,7 +33,7 @@ from ..db.session import Session
 from ..db.message_keeper import MessageKeeper
 from ..pyrubi import Client as PyrubiClient
 if TYPE_CHECKING:
-    from .converstaion import Conversation
+    from .conversation import Conversation
 
 class Client:
     """
@@ -129,6 +130,15 @@ class Client:
     
     defult_wait: Optional[float] = None
         مقدار پیشفرض ایستادن بین درخواست ها
+    
+    webhook: Optional[WebhookConfig] = None
+        تنظیمات وبهوک
+    
+    poll_interval: float = 0.0
+        زمان ایستادن بین گرفتن پیام ها
+    
+    ssl_verify: bool = True
+        احراز هویت SSL
     """
     # ═══════════════════════════════════
     # region 🚀 Start & Stop | شروع و توقف
@@ -162,6 +172,7 @@ class Client:
         defult_wait: Optional[float] = None,
         webhook: Optional[WebhookConfig] = None,
         poll_interval: float = 0.0,
+        ssl_verify: bool = True,
     ):
         """Client for login and setting robot / کلاینت برای لوگین و تنظیمات ربات"""
         self.name_session = name_session
@@ -186,11 +197,13 @@ class Client:
         self.defult_wait = defult_wait
         self._on_ready_handlers = []
         self._on_start_handlers = []
-        from .converstaion import ConversationManager
+        from .conversation import ConversationManager
         self._conversation_manager = ConversationManager()
-        self._middleware_manager = MiddlewareManager()
         self.webhook = webhook
         self.poll_interval = poll_interval
+        self.ssl_verify = ssl_verify
+        self._background = BackgroundManager(self.logger)
+        self.state = {}
         if logger:
             self.logger = logger
         else:
@@ -261,11 +274,13 @@ class Client:
             max_retries=self.max_retries,
             user_agent=self.user_agent,
             proxy=self.proxy,
-            base_urls=self.urls
+            base_urls=self.urls,
+            ssl_verify=self.ssl_verify,
         )
         self._webhook_server = None
         if self.webhook:
             self._webhook_server = WebhookServer(client=self, config=self.webhook, logger=self.logger)
+        self._middleware_manager = MiddlewareManager(self.logger)
         self._on_error_handlers = []
         self._on_run_handlers = []
         self._on_live_handlers = []
@@ -466,12 +481,12 @@ class Client:
         chat_id: str,
         message_id: str,
         text: str,
-        aute_edit: int,
+        auto_edit: int,
         inline_keypad: Optional[list] = None,
         parse_mode: Literal["Markdown", "HTML", None] = "Markdown",
         meta_data: list = []
     ) -> msg_update:
-        await asyncio.sleep(aute_edit)
+        await asyncio.sleep(auto_edit)
         editing = await self.edit_message_text(
             chat_id,
             message_id,
@@ -925,7 +940,7 @@ class Client:
                 last_name=last_name,
                 phone_number=phone_number,
                 reply_to_message_id=reply_to_message_id,
-                disable_notificatio=disable_notification,
+                disable_notification=disable_notification,
                 auto_delete=auto_delete,
                 inline_keypad=inline_keypad,
                 wait_send=wait_send,
@@ -1058,7 +1073,7 @@ class Client:
         chat_keypad_type: Optional[str] = None,
         inline_keypad: Optional[list] = None,
         reply_to_message_id: Optional[str] = None,
-        disable_notificatio: Optional[bool] = False,
+        disable_notification: Optional[bool] = False,
         auto_delete: Optional[int] = None,
         wait_send: Optional[float] = None,
         return_task: bool = False
@@ -1079,7 +1094,7 @@ class Client:
                 "last_name": last_name,
                 "phone_number": phone_number,
                 "chat_keypad": chat_keypad,
-                "disable_notificatio": disable_notificatio,
+                "disable_notification": disable_notification,
                 "chat_keypad_type": chat_keypad_type,
                 "inline_keypad": inline_keypad,
                 "reply_to_message_id": reply_to_message_id,
@@ -1142,26 +1157,25 @@ class Client:
         from_chat_id: str,
         message_ids: list,
         to_chat_id: str,
-        disable_notification : Optional[bool] = False,
+        disable_notification: Optional[bool] = False,
         auto_delete: Optional[int] = None,
         wait_send: Optional[float] = None,
         return_task: bool = False
     ) -> Union[List[msg_update], List[asyncio.Task[msg_update]]]:
         """forwarding messages to chat id / فوروارد چند پیام به یک چت آیدی"""
-        list_forwards = deque(maxlen=len(message_ids))
-        for ms_id in message_ids:
-            list_forwards.append(
-                await self.forward_message(
-                    from_chat_id,
-                    ms_id,
-                    to_chat_id,
-                    disable_notification,
-                    auto_delete,
-                    wait_send=wait_send,
-                    return_task=return_task
-                )
+        tasks: list = [
+            self.forward_message(
+                from_chat_id,
+                ms_id,
+                to_chat_id,
+                disable_notification,
+                auto_delete,
+                wait_send=wait_send,
+                return_task=return_task
             )
-        return list(list_forwards)
+            for ms_id in message_ids
+        ]
+        return list(await asyncio.gather(*tasks))
 
     # ═══════════════════════════════════
     # region ✏️ Messaging | ویرایش و مدیریت پیام
@@ -1214,7 +1228,7 @@ class Client:
         chat_id: str,
         message_id: str,
         text: str,
-        aute_edit: int,
+        auto_edit: int,
         inline_keypad: Optional[list] = None,
         parse_mode: Literal["Markdown", "HTML", None] = "Markdown",
         meta_data: list = [],
@@ -1226,7 +1240,7 @@ class Client:
                 chat_id=chat_id,
                 message_id=message_id,
                 text=text,
-                aute_edit=aute_edit,
+                auto_edit=auto_edit,
                 inline_keypad=inline_keypad,
                 parse_mode=parse_mode,
                 meta_data=meta_data
@@ -2351,7 +2365,16 @@ class Client:
         )
         version = response.text
         return version
-
+    
+    def add_background_task(
+        self,
+        coro: Callable,
+        *args,
+        delay: float = 0.0,
+        **kwargs
+    ) -> asyncio.Task:
+        """add background task / اضافه کردن تسک بک‌گراند"""
+        return self._background.add(coro, *args, delay=delay, **kwargs)
     
     async def send_requests(
         self,
