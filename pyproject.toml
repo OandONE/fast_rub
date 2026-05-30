@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "fastrub"
-version = "3.5.1"
+version = "3.7.0"
 authors = [
     {name = "seyyed mohamad hosein moosavi raja(01)", email = "mohamadhosein159159@gmail.com"},
 ]
@@ -43,3 +43,11 @@ Homepage = "https://github.com/OandONE/fast_rub"
 [tool.setuptools.packages.find]
 where = ["."]
 include = ["fast_rub", "fast_rub.*"]
+
+[tool.setuptools.package-data]
+fast_rub = ["pyrightconfig.json"]
+
+[project.optional-dependencies]
+fastapi = ["fastapi", "uvicorn"]
+flask = ["flask"]
+full = ["fastapi", "uvicorn", "flask"]
