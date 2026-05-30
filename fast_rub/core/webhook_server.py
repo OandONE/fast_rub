@@ -147,12 +147,6 @@ class WebhookServer:
         """پردازش وب‌هوک — نسخه FastAPI"""
         from fastapi.responses import JSONResponse
         
-        if self.config.secret_token:
-            token = request.headers.get("X-Rubika-Secret-Token")
-            if token != self.config.secret_token:
-                self.logger.warning("⛔ Webhook با توکن نامعتبر")
-                return JSONResponse({"error": "Unauthorized"}, status_code=403)
-        
         try:
             data = await request.json()
             self.logger.debug(f"📩 Webhook دریافت شد: {endpoint_type}")
@@ -172,12 +166,6 @@ class WebhookServer:
     def _handle_webhook_flask(self, request, endpoint_type: str):
         """پردازش وب‌هوک — نسخه Flask"""
         from flask import jsonify
-        
-        if self.config.secret_token:
-            token = request.headers.get("X-Rubika-Secret-Token")
-            if token != self.config.secret_token:
-                self.logger.warning("⛔ Webhook با توکن نامعتبر")
-                return jsonify({"error": "Unauthorized"}), 403
         
         try:
             data = request.get_json()
