@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Callable
 import re as _re
 import time as ti
 
@@ -326,7 +326,7 @@ class in_text(Filter):
 class IsForward(Filter):
     """message is forward / پیام فوروارد شده"""
     def __call__(self, update: 'Update') -> bool:
-        return update.is_fowrard
+        return update.is_forward
 
 class IsReply(Filter):
     """message has reply / پیام دارای ریپلای"""
@@ -370,7 +370,14 @@ class IsContact(Filter):
 class HasUserName(Filter):
     """filter by has username in text / فیلتر داشتن نام کاربری(آیدی) در متن پیام"""
     def __call__(self, update: 'Update') -> bool:
-        return bool(_re.compile(r"").search(str(update.text))) # TODO
+        return bool(_re.compile(r"@[a-zA-Z0-9_]{2,32}").search(str(update.text)))
+
+class where(Filter):
+    """فیلتر با شرط دلخواه"""
+    def __init__(self, func: Callable[['Update'], bool]):
+        self.func = func
+    def __call__(self, update: 'Update') -> bool:
+        return self.func(update)
 
 
 class and_filter(Filter):
