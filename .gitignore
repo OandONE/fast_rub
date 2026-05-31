@@ -1,0 +1,16 @@
+venv/
+env/
+.venv/
+build/
+dist/
+*.egg-info/
+__pycache__/
+*.pyc
+*.pyo
+.env
+*.faru
+*.db
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
