@@ -1,11 +1,14 @@
-from typing import TYPE_CHECKING, Callable
+from typing import TYPE_CHECKING, Union, Literal, Optional, Any
+
+from collections.abc import Callable, Awaitable
 import re as _re
 import time as ti
+import inspect
 
-from fast_rub.type import Update
+from ..db import DataBase
 
 if TYPE_CHECKING:
-    from ..type import Update
+    from ..types import Update
 
 class Filter:
     def __call__(self, update: 'Update') -> bool:
@@ -37,7 +40,7 @@ class _AndFilter(Filter):
         self.left = left
         self.right = right
     
-    def __call__(self, update: Update) -> bool:
+    def __call__(self, update: "Update") -> bool:
         return self.left(update) and self.right(update)
 
 class _OrFilter(Filter):
@@ -49,7 +52,7 @@ class _OrFilter(Filter):
         self.left = left
         self.right = right
     
-    def __call__(self, update: Update) -> bool:
+    def __call__(self, update: "Update") -> bool:
         return self.left(update) or self.right(update)
 
 class _NotFilter(Filter):
@@ -59,8 +62,9 @@ class _NotFilter(Filter):
     ) -> None:
         self.filter = filter
     
-    def __call__(self, update: Update) -> bool:
+    def __call__(self, update: "Update") -> bool:
         return not self.filter(update)
+
 
 class text(Filter):
     """filter text message by text /  فیلتر کردن متن پیام بر اساس متنی"""
@@ -184,8 +188,6 @@ class time(Filter):
         if ti.time() > self.from_time and ti.time() < self.end_time:
             return True
         return False
-
-
 
 class commands(Filter):
     """filter text message by commands / فیلتر کردن متن پیام با دستورات"""
@@ -345,7 +347,10 @@ class text_length(Filter):
 
 class starts_with(Filter):
     """filter text starting with / فیلتر متن هایی که با این شروع میشن"""
-    def __init__(self, prefix: str):
+    def __init__(
+        self,
+        prefix: str | tuple[str]
+    ):
         self.prefix = prefix
     def __call__(self, update: 'Update') -> bool:
         return update.text != None and update.text.startswith(self.prefix)
@@ -378,6 +383,289 @@ class where(Filter):
         self.func = func
     def __call__(self, update: 'Update') -> bool:
         return self.func(update)
+
+Where = where
+
+class check(Filter):
+    """فیلتر با تابع شرط دلخواه (Sync یا Async)."""
+    def __init__(self, func: Callable[..., bool | Awaitable[bool]]):
+        self.func = func
+        self._is_async = inspect.iscoroutinefunction(func)
+    @property
+    def type_filter(self):
+        return "async" if self._is_async else "sync"
+    def __call__(self, update: 'Update') -> bool:
+        if self._is_async:
+            raise RuntimeError("This filter is async. Use __acall__ instead.")
+        return self.func(update) # type: ignore
+    async def __acall__(self, update: 'Update') -> bool:
+        if self._is_async:
+            return await self.func(update) # type: ignore
+        return self.func(update) # type: ignore
+
+Check = check
+
+class button_id(Filter):
+    def __init__(
+        self,
+        button_id: str
+    ) -> None:
+        self.button_id = button_id
+    def __call__(self, update: 'Update') -> bool:
+        return update.button_id == self.button_id
+
+class startswith_button_id(Filter):
+    def __init__(
+        self,
+        button_id: str | tuple[str]
+    ) -> None:
+        self.button_id = button_id
+    def __call__(self, update: 'Update') -> bool:
+        return update.button_id.startswith(self.button_id) if update.button_id else False
+
+class forward_from_sender_id(Filter):
+    def __init__(
+        self,
+        sender_id: str
+    ) -> None:
+        self.sender_id = sender_id
+    def __call__(self, update: 'Update') -> bool:
+        return update.forward_from_sender_id == self.sender_id
+
+class contact_phone_number(Filter):
+    def __init__(
+        self,
+        phone_number: str
+    ) -> None:
+        self.phone_number = phone_number
+    def __call__(self, update: "Update") -> bool:
+        return update.contact_phone_number == self.phone_number
+
+class contact_first_name(Filter):
+    def __init__(
+        self,
+        first_name: str
+    ) -> None:
+        self.first_name = first_name
+    def __call__(self, update: "Update") -> bool:
+        return update.contact_first_name == self.first_name
+
+class contact_last_name(Filter):
+    def __init__(
+        self,
+        last_name: str
+    ) -> None:
+        self.last_name = last_name
+    def __call__(self, update: "Update") -> bool:
+        return update.contact_last_name == self.last_name
+
+class sticker_emoji_character(Filter):
+    def __init__(
+        self,
+        emoji_character: str
+    ) -> None:
+        self.emoji_character = emoji_character
+    def __call__(self, update: "Update") -> bool:
+        return update.sticker_emoji_character == self.emoji_character 
+
+class sticker_sticker_id(Filter):
+    def __init__(
+        self,
+        id_character: str
+    ) -> None:
+        self.id_character = id_character
+    def __call__(self, update: "Update") -> bool:
+        return update.sticker_sticker_id == self.id_character 
+
+class removed_message_id(Filter):
+    def __init__(
+        self,
+        id_character: str
+    ) -> None:
+        self.id_character = id_character
+    def __call__(self, update: 'Update') -> bool:
+        return update.removed_message_id == self.id_character 
+
+class update_time(Filter):
+    def __init__(
+        self,
+        time: int
+    ) -> None:
+        self.time = time
+    def __call__(self, update: 'Update') -> bool:
+        return update.update_time == self.time
+
+
+class db_exists(AsyncFilter):
+    """چک می‌کنه یه رکورد توی دیتابیس وجود داره یا نه"""
+    def __init__(
+        self,
+        tabel_name: str,
+        where_builder: Callable[['Update'], dict],
+        db: DataBase | None = None,
+        db_name: str | None = None,
+        timeout: float = 10,
+        journal_mode: Literal["DELETE", "TRUNCATE", "PERSIST", "MEMORY", "WAL", "OFF", "ROLLBACK"] = "WAL",
+        synchronous: Literal["OFF", "NORMAL", "FULL", "EXTRA"] = "NORMAL",
+    ) -> None:
+        if db:
+            self.db = db
+        elif db_name:
+            self.db = DataBase(db_name, timeout, journal_mode, synchronous)
+        else:
+            raise ValueError("db or db_name is required")
+        self.tabel_name = tabel_name
+        self.where_builder = where_builder
+    
+    async def __acall__(self, update: 'Update') -> bool:
+        where_values = self.where_builder(update)
+        return await self.db.exists(self.tabel_name, where_values)
+
+class db_not_exists(AsyncFilter):
+    """چک می‌کنه یه رکورد توی دیتابیس وجود نداره"""
+    def __init__(
+        self,
+        tabel_name: str,
+        where_builder: Callable[['Update'], dict],
+        db: DataBase | None = None,
+        db_name: str | None = None,
+        timeout: float = 10,
+        journal_mode: Literal["DELETE", "TRUNCATE", "PERSIST", "MEMORY", "WAL", "OFF", "ROLLBACK"] = "WAL",
+        synchronous: Literal["OFF", "NORMAL", "FULL", "EXTRA"] = "NORMAL",
+    ) -> None:
+        if db:
+            self.db = db
+        elif db_name:
+            self.db = DataBase(db_name, timeout, journal_mode, synchronous)
+        else:
+            raise ValueError("db or db_name is required")
+        self.tabel_name = tabel_name
+        self.where_builder = where_builder
+    
+    async def __acall__(self, update: 'Update') -> bool:
+        where_values = self.where_builder(update)
+        return not await self.db.exists(self.tabel_name, where_values)
+
+class db_count(AsyncFilter):
+    """چک می‌کنه تعداد رکوردها با شرط، بزرگتر از یه عدد باشه"""
+    def __init__(
+        self,
+        tabel_name: str,
+        where_builder: Callable[['Update'], dict],
+        min_count: int = 1,
+        db: DataBase | None = None,
+        db_name: str | None = None,
+        timeout: float = 10,
+        journal_mode: Literal["DELETE", "TRUNCATE", "PERSIST", "MEMORY", "WAL", "OFF", "ROLLBACK"] = "WAL",
+        synchronous: Literal["OFF", "NORMAL", "FULL", "EXTRA"] = "NORMAL",
+    ) -> None:
+        if db:
+            self.db = db
+        elif db_name:
+            self.db = DataBase(db_name, timeout, journal_mode, synchronous)
+        else:
+            raise ValueError("db or db_name is required")
+        self.tabel_name = tabel_name
+        self.where_builder = where_builder
+        self.min_count = min_count
+    
+    async def __acall__(self, update: 'Update') -> bool:
+        where_values = self.where_builder(update)
+        count = await self.db.len_rows(self.tabel_name, where_values)
+        return count >= self.min_count
+
+class db_value_equals(AsyncFilter):
+    """چک می‌کنه مقدار یه ستون برابر با یه مقدار باشه"""
+    def __init__(
+        self,
+        tabel_name: str,
+        column: str,
+        where_builder: Callable[['Update'], dict],
+        expected_value: Any,
+        db: DataBase | None = None,
+        db_name: str | None = None,
+        timeout: float = 10,
+        journal_mode: Literal["DELETE", "TRUNCATE", "PERSIST", "MEMORY", "WAL", "OFF", "ROLLBACK"] = "WAL",
+        synchronous: Literal["OFF", "NORMAL", "FULL", "EXTRA"] = "NORMAL",
+    ) -> None:
+        if db:
+            self.db = db
+        elif db_name:
+            self.db = DataBase(db_name, timeout, journal_mode, synchronous)
+        else:
+            raise ValueError("db or db_name is required")
+        self.tabel_name = tabel_name
+        self.column = column
+        self.where_builder = where_builder
+        self.expected_value = expected_value
+    
+    async def __acall__(self, update: 'Update') -> bool:
+        where_values = self.where_builder(update)
+        result = await self.db.find(self.tabel_name, self.column, where_values)
+        return result == self.expected_value
+
+class validate(Filter):
+    """فیلتر اعتبارسنجی ورودی کاربر."""
+    def __init__(
+        self,
+        email: bool = False,
+        is_digit: bool = False,
+        min_length: int = 0,
+        max_length: int = -1,
+    ):
+        self.email = email
+        self.is_digit = is_digit
+        self.min_length = min_length
+        self.max_length = max_length
+    
+    def __call__(self, update: 'Update') -> bool:
+        if not update.text:
+            return False
+        
+        text = update.text
+        
+        if self.email:
+            email_pattern = _re.compile(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$')
+            if not email_pattern.search(text):
+                return False
+        
+        if self.is_digit:
+            if not text.isdigit():
+                return False
+        
+        if len(text) < self.min_length:
+            return False
+        
+        if self.max_length != float('inf') and len(text) > self.max_length:
+            return False
+        
+        return True
+
+class CrashProtection(Filter):
+    def __call__(self, update: "Update") -> bool:
+        if not update.text:
+            return True
+        def check1(
+            text: str
+        ) -> bool:
+            return not (bool(_re.match(r"^\d+(\.\d+)", text)))
+        if check1(update.text):
+            def check2(text: str):
+                if not text:
+                    return True
+                if '\x00' in text:
+                    return False
+                zero_width = '\u200B\u200C\u200D\uFEFF'
+                count = sum(1 for c in text if c in zero_width)
+                if count > 50:
+                    return False
+                invisible = sum(1 for c in text if c in zero_width or c in '\u2060\u2061\u2062\u2063\u2064')
+                if len(text) > 100 and invisible / len(text) > 0.5:
+                    return False
+                return True
+            return check2(update.text)
+        return False
+
 
 
 class and_filter(Filter):
@@ -444,4 +732,6 @@ has_username = HasUserName()
 is_username = has_username
 
 re = regex
+
+crash_protection = CrashProtection
 

@@ -3,7 +3,7 @@ from pathlib import Path
 import aiofiles
 from .colors import cprint, Colors
 import time
-from ..type.errors import InvalidID
+import re
 if TYPE_CHECKING:
     from ..network.network import Network
 
@@ -15,7 +15,7 @@ DATA_SUFFIXS = {
 
 class Utils:
     @staticmethod
-    def format_file(type_file: Optional[str] = None) -> Optional[str]:
+    def format_file(type_file: str | None = None) -> str | None:
         if type_file:
             for type_, pass_ in {
                 "File": "",
@@ -58,12 +58,12 @@ class Utils:
     @staticmethod
     def data_format(
         data: dict,
-        inline_keypad: Optional[list] = None,
-        keypad: Optional[list] = None,
-        resize_keyboard: Optional[bool] = True,
-        on_time_keyboard: Optional[bool] = False,
-        metadata: Optional[list] = None,
-        meta_data: Optional[list] = None
+        inline_keypad: list | None = None,
+        keypad: list | None = None,
+        resize_keyboard: bool | None = True,
+        on_time_keyboard: bool | None = False,
+        metadata: list | None = None,
+        meta_data: list | None = None
     ) -> dict:
         if meta_data is None:
             meta_data = []
@@ -86,7 +86,11 @@ class Utils:
     # Other
 
     @staticmethod
-    async def d_file(file: Union[str , Path , bytes], file_name: str, network: 'Network') -> Dict[str, Tuple[str, Union[bytes, bytearray], str]]:
+    async def d_file(
+        file: str  | Path  | bytes,
+        file_name: str,
+        network: 'Network'
+    ) -> dict[str, tuple[str, bytes | bytearray, str]]:
         if isinstance(file, (bytes, bytearray)):
             d_file = {"file": (file_name, file, "application/octet-stream")}
         else:
@@ -97,7 +101,7 @@ class Utils:
             except:
                 file_ = (await network.request(str(file),type_send="GET")).content
                 d_file = {"file": (file_name, file_, "application/octet-stream")}
-        return d_file
+        return d_file # type: ignore
     
     @staticmethod
     def check_data(data: dict) -> bool:
@@ -106,7 +110,7 @@ class Utils:
         return False
 
     @staticmethod
-    def prefer_first(value1: Optional[str] = None, value2: Optional[str] = None) -> str:
+    def prefer_first(value1: str | None = None, value2: str | None = None) -> str:
         return value1 if value1 else str(value2)
 
     @staticmethod
@@ -142,18 +146,21 @@ class Utils:
             if suffix in suf:
                 return tp # pyright: ignore[reportReturnType]
         return "File"
-    
+
     @staticmethod
     def check_id(id: str) -> bool:
         st = id.startswith("b") or id.startswith("u") or id.startswith("g")
         if st:
             if len(id) == 32:
-                return True
+                for chr in id:
+                    if (chr.isascii() and (chr.isalpha() and chr.isascii() or chr.isdigit())):
+                        return True
         return False
 
     @staticmethod
     def check_id_raise(id: str):
         if not Utils.check_id(id=id):
+            from ..types.errors import InvalidID
             raise InvalidID('Invalid Id. The ID must be 32 characters long and must also start with one of the letters "b", "u", or "g".')
 
     @staticmethod
@@ -175,3 +182,10 @@ class Utils:
             else:
                 result[key] = value
         return result
+    
+    @staticmethod
+    def trim_trailing_newlines(text: str) -> str:
+        """حذف خط‌های خالی انتهای متن"""
+        if not text:
+            return text
+        return re.sub(r'(\n\s*)+$', '', text)
