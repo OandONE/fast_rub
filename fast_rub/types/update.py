@@ -1,0 +1,958 @@
+from .. import *
+from ..core.async_sync import *
+from .get_type import *
+from .props import *
+from .models import Chat
+from .metadata import metadata as metadata_prop
+from .file import File
+from ..utils.utils import Utils
+import json
+from pathlib import Path
+from typing import TYPE_CHECKING, Optional, Union, Literal
+import re
+
+if TYPE_CHECKING:
+    from .prop_update import msg_update
+    from ..core import Client
+
+class Update:
+    def __init__(
+        self,
+        update_data: dict,
+        client: "Client"
+    ):
+        try:
+            self._data = update_data["new_message"]
+        except:
+            self._data = update_data["updated_message"]
+        self._client = client
+        self.raw_data_ = update_data
+    @property
+    def text(self) -> str | None:
+        """text message / متن پیام"""
+        return self._data.get("text")
+    @property
+    def message_id(self) -> str:
+        """message id / آیدی پیام"""
+        return self._data['message_id']
+    @property
+    def chat_id(self) -> str:
+        """chat id message / چت آیدی پیام"""
+        return self.raw_data_['chat_id']
+    @property
+    def time(self) -> int:
+        """time sended message / زمان ارسال شده پیام"""
+        return int(self._data['time'])
+    @property
+    def sender_type(self) -> Literal["User","Group","Channel"]:
+        """sender type / نوع ارسال کننده"""
+        return Utils.get_chat_id_type(self.chat_id)
+    @property
+    def sender_id(self) -> str:
+        """sender id message / شناسه گوید کاربر ارسال کننده"""
+        return self._data['sender_id']
+    @property
+    def is_edited(self):
+        return self._data['is_edited']
+    
+    # File
+
+    @property
+    def file(self) -> dict | None:
+        """file / فایل"""
+        return self._data['file'] if "file" in self._data else None
+    @property
+    def file_id(self) -> str | None:
+        """file id / آیدی فایل"""
+        return self._data['file']['file_id'] if "file" in self._data else None
+    @property
+    def file_name(self) -> str | None:
+        """file name / اسم فایل"""
+        return self._data['file']['file_name'] if "file" in self._data else None
+    @property
+    def size_file(self) -> int | None:
+        """size file / سایز فایل"""
+        return self._data['file']['size'] if "file" in self._data else None
+    @property
+    def type_file(self) -> str:
+        """get type file / گرفتن نوع فایل"""
+        if self.file_name:
+            return get_file_category(self.file_name)
+        else:
+            return "text"
+    
+    # Button
+
+    @property
+    def button(self) -> dict | None:
+        """data button clicked / اطلاعات دکمه کلیک شده"""
+        return self._data['aux_data'] if "aux_data" in self._data else None
+    @property
+    def button_id(self) -> str | None:
+        """button id clicked button / آیدی دکمه کلیک شده"""
+        return self.button['button_id'] if self.button else None
+    
+    # Reply
+
+    @property
+    def is_reply(self) -> bool:
+        """is replyed / ریپلای شده"""
+        return self.reply_to_message_id != None
+
+    @property
+    def reply_to_message_id(self) -> str | None:
+        """message id replyed / آیدی پیام ریپلای شده"""
+        return self._data["reply_to_message_id"] if "reply_to_message_id" in self._data else None
+    
+    # Mata Data
+
+    @property
+    def metadata(self) -> dict | None:
+        """meta data / متا دیتا"""
+        return self._data["metadata"] if "metadata" in self._data else None
+    @property
+    def meta_data_parts(self) -> metadata_prop | None:
+        """meta data parts list / لیست قسمت های متا دیتا"""
+        return metadata_prop(self.metadata["meta_data_parts"]) if self.metadata else None
+    
+    # Forward
+
+    @property
+    def is_forward(self) -> bool:
+        """forwarded / فوروارد شده"""
+        return "forwarded_from" in self._data
+    @property
+    def is_fowrard(self) -> bool:
+        self._client.logger.warn("The 'warn' method is deprecated, "
+            "use 'warning' instead", DeprecationWarning, 2)
+        return self.is_forward
+    @property
+    def forward_from(self) -> str | None:
+        """forward from / فوروارد از"""
+        if self.is_fowrard:
+            return self._data["forwarded_from"]["type_from"]
+        return None
+    @property
+    def forward_message_id(self) -> str | None:
+        """message id forward / آیدی پیام فوروارد شده"""
+        if self.is_fowrard:
+            return self._data["forwarded_from"]["message_id"]
+        return None
+    @property
+    def forward_from_sender_id(self) -> str | None:
+        """sender id forwarded / شناسه گوید فوروارد کننده"""
+        if self.is_fowrard:
+            return self._data["forwarded_from"]["from_sender_id"]
+        return None
+    
+    # Contact
+
+    @property
+    def is_contact(self) -> bool:
+        """contect / مخاطب"""
+        return "contact_message" in self._data
+    @property
+    def contact_phone_number(self) -> str | None:
+        """phone number contact / شماره همراه مخاطب"""
+        if self.is_contact:
+            return self._data["contact_message"]["phone_number"]
+        return None
+    @property
+    def contact_first_name(self) -> str | None:
+        """first name contact / اسم مخاطب"""
+        if self.is_contact:
+            return self._data["contact_message"]["first_name"]
+        return None
+    @property
+    def contact_last_name(self) -> str | None:
+        """last name contact / نام خانوادگی مخاطب"""
+        if self.is_contact:
+            return self._data["contact_message"]["last_name"]
+        return None
+
+    # Stiker
+
+    @property
+    def is_sticker(self) -> bool:
+        """sticker / استیکر"""
+        return "sticker" in self._data
+    @property
+    def sticker_emoji_character(self) -> str | None:
+        """imoji sticker character / کاراکتر ایموجی استیکر"""
+        if self.is_sticker:
+            return self._data["sticker"]["emoji_character"]
+        return None
+    @property
+    def sticker_sticker_id(self) -> str | None:
+        """sticker id / آیدی استیکر"""
+        if self.is_sticker:
+            return self._data["sticker"]["sticker_id"]
+        return None
+    @property
+    def sticker_file(self) -> File | dict:
+        """file sticker / فایل استیکر"""
+        if self.is_sticker:
+            return File(self._data["sticker"]["file"])
+        return {}
+
+    # remove update
+    @property
+    def removed_message_id(self) -> str | None:
+        """message id deleted / آیدی پیام پاک شده"""
+        return self.raw_data_.get("removed_message_id")
+    
+    @property
+    def update_time(self) -> int | None:
+        """update time message deleted / زمان پاک شدن پیام"""
+        up_time = self.raw_data_.get("update_time")
+        if up_time:
+            return int(up_time)
+        return None
+
+
+
+    def regex(
+        self,
+        pattern: str,
+        flags: int = 0,
+        text: str | None = None
+    ) -> bool:
+        """بررسی با الگو ریجکس / checking with regex"""
+        if self.text is None:
+            return False
+        self.pattern = re.compile(pattern, flags)
+        return bool(
+            self.pattern.search(
+                Utils.prefer_first(text, self.text)
+            )
+        )
+
+    
+    async def get_chat_id_info(
+        self,
+        chat_id: str | None = None
+    ) -> Chat:
+        """get info the chat id / گرفتن درباره چت آیدی"""
+        return await self._client.get_chat(
+            chat_id=Utils.prefer_first(chat_id, self.chat_id)
+        )
+
+    
+    async def reply(
+        self,
+        text: str | None = None,
+        keypad_inline: list | None = None,
+        inline_keypad: list | None = None,
+        keypad: list | None = None,
+        resize_keyboard: bool | None = True,
+        on_time_keyboard: bool | None = False,
+        auto_delete: int | None = None,
+        parse_mode: Literal['Markdown', 'HTML', None] = "Markdown",
+        meta_data: list | None = None,
+        wait_send: float | None = None,
+        return_task: bool = False,
+        context: dict | None = None,
+        auto_escape: bool = True,
+        # file
+        file: str  | Path  | bytes  | None = None,
+        name_file: str | None = None,
+        type_file: Literal["File", "Image", "Voice", "Music", "Gif" , "Video"] = "File",
+        file_id: str | None = None,
+        show_progress: bool = True,
+        chunk_size: int = 64 * 1024,
+        # poll
+        question: str | None = None,
+        options: list | None = None,
+        type_poll: Literal["Regular", "Quiz"] = "Regular",
+        is_anonymous: bool = True,
+        correct_option_index: int | None = None,
+        allows_multiple_answers: bool = False,
+        hint: str | None = None,
+        # location
+        latitude: str | None = None,
+        longitude: str | None = None,
+        # contact
+        first_name: str | None = None,
+        last_name: str | None = None,
+        phone_number: str | None = None,
+
+        chat_id: str | None = None,
+        reply_to_message_id: str | None = None
+    ) -> Union['msg_update', asyncio.Task['msg_update']]:
+        """reply message / ریپلای پیام"""
+        return await self._client.send_message(
+            text=text,
+            chat_id=Utils.prefer_first(chat_id, self.chat_id),
+            reply_to_message_id=Utils.prefer_first(reply_to_message_id, self.message_id),
+            inline_keypad=inline_keypad if inline_keypad else keypad_inline,
+            auto_delete=auto_delete,
+            parse_mode=parse_mode,
+            keypad=keypad,
+            on_time_keyboard=on_time_keyboard,
+            resize_keyboard=resize_keyboard,
+            meta_data=meta_data,
+            file=file,
+            name_file=name_file,
+            type_file=type_file,
+            file_id=file_id,
+            show_progress=show_progress,
+            question=question,
+            options=options,
+            type_poll=type_poll,
+            is_anonymous=is_anonymous,
+            correct_option_index=correct_option_index,
+            allows_multiple_answers=allows_multiple_answers,
+            hint=hint,
+            latitude=latitude,
+            longitude=longitude,
+            first_name=first_name,
+            last_name=last_name,
+            phone_number=phone_number,
+            chunk_size=chunk_size,
+            wait_send=wait_send,
+            return_task=return_task,
+            context=context,
+            auto_escape=auto_escape
+        )
+
+    async def reply_text(
+        self,
+        text: str,
+        inline_keypad: list | None = None,
+        keypad: list | None = None,
+        resize_keyboard: bool | None = True,
+        on_time_keyboard: bool | None = False,
+        auto_delete: int | None = None,
+        parse_mode: Literal['Markdown', 'HTML', None] = "Markdown",
+        meta_data: list | None = None,
+        wait_send: float | None = None,
+        return_task: bool = False,
+        chat_id: str | None = None,
+        reply_to_message_id: str | None = None,
+        context: dict | None = None,
+        auto_escape: bool = True,
+    ) -> Union['msg_update', asyncio.Task['msg_update']]:
+        """reply text / ریپلای متن"""
+        return await self._client.send_text(
+            text=text,
+            chat_id=Utils.prefer_first(chat_id, self.chat_id),
+            reply_to_message_id=Utils.prefer_first(reply_to_message_id, self.message_id),
+            inline_keypad=inline_keypad,
+            auto_delete=auto_delete,
+            parse_mode=parse_mode,
+            keypad=keypad,
+            on_time_keyboard=on_time_keyboard,
+            resize_keyboard=resize_keyboard,
+            meta_data=meta_data,
+            wait_send=wait_send,
+            return_task=return_task,
+            context=context,
+            auto_escape=auto_escape
+        )
+
+    async def reply_poll(
+        self,
+        question: str,
+        options: list,
+        type_poll: Literal["Regular", "Quiz"] = "Regular",
+        is_anonymous: bool = True,
+        correct_option_index: int | None = None,
+        allows_multiple_answers: bool = False,
+        hint: str | None = None,
+        auto_delete: int | None = None,
+        wait_send: float | None = None,
+        return_task: bool = False,
+        chat_id: str | None = None,
+        reply_to_message_id: str | None = None
+    ) -> Union['msg_update', asyncio.Task['msg_update']]:
+        """reply poll / ریپلای نظرسنجی"""
+        return await self._client.send_poll(
+            chat_id=Utils.prefer_first(chat_id, self.chat_id),
+            question=question,
+            options=options,
+            type_poll=type_poll,
+            is_anonymous=is_anonymous,
+            correct_option_index=correct_option_index,
+            allows_multiple_answers=allows_multiple_answers,
+            hint=hint,
+            auto_delete=auto_delete,
+            reply_to_message_id=Utils.prefer_first(reply_to_message_id, self.message_id),
+            wait_send=wait_send,
+            return_task=return_task
+        )
+
+    async def reply_contact(
+        self,
+        first_name: str,
+        phone_number: str,
+        last_name: str = "",
+        auto_delete: int | None = None,
+        wait_send: float | None = None,
+        return_task: bool = False,
+        chat_id: str | None = None,
+        reply_to_message_id: str | None = None
+    ) -> Union['msg_update', asyncio.Task['msg_update']]:
+        """reply contact / ریپلای مخاطب"""
+        return await self._client.send_contact(
+            chat_id=Utils.prefer_first(chat_id, self.chat_id),
+            first_name=first_name,
+            last_name=last_name,
+            phone_number=phone_number,
+            reply_to_message_id=Utils.prefer_first(reply_to_message_id, self.message_id),
+            auto_delete=auto_delete,
+            wait_send=wait_send,
+            return_task=return_task
+        )
+
+    async def reply_location(
+        self,
+        latitude: str,
+        longitude: str,
+        auto_delete: int | None = None,
+        wait_send: float | None = None,
+        return_task: bool = False,
+        chat_id: str | None = None,
+        reply_to_message_id: str | None = None
+    ) -> Union['msg_update', asyncio.Task['msg_update']]:
+        """reply location / ریپلای موقعیت مکانی"""
+        return await self._client.send_location(
+            chat_id=Utils.prefer_first(chat_id, self.chat_id),
+            latitude=latitude,
+            longitude=longitude,
+            reply_to_message_id=Utils.prefer_first(reply_to_message_id, self.message_id),
+            auto_delete=auto_delete,
+            wait_send=wait_send,
+            return_task=return_task
+        )
+
+    async def reply_file(
+        self,
+        file: str  | Path  | bytes,
+        name_file: str | None = None,
+        text: str | None = None,
+        type_file: Literal["File", "Image", "Voice", "Music", "Gif","Video"] = "File",
+        disable_notification: bool = False,
+        auto_delete: int | None = None,
+        parse_mode: Literal['Markdown', 'HTML', None] = "Markdown",
+        meta_data: list | None = None,
+        inline_keypad: list | None = None,
+        keypad: list | None = None,
+        resize_keyboard: bool | None = True,
+        on_time_keyboard: bool | None = False,
+        upload_by: Literal["aiohttp", "httpx"] = "aiohttp",
+        show_progress: bool = True,
+        wait_send: float | None = None,
+        return_task: bool = False,
+        chunk_size: int = 64 * 1024,
+        context: dict | None = None,
+        auto_escape: bool = True,
+        chat_id: str | None = None,
+        reply_to_message_id: str | None = None,
+    ) -> Union['msg_update', asyncio.Task['msg_update']]:
+        """reply file / ریپلای فایل"""
+        return await self._client.base_send_file(
+            chat_id=Utils.prefer_first(chat_id, self.chat_id),
+            file=file,
+            name_file=name_file,
+            text=text,
+            reply_to_message_id=Utils.prefer_first(reply_to_message_id, self.message_id),
+            type_file=type_file,
+            disable_notification=disable_notification,
+            auto_delete=auto_delete,
+            parse_mode=parse_mode,
+            meta_data=meta_data,
+            inline_keypad=inline_keypad,
+            keypad=keypad,
+            resize_keyboard=resize_keyboard,
+            on_time_keyboard=on_time_keyboard,
+            upload_by=upload_by,
+            show_progress=show_progress,
+            chunk_size=chunk_size,
+            wait_send=wait_send,
+            return_task=return_task,
+            context=context,
+            auto_escape=auto_escape
+        )
+    
+    reply_document = reply_file
+
+    async def reply_image(
+        self,
+        image: str  | Path  | bytes,
+        name_file: str | None = None,
+        text: str | None = None,
+        disable_notification: bool = False,
+        auto_delete: int | None = None,
+        parse_mode: Literal['Markdown', 'HTML', None] = "Markdown",
+        meta_data: list | None = None,
+        inline_keypad: list | None = None,
+        keypad: list | None = None,
+        resize_keyboard: bool | None = True,
+        on_time_keyboard: bool | None = False,
+        upload_by: Literal["aiohttp", "httpx"] = "aiohttp",
+        show_progress: bool = True,
+        chunk_size: int = 64 * 1024,
+        wait_send: float | None = None,
+        return_task: bool = False,
+        context: dict | None = None,
+        auto_escape: bool = True,
+        chat_id: str | None = None,
+        reply_to_message_id: str | None = None
+    ) -> Union['msg_update', asyncio.Task['msg_update']]:
+        """reply image / رپیلای تصویر"""
+        return await self._client.send_image(
+            chat_id=Utils.prefer_first(chat_id, self.chat_id),
+            image=image,
+            name_file=name_file,
+            text=text,
+            reply_to_message_id=Utils.prefer_first(reply_to_message_id, self.message_id),
+            disable_notification=disable_notification,
+            auto_delete=auto_delete,
+            parse_mode=parse_mode,
+            meta_data=meta_data,
+            inline_keypad=inline_keypad,
+            keypad=keypad,
+            resize_keyboard=resize_keyboard,
+            on_time_keyboard=on_time_keyboard,
+            upload_by=upload_by,
+            show_progress=show_progress,
+            chunk_size=chunk_size,
+            wait_send=wait_send,
+            return_task=return_task,
+            context=context,
+            auto_escape=auto_escape
+        )
+
+    async def reply_voice(
+        self,
+        voice: str  | Path  | bytes,
+        name_file: str | None = None,
+        text: str | None = None,
+        disable_notification: bool = False,
+        auto_delete: int | None = None,
+        parse_mode: Literal['Markdown', 'HTML', None] = "Markdown",
+        meta_data: list | None = None,
+        inline_keypad: list | None = None,
+        keypad: list | None = None,
+        resize_keyboard: bool | None = True,
+        on_time_keyboard: bool | None = False,
+        upload_by: Literal["aiohttp", "httpx"] = "aiohttp",
+        show_progress: bool = True,
+        chunk_size: int = 64 * 1024,
+        wait_send: float | None = None,
+        return_task: bool = False,
+        context: dict | None = None,
+        auto_escape: bool = True,
+        chat_id: str | None = None,
+        reply_to_message_id: str | None = None
+    ) -> Union['msg_update', asyncio.Task['msg_update']]:
+        """reply voice / رپیلای ویس"""
+        return await self._client.send_voice(
+            chat_id=Utils.prefer_first(chat_id, self.chat_id),
+            voice=voice,
+            name_file=name_file,
+            text=text,
+            reply_to_message_id=Utils.prefer_first(reply_to_message_id, self.message_id),
+            disable_notification=disable_notification,
+            auto_delete=auto_delete,
+            parse_mode=parse_mode,
+            meta_data=meta_data,
+            inline_keypad=inline_keypad,
+            keypad=keypad,
+            resize_keyboard=resize_keyboard,
+            on_time_keyboard=on_time_keyboard,
+            upload_by=upload_by,
+            show_progress=show_progress,
+            chunk_size=chunk_size,
+            wait_send=wait_send,
+            return_task=return_task,
+            context=context,
+            auto_escape=auto_escape
+        )
+
+    async def reply_music(
+        self,
+        music: str  | Path  | bytes,
+        name_file: str | None = None,
+        text: str | None = None,
+        disable_notification: bool = False,
+        auto_delete: int | None = None,
+        parse_mode: Literal['Markdown', 'HTML', None] = "Markdown",
+        meta_data: list | None = None,
+        inline_keypad: list | None = None,
+        keypad: list | None = None,
+        resize_keyboard: bool | None = True,
+        on_time_keyboard: bool | None = False,
+        upload_by: Literal["aiohttp", "httpx"] = "aiohttp",
+        show_progress: bool = True,
+        chat_id: str | None = None,
+        chunk_size: int = 64 * 1024,
+        wait_send: float | None = None,
+        context: dict | None = None,
+        auto_escape: bool = True,
+        return_task: bool = False,
+        reply_to_message_id: str | None = None
+    ) -> Union['msg_update', asyncio.Task['msg_update']]:
+        """reply voice / رپیلای موزیک"""
+        return await self._client.send_music(
+            chat_id=Utils.prefer_first(chat_id, self.chat_id),
+            music=music,
+            name_file=name_file,
+            text=text,
+            reply_to_message_id=Utils.prefer_first(reply_to_message_id, self.message_id),
+            disable_notification=disable_notification,
+            auto_delete=auto_delete,
+            parse_mode=parse_mode,
+            meta_data=meta_data,
+            inline_keypad=inline_keypad,
+            keypad=keypad,
+            resize_keyboard=resize_keyboard,
+            on_time_keyboard=on_time_keyboard,
+            upload_by=upload_by,
+            show_progress=show_progress,
+            chunk_size=chunk_size,
+            wait_send=wait_send,
+            return_task=return_task,
+            context=context,
+            auto_escape=auto_escape
+        )
+
+    
+    async def reply_gif(
+        self,
+        gif: str  | Path  | bytes,
+        name_file: str | None = None,
+        text: str | None = None,
+        disable_notification: bool = False,
+        auto_delete: int | None = None,
+        parse_mode: Literal['Markdown', 'HTML', None] = "Markdown",
+        meta_data: list | None = None,
+        inline_keypad: list | None = None,
+        keypad: list | None = None,
+        resize_keyboard: bool | None = True,
+        on_time_keyboard: bool | None = False,
+        upload_by: Literal["aiohttp", "httpx"] = "aiohttp",
+        show_progress: bool = True,
+        chunk_size: int = 64 * 1024,
+        wait_send: float | None = None,
+        return_task: bool = False,
+        context: dict | None = None,
+        auto_escape: bool = True,
+        chat_id: str | None = None,
+        reply_to_message_id: str | None = None
+    ) -> Union['msg_update', asyncio.Task['msg_update']]:
+        """reply voice / رپیلای گیف"""
+        return await self._client.send_gif(
+            chat_id=Utils.prefer_first(chat_id, self.chat_id),
+            gif=gif,
+            name_file=name_file,
+            text=text,
+            reply_to_message_id=Utils.prefer_first(reply_to_message_id, self.message_id),
+            disable_notification=disable_notification,
+            auto_delete=auto_delete,
+            parse_mode=parse_mode,
+            meta_data=meta_data,
+            inline_keypad=inline_keypad,
+            keypad=keypad,
+            resize_keyboard=resize_keyboard,
+            on_time_keyboard=on_time_keyboard,
+            upload_by=upload_by,
+            show_progress=show_progress,
+            chunk_size=chunk_size,
+            wait_send=wait_send,
+            return_task=return_task,
+            context=context,
+            auto_escape=auto_escape
+        )
+
+    async def reply_video(
+        self,
+        video: str  | Path  | bytes,
+        name_file: str | None = None,
+        text: str | None = None,
+        disable_notification: bool = False,
+        auto_delete: int | None = None,
+        parse_mode: Literal['Markdown', 'HTML', None] = "Markdown",
+        meta_data: list | None = None,
+        inline_keypad: list | None = None,
+        keypad: list | None = None,
+        resize_keyboard: bool | None = True,
+        on_time_keyboard: bool | None = False,
+        upload_by: Literal["aiohttp", "httpx"] = "aiohttp",
+        show_progress: bool = True,
+        chunk_size: int = 64 * 1024,
+        wait_send: float | None = None,
+        return_task: bool = False,
+        context: dict | None = None,
+        auto_escape: bool = True,
+        chat_id: str | None = None,
+        reply_to_message_id: str | None = None
+    ) -> Union['msg_update', asyncio.Task['msg_update']]:
+        """reply voice / رپیلای ویدیو"""
+        return await self._client.send_video(
+            chat_id=Utils.prefer_first(chat_id, self.chat_id),
+            video=video,
+            name_file=name_file,
+            text=text,
+            reply_to_message_id=Utils.prefer_first(reply_to_message_id, self.message_id),
+            disable_notification=disable_notification,
+            auto_delete=auto_delete,
+            parse_mode=parse_mode,
+            meta_data=meta_data,
+            inline_keypad=inline_keypad,
+            keypad=keypad,
+            resize_keyboard=resize_keyboard,
+            on_time_keyboard=on_time_keyboard,
+            upload_by=upload_by,
+            show_progress=show_progress,
+            chunk_size=chunk_size,
+            wait_send=wait_send,
+            return_task=return_task,
+            context=context,
+            auto_escape=auto_escape
+        )
+
+    async def forward(
+        self,
+        to_chat_id: str,
+        auto_delete: int | None = None,
+        wait_send: float | None = None,
+        return_task: bool = False,
+        from_chat_id: str | None = None,
+        message_id: str | None = None
+    ) -> Union['msg_update', asyncio.Task['msg_update']]:
+        """forward / فوروارد"""
+        return await self._client.forward_message(
+            from_chat_id=Utils.prefer_first(from_chat_id, self.chat_id),
+            message_id=Utils.prefer_first(message_id, self.message_id),
+            to_chat_id=to_chat_id,
+            auto_delete=auto_delete,
+            wait_send=wait_send,
+            return_task=return_task
+        )
+
+    async def download(
+        self,
+        path : str = "file",
+        file_id: str | None = None,
+        show_progress: bool = True,
+        wait_send: float | None = None,
+        return_task: bool = False,
+    ) -> None:
+        """download / دانلود"""
+        final_id = file_id or self.file_id
+        if final_id is None:
+            raise TypeError("Message is not file and you not got the file_id Arg.")
+        await self._client.download_file(
+            id_file=final_id,
+            path=path,
+            show_progress=show_progress,
+            wait_send=wait_send,
+            return_task=return_task
+        )
+    
+    async def get_download_file_url(
+        self,
+        file_id: str | None = None,
+        wait_send: float | None = None,
+        return_task: bool = False,
+    ) -> str | None | asyncio.Task[str | None]:
+        """getting url download file / گرفتن لینک دانلود فایل"""
+        final_id = file_id or self.file_id
+        if final_id is None:
+            raise TypeError("Message is not file and you not got the file_id Arg.")
+        return await self._client.get_download_file_url(
+            id_file=final_id,
+            wait_send=wait_send,
+            return_task=return_task
+        )
+
+    async def delete(
+        self,
+        wait_send: float | None = None,
+        return_task: bool = False,
+        chat_id: str | None = None,
+        message_id: str | None = None
+    ) -> props | asyncio.Task[props]:
+        """delete / حذف"""
+        return await self._client.delete_message(
+            chat_id=Utils.prefer_first(chat_id, self.chat_id),
+            message_id=Utils.prefer_first(message_id, self.message_id),
+            wait_send=wait_send,
+            return_task=return_task
+        )
+    
+    async def ban(
+        self,
+        wait_send: float | None = None,
+        return_task: bool = False,
+        chat_id: str | None = None,
+        user_id: str | None = None
+    ):
+        """ban user / بن کاربر"""
+        return await self._client.ban_chat_member(
+            chat_id=Utils.prefer_first(chat_id, self.chat_id),
+            user_id=Utils.prefer_first(user_id, self.sender_id),
+            wait_send=wait_send,
+            return_task=return_task
+        )
+    
+    async def unban(
+        self,
+        wait_send: float | None = None,
+        return_task: bool = False,
+        chat_id: str | None = None,
+        user_id: str | None = None
+    ):
+        """un ban user / آنبن کاربر"""
+        return await self._client.unban_chat_member(
+            chat_id=Utils.prefer_first(chat_id, self.chat_id),
+            user_id=Utils.prefer_first(user_id, self.sender_id),
+            wait_send=wait_send,
+            return_task=return_task
+        )
+
+    async def ban_reply(
+        self,
+        wait_send: float | None = None,
+        return_task: bool = False,
+        chat_id: str | None = None,
+    ):
+        if not self.reply_to_message_id:
+            return None
+        msg = await self._client.get_message(
+            chat_id=Utils.prefer_first(chat_id, self.chat_id),
+            message_id=self.reply_to_message_id
+        )
+        if not msg:
+            return None
+        return await self._client.ban_chat_member(
+            chat_id=self.chat_id,
+            user_id=msg.sender_id,
+            wait_send=wait_send,
+            return_task=return_task
+        )
+
+    async def unban_reply(
+        self,
+        wait_send: float | None = None,
+        return_task: bool = False,
+        chat_id: str | None = None
+    ):
+        if not self.reply_to_message_id:
+            return None
+        msg = await self._client.get_message(
+            chat_id=Utils.prefer_first(chat_id, self.chat_id),
+            message_id=self.reply_to_message_id
+        )
+        if not msg:
+            return None
+        return await self._client.unban_chat_member(
+            chat_id=self.chat_id,
+            user_id=msg.sender_id,
+            wait_send=wait_send,
+            return_task=return_task
+        )
+
+    async def get_reply(
+        self,
+        chat_id: str | None = None,
+        message_id: str | None = None
+    ):
+        """get message replyed / گرفتن پیام ریپلای شده"""
+        if not self.is_reply:
+            return None
+        msg = await self._client.get_message(
+            chat_id=Utils.prefer_first(chat_id, self.chat_id),
+            message_id=Utils.prefer_first(message_id, self.reply_to_message_id)
+        )
+        return msg
+    
+    async def resend_message(
+        self,
+        to_chat_id: str | None = None,
+        auto_delete: int | None = None,
+        parse_mode: Literal['Markdown', 'HTML'] = "Markdown",
+        meta_data: list = [],
+        name_save_file: str | None = None,
+        show_progress: bool = True,
+        chunk_size: int = 64 * 1024,
+        wait_send: float | None = None,
+        return_task: bool = False,
+        context: dict | None = None,
+        auto_escape: bool = True,
+    ):
+        to_chat_id = to_chat_id if to_chat_id else self.chat_id
+        return await self._client.resend_message(
+            message_id=self.message_id,
+            from_chat_id=self.chat_id,
+            to_chat_id=to_chat_id,
+            auto_delete=auto_delete,
+            parse_mode=parse_mode,
+            meta_data=meta_data,
+            name_save_file=name_save_file,
+            show_progress=show_progress,
+            chunk_size=chunk_size,
+            wait_send=wait_send,
+            return_task=return_task,
+            context=context,
+            auto_escape=auto_escape
+        )
+    
+    copy_message = resend_message
+
+    def to_dict(
+        self
+    ) -> dict:
+        """convert Update to Dict / تبدیل آپدیت به دیکشنری"""
+        if isinstance(self._data, props):
+            self._data = dict(self._data.to_dict())
+        if self.file_name:
+            self._data['file']['type'] = self.type_file
+        self._data["sender_type"] = self.sender_type
+        return self._data
+    
+    def get(
+        self,
+        key: str,
+        defult = None
+    ):
+        try:
+            return self.raw_data_[key]
+        except:
+            try:
+                return self._data[key]
+            except:
+                return defult
+    
+    def __setitem__(
+        self,
+        key,
+        value
+    ):
+        self.raw_data_[key] = value
+    
+    def __getitem__(
+        self,
+        key
+    ):
+        result = self.get(key)
+        if not result:
+            raise KeyError(f"The {key} has not in datas .")
+        return result
+
+    def __str__(self) -> str:
+        return json.dumps(
+            self.to_dict(),
+            indent=4,
+            ensure_ascii=False
+        )
+
+    def __repr__(self) -> str:
+        return self.__str__()
+
+
+wrap_all_async_methods(Update)
+
+Message = Update
+Updates = Update
