@@ -1,7 +1,7 @@
 import json
 from typing import Optional, Dict, Any, List
 from .database import DataBase
-from ..type.update import Message
+from ..types.update import Message
 
 SUFFIX = "db.faru"
 
@@ -12,7 +12,7 @@ class MessageKeeper:
     def __init__(self, db_path: str, number_keeper: int):
         self.db_path = self._make_path(db_path)
         self.number_keeper = number_keeper
-        self._db: Optional[DataBase] = None
+        self._db: DataBase | None = None
 
     def _make_path(self, name: str) -> str:
         return f"{name}.{SUFFIX}"
@@ -106,7 +106,7 @@ class MessageKeeper:
         await db_raw.close()
         return row[0] if row else 0
 
-    async def find_message(self, chat_id: str, message_id: str) -> Optional[Dict[str, Any]]:
+    async def find_message(self, chat_id: str, message_id: str) -> dict[str, Any] | None:
         """جستجوی پیام بر اساس chat_id و message_id"""
         db = await self._get_db()
         result = await db.find("message_storage", "data", {
@@ -117,13 +117,13 @@ class MessageKeeper:
             return json.loads(result if isinstance(result, str) else result[0])
         return None
 
-    async def find_all_messages(self, chat_id: str) -> List[Dict[str, Any]]:
+    async def find_all_messages(self, chat_id: str) -> list[dict[str, Any]]:
         """دریافت تمام پیام‌های یک چت"""
         db = await self._get_db()
         rows = await db.find_all("message_storage", "data", {"chat_id": chat_id})
         return [json.loads(row[0]) for row in rows]
 
-    async def find_recent_messages(self, chat_id: str, limit: int = 10) -> List[Dict[str, Any]]:
+    async def find_recent_messages(self, chat_id: str, limit: int = 10) -> list[dict[str, Any]]:
         """دریافت آخرین پیام‌های یک چت"""
         db = await self._get_db()
         rows = await db.find_all(
@@ -143,7 +143,7 @@ class MessageKeeper:
             "message_id": message_id,
         })
 
-    async def count_messages(self, chat_id: Optional[str] = None) -> int:
+    async def count_messages(self, chat_id: str | None = None) -> int:
         """شمارش تعداد پیام‌ها"""
         db = await self._get_db()
         if chat_id:

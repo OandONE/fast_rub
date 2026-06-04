@@ -11,12 +11,12 @@ SUFFIX = "faru"
 class SessionData:
     """کلاس داده‌ای برای نگهداری مقادیر session"""
     token: str
-    user_agent: Optional[str] = None
-    time_out: Optional[float] = None
+    user_agent: str | None = None
+    time_out: float | None = None
     display_welcome: bool = False
     view_logs: bool = False
     save_logs: bool = False
-    offset_id: Optional[str] = None
+    offset_id: str | None = None
     save_offset_id: bool = True
 
 
@@ -47,19 +47,19 @@ class Session:
         self._data.token = value
 
     @property
-    def user_agent(self) -> Optional[str]:
+    def user_agent(self) -> str | None:
         return self._data.user_agent
 
     @user_agent.setter
-    def user_agent(self, value: Optional[str]) -> None:
+    def user_agent(self, value: str | None) -> None:
         self._data.user_agent = value
 
     @property
-    def time_out(self) -> Optional[float]:
+    def time_out(self) -> float | None:
         return self._data.time_out
 
     @time_out.setter
-    def time_out(self, value: Optional[float]) -> None:
+    def time_out(self, value: float | None) -> None:
         self._data.time_out = value
 
     @property
@@ -91,7 +91,7 @@ class Session:
         return self._data.offset_id if self._data.offset_id else ""
 
     @offset_id.setter
-    def offset_id(self, value: Optional[str]) -> None:
+    def offset_id(self, value: str | None) -> None:
         self._data.offset_id = value
 
     @property
@@ -108,14 +108,14 @@ class Session:
     async def open(
         cls,
         name: str,
-        token: Optional[str] = None,
-        user_agent: Optional[str] = None,
-        time_out: Optional[float] = None,
-        display_welcome: Optional[bool] = None,
-        view_logs: Optional[bool] = None,
-        save_logs: Optional[bool] = None,
-        offset_id: Optional[str] = None,
-        save_offset_id: Optional[bool] = None,
+        token: str | None = None,
+        user_agent: str | None = None,
+        time_out: float | None = None,
+        display_welcome: bool | None = None,
+        view_logs: bool | None = None,
+        save_logs: bool | None = None,
+        offset_id: str | None = None,
+        save_offset_id: bool | None = None,
     ) -> "Session":
         path = cls._make_path(name)
 
@@ -148,14 +148,14 @@ class Session:
     async def create(
         cls,
         name: str,
-        token: Optional[str] = None,
-        user_agent: Optional[str] = None,
-        time_out: Optional[float] = None,
-        display_welcome: Optional[bool] = None,
-        view_logs: Optional[bool] = None,
-        save_logs: Optional[bool] = None,
-        offset_id: Optional[str] = None,
-        save_offset_id: Optional[bool] = None,
+        token: str | None = None,
+        user_agent: str | None = None,
+        time_out: float | None = None,
+        display_welcome: bool | None = None,
+        view_logs: bool | None = None,
+        save_logs: bool | None = None,
+        offset_id: str | None = None,
+        save_offset_id: bool | None = None,
     ) -> "Session":
         if token is None:
             token = input("Write The Token: ")
@@ -219,14 +219,14 @@ class Session:
     async def _open_existing(
         cls,
         name: str,
-        token: Optional[str] = None,
-        user_agent: Optional[str] = None,
-        time_out: Optional[float] = None,
-        display_welcome: Optional[bool] = None,
-        view_logs: Optional[bool] = None,
-        save_logs: Optional[bool] = None,
-        offset_id: Optional[str] = None,
-        save_offset_id: Optional[bool] = None,
+        token: str | None = None,
+        user_agent: str | None = None,
+        time_out: float | None = None,
+        display_welcome: bool | None = None,
+        view_logs: bool | None = None,
+        save_logs: bool | None = None,
+        offset_id: str | None = None,
+        save_offset_id: bool | None = None,
     ) -> "Session":
         path = cls._make_path(name)
         db = DataBase(path)
