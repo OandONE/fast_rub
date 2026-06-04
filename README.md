@@ -1,401 +1,220 @@
-<img src="https://fast-rub.ParsSource.ir/icon.jpg">
+<p align="center">
+  <img src="https://fast-rub.ParsSource.ir/icon.jpg" width="200" alt="Fast Rub">
+</p>
 
-# Fast Rub - فست روب
+<h1 align="center">Fast Rub ⚡</h1>
+<p align="center"><strong>سریع‌ترین کتابخانهٔ ساخت ربات روبیکا برای پایتون</strong></p>
 
-This is where FastRub combines speed, power, and efficiency, allowing you to write the best Rubika bots. 🔥
-اینجاست که فست روب سرعت، قدرت و بهینه بودن رو با هم ترکیب کرده تا بهترین ربات های روبیکا رو بنویسی 🔥
+<p align="center">
+  <a href="https://pypi.org/project/fastrub/"><img src="https://img.shields.io/pypi/v/fastrub?color=blue" alt="PyPI"></a>
+  <a href="https://pypi.org/project/fastrub/"><img src="https://img.shields.io/pypi/pyversions/fastrub" alt="Python"></a>
+  <a href="https://github.com/OandONE/fast_rub/blob/main/LICENSE"><img src="https://img.shields.io/github/license/OandONE/fast_rub" alt="License"></a>
+</p>
 
-## Fast Rub - فست روب
+---
 
-- 1 The fastest Rubika robots library for Python - سریع ترین کتابخانه ربات های روبیکا پایتون
-- 2 power - قدرت
-- 3 efficiency - بهینه بودن
+## ✨ ویژگی‌های کلیدی
 
-## install - نصب :
+- ⚡ **سرعت بالا** — استفاده از `httpx` با HTTP/2 و معماری غیرهمزمان (async)
+- 🧠 **WaitManager** — مدیریت هوشمند ترافیک برای جلوگیری از برخورد با محدودیت نرخ روبیکا
+- 🔍 **بیش از ۲۰۰ فیلتر** — آماده برای پیام، دکمه، فرستنده، نوع چت و...
+- 💬 **مکالمهٔ چندمرحله‌ای** — بدون درگیری با منطق پیچیده
+- 🪶 **فوق‌العاده سبک** — کاملا بهینه شده
+- 🔌 **Middleware و افزونه‌پذیری** — معماری قابل توسعه
+
+---
+
+## 📥 نصب
 
 ```bash
-pip install --upgrade fastrub
+pip install fastrub
 ```
 
-## نحوه نصب در صورت ملی بودن اینترنت از میرور رانفلر :
+در صورت قطع شدن میرور اصلی PyPI:
+
 ```bash
 pip install -i https://mirror-pypi.runflare.com/simple fastrub
 ```
 
-# [Documents - مستندات کامل](https://fast-rub.ParsSource.ir/index.html)
+---
 
-## [GitHub - گیت هاب](https://github.com/OandONE/fast_rub)
+🚀 شروع سریع
 
-## [PyPI - پای پی آی](https://pypi.org/project/fastrub)
-
-
-<h3><div style="color: blue;">نکته در مورد قسمت یوزر بات کتابخانه :
-قسمت PyRubi این کتابخانه فورک کتابخانه <a href="https://github.com/AliGanji1/pyrubi">پایروبی</a> است</div></h3>
-
-## توضیحات کوتاه(توضیحات کامل در مستندات)
-
-### گرفتن آپدیت پیام ها - پولینگ
-```python
-from fast_rub import Client
-from fast_rub.type import Update
-import asyncio
-
-async def robot():
-  bot = Client("name_session", run_start=False)
-
-  await bot.start()
-
-  @bot.on_message()
-  async def getting(message:Update):
-      await message.reply("__Hello__ *from* **FastRub** !")
-
-  await bot.run()
-
-asyncio.run(robot())
-```
-
-### گرفتن کلیک های دکمه های اینلاین(شیشه ای)
-```python
-from fast_rub import Client
-from fast_rub.type import UpdateButton
-import asyncio
-
-async def robot():
-  bot = Client("name_session", run_start=False)
-  # در صورتی که میخواید از endpoint خودتون استفاده کنید » 
-  # url_webhook_on_button = "https://..."
-  # bot = Client("name_session", use_to_fastrub_webhook_on_button = url_webhook_on_button)
-
-  await bot.start()
-
-  @bot.on_button()
-  async def getting(message: UpdateButton):
-    print(f"""button id » {message.button_id}
-text » {message.text}
-chat id » {message.chat_id}
-message id » {message.message_id}
-sender_id » {message.sender_id}
-
-====================""")
-
-  await bot.run()
-
-asyncio.run(robot())
-```
-
-## سایر دستورات
-
-### ارسال KeyPad
-```python
-from fast_rub import Client
-from fast_rub.button import KeyPad
-import asyncio
-
-async def setting():
-    bot = Client("test", run_start=False)
-
-    await bot.start()
-
-    button = KeyPad()
-    button.append(
-        button.simple("button id 1", "text 1")
-    )
-    button.append(
-        button.simple("button id 2", "text 2"),
-        button.simple("button id 3", "text 3")
-    )
-    await bot.send_text("test KeyPad", keypad=button.get())
-
-asyncio.run(setting())
-```
-
-### ارسال KeyPad Inline
-```python
-from fast_rub import Client
-from fast_rub.button import KeyPad
-import asyncio
-
-async def setting():
-    bot = Client("test", run_start=False)
-
-    await bot.start()
-
-    button = KeyPad()
-    button.append(
-        button.simple("button id 1", "text 1")
-    )
-    button.append(
-        button.simple("button id 2", "text 2"),
-        button.simple("button id 3", "text 3")
-    )
-    await bot.send_text("test KeyPad", inline_keypad=button.get())
-
-asyncio.run(setting())
-```
-
-## ارسال فایل
-
-### ارسال فایل
-```python
-from fast_rub import Client
-import asyncio
-
-async def send_file():
-    chat_id = "b..."
-    file = "..."
-    text = None
-
-    bot = Client("test", run_start=False)
-
-    await bot.start()
-
-    await bot.send_file(chat_id,file,text=text)
-
-asyncio.run(send_file())
-```
-
-### ارسال بقیه رسانه ها
-```python
-from fast_rub import Client
-import asyncio
-
-bot = Client("test")
-
-async def send_medias():
-    chat_id = "b..."
-    image = "..."
-    video = "..."
-    voice = "..."
-    text = None
-
-    bot = Client("test", run_start=False)
-
-    await bot.start()
-
-    await bot.send_image(chat_id,image,text=text)
-    await bot.send_video(chat_id,video,text=text)
-    await bot.send_voice(chat_id,video,text=text)
-
-asyncio.run(send_medias())
-```
-
-### ارسال استیکر
+دریافت پیام‌ها - پولینگ
 
 ```python
-from fast_rub import Client
 import asyncio
+from fast_rub import Client, filters
+from fast_rub.types import Update
 
-bot = Client("test")
-
-chat_id = "b..."
-id_sticker = "..."
-
-
-async def send_sticker():
-    chat_id = "b..."
-    id_sticker = "..."
-
-    bot = Client("test", run_start=False)
+async def main():
+    bot = Client("my_bot")
 
     await bot.start()
     
-    await bot.send_sticker(chat_id,id_sticker)
-
-asyncio.run(send_sticker())
-```
-
-## دانلود
-
-### دانلود فایل
-```python
-from fast_rub import Client
-import asyncio
-
-async def download_file():
-    id_file = "..."
-    path_save = "test.bin"
-
-    bot = Client("test", run_start=False)
-
-    await bot.start()
-
-    await bot.download_file(id_file,path_save)
-
-asyncio.run(download_file())
-```
-
-## کلاس های Update و UpdateButton
-
-### کلاس Update
-
-### پراپرتی ها
-
-<li>text - متن پیام</li>
-<li>message_id - آیدی پیام</li>
-<li>chat_id - چت آیدی</li>
-<li>time - زمان ارسال پیام</li>
-<li>sender_type - نوع ارسال کننده پیام</li>
-<li>sender_id - ارسال کننده پیام</li>
-<li>is_edited - وضعیت ویرایش شدن پیام</li>
-
-### متود ها
-
-ریپلای پیام
-
-`reply(
-text: Optional[str] = None,
-keypad_inline: Optional[list] = None,
-inline_keypad: Optional[list] = None,
-keypad: Optional[list] = None,
-resize_keyboard: bool | None = True,
-on_time_keyboard: bool | None = False,
-auto_delete: Optional[int] = None,
-parse_mode: Literal['Markdown', 'HTML', None] = "Markdown",
-meta_data: Optional[list] = None,
-file: Union[str , Path , bytes , None] = None,
-name_file: Optional[str] = None,
-type_file: Literal["File", "Image", "Voice", "Music", "Gif" , "Video"] = "File",
-file_id: Optional[str] = None,
-show_progress: bool = True,
-question: Optional[str] = None,
-options: Optional[list] = None,
-type_poll: Literal["Regular", "Quiz"] = "Regular",
-is_anonymous: bool = True,
-correct_option_index: Optional[int] = None,
-allows_multiple_answers: bool = False,
-hint: Optional[str] = None,
-latitude: Optional[str] = None,
-longitude: Optional[str] = None,
-first_name: Optional[str] = None,
-last_name: Optional[str] = None,
-phone_number: Optional[str] = None,  
-chat_id: Optional[str] = None,
-reply_to_message_id: Optional[str] = None
-)`
-
-### کلاس UpdateButton
-
-### پراپرتی ها
-
-<li>button_id - آیدی دکمه کلیک شده</li>
-<li>chat_id - چت آیدی</li>
-<li>message_id - آیدی پیام</li>
-<li>sender_id - ارسال کننده</li>
-<li>text - متن دکمه</li>
-
-### متود ها
-
-ارسال متن
-
-`send_text(text:str,keypad:dict:Optional[list] = None,keypad: Optional[list] = None,
-resize_keyboard: Optional[bool] = True,
-on_time_keyboard: Optional[bool] = False,auto_delete: Optional[int] = None,reply_to_message_id: Optional[str] = None,parse_mode: Literal['Markdown', 'HTML'] = "Markdown")`
-
-## فیلتر های دکوراتور on_message و on_message_updates
-
-نحوه استفاده »
-
-```python
-from fast_rub import Client, filters
-from fast_rub.type import Update
-import asyncio
-
-async def robot():
-    bot = Client("test", run_start=False)
-
-    await bot.start()
-
-    @bot.on_message(filters.text("تست"))
-    async def test_filters(msg: Update):
-        await msg.reply("__hello__ *from* **fast_rub**")
+    @bot.on_message(filters.text("سلام"))
+    async def say_hello(msg: Update):
+        await msg.reply("**سلام** از طرف فست روب ⚡")
     
     await bot.run()
 
-asyncio.run(robot())
+asyncio.run(main())
 ```
 
-### فیلتر ها
-
-متن
-
-`text(pattern: str)`
-
-ارسال کننده
-
-`sender_id(user_id: str)`
-
-کاربر بودن
-
-`is_user()`
-
-گروه بودن
-
-`is_group()`
-
-کانال بودن
-
-`is_channel()`
-
-برقراری تمامی فیلتر ها
-
-`and_filter(*filters)`
-
-برقراری یکی از فیلتر ها
-
-`or_filter(*filters)`
-
-برقرار نبودن فیلتر
-
-`not_filter(filter)`
-
-#### ساخت فیلتر سفارشی
+کلیک روی دکمه‌های inline
 
 ```python
-from fast_rub import Client, filters
-from fast_rub.type import Update
 import asyncio
+from fast_rub import Client
+from fast_rub.types import UpdateButton
 
-# Sync
-class sticker_emoji_filter(filters.Filter):
-    """فیلتر تشخیص ایموجی استیکر"""
-    def __init__(self, sticker_emoji_character: str):
-        self.sticker_emoji_character = sticker_emoji_character
+async def main():
+    bot = Client("my_bot")
+
+    await bot.start()
+    
+    @bot.on_button()
+    async def button_click(msg: UpdateButton):
+        await msg.send_text(f"دکمهٔ {msg.button_id} فشرده شد")
+    
+    await bot.run()
+
+asyncio.run(main())
+```
+
+---
+
+🧠 مدیریت هوشمند ترافیک (WaitManager)
+
+یکی از قدرتمندترین بخش‌های فست روب WaitManager است.
+این ماژول با ردیابی تعداد درخواست‌های شما در کانال‌های جداگانه (ارسال، بن، فوروارد، آپلود و...) و در بازه‌های زمانی مشخص، به‌صورت خودکار فاصلهٔ زمانی مورد نیاز قبل از هر درخواست را محاسبه می‌کند تا ربات شما بدون برخورد با محدودیت نرخ روبیکا، با حداکثر سرعت ایمن کار کند.
+
+یک مثال ساده
+
+```python
+from fast_rub import WaitManager
+
+# تنظیم پارامترهای ترافیک
+wm = WaitManager(
+    low_traffic=60,       # ترافیک کم: تا ۶۰ درخواست در هر پنجرهٔ زمانی
+    medium_traffic=100,   # ترافیک متوسط: ۶۰ تا ۱۰۰ درخواست
+    low_wait=0.0,         # بدون تأخیر در ترافیک کم
+    medium_wait=1.0,      # یک ثانیه تأخیر در ترافیک متوسط
+    high_wait=3.0,        # سه ثانیه تأخیر در ترافیک بالا
+    time_window=60.0,     # اندازهٔ پنجرهٔ زمانی (ثانیه)
+    per_chat=True,        # محاسبه به‌ازای هر چت
+)
+
+# قبل از ارسال پیام، تأخیر لازم را بگیرید
+delay = wm.get_time(channel="sending", chat_id=chat_id)
+await asyncio.sleep(delay)
+
+# پس از ارسال، ترافیک را ثبت کنید
+wm.add_traffic(channel="sending", chat_id=chat_id)
+```
+
+کانال‌های قابل ردیابی
+
+می‌توانید برای هر نوع عملیات یک کانال جداگانه تعریف کنید:
+
+· sending (ارسال پیام)
+· banning (اخراج)
+· forwarding (بازنشر)
+· uploading (آپلود)
+· editing (ویرایش)
+· deleting (حذف)
+
+---
+
+⌨️ ساختن کیبورد
+
+کیبورد معمولی (Reply)
+
+```python
+from fast_rub.button import KeyPad
+
+keypad = KeyPad()
+keypad.append(keypad.simple("btn_1", "دکمه یک"))
+keypad.append(keypad.simple("btn_2", "دکمه دو"), keypad.simple("btn_3", "دکمه سه"))
+
+await msg.reply("لطفاً انتخاب کنید:", keypad=keypad.build())
+```
+
+کیبورد شیشه‌ای (Inline)
+
+```python
+keypad.append(keypad.simple("callback_1", "کلیک کن"))
+
+await msg.reply("انتخاب کنید:", inline_keypad=keypad.build())
+```
+
+---
+
+🔍 فیلترها
+
+فست روب با بیش از ۲۰۰ فیلتر آماده ارائه می‌شود:
+
+```python
+from fast_rub import filters
+
+@bot.on_message(filters.text("تست"))
+async def handler(msg: Update):
+    ...
+```
+
+ترکیب فیلترها:
+
+· filters.and_filter(f1, f2) — هر دو شرط برقرار باشد
+· filters.or_filter(f1, f2) — حداقل یکی برقرار باشد
+· filters.not_filter(f1) — شرط برقرار نباشد
+
+فیلتر سفارشی(اسنک و سینک)
+
+```python
+class MyFilter(filters.Filter):
     def __call__(self, update: Update) -> bool:
-        return str(update.sticker_emoji_character) == self.sticker_emoji_character
+        return "خاص" in update.text
 
-# Async
-import database as db # مثال
-class is_admin_filter(filters.AsyncFilter):
-    """فیلتر ادمین بودن کاربر"""
-    async def __acall__(self, update: Update) -> bool:
-        return bool(
-            await db.exists(
-                "admins",
-                {
-                    "chat_id": update.chat_id
-                }
-            )
-        )
-
-async def robot():
-    bot = Client("test", run_start=False)
-
-    await bot.start()
-
-    @bot.on_message(sticker_emoji_filter("😂"))
-    async def test_filter1(msg: Update):
-        await msg.reply("خخخ")
-    
-    @bot.on_message(is_admin_filter())
-    async def test_filter2(msg: Update):
-        await msg.reply("شما ادمین میباشید")
-    
-    await bot.run()
-
-asyncio.run(robot())
+@bot.on_message(MyFilter())
+async def handler(msg: Update):
+    ...
 ```
 
+---
 
+📁 ساختار پروژه
 
-<hr>
-<h1>Seyyed Mohamad Hosein Moosavi (01)</h1>
+```
+fast_rub/
+├── core/           # هستهٔ فریم‌ورک (کلاینت، میدلور، پلاگین‌ها و...)
+├── pyrubi/         # یوزر بات (fork از کتابخانهٔ pyrubi)
+├── types/          # تایپ‌های Update، Message، Button و...
+├── utils/          # WaitManager، فیلترها، کش، لاگر و...
+├── db/             # رابط پایگاه داده
+├── button/         # ابزار ساخت کیبورد
+└── network/        # تنظیمات شبکه و HTTP
+```
+
+---
+
+📚 مستندات کامل
+
+· [مستندات رسمی - سایت اصلی](https://fast-rub.ParsSource.ir/docs)
+· [مستندات رسمی - گیتهاب](https://fast-rub.ParsSource.ir/docs)
+
+· [گیت‌هاب](https://GitHub.com/OandONE/fast_rub)
+
+· [صفحهٔ PyPI](https://PyPI.org/project/fastrub)
+
+---
+
+⚠️ نکته
+
+بخش pyrubi در این کتابخانه، فورکی از پروژهٔ AliGanji1/pyrubi است که برای قسمت یوزر بات این پروژه استفاده شده
+
+---
+
+<p align="center">ساخته‌شده با ❤️ توسط سید محمد حسین موسوی رجا - OandONE</p>
+```
+
+---
