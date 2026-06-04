@@ -3,7 +3,7 @@ import logging
 import asyncio
 if TYPE_CHECKING:
     from .client import Client
-    from ..type import WebhookConfig
+    from ..types import WebhookConfig
 
 
 class WebhookServer:
@@ -13,7 +13,7 @@ class WebhookServer:
         self,
         client: "Client",
         config: 'WebhookConfig',
-        logger: Optional[logging.Logger] = None
+        logger: logging.Logger | None = None
     ):
         self.client = client
         self.config = config
@@ -21,6 +21,8 @@ class WebhookServer:
         backend = config.backend
         self.backend = backend
         self._server = None
+
+        self._loop: asyncio.AbstractEventLoop | None = None
         
         if backend == "fastapi":
             try:
@@ -109,7 +111,6 @@ class WebhookServer:
         from flask import request, jsonify
         
         if self.config.use_token_in_url:
-            # با توکن توی URL
             @self.app.post(f"{self.config.path_prefix}/message/<token>")
             def webhook_message_with_token(token):
                 if token != self.client.token:
@@ -162,6 +163,11 @@ class WebhookServer:
             self.logger.error(f"❌ خطا در پردازش Webhook: {e}")
             return JSONResponse({"status": "error", "detail": str(e)}, status_code=500)
     
+    def _get_or_create_loop(self) -> asyncio.AbstractEventLoop:
+        if self._loop is None or self._loop.is_closed():
+            self._loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(self._loop)
+        return self._loop
     
     def _handle_webhook_flask(self, request, endpoint_type: str):
         """پردازش وب‌هوک — نسخه Flask"""
@@ -171,14 +177,13 @@ class WebhookServer:
             data = request.get_json()
             self.logger.debug(f"📩 Webhook دریافت شد: {endpoint_type}")
             
-            loop = asyncio.new_event_loop()
+            loop = self._get_or_create_loop()
             
             if endpoint_type == "ReceiveInlineMessage":
                 loop.run_until_complete(self.client._process_button_push(data))
             else:
                 loop.run_until_complete(self.client._process_webhook_push(data, endpoint_type))
             
-            loop.close()
             return jsonify({"status": "ok"})
         
         except Exception as e:

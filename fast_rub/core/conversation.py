@@ -1,4 +1,6 @@
-from typing import Dict, Callable, Optional, List
+from typing import Dict, Optional, List
+
+from collections.abc import Callable
 from ..types import Update
 from .client import Client
 from ..utils.filters import Filter
@@ -14,11 +16,11 @@ class Conversation:
         timeout: float = 300.0
     ):
         self.name = name
-        self._states: Dict[str, Callable] = {}
-        self._entry_handler: Optional[Callable] = None
+        self._states: dict[str, Callable] = {}
+        self._entry_handler: Callable | None = None
         self._entry_filters = None
-        self._user_states: Dict[str, str] = {}
-        self._user_data: Dict[str, dict] = {}
+        self._user_states: dict[str, str] = {}
+        self._user_data: dict[str, dict] = {}
         self.timeout = timeout
         self._user_timers: dict[str, asyncio.Task] = {}
     
@@ -35,9 +37,9 @@ class Conversation:
     
     def entry(
         self,
-        commands: Optional[list] = None,
-        text: Optional[str] = None,
-        filters: Optional[Filter] = None
+        commands: list | None = None,
+        text: str | None = None,
+        filters: Filter | None = None
     ):
         """دکوراتور برای نقطه ورود مکالمه."""
         def decorator(func):
@@ -53,7 +55,7 @@ class Conversation:
     def _is_entry(self, update: Update) -> bool:
         if not self._entry_filters:
             return False
-        commands: Optional[List[str]] = self._entry_filters.get("commands")
+        commands: list[str] | None = self._entry_filters.get("commands")
         text = self._entry_filters.get("text")
         filters = self._entry_filters.get("filters")
         if filters is not None:
@@ -129,7 +131,7 @@ class Conversation:
 class ConversationManager:
     """مدیریت چندین مکالمه همزمان"""
     def __init__(self):
-        self._conversations: Dict[str, Conversation] = {}
+        self._conversations: dict[str, Conversation] = {}
     
     def add(
         self,

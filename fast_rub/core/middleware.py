@@ -1,13 +1,15 @@
-from typing import Callable, Optional
+from typing import Optional
+
+from collections.abc import Callable
 from ..utils.filters import Filter
-from ..type import Update
+from ..types import Update
 
 import logging
 
 class MiddlewareManager:
     def __init__(
         self,
-        logger: Optional[logging.Logger] = None
+        logger: logging.Logger | None = None
     ):
         self._middlewares: list = []
         self.logger = logger if logger else logging.Logger("Middleware.Fast_Rub")
@@ -15,7 +17,7 @@ class MiddlewareManager:
     def add(
         self,
         middleware: Callable,
-        filters: Optional[Filter] = None
+        filters: Filter | None = None
     ):
         """اضافه کردن Middleware"""
         self._middlewares.append({
@@ -38,7 +40,7 @@ class MiddlewareManager:
             chain = self._wrap_middleware(middleware_func, filters, chain)
         await chain(update)
     
-    def _wrap_middleware(self, middleware: Callable, filters: Optional[Filter], next_handler: Callable):
+    def _wrap_middleware(self, middleware: Callable, filters: Filter | None, next_handler: Callable):
         async def wrapped(update):
             if filters is not None:
                 try:

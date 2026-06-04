@@ -12,7 +12,7 @@ class PluginManager:
     def load(
         client: "Client",
         folder: str = "plugins",
-        logger: Optional[logging.Logger] = None
+        logger: logging.Logger | None = None
     ) -> int:
         """لود کردن همه پلاگین‌ها از یه پوشه."""
         log = logger or logging.getLogger("fast_rub.plugins")
@@ -47,6 +47,11 @@ class PluginManager:
                         module.setup(client)
                         loaded += 1
                         log.info(f"✅ پلاگین لود شد: {plugin_name}")
+                        log.warning(
+                            "⚠️ پلاگین '%s' از منبع خارجی لود شد. پلاگین‌ها به کلاینت دسترسی کامل دارن. "
+                            "فقط از منابع معتبر استفاده کنید.",
+                            plugin_name
+                        )
                     else:
                         log.warning(f"⚠️ پلاگین {plugin_name} تابع setup نداره")
                         skipped += 1
@@ -62,11 +67,13 @@ class PluginManager:
     @staticmethod
     def load_single(
         client: "Client",
-        filepath: str
+        filepath: str,
+        logger: logging.Logger | None = None
     ) -> bool:
         """لود یه پلاگین خاص."""
         if not os.path.exists(filepath):
             return False
+        log = logger or logging.getLogger("fast_rub.plugins")
         plugin_name = os.path.basename(filepath)[:-3]
         try:
             spec = importlib.util.spec_from_file_location(
@@ -79,6 +86,11 @@ class PluginManager:
             spec.loader.exec_module(module)
             if hasattr(module, "setup") and callable(module.setup):
                 module.setup(client)
+                log.warning(
+                    "⚠️ پلاگین '%s' از منبع خارجی لود شد. پلاگین‌ها به کلاینت دسترسی کامل دارن. "
+                    "فقط از منابع معتبر استفاده کنید.",
+                    plugin_name
+                )
                 return True
         except Exception:
             pass
