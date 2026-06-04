@@ -1,4 +1,4 @@
-from ..type.errors import ServerRubikaError
+from ..types.errors import ServerRubikaError
 from ..utils.utils import Utils
 from pathlib import Path
 from typing import Optional, Union, Dict, Any, List, Literal
@@ -15,15 +15,16 @@ class Network:
     def __init__(
         self,
         token: str,
-        logger: Optional[logging.Logger] = None,
+        logger: logging.Logger | None = None,
         max_retries: int = 3,
-        user_agent: Optional[str] = None,
+        user_agent: str | None = None,
         base_urls: list = [
             "https://botapi.rubika.ir/",
-            "https://messengerg2b1.iranlms.ir/"
+            # "https://messengerg2b1.iranlms.ir/"
         ],
-        proxy: Optional[str] = None,
-        rate_limit: int = 20
+        proxy: str | None = None,
+        rate_limit: int = 20,
+        ssl_verify: bool = True,
     ):
         self.logger = logger or logging.getLogger("fast_rub.network")
         self.token = token
@@ -35,11 +36,13 @@ class Network:
         self._client: httpx.AsyncClient | None = None
         self._client_lock = asyncio.Lock()
 
-        self._rate_sem: Optional[asyncio.Semaphore] = None
-        self._queue: Optional[asyncio.Queue] = None
-        self._worker_task: Optional[asyncio.Task] = None
+        self._rate_sem: asyncio.Semaphore | None = None
+        self._queue: asyncio.Queue | None = None
+        self._worker_task: asyncio.Task | None = None
         self._closed = False
         self._rate_limit = rate_limit
+
+        self.ssl_verify = ssl_verify
 
     # -------------------
     # Lifecycle: start / stop
@@ -80,6 +83,12 @@ class Network:
                 if "Event loop is closed" not in str(e):
                     raise
 
+    @staticmethod
+    def _is_retryable_status(
+        status_code: int
+    ) -> bool:
+        return status_code in (429, 500, 502, 503, 504)
+
 
     # -------------------
     # Worker queue
@@ -95,6 +104,7 @@ class Network:
             "limits": httpx.Limits(max_connections=100, max_keepalive_connections=20),
             "http1": True,
             "http2": True,
+            "verify": self.ssl_verify,
             "headers": {
                 "Content-Type": "application/json",
                 "User-Agent": self.user_agent or "fast_rub/Network"
@@ -140,11 +150,11 @@ class Network:
     async def request(
         self,
         url: str,
-        data_: Optional[Union[Dict[str, Any], List[Any]]] = None,
-        type_send: Literal["POST", "GET"] = "POST",
+        data_: dict[str, Any] | list[Any] | None = None,
+        type_send: Literal["POST", "GET", "HEAD"] = "POST",
         *,
-        max_retries: Optional[int] = None,
-        timeout: Optional[float] = None
+        max_retries: int | None = None,
+        timeout: float | None = None
     ) -> httpx.Response:
         if self._closed:
             raise RuntimeError("Network is closed")
@@ -176,8 +186,8 @@ class Network:
         self,
         url: str,
         method: str,
-        data_: Optional[Union[Dict, List]],
-        headers: Optional[Dict[str, str]],
+        data_: dict | list | None,
+        headers: dict[str, str] | None,
         *,
         max_retries: int,
         timeout: float
@@ -200,8 +210,19 @@ class Network:
                         resp = await self._client.post(url, json=data_, headers=headers, timeout=timeout) # pyright: ignore[reportOptionalMemberAccess]
                     elif method == "GET":
                         resp = await self._client.get(url, headers=headers, timeout=timeout) # pyright: ignore[reportOptionalMemberAccess]
+                    elif method == "HEAD":
+                        resp = await self._client.head(url, headers=headers, timeout=timeout) # pyright: ignore[reportOptionalMemberAccess]
                     else:
                         raise ValueError(f"Invalid method: {method}")
+                
+                if self._is_retryable_status(
+                    resp.status_code
+                ):
+                    if attempt < max_retries:
+                        wait_time = 2 ** (attempt - 1)
+                        self.logger.warning(f"Retry {attempt}/{max_retries} for status {resp.status_code}")
+                        await asyncio.sleep(wait_time)
+                        continue
 
                 resp.raise_for_status()
                 return resp
@@ -248,13 +269,15 @@ class Network:
     async def send_request(
         self,
         method: str,
-        data: Optional[Union[Dict[str, Any], List[Any]]] = None
+        data: dict[str, Any] | None = None
     ) -> dict:
         self.logger.debug(f"method {method}")
         for base_url in self.base_urls:
             self.logger.debug(f"Base Url » {base_url}")
             url = f"{base_url}v3/{self.token}/{method}"
             try:
+                if data:
+                    data = Utils.clean_dict(data)
                 response = await self.request(url, data, "POST")
             except:
                 continue
@@ -326,7 +349,7 @@ class Network:
     async def upload(
         self,
         url: str,
-        file_path: Union[str, Path, bytes],
+        file_path: str | Path | bytes,
         file_name: str,
         show_progress: bool = True,
         chunk_size: int = 64 * 1024
@@ -335,7 +358,7 @@ class Network:
         try:
             import aiohttp
         except ImportError:
-            raise ImportError("ابتدا کتابخانه aiohttp را برای آپلود نصب کنید !")
+            raise ImportError("ابتدا کتابخانه aiohttp را برای آپلود نصب کنید ! نصب : pip install fastrub[aiohttp]")
         is_temp = False
         if isinstance(file_path, (bytes, bytearray)):
             tmp = tempfile.NamedTemporaryFile(delete=False)
@@ -348,42 +371,60 @@ class Network:
             if isinstance(file_path, (str, Path)):
                 total_size = os.path.getsize(file_path)
             timeout = aiohttp.ClientTimeout(total=None)
-            async with aiohttp.ClientSession(timeout=timeout) as session:
-                form = aiohttp.FormData()
-                async def file_gen():
-                    async with aiofiles.open(file_path, "rb") as f:
-                        if show_progress and total_size:
-                            pbar = tqdm(total=total_size, unit="B", unit_scale=True, desc="Uploading")
-                        else:
-                            pbar = None
-                        while True:
-                            chunk = await f.read(chunk_size)
-                            if not chunk:
-                                break
-                            if pbar:
-                                pbar.update(len(chunk))
-                            yield chunk
-                        if pbar:
-                            pbar.close()
-                form.add_field(
-                    "file",
-                    file_gen(),
-                    filename=file_name,
-                    content_type="application/octet-stream"
-                )
-                async with session.post(url, data=form) as resp:
-                    if resp.status != 200:
-                        text = await resp.text()
-                        raise ServerRubikaError(
-                            {"status": "ERROR", "detail": text}
+            last_exception = None
+            for attempt in range(1, self.max_retries + 1):
+                try:
+                    async with aiohttp.ClientSession(timeout=timeout) as session:
+                        form = aiohttp.FormData()
+                        async def file_gen():
+                            async with aiofiles.open(file_path, "rb") as f:
+                                if show_progress and total_size:
+                                    pbar = tqdm(total=total_size, unit="B", unit_scale=True, desc="Uploading")
+                                else:
+                                    pbar = None
+                                while True:
+                                    chunk = await f.read(chunk_size)
+                                    if not chunk:
+                                        break
+                                    if pbar:
+                                        pbar.update(len(chunk))
+                                    yield chunk
+                                if pbar:
+                                    pbar.close()
+                        form.add_field(
+                            "file",
+                            file_gen(),
+                            filename=file_name,
+                            content_type="application/octet-stream"
                         )
-                    result = await resp.json()
-                    from ..utils.utils import Utils
-                    if not Utils.check_data(result):
-                        self.logger.error(f"Server returned error: {result}")
-                        raise ServerRubikaError(result)
-                    self.logger.info("آپلود با موفقیت انجام شد")
-                    return result["data"]
+                        async with session.post(url, data=form) as resp:
+                            if self._is_retryable_status(resp.status):
+                                if attempt < self.max_retries:
+                                    wait_time = 2 ** (attempt - 1)
+                                    self.logger.warning(f"خطای {resp.status} در حال آپلود - تلاش{attempt}/{self.max_retries}. صبر {wait_time} ...")
+                                    await asyncio.sleep(wait_time)
+                                    continue
+                            if resp.status != 200:
+                                text = await resp.text()
+                                raise ServerRubikaError(
+                                    {"status": "ERROR", "detail": text}
+                                )
+                            result = await resp.json()
+                            if not Utils.check_data(result):
+                                self.logger.error(f"Server returned error: {result}")
+                                raise ServerRubikaError(result)
+                            self.logger.info("آپلود با موفقیت انجام شد")
+                            return result["data"]
+                except (aiohttp.ClientError, TimeoutError) as e:
+                    last_exception = e
+                    if attempt < self.max_retries:
+                        wait_time = 2 ** (attempt - 1)
+                        self.logger.warning(f"خطای شبکه در حال آپلود - تلاش{attempt}/{self.max_retries}. صبر {wait_time} ...")
+                        await asyncio.sleep(wait_time)
+                        continue
+                    else:
+                        raise
+            raise last_exception or RuntimeError("All upload retries faield")
         finally:
             if is_temp:
                 os.remove(file_path)
