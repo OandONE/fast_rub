@@ -1,5 +1,4 @@
 import json
-from typing import Optional
 
 class metadata:
     def __init__(self, data: list) -> None:
