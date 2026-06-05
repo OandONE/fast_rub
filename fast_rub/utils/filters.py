@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Union, Literal, Optional, Any
+from typing import TYPE_CHECKING, Literal, Any
 
 from collections.abc import Callable, Awaitable
 import re as _re
@@ -24,47 +24,20 @@ class Filter:
 
     def __invert__(self) -> 'Filter':
         return _NotFilter(self)
+    
+    @property
+    def type_filter(self) -> str:
+        return "sync"
 
 class AsyncFilter(Filter):
     def __call__(self, update: 'Update') -> bool:
         raise RuntimeError("The Class Is Async. Sync -> Filter class")
     async def __acall__(self, update: 'Update') -> bool:
         raise NotImplementedError
-
-class _AndFilter(Filter):
-    def __init__(
-        self,
-        left: Filter,
-        right: Filter
-    ) -> None:
-        self.left = left
-        self.right = right
     
-    def __call__(self, update: "Update") -> bool:
-        return self.left(update) and self.right(update)
-
-class _OrFilter(Filter):
-    def __init__(
-        self,
-        left: Filter,
-        right: Filter
-    ) -> None:
-        self.left = left
-        self.right = right
-    
-    def __call__(self, update: "Update") -> bool:
-        return self.left(update) or self.right(update)
-
-class _NotFilter(Filter):
-    def __init__(
-        self,
-        filter: Filter
-    ) -> None:
-        self.filter = filter
-    
-    def __call__(self, update: "Update") -> bool:
-        return not self.filter(update)
-
+    @property
+    def type_filter(self) -> str:
+        return "async"
 
 class text(Filter):
     """filter text message by text /  فیلتر کردن متن پیام بر اساس متنی"""
@@ -668,28 +641,141 @@ class CrashProtection(Filter):
 
 
 
+class _AndFilter(Filter):
+    def __init__(self, left: Filter, right: Filter) -> None:
+        self.left = left
+        self.right = right
+    
+    @property
+    def type_filter(self):
+        if self.left.type_filter == "async" or self.right.type_filter == "async":
+            return "async"
+        return "sync"
+    
+    def __call__(self, update: "Update") -> bool:
+        return self.left(update) and self.right(update)
+    
+    async def __acall__(self, update: "Update") -> bool:
+        if self.left.type_filter == "async":
+            left_result = await self.left.__acall__(update)
+        else:
+            left_result = self.left(update)
+        
+        if not left_result:
+            return False
+        
+        if self.right.type_filter == "async":
+            return await self.right.__acall__(update)
+        else:
+            return self.right(update)
+
+
+class _OrFilter(Filter):
+    def __init__(self, left: Filter, right: Filter) -> None:
+        self.left = left
+        self.right = right
+    
+    @property
+    def type_filter(self):
+        if self.left.type_filter == "async" or self.right.type_filter == "async":
+            return "async"
+        return "sync"
+    
+    def __call__(self, update: "Update") -> bool:
+        return self.left(update) or self.right(update)
+    
+    async def __acall__(self, update: "Update") -> bool:
+        if self.left.type_filter == "async":
+            left_result = await self.left.__acall__(update)
+        else:
+            left_result = self.left(update)
+        
+        if left_result:
+            return True
+        
+        if self.right.type_filter == "async":
+            return await self.right.__acall__(update)
+        else:
+            return self.right(update)
+
+
+class _NotFilter(Filter):
+    def __init__(self, filter: Filter) -> None:
+        self.filter = filter
+    
+    @property
+    def type_filter(self):
+        return self.filter.type_filter
+    
+    def __call__(self, update: "Update") -> bool:
+        return not self.filter(update)
+    
+    async def __acall__(self, update: "Update") -> bool:
+        if self.filter.type_filter == "async":
+            return not await self.filter.__acall__(update)
+        return not self.filter(update)
+
+
 class and_filter(Filter):
-    """filters {and} for if all filters is True : run code ... / فیلتر های ورودی {and} که اگر تمامی فیلتر های ورودی برابر True بود اجرا شود"""
     def __init__(self, *filters):
         self.filters = filters
-
+    
+    @property
+    def type_filter(self):
+        return "async" if any(f.type_filter == "async" for f in self.filters) else "sync"
+    
     def __call__(self, update: 'Update') -> bool:
         return all(f(update) for f in self.filters)
+    
+    async def __acall__(self, update: 'Update') -> bool:
+        for f in self.filters:
+            if f.type_filter == "async":
+                result = await f.__acall__(update)
+            else:
+                result = f(update)
+            if not result:
+                return False
+        return True
+
 
 class or_filter(Filter):
-    """filters {or} for if one filter is True : run code ... / فیلتر های ورودی {and} که اگر یک فیلتر ورودی برابر True بود اجرا شود"""
     def __init__(self, *filters):
         self.filters = filters
-
+    
+    @property
+    def type_filter(self):
+        return "async" if any(f.type_filter == "async" for f in self.filters) else "sync"
+    
     def __call__(self, update: 'Update') -> bool:
         return any(f(update) for f in self.filters)
+    
+    async def __acall__(self, update: 'Update') -> bool:
+        for f in self.filters:
+            if f.type_filter == "async":
+                result = await f.__acall__(update)
+            else:
+                result = f(update)
+            if result:
+                return True
+        return False
+
 
 class not_filter(Filter):
-    """not True filter / درست نبودن فیلتر"""
     def __init__(self, filter):
         self.filter = filter
+    
+    @property
+    def type_filter(self):
+        return self.filter.type_filter
+    
     def __call__(self, update: 'Update') -> bool:
         return not self.filter(update)
+    
+    async def __acall__(self, update: 'Update') -> bool:
+        if self.filter.type_filter == "async":
+            return not await self.filter.__acall__(update)
+        return not self.filter(update)
+
 
 is_user = IsUser()
 is_group = IsGroup()
