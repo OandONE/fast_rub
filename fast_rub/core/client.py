@@ -912,7 +912,7 @@ class Client:
         type_file: Literal["File", "Image", "Voice", "Music", "Gif" , "Video"] = "File",
         file_id: str | None = None,
         show_progress: bool = True,
-        chunk_size: int = 64 * 1024,
+        chunk_size: int = 1024 * 1024,
         # poll
         question: str | None = None,
         options: list | None = None,
@@ -1372,21 +1372,14 @@ class Client:
         url: str,
         file_name: str,
         file: str | Path | bytes,
-        upload_by: Literal["aiohttp", "httpx"] = "aiohttp",
         show_progress: bool = True,
-        chunk_size: int = 64 * 1024
+        chunk_size: int = 1024 * 1024
     ) -> dict:
         """upload file to rubika server / آپلود فایل در سرور روبیکا"""
         self.logger.info("استفاده از متود upload_file")
         if not self.show_progress is None:
             show_progress = self.show_progress
-        if upload_by == "aiohttp":
-            response = await self.network.upload(url, file, file_name, show_progress, chunk_size)
-        elif upload_by == "httpx":
-            d_file = await Utils.d_file(file, file_name, self.network)
-            response = await self.network.upload_httpx(url, d_file)
-        else:
-            raise ValueError("The 'upload_by' Arg shoud 'aiohttp' or 'httpx'.")
+        response = await self.network.upload(url, file, file_name, show_progress, chunk_size)
         return response
     
     async def send_file_by_file_id(
@@ -1472,9 +1465,8 @@ class Client:
         keypad: list | None = None,
         resize_keyboard: bool | None = True,
         on_time_keyboard: bool | None = False,
-        upload_by: Literal["aiohttp", "httpx"] = "aiohttp",
         show_progress: bool = True,
-        chunk_size: int = 64 * 1024,
+        chunk_size: int = 1024 * 1024,
         wait_send: float | None = None,
         return_task: bool = False,
         context: dict | None = None,
@@ -1495,7 +1487,6 @@ class Client:
                 url=upload_url_file,
                 file_name=_name_file,
                 file=file,
-                upload_by=upload_by,
                 show_progress=show_progress,
                 chunk_size=chunk_size
             )
@@ -1559,9 +1550,8 @@ class Client:
         keypad: list | None = None,
         resize_keyboard: bool | None = True,
         on_time_keyboard: bool | None = False,
-        upload_by: Literal["aiohttp", "httpx"] = "aiohttp",
         show_progress: bool = True,
-        chunk_size: int = 64 * 1024,
+        chunk_size: int = 1024 * 1024,
         wait_send: float | None = None,
         return_task: bool = False,
         context: dict | None = None,
@@ -1584,7 +1574,6 @@ class Client:
             keypad=keypad,
             resize_keyboard=resize_keyboard,
             on_time_keyboard=on_time_keyboard,
-            upload_by=upload_by,
             show_progress=show_progress,
             chunk_size=chunk_size,
             wait_send=wait_send,
@@ -1611,9 +1600,8 @@ class Client:
         keypad: list | None = None,
         resize_keyboard: bool | None = True,
         on_time_keyboard: bool | None = False,
-        upload_by: Literal["aiohttp", "httpx"] = "aiohttp",
         show_progress: bool = True,
-        chunk_size: int = 64 * 1024,
+        chunk_size: int = 1024 * 1024,
         wait_send: float | None = None,
         return_task: bool = False,
         context: dict | None = None,
@@ -1636,7 +1624,6 @@ class Client:
             keypad=keypad,
             resize_keyboard=resize_keyboard,
             on_time_keyboard=on_time_keyboard,
-            upload_by=upload_by,
             show_progress=show_progress,
             chunk_size=chunk_size,
             wait_send=wait_send,
@@ -1664,9 +1651,8 @@ class Client:
         keypad: list | None = None,
         resize_keyboard: bool | None = True,
         on_time_keyboard: bool | None = False,
-        upload_by: Literal["aiohttp", "httpx"] = "aiohttp",
         show_progress: bool = True,
-        chunk_size: int = 64 * 1024,
+        chunk_size: int = 1024 * 1024,
         wait_send: float | None = None,
         return_task: bool = False,
         context: dict | None = None,
@@ -1689,7 +1675,6 @@ class Client:
             keypad=keypad,
             resize_keyboard=resize_keyboard,
             on_time_keyboard=on_time_keyboard,
-            upload_by=upload_by,
             show_progress=show_progress,
             chunk_size=chunk_size,
             wait_send=wait_send,
@@ -1714,9 +1699,8 @@ class Client:
         keypad: list | None = None,
         resize_keyboard: bool | None = True,
         on_time_keyboard: bool | None = False,
-        upload_by: Literal["aiohttp", "httpx"] = "aiohttp",
         show_progress: bool = True,
-        chunk_size: int = 64 * 1024,
+        chunk_size: int = 1024 * 1024,
         wait_send: float | None = None,
         return_task: bool = False,
         context: dict | None = None,
@@ -1739,7 +1723,6 @@ class Client:
             keypad=keypad,
             resize_keyboard=resize_keyboard,
             on_time_keyboard=on_time_keyboard,
-            upload_by=upload_by,
             show_progress=show_progress,
             chunk_size=chunk_size,
             wait_send=wait_send,
@@ -1764,9 +1747,8 @@ class Client:
         keypad: list | None = None,
         resize_keyboard: bool | None = True,
         on_time_keyboard: bool | None = False,
-        upload_by: Literal["aiohttp", "httpx"] = "aiohttp",
         show_progress: bool = True,
-        chunk_size: int = 64 * 1024,
+        chunk_size: int = 1024 * 1024,
         wait_send: float | None = None,
         return_task: bool = False,
         context: dict | None = None,
@@ -1789,7 +1771,6 @@ class Client:
             keypad=keypad,
             resize_keyboard=resize_keyboard,
             on_time_keyboard=on_time_keyboard,
-            upload_by=upload_by,
             show_progress=show_progress,
             chunk_size=chunk_size,
             wait_send=wait_send,
@@ -1814,9 +1795,8 @@ class Client:
         keypad: list | None = None,
         resize_keyboard: bool | None = True,
         on_time_keyboard: bool | None = False,
-        upload_by: Literal["aiohttp", "httpx"] = "aiohttp",
         show_progress: bool = True,
-        chunk_size: int = 64 * 1024,
+        chunk_size: int = 1024 * 1024,
         wait_send: float | None = None,
         return_task: bool = False,
         context: dict | None = None,
@@ -1839,7 +1819,6 @@ class Client:
             keypad=keypad,
             resize_keyboard=resize_keyboard,
             on_time_keyboard=on_time_keyboard,
-            upload_by=upload_by,
             show_progress=show_progress,
             chunk_size=chunk_size,
             wait_send=wait_send,
@@ -1890,7 +1869,7 @@ class Client:
         meta_data: list | None = None,
         name_save_file: str | None = None,
         show_progress: bool = True,
-        chunk_size: int = 64 * 1024,
+        chunk_size: int = 1024 * 1024,
         wait_send: float | None = None,
         return_task: bool = False,
         context: dict | None = None,
