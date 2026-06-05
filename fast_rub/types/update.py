@@ -8,7 +8,7 @@ from .file import File
 from ..utils.utils import Utils
 import json
 from pathlib import Path
-from typing import TYPE_CHECKING, Optional, Union, Literal
+from typing import TYPE_CHECKING, Union, Literal
 import re
 
 if TYPE_CHECKING:
