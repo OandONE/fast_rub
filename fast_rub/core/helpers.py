@@ -1,13 +1,13 @@
 import asyncio
-from typing import Any, TYPE_CHECKING, Literal, Optional, Union
+from typing import Any, TYPE_CHECKING, Literal
 
 from collections.abc import Callable, Coroutine
 
 from ..utils import Utils
+from ..types import msg_update
 
 if TYPE_CHECKING:
     from .client import Client
-    from ..types import msg_update
 
 
 async def _send_helper(
@@ -17,7 +17,7 @@ async def _send_helper(
     return_task: bool = False,
     wait_send: float | None = None,
     **kwargs: Any
-) -> Union["msg_update", asyncio.Task["msg_update"], Any]:
+) -> msg_update | asyncio.Task[msg_update] | Any:
     """تابع کمکی برای متدهای ارسال"""
     
     async def _active():
