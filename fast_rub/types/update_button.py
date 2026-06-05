@@ -1,4 +1,4 @@
-from typing import Optional, TYPE_CHECKING, Literal, Union
+from typing import TYPE_CHECKING, Literal
 from pathlib import Path
 import json
 
