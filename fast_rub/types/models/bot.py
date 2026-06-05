@@ -1,4 +1,3 @@
-from typing import Optional
 from .base_model import _BaseModels
 
 class Bot(_BaseModels):
