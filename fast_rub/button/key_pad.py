@@ -1,4 +1,4 @@
-from typing import List, Dict, Iterator, Optional
+from collections.abc import Iterator
 import json
 
 
@@ -6,7 +6,7 @@ class RowBuilder:
     """سازنده یک ردیف از دکمه‌ها"""
     def __init__(self, keypad: 'KeyPad'):
         self._keypad = keypad
-        self._buttons: List[Dict] = []
+        self._buttons: list[dict] = []
 
     def simple(self, id: str, button_text: str) -> 'RowBuilder':
         """اضافه کردن یه دکمه ساده به این ردیف"""
@@ -24,7 +24,7 @@ class KeyPad:
     """کیپد روبیکا — Builder Pattern"""
     
     def __init__(self):
-        self.list_KeyPads: List[Dict] = []
+        self.list_KeyPads: list[dict] = []
 
     @property
     def row(self) -> RowBuilder:
@@ -59,7 +59,7 @@ class KeyPad:
                     return button
         raise IndexError("The Id Not Found !")
 
-    def get_all_by_id(self, id: str) -> List[dict]:
+    def get_all_by_id(self, id: str) -> list[dict]:
         result = []
         for row in self.list_KeyPads:
             for button in row["buttons"]:
@@ -78,7 +78,7 @@ class KeyPad:
                     return removed
         raise KeyError(f"Button with id '{id}' not found")
 
-    def remove_all_by_id(self, id: str) -> List[dict]:
+    def remove_all_by_id(self, id: str) -> list[dict]:
         removed = []
         for row in list(self.list_KeyPads):
             buttons = row["buttons"]
@@ -92,7 +92,7 @@ class KeyPad:
             raise KeyError(f"Button with id '{id}' not found")
         return removed
 
-    def get_all_buttons(self) -> List[dict]:
+    def get_all_buttons(self) -> list[dict]:
         return [button for row in self.list_KeyPads for button in row["buttons"]]
 
     def __str__(self) -> str:
@@ -104,7 +104,7 @@ class KeyPad:
     def __getitem__(self, index):
         return self.list_KeyPads[index]
 
-    def __iter__(self) -> Iterator[Dict]:
+    def __iter__(self) -> Iterator[dict]:
         return iter(self.list_KeyPads)
 
     def __len__(self) -> int:
