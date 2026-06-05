@@ -484,10 +484,10 @@ class Client:
             parse_mode = self.main_parse_mode
         text = Utils.trim_trailing_newlines(text)
         if parse_mode == "Markdown":
-            data = TextParser.checkMarkdown(text)
+            data = TextParser.markdown(text)
             return data
         elif parse_mode == "HTML":
-            data = TextParser.checkHTML(text)
+            data = TextParser.html(text)
             return data
         return [], text
 
@@ -2306,7 +2306,7 @@ class Client:
                     pass
                 messages = messages["updates"]
                 for message in messages:
-                    if message["type"] not in ["NewMessage", "UpdatedMessage", "RemoveMessage"]:
+                    if message["type"] not in ("NewMessage", "UpdatedMessage", "RemoveMessage"):
                         continue
                     update = Update(message, self)
                     if not update.time + 5 > time.time():
@@ -2337,7 +2337,7 @@ class Client:
                         if filters is not None:
                             try:
                                 filter_class = type(filters)
-                                if "__acall__" in filter_class.__dict__:
+                                if "__acall__" in filter_class.__dict__.keys():
                                     result = await filters.__acall__(update)
                                 else:
                                     result = filters(update)
@@ -2387,10 +2387,15 @@ class Client:
                 filters: Filter | None = handler_info["filters"]
                 if filters is not None:
                     try:
-                        if not filters(update):
+                        filter_class = type(filters)
+                        if "__acall__" in filter_class.__dict__.keys():
+                            result = await filters.__acall__(update)
+                        else:
+                            result = filters(update)
+                        if not result:
                             continue
                     except Exception as e:
-                        self.logger.error(f"[FILTER ERROR] {e}")
+                        print(f"[FILTER ERROR] {filters} -> {e}")
                         continue
                 self._schedule_handler(handler, update)
             if not is_edited and not is_deleted:
@@ -2409,7 +2414,7 @@ class Client:
                 if filters is not None:
                     try:
                         filter_class = type(filters)
-                        if "__acall__" in filter_class.__dict__:
+                        if "__acall__" in filter_class.__dict__.keys():
                             result = await filters.__acall__(update)
                         else:
                             result = filters(update)
@@ -2530,7 +2535,7 @@ class Client:
                             if filters is not None:
                                 try:
                                     filter_class = type(filters)
-                                    if "__acall__" in filter_class.__dict__:
+                                    if "__acall__" in filter_class.__dict__.keys():
                                         result = await filters.__acall__(update)
                                     else:
                                         result = filters(update)
@@ -2568,7 +2573,7 @@ class Client:
                             if filters is not None:
                                 try:
                                     filter_class = type(filters)
-                                    if "__acall__" in filter_class.__dict__:
+                                    if "__acall__" in filter_class.__dict__.keys():
                                         result = await filters.__acall__(update)
                                     else:
                                         result = filters(update)
