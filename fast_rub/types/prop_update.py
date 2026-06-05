@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Literal, Optional
+from typing import TYPE_CHECKING, Literal
 if TYPE_CHECKING:
     from ..core import Client
 from . import Update
