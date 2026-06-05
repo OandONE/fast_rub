@@ -1,5 +1,3 @@
-from typing import Dict, Optional, List
-
 from collections.abc import Callable
 from ..types import Update
 from .client import Client
