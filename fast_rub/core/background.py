@@ -1,6 +1,6 @@
 import asyncio
 import logging
-from typing import Optional, Any
+from typing import Any
 
 from collections.abc import Callable, Coroutine
 
