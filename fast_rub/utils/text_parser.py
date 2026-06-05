@@ -1,8 +1,8 @@
 import re
-from typing import List, Dict, Any, Tuple
+from typing import Any
 
 
-def _build_utf16_prefix_lengths(text: str) -> List[int]:
+def _build_utf16_prefix_lengths(text: str) -> list[int]:
     """آرایه طول‌های تجمعی UTF-16 برای هر کاراکتر"""
     prefix = [0]
     total = 0
@@ -12,7 +12,7 @@ def _build_utf16_prefix_lengths(text: str) -> List[int]:
     return prefix
 
 
-def _collect_matches(text: str, patterns: Dict[str, List[str]], priority: Dict[str, int]) -> List[Dict[str, Any]]:
+def _collect_matches(text: str, patterns: dict[str, list[str]], priority: dict[str, int]) -> list[dict[str, Any]]:
     matches = []
     for style, pats in patterns.items():
         for pat in pats:
@@ -39,6 +39,18 @@ def _collect_matches(text: str, patterns: Dict[str, List[str]], priority: Dict[s
 
                 if style in ("Pre", "PreHTML"):
                     content = content.strip("\n")
+                
+                if style == "Quote":
+                    lines = content.split("\n")
+                    clean_lines = []
+                    for line in lines:
+                        if line.startswith("> "):
+                            clean_lines.append(line[2:])
+                        elif line.startswith(">"):
+                            clean_lines.append(line[1:])
+                        else:
+                            clean_lines.append(line)
+                    content = "\n".join(clean_lines)
 
                 matches.append({
                     "start": start,
@@ -52,7 +64,7 @@ def _collect_matches(text: str, patterns: Dict[str, List[str]], priority: Dict[s
     return matches
 
 
-def _allow_match(chosen: List[Dict[str, Any]], candidate: Dict[str, Any]) -> bool:
+def _allow_match(chosen: list[dict[str, Any]], candidate: dict[str, Any]) -> bool:
     s, e = candidate["start"], candidate["end"]
     for c in chosen:
         os, oe = c["start"], c["end"]
@@ -63,7 +75,7 @@ def _allow_match(chosen: List[Dict[str, Any]], candidate: Dict[str, Any]) -> boo
     return True
 
 
-def _pick_matches_allowing_nested(matches: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+def _pick_matches_allowing_nested(matches: list[dict[str, Any]]) -> list[dict[str, Any]]:
     matches_sorted = sorted(matches, key=lambda m: (m['priority'], m['start']))
     chosen = []
     for m in matches_sorted:
@@ -75,7 +87,7 @@ def _pick_matches_allowing_nested(matches: List[Dict[str, Any]]) -> List[Dict[st
 
 class TextParser:
     @staticmethod
-    def checkMarkdown(text: str) -> Tuple[List[Dict[str, Any]], str]:
+    def markdown(text: str) -> tuple[list[dict[str, Any]], str]:
         if not text:
             return [], ""
 
@@ -89,17 +101,17 @@ class TextParser:
             "Strike": [r"~~([^~]+?)~~"],
             "Underline": [r"__([^_]+?)__"],
             "Italic": [r"(?<!\*)\*([^*\n]+?)\*(?!\*)", r"(?<!_)_([^_\n]+?)_(?!_)"],
-            "Blockquote": [r"(^> .+(?:\n> .+)*)"]
+            "Quote": [r"((?:^> [^\n]*(?:\n|$))+)"]
         }
 
         priority = {
             "Pre": 0, "Link": 1, "Mention": 1, "CodeInline": 2,
             "Spoiler": 3, "Bold": 4, "Strike": 5, "Underline": 6,
-            "Italic": 7, "Blockquote": 8
+            "Italic": 7, "Quote": 8
         }
 
         all_matches = _collect_matches(text, patterns, priority)
-        chosen = _pick_matches_allowing_nested(all_matches)
+
         chosen = _pick_matches_allowing_nested(all_matches)
 
         utf16_prefix = _build_utf16_prefix_lengths(text)
@@ -135,8 +147,8 @@ class TextParser:
                 metadata.append({"type": "Mono", "from_index": from_index, "length": length})
             elif st == "Pre":
                 metadata.append({"type": "Pre", "from_index": from_index, "length": length})
-            elif st == "Blockquote":
-                metadata.append({"type": "Blockquote", "from_index": from_index, "length": length})
+            elif st == "Quote":
+                metadata.append({"type": "Quote", "from_index": from_index, "length": length})
             else:
                 map_types = {"Bold": "Bold", "Italic": "Italic", "Underline": "Underline", "Strike": "Strike", "Spoiler": "Spoiler"}
                 metadata.append({"type": map_types.get(st, st), "from_index": from_index, "length": length})
@@ -146,8 +158,10 @@ class TextParser:
         resukt_text = "".join(out_parts)
         return metadata, resukt_text
     
+    checkMarkdown = markdown
+
     @staticmethod
-    def checkHTML(text: str) -> Tuple[List[Dict[str, Any]], str]:
+    def html(text: str) -> tuple[list[dict[str, Any]], str]:
         if text is None:
             return [], ""
 
@@ -161,6 +175,7 @@ class TextParser:
             "ItalicHTML": [r"<i>([^<]+?)</i>", r"<em>([^<]+?)</em>"],
             "StrikeHTML": [r"<s>([^<]+?)</s>", r"<del>([^<]+?)</del>"],
             "UnderlineHTML": [r"<u>([^<]+?)</u>"],
+            "QuoteHTML": [r"<blockquote>([\s\S]*?)</blockquote>"]
         }
 
         priority = {
@@ -171,7 +186,8 @@ class TextParser:
             "BoldHTML": 4,
             "ItalicHTML": 5,
             "StrikeHTML": 6,
-            "UnderlineHTML": 7
+            "UnderlineHTML": 7,
+            "QuoteHTML": 8
         }
 
         all_matches = _collect_matches(text, patterns, priority)
@@ -179,8 +195,8 @@ class TextParser:
 
         utf16_prefix = _build_utf16_prefix_lengths(text)
 
-        out_parts: List[str] = []
-        metadata: List[Dict[str, Any]] = []
+        out_parts: list[str] = []
+        metadata: list[dict[str, Any]] = []
         last_utf8 = 0
         offset_utf16 = 0
 
@@ -220,6 +236,12 @@ class TextParser:
                 metadata.append({"type": "Pre", "from_index": from_index, "length": length})
             elif st == "SpoilerHTML":
                 metadata.append({"type": "Spoiler", "from_index": from_index, "length": length})
+            elif st == "QuoteHTML":
+                metadata.append({
+                    "type": "Quote",
+                    "from_index": from_index,
+                    "length": length
+                })
             else:
                 map_html = {"BoldHTML": "Bold", "ItalicHTML": "Italic", "UnderlineHTML": "Underline", "StrikeHTML": "Strike"}
                 metadata.append({"type": map_html.get(st, st), "from_index": from_index, "length": length})
@@ -229,3 +251,5 @@ class TextParser:
 
         real_text_final = "".join(out_parts)
         return metadata, real_text_final
+    
+    checkHTML = html
