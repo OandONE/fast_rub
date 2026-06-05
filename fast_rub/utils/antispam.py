@@ -2,7 +2,6 @@ import re
 import time
 import asyncio
 from collections import defaultdict, deque
-from typing import Optional, Dict, Tuple, List
 from enum import Enum
 
 
@@ -61,7 +60,7 @@ class AntiSpam:
         mute_duration: float = 60.0,
         auto_clear_interval: int = 30,
     ):
-        self.rules: List[AntiSpamRule] = [
+        self.rules: list[AntiSpamRule] = [
             AntiSpamRule(SpamViolation.FLOOD, flood_max, flood_window, mute_duration),
             AntiSpamRule(SpamViolation.RATE_LIMIT, rate_max, rate_window, mute_duration),
             AntiSpamRule(SpamViolation.LINK_SPAM, link_max, link_window, mute_duration),
@@ -72,11 +71,11 @@ class AntiSpam:
         self.max_message_length = max_message_length
         self.mute_duration = mute_duration
         
-        self._messages: Dict[str, deque] = defaultdict(lambda: deque(maxlen=max(rate_max, link_max, mention_max) * 2))
-        self._muted: Dict[str, float] = {}
-        self._last_messages: Dict[str, Tuple[float, str]] = {}
+        self._messages: dict[str, deque] = defaultdict(lambda: deque(maxlen=max(rate_max, link_max, mention_max) * 2))
+        self._muted: dict[str, float] = {}
+        self._last_messages: dict[str, tuple[float, str]] = {}
         
-        self._auto_clear_task: Optional[asyncio.Task] = None
+        self._auto_clear_task: asyncio.Task | None = None
         self._auto_clear_interval = auto_clear_interval
     
     def add_rule(self, rule: AntiSpamRule):
@@ -93,7 +92,7 @@ class AntiSpam:
         user_id: str,
         message: str,
         is_private: bool = False
-    ) -> Tuple[bool, Optional[str], Optional[SpamViolation]]:
+    ) -> tuple[bool, str | None, SpamViolation | None]:
         """
         بررسی اسپم بودن پیام.
         
@@ -174,12 +173,12 @@ class AntiSpam:
         }
         return reasons.get(rule.violation, f"🚫 اسپم. {int(rule.mute_duration)} ثانیه سکوت شدید.")
     
-    def unmute(self, chat_id: str, user_id: Optional[str] = None):
+    def unmute(self, chat_id: str, user_id: str | None = None):
         """لغو سکوت کاربر"""
         key = f"{chat_id}:{user_id}" if user_id else f"private:{chat_id}"
         self._muted.pop(key, None)
     
-    def is_muted(self, chat_id: str, user_id: Optional[str] = None) -> bool:
+    def is_muted(self, chat_id: str, user_id: str | None = None) -> bool:
         """چک وضعیت سکوت"""
         key = f"{chat_id}:{user_id}" if user_id else f"private:{chat_id}"
         if key in self._muted:
@@ -188,7 +187,7 @@ class AntiSpam:
             del self._muted[key]
         return False
     
-    def reset(self, chat_id: Optional[str] = None, user_id: Optional[str] = None):
+    def reset(self, chat_id: str | None = None, user_id: str | None = None):
         """ریست آمار"""
         if chat_id and user_id:
             key = f"{chat_id}:{user_id}"
