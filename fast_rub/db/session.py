@@ -1,5 +1,4 @@
 import os
-from typing import Optional
 from dataclasses import dataclass
 from .database import DataBase
 from ..utils.encryption import Encryption
