@@ -1,6 +1,6 @@
 import time
 import asyncio
-from typing import Any, Dict, Tuple, Optional
+from typing import Any
 
 class Cache:
     """کش عمومی با TTL"""
