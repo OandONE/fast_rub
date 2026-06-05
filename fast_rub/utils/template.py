@@ -1,7 +1,7 @@
 import re
 import random
 import string
-from typing import Any, Dict, Tuple, List, TYPE_CHECKING
+from typing import Any, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from ..core import Client
@@ -100,8 +100,8 @@ class TemplateEngine:
     def _parse(self, text: str, parse_mode: str) -> tuple[list[dict[str, Any]], str]:
         from .text_parser import TextParser
         if parse_mode == "HTML":
-            return TextParser.checkHTML(text)
-        return TextParser.checkMarkdown(text)
+            return TextParser.html(text)
+        return TextParser.markdown(text)
     
     def _random_string(self, length: int) -> str:
         chars = string.ascii_letters + string.digits
