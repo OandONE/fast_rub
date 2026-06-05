@@ -55,8 +55,7 @@ version = {attr = "fast_rub.__version__"}
 hotreload = ["watchfiles"]
 fastapi = ["fastapi", "uvicorn"]
 flask = ["flask"]
-upload = ["aiohttp<=3.9.0"]
-full = ["fastapi", "uvicorn", "flask", "watchfiles", "aiohttp<=3.9.0"]
+full = ["fastapi", "uvicorn", "flask", "watchfiles"]
 
 [project.scripts]
 fastrub = "fast_rub.cli:main"
