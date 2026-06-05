@@ -1,5 +1,3 @@
-from typing import Optional
-
 from collections.abc import Callable
 from ..utils.filters import Filter
 from ..types import Update
