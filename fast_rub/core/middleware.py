@@ -42,7 +42,12 @@ class MiddlewareManager:
         async def wrapped(update):
             if filters is not None:
                 try:
-                    if not filters(update):
+                    filter_class = type(filters)
+                    if "__acall__" in filter_class.__dict__.keys():
+                        result = await filters.__acall__(update)
+                    else:
+                        result = filters(update)
+                    if not result:
                         await next_handler(update)
                         return
                 except Exception as e:
