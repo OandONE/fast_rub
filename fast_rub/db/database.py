@@ -1,6 +1,6 @@
 from ..core.async_sync import wrap_all_async_methods
 
-from typing import Optional, Literal, List, Dict, Any
+from typing import Literal, Any
 from datetime import datetime
 import aiosqlite
 import asyncio
