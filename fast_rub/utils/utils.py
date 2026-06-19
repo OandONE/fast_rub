@@ -4,6 +4,8 @@ import aiofiles
 from .colors import cprint, Colors
 import time
 import re
+from ..button import KeyPad
+
 if TYPE_CHECKING:
     from ..network.network import Network
 
@@ -58,13 +60,17 @@ class Utils:
     @staticmethod
     def data_format(
         data: dict,
-        inline_keypad: list | None = None,
-        keypad: list | None = None,
+        inline_keypad: list | KeyPad | None = None,
+        keypad: list | KeyPad | None = None,
         resize_keyboard: bool | None = True,
         on_time_keyboard: bool | None = False,
         metadata: list | None = None,
         meta_data: list | None = None
     ) -> dict:
+        if isinstance(inline_keypad, KeyPad):
+            inline_keypad = inline_keypad.build()
+        if isinstance(keypad, KeyPad):
+            keypad = keypad.build()
         if meta_data is None:
             meta_data = []
         if inline_keypad:
@@ -182,10 +188,15 @@ class Utils:
             else:
                 result[key] = value
         return result
-    
+
     @staticmethod
-    def trim_trailing_newlines(text: str) -> str:
-        """حذف خط‌های خالی انتهای متن"""
+    def trim_text(text: str) -> str:
+        """حذف فاصله‌های اضافی از اول، آخر هر خط، و خط‌های خالی انتهای متن"""
         if not text:
             return text
-        return re.sub(r'(\n\s*)+$', '', text)
+        text = text.lstrip()
+        text = '\n'.join(line.rstrip() for line in text.splitlines())
+        text = re.sub(r'(\n\s*)+$', '', text)
+        return text
+    
+    trim_trailing_newlines = trim_text
