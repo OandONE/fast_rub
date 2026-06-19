@@ -23,6 +23,7 @@ from .hotreload import HotReload
 from .helpers import _send_helper
 from .signals import SignalManager
 from .scheduler import Scheduler
+from ..button import KeyPad
 from ..utils.filters import Filter
 from ..utils.inline_filters import InlineFilter
 from ..network.network import Network
@@ -39,6 +40,7 @@ from ..utils import WaitManager
 from ..utils import Cache
 from ..utils import SnapshotManager
 from ..utils import TemplateEngine
+from ..utils import _run_filter
 from ..db.session import Session
 from ..db.message_keeper import MessageKeeper
 from ..pyrubi import Client as PyrubiClient
@@ -149,6 +151,15 @@ class Client:
     
     ssl_verify: bool = True
         احراز هویت SSL
+    
+    cache: Cache | None = None
+        کلاس کش برای مدیریت کش
+    
+    cache_max_size: int | None
+        حداکثر مقدار کش
+
+    cache_ttl: float | None
+        ttl کش
     """
     # ═══════════════════════════════════
     # region 🚀 Start & Stop | شروع و توقف
@@ -286,7 +297,9 @@ class Client:
         self._webhook_server = None
         if self.webhook:
             self._webhook_server = WebhookServer(client=self, config=self.webhook, logger=self.logger)
-        self._middleware_manager = MiddlewareManager(self.logger)
+        self._middleware_manager = MiddlewareManager(
+            self.logger
+        )
         self._background = BackgroundManager(self.logger)
         if self._cache is not None:
             self.cache = self._cache
@@ -389,19 +402,16 @@ class Client:
     ):
         """خاموش کردن گرفتن آپدیت ها / off the getting updates"""
         self.logger.info("ربات متوقف شد !")
-        await self.network.close()
         self._running = False
         if type_stop == "all":
+            await self.network.close()
             del self.network
             del self.session
             del self.token
             del self.name_session
             del self.logger
-            # del self._on_url
-            # del self._button_url
             del self.urls
             del self.main_url
-            del self.session
             await self._process_on_shutdown()
 
     async def cloes(self):
@@ -482,7 +492,7 @@ class Client:
         """setting parse mode text / تنظیم پارس مود متن"""
         if self.main_parse_mode != "Null":
             parse_mode = self.main_parse_mode
-        text = Utils.trim_trailing_newlines(text)
+        text = Utils.trim_text(text)
         if parse_mode == "Markdown":
             data = TextParser.markdown(text)
             return data
@@ -520,7 +530,7 @@ class Client:
         message_id: str,
         text: str,
         auto_edit: int,
-        inline_keypad: list | None = None,
+        inline_keypad: list | KeyPad | None = None,
         parse_mode: Literal["Markdown", "HTML", None] = "Markdown",
         meta_data: list | None = None,
         context: dict | None = None,
@@ -560,22 +570,6 @@ class Client:
             else:
                 await _run_handler(update)
         asyncio.create_task(_wrapped())
-    
-    async def _run_filter(
-        self,
-        update: Update | UpdateButton,
-        filters: Filter | InlineFilter | None = None,
-    ):
-        if filters is not None:
-            try:
-                filter_class = type(filters)
-                if "__acall__" in filter_class.__dict__.keys():
-                    return await filters.__acall__(update) # type: ignore
-                else:
-                    return filters(update) # type: ignore
-            except Exception as e:
-                return False
-        return True
     
     # endregion
 
@@ -842,8 +836,8 @@ class Client:
         self,
         text: str,
         chat_id: str,
-        inline_keypad: list | None = None,
-        keypad: list | None = None,
+        inline_keypad: list | KeyPad | None = None,
+        keypad: list | KeyPad | None = None,
         resize_keyboard: bool | None = True,
         on_time_keyboard: bool | None = False,
         disable_notification: bool | None = False,
@@ -893,8 +887,8 @@ class Client:
         self,
         chat_id: str,
         text: str | None = None,
-        inline_keypad: list | None = None,
-        keypad: list | None = None,
+        inline_keypad: list | KeyPad | None = None,
+        keypad: list | KeyPad | None = None,
         resize_keyboard: bool | None = True,
         on_time_keyboard: bool | None = False,
         disable_notification: bool = False,
@@ -1128,7 +1122,7 @@ class Client:
         phone_number: str,
         chat_keypad : str | None = None,
         chat_keypad_type: str | None = None,
-        inline_keypad: list | None = None,
+        inline_keypad: list | KeyPad | None = None,
         reply_to_message_id: str | None = None,
         disable_notification: bool | None = False,
         auto_delete: int | None = None,
@@ -1231,7 +1225,7 @@ class Client:
         chat_id: str,
         message_id: str,
         text: str,
-        inline_keypad: list | None = None,
+        inline_keypad: list | KeyPad | None = None,
         parse_mode: Literal["Markdown", "HTML", None] = "Markdown",
         meta_data: list | None = None,
         wait_send: float | None = None,
@@ -1278,7 +1272,7 @@ class Client:
         message_id: str,
         text: str,
         auto_edit: int,
-        inline_keypad: list | None = None,
+        inline_keypad: list | KeyPad | None = None,
         parse_mode: Literal["Markdown", "HTML", None] = "Markdown",
         meta_data: list = [],
         separate_task: bool = False,
@@ -1392,8 +1386,8 @@ class Client:
         auto_delete: int | None = None,
         parse_mode: Literal["Markdown", "HTML", None] = "Markdown",
         meta_data: list | None = None,
-        inline_keypad: list | None = None,
-        keypad: list | None = None,
+        inline_keypad: list | KeyPad | None = None,
+        keypad: list | KeyPad | None = None,
         resize_keyboard: bool | None = True,
         on_time_keyboard: bool | None = False,
         wait_send: float | None = None,
@@ -1461,8 +1455,8 @@ class Client:
         auto_delete: int | None = None,
         parse_mode: Literal["Markdown", "HTML", None] = "Markdown",
         meta_data: list | None = None,
-        inline_keypad: list | None = None,
-        keypad: list | None = None,
+        inline_keypad: list | KeyPad | None = None,
+        keypad: list | KeyPad | None = None,
         resize_keyboard: bool | None = True,
         on_time_keyboard: bool | None = False,
         show_progress: bool = True,
@@ -1540,14 +1534,14 @@ class Client:
         chat_id: str,
         file: str  | Path  | bytes,
         name_file: str | None = None,
-        text : str | None = None,
-        reply_to_message_id : str | None = None,
+        text: str | None = None,
+        reply_to_message_id: str | None = None,
         disable_notification: bool | None = False,
         auto_delete: int | None = None,
         parse_mode: Literal["Markdown", "HTML", None] = "Markdown",
         meta_data: list | None = None,
-        inline_keypad: list | None = None,
-        keypad: list | None = None,
+        inline_keypad: list | KeyPad | None = None,
+        keypad: list | KeyPad | None = None,
         resize_keyboard: bool | None = True,
         on_time_keyboard: bool | None = False,
         show_progress: bool = True,
@@ -1596,8 +1590,8 @@ class Client:
         auto_delete: int | None = None,
         parse_mode: Literal["Markdown", "HTML", None] = "Markdown",
         meta_data: list | None = None,
-        inline_keypad: list | None = None,
-        keypad: list | None = None,
+        inline_keypad: list | KeyPad | None = None,
+        keypad: list | KeyPad | None = None,
         resize_keyboard: bool | None = True,
         on_time_keyboard: bool | None = False,
         show_progress: bool = True,
@@ -1647,8 +1641,8 @@ class Client:
         auto_delete: int | None = None,
         parse_mode: Literal["Markdown", "HTML", None] = "Markdown",
         meta_data: list | None = None,
-        inline_keypad: list | None = None,
-        keypad: list | None = None,
+        inline_keypad: list | KeyPad | None = None,
+        keypad: list | KeyPad | None = None,
         resize_keyboard: bool | None = True,
         on_time_keyboard: bool | None = False,
         show_progress: bool = True,
@@ -1695,8 +1689,8 @@ class Client:
         auto_delete: int | None = None,
         parse_mode: Literal["Markdown", "HTML", None] = "Markdown",
         meta_data: list | None = None,
-        inline_keypad: list | None = None,
-        keypad: list | None = None,
+        inline_keypad: list | KeyPad | None = None,
+        keypad: list | KeyPad | None = None,
         resize_keyboard: bool | None = True,
         on_time_keyboard: bool | None = False,
         show_progress: bool = True,
@@ -1737,14 +1731,14 @@ class Client:
         chat_id: str,
         music: str  | Path  | bytes,
         name_file: str | None = None,
-        text : str | None = None,
-        reply_to_message_id : str | None = None,
-        disable_notification : bool | None = False,
+        text: str | None = None,
+        reply_to_message_id: str | None = None,
+        disable_notification: bool | None = False,
         auto_delete: int | None = None,
         parse_mode: Literal["Markdown", "HTML", None] = "Markdown",
         meta_data: list | None = None,
-        inline_keypad: list | None = None,
-        keypad: list | None = None,
+        inline_keypad: list | KeyPad | None = None,
+        keypad: list | KeyPad | None = None,
         resize_keyboard: bool | None = True,
         on_time_keyboard: bool | None = False,
         show_progress: bool = True,
@@ -1791,8 +1785,8 @@ class Client:
         auto_delete: int | None = None,
         parse_mode: Literal["Markdown", "HTML", None] = "Markdown",
         meta_data: list | None = None,
-        inline_keypad: list | None = None,
-        keypad: list | None = None,
+        inline_keypad: list | KeyPad | None = None,
+        keypad: list | KeyPad | None = None,
         resize_keyboard: bool | None = True,
         on_time_keyboard: bool | None = False,
         show_progress: bool = True,
@@ -2179,7 +2173,10 @@ class Client:
                     try:
                         if filters is not None:
                             try:
-                                if not await self._run_filter(update, filters):
+                                if not await _run_filter(
+                                    filters,
+                                    update
+                                ):
                                     return
                             except Exception as e:
                                 await self._process_on_error(
@@ -2313,18 +2310,12 @@ class Client:
                             continue
                         filters: Filter | None = handler_info["filters"]
                         
-                        if filters is not None:
-                            try:
-                                filter_class = type(filters)
-                                if "__acall__" in filter_class.__dict__.keys():
-                                    result = await filters.__acall__(update)
-                                else:
-                                    result = filters(update)
-                                if not result:
-                                    continue
-                            except Exception as e:
-                                print(f"[FILTER ERROR] {filters} -> {e}")
-                                continue
+                        status_filter = await _run_filter(
+                            filters,
+                            update
+                        )
+                        if not status_filter:
+                            continue
                         self._schedule_handler(handler, update)
                     if not is_edited and not is_deleted:
                         if self.keeper_messages_ram:
@@ -2364,18 +2355,13 @@ class Client:
                 elif deleted_messages_option == True and not is_deleted:
                     continue
                 filters: Filter | None = handler_info["filters"]
-                if filters is not None:
-                    try:
-                        filter_class = type(filters)
-                        if "__acall__" in filter_class.__dict__.keys():
-                            result = await filters.__acall__(update)
-                        else:
-                            result = filters(update)
-                        if not result:
-                            continue
-                    except Exception as e:
-                        print(f"[FILTER ERROR] {filters} -> {e}")
-                        continue
+                
+                status_filter = await _run_filter(
+                    filters,
+                    update
+                )
+                if not status_filter:
+                    continue
                 self._schedule_handler(handler, update)
             if not is_edited and not is_deleted:
                 if self.keeper_messages_ram:
@@ -2390,18 +2376,13 @@ class Client:
             update = UpdateButton(result, self)
             for handler in self._button_handlers:
                 filters: InlineFilter | None = handler["filters"]
-                if filters is not None:
-                    try:
-                        filter_class = type(filters)
-                        if "__acall__" in filter_class.__dict__.keys():
-                            result = await filters.__acall__(update)
-                        else:
-                            result = filters(update)
-                        if not result:
-                            continue
-                    except Exception as e:
-                        print(f"[FILTER ERROR] {filters} -> {e}")
-                        continue
+
+                status_filter = await _run_filter(
+                    filters,
+                    update
+                )
+                if not status_filter:
+                    continue
                 self._schedule_handler(handler["handler"], update)
 
     async def _process_on_start(self):
@@ -2511,18 +2492,12 @@ class Client:
                                 continue
                             filters: Filter | None = handler_info["filters"]
 
-                            if filters is not None:
-                                try:
-                                    filter_class = type(filters)
-                                    if "__acall__" in filter_class.__dict__.keys():
-                                        result = await filters.__acall__(update)
-                                    else:
-                                        result = filters(update)
-                                    if not result:
-                                        continue
-                                except Exception as e:
-                                    print(f"[FILTER ERROR] {filters} -> {e}")
-                                    continue
+                            status_filter = await _run_filter(
+                                filters,
+                                update
+                            )
+                            if not status_filter:
+                                continue
                             self._schedule_handler(handler, update)
                             if not is_edited and not is_deleted:
                                 self.messages.append(update)
@@ -2549,18 +2524,12 @@ class Client:
                             update = UpdateButton(result, self)
                             filters: InlineFilter | None = handler_info["filters"]
                         
-                            if filters is not None:
-                                try:
-                                    filter_class = type(filters)
-                                    if "__acall__" in filter_class.__dict__.keys():
-                                        result = await filters.__acall__(update)
-                                    else:
-                                        result = filters(update)
-                                    if not result:
-                                        continue
-                                except Exception as e:
-                                    print(f"[FILTER ERROR] {filters} -> {e}")
-                                    continue
+                            status_filter = await _run_filter(
+                                filters,
+                                update
+                            )
+                            if not status_filter:
+                                continue
                             self._schedule_handler(handler_info["handler"], update)
             await asyncio.sleep(self.poll_interval)
 
