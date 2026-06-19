@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "fastrub"
 dynamic = ["version"]
 authors = [
-    {name = "seyyed mohamad hosein moosavi raja(01)", email = "mohamadhosein159159@gmail.com"},
+    {name = "seyyed mohamad hosein moosavi raja(OandONE)", email = "mohamadhosein159159@gmail.com"},
 ]
 description = "The fastest library for writing Rubika messenger bots both synchronously and asynchronously ⚡"
 readme = {file = "README.md", content-type = "text/markdown"}
