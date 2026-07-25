@@ -5,6 +5,7 @@ from . import Update
 import json
 from .props import props
 from ..core.async_sync import wrap_all_async_methods
+from ..button import KeyPad
 
 class msg_update:
     def __init__(self, update_data: dict, client: "Client") -> None:
@@ -24,7 +25,7 @@ class msg_update:
     async def edit_text(
         self,
         new_text: str,
-        inline_keypad: list | None = None,
+        inline_keypad: list | KeyPad | None = None,
         parse_mode: Literal['Markdown', 'HTML', None] = "Markdown",
         context: dict | None = None,
         auto_escape: bool = True,
