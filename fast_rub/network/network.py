@@ -1,7 +1,7 @@
 from ..types.errors import ServerRubikaError
 from ..utils.utils import Utils
 from pathlib import Path
-from typing import Any, Literal
+from typing import Any, Literal, TYPE_CHECKING
 from tqdm.asyncio import tqdm
 import os
 import aiofiles
@@ -11,11 +11,15 @@ import tempfile
 import logging
 import uuid
 
+if TYPE_CHECKING:
+    from ..core import Client
+
 
 class Network:
     def __init__(
         self,
         token: str,
+        client: "Client",
         logger: logging.Logger | None = None,
         max_retries: int = 3,
         user_agent: str | None = None,
@@ -26,6 +30,8 @@ class Network:
         proxy: str | None = None,
         rate_limit: int = 20,
         ssl_verify: bool = True,
+        max_retries_upload: int | None = None,
+        max_retries_download: int | None = None,
     ):
         self.logger = logger or logging.getLogger("fast_rub.network")
         self.token = token
@@ -44,6 +50,11 @@ class Network:
         self._rate_limit = rate_limit
 
         self.ssl_verify = ssl_verify
+        
+        self.max_retries_upload = max_retries_upload or max_retries
+        self.max_retries_download = max_retries_download or max_retries
+
+        self._core_client = client
 
     # -------------------
     # Lifecycle: start / stop
@@ -107,10 +118,12 @@ class Network:
             "http2": True,
             "verify": self.ssl_verify,
             "headers": {
-                "Content-Type": "application/json",
-                "User-Agent": self.user_agent or "fast_rub/Network"
+                "Content-Type": "application/json"
             }
         }
+
+        if self.user_agent:
+            kwargs["headers"]["User-Agent"] = self.user_agent
 
         if self.proxy:
             try:
@@ -229,6 +242,8 @@ class Network:
                 return resp
 
             except (httpx.ReadError, httpx.ConnectError, httpx.TimeoutException) as e:
+                if not self._core_client.config.retry_on_timeout:
+                    raise
                 last_exception = e
                 wait_time = attempt * 1.5
                 self.logger.warning(f"Request failed attempt {attempt}/{max_retries}: {e}. Retrying in {wait_time}s...")
@@ -273,6 +288,7 @@ class Network:
         data: dict[str, Any] | None = None
     ) -> dict:
         self.logger.debug(f"method {method}")
+        last_exception = None
         for base_url in self.base_urls:
             self.logger.debug(f"Base Url » {base_url}")
             url = f"{base_url}v3/{self.token}/{method}"
@@ -280,7 +296,8 @@ class Network:
                 if data:
                     data = Utils.clean_dict(data)
                 response = await self.request(url, data, "POST")
-            except:
+            except Exception as e:
+                last_exception = e
                 continue
             try:
                 result = response.json()
@@ -293,46 +310,70 @@ class Network:
                 raise ServerRubikaError(result)
 
             return result["data"]
-        raise httpx.TimeoutException("All Base Urls Sending Requests and Can't Get Response .")
+        raise last_exception or httpx.ConnectError("All Base Urls Sending Requests and Can't Get Response .")
 
-    async def download(self, url: str, path: str = "file", show_progress: bool = True) -> bool:
-        try:
-            await self._ensure_client()
+    async def download(
+        self,
+        url: str,
+        path: str = "file",
+        show_progress: bool = True,
+        max_retries: int | None = None
+    ) -> bool:
+        retries = max_retries if max_retries is not None else self.max_retries_download
+        last_exception = None
+        
+        for attempt in range(1, retries + 1):
+            try:
+                await self._ensure_client()
 
-            dir_path = os.path.dirname(path)
-            if dir_path:
-                os.makedirs(dir_path, exist_ok=True)
+                dir_path = os.path.dirname(path)
+                if dir_path:
+                    os.makedirs(dir_path, exist_ok=True)
 
-            if self._rate_sem is None:
-                self._rate_sem = asyncio.Semaphore(self._rate_limit)
+                if self._rate_sem is None:
+                    self._rate_sem = asyncio.Semaphore(self._rate_limit)
 
-            async with self._rate_sem:
-                async with self._client.stream("GET", url) as response: # pyright: ignore[reportOptionalMemberAccess]
-                    response.raise_for_status()
-                    total = int(response.headers.get("content-length", 0))
-                    if show_progress and total:
-                        pbar = tqdm(total=total, unit="B", unit_scale=True, desc="Downloading")
-                    else:
-                        pbar = None
-                    async with aiofiles.open(path, 'wb') as file:
-                        async for chunk in response.aiter_bytes():
-                            await file.write(chunk)
-                            if pbar:
-                                pbar.update(len(chunk))
-                    if pbar:
-                        pbar.close()
-            return True
-        except Exception as e:
-            self.logger.error(f"Download failed: {e}")
-            return False
-    
+                async with self._rate_sem:
+                    async with self._client.stream("GET", url) as response:  # pyright: ignore[reportOptionalMemberAccess]
+                        response.raise_for_status()
+                        total = int(response.headers.get("content-length", 0))
+                        if show_progress and total:
+                            pbar = tqdm(total=total, unit="B", unit_scale=True, desc="Downloading")
+                        else:
+                            pbar = None
+                        async with aiofiles.open(path, 'wb') as file:
+                            async for chunk in response.aiter_bytes():
+                                await file.write(chunk)
+                                if pbar:
+                                    pbar.update(len(chunk))
+                        if pbar:
+                            pbar.close()
+                return True
+                
+            except (httpx.HTTPError, OSError) as e:
+                last_exception = e
+                if attempt < retries:
+                    wait_time = 2 ** (attempt - 1)
+                    self.logger.warning(f"Download failed attempt {attempt}/{retries}: {e}. Retrying in {wait_time}s...")
+                    await asyncio.sleep(wait_time)
+                    continue
+                self.logger.error(f"Download failed after {retries} attempts: {e}")
+                return False
+            
+            except Exception as e:
+                self.logger.error(f"Download failed: {e}")
+                return False
+        
+        return False
+
     async def upload(
         self,
         url: str,
         file_path: str | Path | bytes,
         file_name: str,
         show_progress: bool = True,
-        chunk_size: int = 1024 * 1024 # 1 MB
+        chunk_size: int = 1024 * 1024, # 1 MB
+        max_retries: int | None = None,
     ) -> dict[str, Any]:
         self.logger.info("در حال آپلود فایل (httpx async stream)...")
         await self._ensure_client()
@@ -360,7 +401,8 @@ class Network:
             content_length = len(header) + total_size + len(footer)
             
             last_exception = None
-            for attempt in range(1, self.max_retries + 1):
+            retries = max_retries if max_retries is not None else self.max_retries_upload
+            for attempt in range(1, retries + 1):
                 try:
                     async def body_stream():
                         yield header
