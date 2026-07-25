@@ -1,18 +1,18 @@
 import asyncio
-import inspect
 import logging
 import time
 import os
 import sys
+import json
 from functools import wraps
 from pathlib import Path
 from collections import deque
 from typing import Any, Literal, TYPE_CHECKING
-
 from collections.abc import Callable
 from traceback import format_exc
 
 import httpx
+import aiofiles
 
 from .async_sync import wrap_all_async_methods
 from .middleware import MiddlewareManager
@@ -23,6 +23,7 @@ from .hotreload import HotReload
 from .helpers import _send_helper
 from .signals import SignalManager
 from .scheduler import Scheduler
+from .config import BotConfig
 from ..button import KeyPad
 from ..utils.filters import Filter
 from ..utils.inline_filters import InlineFilter
@@ -33,7 +34,7 @@ from ..types.props import props
 from ..types.models import Bot as BotModel, Chat as ChatModel
 from ..types import WebhookConfig
 from ..utils.colors import Colors
-from ..utils.logger import logging, setup_logging
+from ..utils.logger import logging, set_log_callback, setup_logging
 from ..utils.utils import Utils
 from ..utils.text_parser import TextParser
 from ..utils import WaitManager
@@ -160,6 +161,12 @@ class Client:
 
     cache_ttl: float | None
         ttl کش
+    
+    max_retries_upload: int | None
+        حداکثر تلاش برای آپلود فایل
+    
+    max_retries_download: int | None
+        حداکثر تلاش برای دانلود فایل
     """
     # ═══════════════════════════════════
     # region 🚀 Start & Stop | شروع و توقف
@@ -179,7 +186,7 @@ class Client:
             "https://botapi.rubika.ir/",
             # "https://messengerg2b1.iranlms.ir/"
         ],
-        max_retries: int = 3,
+        max_retries: int = 5,
         show_progress: bool | None = None,
         keeper_messages_ram: int = 5_000,
         keeper_messages_db: int = 0,
@@ -195,6 +202,9 @@ class Client:
         cache: Cache | None = None,
         cache_max_size: int | None = None,
         cache_ttl: float | None = None,
+        max_retries_upload: int | None = None,
+        max_retries_download: int | None = None,
+        config: BotConfig | None = None,
     ):
         """Client for login and setting robot / کلاینت برای لوگین و تنظیمات ربات"""
         self.name_session = name_session
@@ -208,6 +218,8 @@ class Client:
         self.show_progress = show_progress
         self.main_parse_mode: Literal['Markdown', 'HTML', 'Null', None] = main_parse_mode
         self.max_retries = max_retries
+        self.max_retries_upload = max_retries_upload
+        self.max_retries_download = max_retries_download
         self.keeper_messages_ram = keeper_messages_ram
         self.urls: list[str] = base_urls
         self.offset_id = offset_id
@@ -227,6 +239,25 @@ class Client:
         self.ssl_verify = ssl_verify
         self.state = {}
         self.template = TemplateEngine(self)
+        self._on_ready_handlers = []
+        self._on_start_handlers = []
+        self._on_error_handlers = []
+        self._on_run_handlers = []
+        self._on_live_handlers = []
+        self._on_shutdown_handlers = []
+        self._message_handlers_polling = []
+        self._button_handlers = []
+        self._button_handlers_url = []
+        self._webhook_handlers_url = []
+        self._edit_handlers = []
+        self._edit_handlers_ = []
+        self._message_handlers_webhook = []
+        self._before_send_handlers = []
+        self._after_send_handlers = []
+        self._loaded_plugins = []
+        self._log_handlers = []
+        self._is_started = False
+        self.config = config or BotConfig()
         if logger:
             self.logger = logger
         else:
@@ -236,16 +267,12 @@ class Client:
 
     async def start(self):
         """تنظیمات شروع کردن ربات"""
+        self._is_started = True
         self._running = False
         self._fetch_messages_webhook = False
         self._fetch_messages_polling = False
         self._fetch_buttons = False
         self._fetch_edit = False
-        self._message_handlers_webhook = []
-        self._button_handlers = []
-        self._edit_handlers = []
-        self._edit_handlers_ = []
-        self._message_handlers_polling = []
         self.next_offset_id_get_message = None
         self.geted_u = 0
         self.list_commands = []
@@ -268,6 +295,7 @@ class Client:
             offset_id=self.offset_id,
             save_offset_id=self.save_offset_id
         )
+        await self.session.close()
         self.token: str = self.session.token
         self.time_out = self.session.time_out
         self.user_agent = self.session.user_agent
@@ -280,6 +308,10 @@ class Client:
             self.log_to_file = False
         if self.log_to_console is None:
             self.log_to_console = False
+        setup_logging(
+            log_to_console=self.log_to_console,
+            log_to_file=self.log_to_file
+        )
         self.exists_wait_manager = bool(self.wait_manager)
         self.main_url = self.urls[0]
         self.urls = Utils.format_url(self.urls)
@@ -287,19 +319,20 @@ class Client:
         self.save_offset_id = self.session.save_offset_id
         self.network = Network(
             token=self.token,
+            client=self,
             logger=self.logger,
             max_retries=self.max_retries,
             user_agent=self.user_agent,
             proxy=self.proxy,
             base_urls=self.urls,
             ssl_verify=self.ssl_verify,
+            max_retries_upload=self.max_retries_upload,
+            max_retries_download=self.max_retries_download,
         )
         self._webhook_server = None
         if self.webhook:
             self._webhook_server = WebhookServer(client=self, config=self.webhook, logger=self.logger)
-        self._middleware_manager = MiddlewareManager(
-            self.logger
-        )
+        self._middleware_manager = MiddlewareManager(self.logger)
         self._background = BackgroundManager(self.logger)
         if self._cache is not None:
             self.cache = self._cache
@@ -310,18 +343,16 @@ class Client:
             )
         else:
             self.cache = None
-        self._on_error_handlers = []
-        self._on_run_handlers = []
-        self._on_live_handlers = []
         self._is_live = False
-        self._on_shutdown_handlers = []
-        self._loaded_plugins = []
-        self._button_handlers_url = []
-        self._webhook_handlers_url = []
-        setup_logging(
-            log_to_console=self.log_to_console,
-            log_to_file=self.log_to_file
-        )
+        def _log_callback(log_entry):
+            for handler in self._log_handlers:
+                try:
+                    result = handler(log_entry)
+                    if asyncio.iscoroutine(result):
+                        asyncio.create_task(result)
+                except Exception:
+                    pass
+        set_log_callback(_log_callback)
         await self._process_on_start()
         await self._process_on_ready()
         if self.display_welcome:
@@ -359,6 +390,9 @@ class Client:
         """اجرای اصلی بات - فقط اگر هندلرهای مربوطه ثبت شده باشند"""
 
         try:
+            if not self._is_started:
+                await self.start()
+            
             if not (self._fetch_messages_webhook or self._fetch_buttons or self._fetch_messages_polling or self._fetch_edit):
                 raise ValueError("No update types selected. Use decorator first.")
             
@@ -375,9 +409,13 @@ class Client:
                 self.poll_interval = poll_interval
 
             self._running = True
+            
+            await self._process_before_run()
+            
             self.logger.info("ربات در حال دریافت پیام ها")
             if self.display_welcome:
                 Utils.print_time("Start", color=Colors.BLUE)
+            
             if reload and not os.environ.get("FASTRUB_RELOAD_CHILD"):
                 script_path = sys.argv[0]
                 hotreload = HotReload(self.logger)
@@ -389,11 +427,13 @@ class Client:
                     await asyncio.sleep(1)
             else:
                 await self._run_all()
+                
         except KeyboardInterrupt:
             self.logger.info("Ctrl+C received")
         finally:
+            await self._process_after_run()
             await self.close()
-    
+
     run_sync = run
 
     async def close(
@@ -413,11 +453,6 @@ class Client:
             del self.urls
             del self.main_url
             await self._process_on_shutdown()
-
-    async def cloes(self):
-        self.logger.warning("The 'cloes' method is deprecated, "
-            "use 'close' instead", DeprecationWarning, 2)
-        return await self.close()
 
     async def stop(
         self
@@ -476,6 +511,8 @@ class Client:
         message_id: str,
         time_sleep: float
     ) -> props:
+        Utils.check_message_id_raise(message_id)
+        Utils.check_id_raise(chat_id)
         await asyncio.sleep(time_sleep)
         result = await self.delete_message(
             chat_id=chat_id,
@@ -492,7 +529,15 @@ class Client:
         """setting parse mode text / تنظیم پارس مود متن"""
         if self.main_parse_mode != "Null":
             parse_mode = self.main_parse_mode
-        text = Utils.trim_text(text)
+        if self.config.strip_text:
+            text = Utils.trim_text(text)
+        if self.config.optimize_text:
+            text = " ".join(text.split())
+        if self.config.max_text_length and len(text) > self.config.max_text_length:
+            if self.config.compress_long_text:
+                text = text[:self.config.max_text_length - 3] + "..."
+            else:
+                text = text[:self.config.max_text_length]
         if parse_mode == "Markdown":
             data = TextParser.markdown(text)
             return data
@@ -506,7 +551,7 @@ class Client:
         wait_send: float | None = None
     ) -> float | None:
         return wait_send or (
-            self.wait_manager.get_time() if self.wait_manager else None
+            await self.wait_manager.get_time() if self.wait_manager else None
         ) or self.defult_wait
 
     async def _manage_auto_delete(
@@ -737,7 +782,8 @@ class Client:
         name_file: str = "bot_avatar.jpg",
         show_progress: bool = True,
         wait_send: float | None = None,
-        return_task: bool = False
+        return_task: bool = False,
+        max_retries: int | None = None
     ) -> bool:
         self.logger.info("استفاده از متود download_me_profile")
         bot = await self.get_me()
@@ -748,7 +794,8 @@ class Client:
                 path=name_file,
                 show_progress=show_progress,
                 wait_send=wait_send,
-                return_task=return_task
+                return_task=return_task,
+                max_retries=max_retries,
             )
             self.logger.info("پروفایل ربات دانلود شد")
             return True
@@ -776,7 +823,7 @@ class Client:
         async def _active():
             if self.wait_manager and self.wait_manager.track_after_send:
                 self.wait_manager.add_traffic(channel="uploading")
-            wait_manager = wait_send or (self.wait_manager.get_time("uploading") if self.wait_manager else None)
+            wait_manager = wait_send or (await self.wait_manager.get_time("uploading") if self.wait_manager else None)
             if wait_manager:
                 await asyncio.sleep(wait_manager)
             file = await self.get_file(id_file)
@@ -792,11 +839,17 @@ class Client:
         self,
         url: str,
         path: str = "file",
-        show_progress: bool = True
+        show_progress: bool = True,
+        max_retries: int | None = None,
     ) -> None:
         if not self.show_progress is None:
             show_progress = self.show_progress
-        download = await self.network.download(url, path, show_progress)
+        download = await self.network.download(
+            url,
+            path,
+            show_progress,
+            max_retries
+        )
         if download:
             self.logger.info("فایل دانلود شد")
         else:
@@ -809,18 +862,19 @@ class Client:
         path: str = "file",
         show_progress: bool = True,
         wait_send: float | None = None,
-        return_task: bool = False
+        return_task: bool = False,
+        max_retries: int | None = None,
     ) -> None:
         """download file / دانلود فایل"""
         self.logger.info("استفاده از متود download_file")
         async def _active():
             if self.wait_manager and self.wait_manager.track_after_send:
                 self.wait_manager.add_traffic(channel="sending")
-            wait_manager = wait_send or (self.wait_manager.get_time("uploading") if self.wait_manager else None)
+            wait_manager = wait_send or (await self.wait_manager.get_time("uploading") if self.wait_manager else None)
             if wait_manager:
                 await asyncio.sleep(wait_manager)
             url = await self.get_download_file_url(id_file)
-            await self.download_by_url(url, path, show_progress) # type: ignore
+            await self.download_by_url(url, path, show_progress, max_retries) # type: ignore
         if return_task:
             asyncio.create_task(_active())
         else:
@@ -879,7 +933,7 @@ class Client:
 
         result = await _send_helper(
             self, _active, channel="sending", return_task=return_task,
-            wait_send=wait_send, chat_id=chat_id
+            wait_send=wait_send, chat_id=chat_id, text=text
         )
         return result
 
@@ -1281,6 +1335,7 @@ class Client:
     ) -> msg_update | None:
         """auto edit message text {time_sleep} time s / ویرایش خودکار متن پیام بعد از فلان مقدار ثانیه"""
         async def _edit():
+            Utils.check_message_id_raise(message_id)
             return await self._auto_edit(
                 chat_id=chat_id,
                 message_id=message_id,
@@ -1352,7 +1407,6 @@ class Client:
             )
             return None
         else:
-            Utils.check_id_raise(chat_id)
             return await self._auto_delete(
                 chat_id=chat_id,
                 message_id=message_id,
@@ -1868,6 +1922,7 @@ class Client:
         return_task: bool = False,
         context: dict | None = None,
         auto_escape: bool = True,
+        max_retries: int | None = None,
     ) -> msg_update | asyncio.Task[msg_update]:
         """re send message / ارسال مجدد پیام"""
         self.logger.info("در حال استفاده از متود resend_message")
@@ -1902,7 +1957,8 @@ class Client:
                     await self.download_file(
                         file_file_id,
                         download_name,
-                        show_progress
+                        show_progress,
+                        max_retries
                     )
                     return await self.base_send_file(
                         chat_id=to_chat_id,
@@ -2141,6 +2197,55 @@ class Client:
         return decorator
     
     on_close = on_shutdown
+
+    def before_send(self):
+        """دکوراتور — قبل از هر ارسال اجرا می‌شود. اگر False برگرداند، ارسال لغو می‌شود."""
+        def decorator(func: Callable):
+            self.add_handler(
+                func,
+                "before_send"
+            )
+            return func
+        return decorator
+
+    def after_send(self):
+        """دکوراتور — بعد از هر ارسال اجرا می‌شود."""
+        def decorator(func: Callable):
+            self.add_handler(
+                func,
+                "after_send"
+            )
+            return func
+        return decorator
+    
+    def before_run(self):
+        """دکوراتور برای ثبت handler قبل از اجرای run"""
+        def decorator(func):
+            self.add_handler(
+                func,
+                "before_run"
+            )
+            return func
+        return decorator
+
+    def after_run(self):
+        """دکوراتور برای ثبت handler بعد از اجرای run"""
+        def decorator(func):
+            self.add_handler(
+                func,
+                "after_run"
+            )
+            return func
+        return decorator
+    
+    def on_log(self):
+        def decorator(func):
+            self.add_handler(
+                func,
+                "log"
+            )
+            return func
+        return decorator
     
     def add_handler(
         self,
@@ -2159,6 +2264,11 @@ class Client:
             "shutdown",
             "button_url",
             "webhook_url",
+            "before_send",
+            "after_send",
+            "before_run",
+            "after_run",
+            "log",
         ],
         filters: Filter | InlineFilter | None = None,
         edited_messages: Literal[False, True, "both"] = False,
@@ -2184,10 +2294,10 @@ class Client:
                                 )
                                 return
 
-                        if inspect.iscoroutinefunction(handler):
-                            return await handler(update)
-                        else:
-                            return handler(update)
+                        return await Utils.run_handler(
+                            handler,
+                            update
+                        )
 
                     except Exception as e:
                         await self._process_on_error(
@@ -2255,6 +2365,16 @@ class Client:
                         "url": values["path_url"]
                     }
                 )
+            elif type_handler == "log":
+                self._log_handlers.append(handler)
+            elif type_handler == "before_send":
+                self._before_send_handlers.append(handler)
+            elif type_handler == "after_send":
+                self._after_send_handlers.append(handler)
+            elif type_handler == "before_run":
+                self._on_run_handlers.append(handler)
+            elif type_handler == "before_send":
+                self._on_shutdown_handlers.append(handler)
         else:
             if type_handler == "conversation":
                 name, conv = handler
@@ -2532,6 +2652,46 @@ class Client:
                                 continue
                             self._schedule_handler(handler_info["handler"], update)
             await asyncio.sleep(self.poll_interval)
+    
+    async def _trigger_before_send(self, **kwargs) -> bool:
+        for handler in self._before_send_handlers:
+            try:
+                result = handler(**kwargs)
+                if asyncio.iscoroutine(result):
+                    result = await result
+                if result is False:
+                    return False
+            except Exception:
+                pass
+        return True
+
+    async def _trigger_after_send(self, result: Any, **kwargs):
+        kwargs["result"] = result
+        for handler in self._after_send_handlers:
+            try:
+                res = handler(**kwargs)
+                if asyncio.iscoroutine(res):
+                    await res
+            except Exception:
+                pass
+    
+    async def _process_before_run(self):
+        for handler in self._on_run_handlers:
+            try:
+                result = handler()
+                if asyncio.iscoroutine(result):
+                    await result
+            except Exception as e:
+                self.logger.error(f"Error in before_run handler: {e}")
+
+    async def _process_after_run(self):
+        for handler in self._on_shutdown_handlers:
+            try:
+                result = handler()
+                if asyncio.iscoroutine(result):
+                    await result
+            except Exception as e:
+                self.logger.error(f"Error in after_run handler: {e}")
 
     # endregion
 
@@ -2539,8 +2699,10 @@ class Client:
     # region ⚙️ Utils | متدهای کمکی
     # ═══════════════════════════════════
 
-    
-    async def set_main_parse_mode(self,parse_mode: Literal['Markdown', 'HTML', 'Null', None]) -> None:
+    async def set_main_parse_mode(
+        self,
+        parse_mode: Literal['Markdown', 'HTML', 'Null', None]
+    ) -> None:
         """setting parse mode main / تنظیم کردن مقدار اصلی پارس مود
 
 توجه :
@@ -2580,9 +2742,31 @@ class Client:
             data=data_
         )
 
-    def render(self, template: str, auto_escape: bool = True, **kwargs) -> tuple[str, list[dict[str, Any]]]:
-        return self.template.render(template, auto_escape=auto_escape, **kwargs)
-
+    def render(
+        self,
+        template: str,
+        auto_escape: bool = True,
+        **kwargs
+    ) -> tuple[str, list[dict[str, Any]]]:
+        return self.template.render(
+            template,
+            auto_escape=auto_escape,
+            **kwargs
+        )
+    
+    @classmethod
+    async def from_config(
+        cls,
+        config: str | dict[str, Any]
+    ):
+        """ساخت Client از دیکشنری یا فایل JSON."""
+        if isinstance(config, str):
+            async with aiofiles.open(config, "r") as f:
+                content = await f.read()
+                config = json.loads(content)
+        
+        return cls(**config) # type: ignore
+        
     # endregion
 
     # ═══════════════════════════════════
@@ -2619,6 +2803,7 @@ class Client:
         """get message by id / گرفتن پیام با آیدی"""
         if not message_id:
             raise ValueError("The Message Id not goted .")
+        Utils.check_message_id_raise(message_id)
         if chat_id:
             Utils.check_id_raise(chat_id)
         
@@ -2701,6 +2886,7 @@ class Client:
         """get messages / گرفتن پیام ها"""
         self.logger.info("در حال استفاده از متود get_messages .")
         Utils.check_id_raise(chat_id)
+        Utils.check_message_id_raise(message_id)
         messages = deque(maxlen=get_befor)
         
         if search_by in ("all", "messages"):
