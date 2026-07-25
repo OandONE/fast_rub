@@ -3,6 +3,24 @@ import logging
 LOG_FORMAT = "%(asctime)s | %(levelname)-8s | %(name)s | %(message)s"
 DEFAULT_LOG_FILE = "fast_rub.log"
 
+class CallbackHandler(logging.Handler):
+    def __init__(self):
+        super().__init__()
+        self._callback = None
+    
+    def set_callback(self, callback):
+        self._callback = callback
+    
+    def emit(self, record):
+        if self._callback:
+            log_entry = {
+                "level": record.levelname,
+                "message": self.format(record),
+                "time": record.created,
+                "name": record.name,
+            }
+            self._callback(log_entry)
+
 def setup_logging(
     *,
     log_to_file: bool = True,
@@ -28,3 +46,10 @@ def setup_logging(
 
 _default_logger = setup_logging(log_to_file=True, log_to_console=True)
 logger = logging.getLogger("fast_rub")
+
+_callback_handler = CallbackHandler()
+_callback_handler.setLevel(logging.DEBUG)
+logging.getLogger().addHandler(_callback_handler)
+
+def set_log_callback(callback):
+    _callback_handler.set_callback(callback)
