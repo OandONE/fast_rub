@@ -5,6 +5,7 @@ import json
 from ..utils import Utils
 from .props import props
 from ..core import wrap_all_async_methods
+from ..button import KeyPad
 
 if TYPE_CHECKING:
     from ..core import Client
@@ -46,8 +47,8 @@ class UpdateButton:
     async def send_text(
         self,
         text: str,
-        inline_keypad: list | None = None,
-        keypad: list | None = None,
+        inline_keypad: list | KeyPad | None = None,
+        keypad: list | KeyPad | None = None,
         resize_keyboard: bool | None = True,
         on_time_keyboard: bool | None = False,
         disable_notification: bool = False,
@@ -83,8 +84,8 @@ class UpdateButton:
     async def send_message(
         self,
         text: str | None = None,
-        inline_keypad: list | None = None,
-        keypad: list | None = None,
+        inline_keypad: list | KeyPad | None = None,
+        keypad: list | KeyPad | None = None,
         resize_keyboard: bool | None = True,
         on_time_keyboard: bool | None = False,
         reply_to_message_id: str | None = None,
@@ -192,7 +193,7 @@ class UpdateButton:
         phone_number: str,
         auto_delete: int | None = None,
         reply_to_message_id: str | None = None,
-        inline_keypad: list | None = None,
+        inline_keypad: list | KeyPad | None = None,
         chat_id: str | None = None
     ):
         """sending contact / ارسال مخاطب"""
@@ -233,8 +234,8 @@ class UpdateButton:
         reply_to_message_id: str | None = None,
         parse_mode: Literal['Markdown', 'HTML', None] = "Markdown",
         meta_data: list | None = None,
-        inline_keypad: list | None = None,
-        keypad: list | None = None,
+        inline_keypad: list | KeyPad | None = None,
+        keypad: list | KeyPad | None = None,
         resize_keyboard: bool | None = True,
         on_time_keyboard: bool | None = False,
         show_progress: bool = True,
@@ -279,8 +280,8 @@ class UpdateButton:
         reply_to_message_id: str | None = None,
         parse_mode: Literal['Markdown', 'HTML', None] = "Markdown",
         meta_data: list | None = None,
-        inline_keypad: list | None = None,
-        keypad: list | None = None,
+        inline_keypad: list | KeyPad | None = None,
+        keypad: list | KeyPad | None = None,
         resize_keyboard: bool | None = True,
         on_time_keyboard: bool | None = False,
         show_progress: bool = True,
@@ -324,8 +325,8 @@ class UpdateButton:
         reply_to_message_id: str | None = None,
         parse_mode: Literal['Markdown', 'HTML', None] = "Markdown",
         meta_data: list | None = None,
-        inline_keypad: list | None = None,
-        keypad: list | None = None,
+        inline_keypad: list | KeyPad | None = None,
+        keypad: list | KeyPad | None = None,
         resize_keyboard: bool | None = True,
         on_time_keyboard: bool | None = False,
         show_progress: bool = True,
@@ -369,8 +370,8 @@ class UpdateButton:
         reply_to_message_id: str | None = None,
         parse_mode: Literal['Markdown', 'HTML', None] = "Markdown",
         meta_data: list | None = None,
-        inline_keypad: list | None = None,
-        keypad: list | None = None,
+        inline_keypad: list | KeyPad | None = None,
+        keypad: list | KeyPad | None = None,
         resize_keyboard: bool | None = True,
         on_time_keyboard: bool | None = False,
         show_progress: bool = True,
@@ -414,8 +415,8 @@ class UpdateButton:
         reply_to_message_id: str | None = None,
         parse_mode: Literal['Markdown', 'HTML', None] = "Markdown",
         meta_data: list | None = None,
-        inline_keypad: list | None = None,
-        keypad: list | None = None,
+        inline_keypad: list | KeyPad | None = None,
+        keypad: list | KeyPad | None = None,
         resize_keyboard: bool | None = True,
         on_time_keyboard: bool | None = False,
         show_progress: bool = True,
@@ -459,8 +460,8 @@ class UpdateButton:
         reply_to_message_id: str | None = None,
         parse_mode: Literal['Markdown', 'HTML', None] = "Markdown",
         meta_data: list | None = None,
-        inline_keypad: list | None = None,
-        keypad: list | None = None,
+        inline_keypad: list | KeyPad | None = None,
+        keypad: list | KeyPad | None = None,
         resize_keyboard: bool | None = True,
         on_time_keyboard: bool | None = False,
         show_progress: bool = True,
@@ -504,8 +505,8 @@ class UpdateButton:
         reply_to_message_id: str | None = None,
         parse_mode: Literal['Markdown', 'HTML', None] = "Markdown",
         meta_data: list | None = None,
-        inline_keypad: list | None = None,
-        keypad: list | None = None,
+        inline_keypad: list | KeyPad | None = None,
+        keypad: list | KeyPad | None = None,
         resize_keyboard: bool | None = True,
         on_time_keyboard: bool | None = False,
         show_progress: bool = True,
