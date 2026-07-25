@@ -21,9 +21,18 @@ async def _send_helper(
     """تابع کمکی برای متدهای ارسال"""
     
     async def _active():
-        for key in ("chat_id", "from_chat_id", "to_chat_id", "user_id", "sender_id"):
+        if "text" in kwargs and kwargs["text"] is not None:
+            if not await self._trigger_before_send(**kwargs):
+                return None
+
+        if self.config.validate_chat_id:
+            for key in ("chat_id", "from_chat_id", "to_chat_id", "user_id", "sender_id"):
+                if key in kwargs and kwargs[key] is not None:
+                    Utils.check_id_raise(kwargs[key])
+        
+        for key in ("reply_to_message_id", "message_id"):
             if key in kwargs and kwargs[key] is not None:
-                Utils.check_id_raise(kwargs[key])
+                Utils.check_message_id_raise(kwargs[key])
         
         if self.wait_manager and self.wait_manager.track_after_send:
             chat_id = kwargs.get("chat_id") or kwargs.get("to_chat_id")
@@ -34,7 +43,12 @@ async def _send_helper(
         if wait:
             await asyncio.sleep(wait)
         
-        return await func()
+        result = await func()
+
+        if "text" in kwargs and kwargs["text"] is not None:
+            await self._trigger_after_send(result=result, **kwargs)
+
+        return result
     
     if return_task:
         return asyncio.create_task(_active())
