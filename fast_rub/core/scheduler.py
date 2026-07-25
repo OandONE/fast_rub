@@ -1,6 +1,8 @@
 import asyncio
 import logging
 from datetime import datetime, timedelta
+from .async_sync import wrap_all_async_methods
+from ..utils import Utils
 
 from collections.abc import Callable
 
@@ -62,7 +64,7 @@ class Scheduler:
             self._logger.info(f"Scheduler: {wait_seconds:.0f} ثانیه تا {time_str}")
             await asyncio.sleep(wait_seconds)
             
-            await func()
+            await Utils.run_handler(func)
     
     def cancel_all(self):
         """لغو همه کارهای زمان‌بندی شده"""
@@ -74,3 +76,5 @@ class Scheduler:
     @property
     def count(self) -> int:
         return len([t for t in self._tasks if not t.done()])
+
+wrap_all_async_methods(Scheduler)
