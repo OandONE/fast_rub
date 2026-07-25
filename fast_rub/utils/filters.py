@@ -806,6 +806,8 @@ is_file = IsFile()
 
 is_video = IsVideo()
 is_image = IsImage()
+is_photo = is_image
+is_pictutre = is_image
 is_audio = IsAudio()
 is_archive = IsArchive()
 is_voice = IsVoice()
