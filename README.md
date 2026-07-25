@@ -335,7 +335,7 @@ await signals.emit("user_registered", user_id="123", chat_id="456")
 
 ```python
 async def setup(client):
-    @client.on_message(commands=["/admin"])
+    @client.on_message(filters.command(["admin"]))
     async def panel(msg):
         await msg.reply("🔧 پنل ادمین")
 ```
