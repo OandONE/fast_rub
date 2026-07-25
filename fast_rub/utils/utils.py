@@ -1,10 +1,14 @@
-from typing import TYPE_CHECKING, Literal
+from typing import TYPE_CHECKING, Literal, Any
+from collections.abc import Callable
 from pathlib import Path
 import aiofiles
+import asyncio
 from .colors import cprint, Colors
 import time
 import re
 from ..button import KeyPad
+import inspect
+import warnings
 
 if TYPE_CHECKING:
     from ..network.network import Network
@@ -168,7 +172,17 @@ class Utils:
         if not Utils.check_id(id=id):
             from ..types.errors import InvalidID
             raise InvalidID('Invalid Id. The ID must be 32 characters long and must also start with one of the letters "b", "u", or "g".')
+    
+    @staticmethod
+    def check_message_id(id: str) -> bool:
+        return id.isdigit() and len(id) == 19
 
+    @staticmethod
+    def check_message_id_raise(id: str):
+        if not Utils.check_message_id(id=id):
+            from ..types.errors import InvalidID
+            raise InvalidID('Invalid Message Id. The Message Id be 19 characters long and must also is number: 1234567890123456789')
+    
     @staticmethod
     def clean_dict(data: dict) -> dict:
         if not isinstance(data, dict):
@@ -200,3 +214,56 @@ class Utils:
         return text
     
     trim_trailing_newlines = trim_text
+
+    @staticmethod
+    async def when(
+        condition: Callable[[], bool],
+        action: Callable[[], Any] | None = None,
+        sleep: float = 1.0,
+        timeout: float | None = None,
+        error_message: str | None = None,
+    ) -> bool:
+        """منتظر می‌ماند تا یک شرط برقرار شود، سپس action را اجرا می‌کند."""
+        start = time.time()
+        
+        while True:
+            if timeout and time.time() - start > timeout:
+                if error_message:
+                    print(f"⏰ Timeout: {error_message}")
+                return False
+            try:
+                result = condition()
+                if asyncio.iscoroutine(result):
+                    result = await result
+                
+                if result:
+                    if action:
+                        act = action()
+                        if asyncio.iscoroutine(act):
+                            await act
+                    return True
+            except Exception as e:
+                pass
+            
+            await asyncio.sleep(sleep)
+    
+    @staticmethod
+    async def run_handler(
+        handler: Callable,
+        *args,
+        **values
+    ):
+        if inspect.iscoroutinefunction(handler):
+            return await handler(*args, **values)
+        else:
+            return handler(*args, **values)
+    
+    @staticmethod
+    def deprecated_property(old_name: str, new_name: str):
+        """هشدار منسوخ شدن پراپرتی"""
+        warnings.warn(
+            f"`{old_name}` is deprecated and will be removed in Fast Rub 7.0. "
+            f"Use `{new_name}` instead.",
+            DeprecationWarning,
+            stacklevel=2
+        )
