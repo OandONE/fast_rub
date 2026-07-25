@@ -35,7 +35,7 @@ class Session:
         self._data = data
         self._db = db
 
-    # ── Properties ──────────────────────────────────────────
+    # Properties
 
     @property
     def token(self) -> str:
@@ -101,7 +101,12 @@ class Session:
     def save_offset_id(self, value: bool) -> None:
         self._data.save_offset_id = value
 
-    # ── Public Methods ──────────────────────────────────────
+    # Public Methods
+
+    async def close(self) -> None:
+        """بستن دیتابیس و آزادسازی منابع"""
+        if hasattr(self, '_db') and self._db:
+            await self._db.close()
 
     @classmethod
     async def open(
@@ -208,7 +213,7 @@ class Session:
             await self._db.delete("session", {})
         await self._db.write("session", values)
 
-    # ── Private Methods ─────────────────────────────────────
+    # Private Methods
 
     @staticmethod
     def _make_path(name: str) -> str:
@@ -258,7 +263,7 @@ class Session:
                 save_offset_id=save_offset_id,
             )
 
-        # تبدیل tuple به dict
+        # convert tuple to dict
         cols = ["token", "user_agent", "time_out", "display_welcome", "view_logs", "save_logs", "offset_id", "save_offset_id"]
         current = {}
         for i, col in enumerate(cols):
