@@ -43,16 +43,36 @@ class DataBase:
             await self._conn.close()
             self._conn = None
 
-    async def start(self, tables: dict = {}):
-        """ساخت جداول و اضافه کردن ستون‌های جدید"""
+    async def start(self, tables: dict = {}, primary_keys: dict[str, list[str]] | None = None):
+        """ساخت جداول و اضافه کردن ستون‌های جدید
+        
+        Args:
+            tables: {"table_name": {"col": "TYPE", ...}}  ← مثل قبل
+            primary_keys: {"table_name": ["col1", "col2"]}  ← جدید و اختیاری
+        """
         db = await self._get_conn()
+        
+        if primary_keys is None:
+            primary_keys = {}
+        
         async with self.db_lock:
             for table_name, columns in tables.items():
                 col_defs = []
                 for col_name, col_type in columns.items():
                     col_defs.append(f"{col_name} {col_type}")
                 
+                if table_name in primary_keys:
+                    pk_cols = primary_keys[table_name]
+                    for pk in pk_cols:
+                        if pk not in columns:
+                            raise ValueError(
+                                f"PRIMARY KEY column '{pk}' not defined in table '{table_name}'"
+                            )
+                    pk_str = ", ".join(pk_cols)
+                    col_defs.append(f"PRIMARY KEY ({pk_str})")
+                
                 command = f"CREATE TABLE IF NOT EXISTS {table_name} ({', '.join(col_defs)})"
+                
                 async with db.cursor() as cursor:
                     await cursor.execute(command)
                 
@@ -61,24 +81,22 @@ class DataBase:
                     existing_cols = await cursor.fetchall()
                     existing_names = {row[1] for row in existing_cols}
                 
-                for col_name, col_type in columns.items():
-                    if col_name not in existing_names:
-                        default = "NULL"
-                        if "PRIMARY KEY" in col_type.upper():
-                            default = ""
-                        else:
+                    for col_name, col_type in columns.items():
+                        if col_name not in existing_names:
                             default = "NULL"
-                        
-                        try:
-                            await cursor.execute(
-                                f"ALTER TABLE {table_name} ADD COLUMN {col_name} {col_type} DEFAULT {default}"
-                            )
-                            self.logger.info(f"✅ Column '{col_name}' added to '{table_name}'")
-                        except aiosqlite.OperationalError:
-                            pass
+                            if "PRIMARY KEY" in col_type.upper():
+                                default = ""
+                            
+                            try:
+                                await cursor.execute(
+                                    f"ALTER TABLE {table_name} ADD COLUMN {col_name} {col_type} DEFAULT {default}"
+                                )
+                                self.logger.info(f"✅ Column '{col_name}' added to '{table_name}'")
+                            except aiosqlite.OperationalError:
+                                pass
             
             await db.commit()
-        # await db.close()
+        
         self.logger.info(f"Database started with {len(tables)} tables.")
 
     async def find(
@@ -377,6 +395,49 @@ class DataBase:
         except Exception as e:
             self.logger.error(f"Error adding column {column}: {e}")
     
+    async def most_frequent(self, table_name: str, column: str, where_values: dict | None = None) -> str | None:
+        """پرتکرارترین مقدار یک ستون در جدول"""
+        db = await self._get_conn()
+        
+        command = f"SELECT {column}, COUNT({column}) as cnt FROM {table_name}"
+        vals = []
+        
+        if where_values:
+            where_parts = []
+            for col, val in where_values.items():
+                where_parts.append(f"{col} = ?")
+                vals.append(val)
+            command += f" WHERE {' AND '.join(where_parts)}"
+        
+        command += f" GROUP BY {column} ORDER BY cnt DESC LIMIT 1"
+        
+        async with self.db_lock:
+            cursor = await db.execute(command, tuple(vals))
+            res = await cursor.fetchone()
+            await cursor.close()
+        
+        if res:
+            return res[0]
+        return None
+    
+    async def count_where(
+        self,
+        table_name: str, 
+        where_conditions: str,
+        vals: list | None = None
+    ) -> int:
+        """تعداد ردیف‌ها با شرط دلخواه"""
+        db = await self._get_conn()
+        
+        command = f"SELECT COUNT(*) FROM {table_name} WHERE {where_conditions}"
+        
+        async with self.db_lock:
+            cursor = await db.execute(command, tuple(vals or []))
+            res = await cursor.fetchone()
+            await cursor.close()
+        
+        return res[0] if res else 0
+
     async def backup(self, path: str | None = None) -> str:
         """بک‌آپ از دیتابیس"""
         if path is None:
