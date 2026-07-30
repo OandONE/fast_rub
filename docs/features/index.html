@@ -1,0 +1,1787 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>فست روب · قابلیت ها</title>
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="تمام قابلیت های فست روب از جمله WaitManager و DataForm و HotReload به صورت کامل با توضیحات مختصر">
+  <meta name="keywords" content="فست روب, Fast Rub, کانورستن نسخه جدید, قابلیت روبیکا, New  Version Conversation, کانورستیشن, DataForm, Conversation, WaitManager, مستندات پایتون">
+  <meta name="author" content="Fast Rub Team">
+  <meta name="robots" content="index, follow">
+  <meta name="language" content="Persian">
+  <meta name="distribution" content="global">
+  <meta name="rating" content="general">
+
+  <meta property="og:title" content="فست‌روب · مستندات قابلیت ها">
+  <meta property="og:description" content="مستندات کامل قابلیت ها و کلاس‌های کمکی Fast Rub برای بات روبیکا">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://fast-rub.ParsSource.ir/features/index.html">
+  <meta property="og:locale" content="fa_IR">
+  <meta property="og:site_name" content="Fast Rub Documentation">
+
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="فست‌روب · مستندات قابلیت ها">
+  <meta name="twitter:description" content="مستندات کامل قابلیت ها و کلاس هیا کمکی Fast Rub برای بات روبیکا">
+
+  <link rel="canonical" href="https://fast-rub.ParsSource.ir/features/index.html">
+
+  <link rel="icon" type="image/png" href="../icon.jpg">
+  <link rel="apple-touch-icon" href="/logo192.png">
+
+  <link rel="manifest" href="/manifest.json">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;700&display=swap" rel="stylesheet">
+
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "TechArticle",
+    "headline": "مستندات قابلیت و کلاس های کمکی فست‌روب",
+    "description": "مستندات کامل قابلیت ها و کلاس‌های کمکی Fast Rub برای بات روبیکا",
+    "author": {
+      "@type": "Organization",
+      "name": "Seyyed Mohamad Hosein Moosave Raja"
+    },
+    "datePublished": "2026-6-19",
+    "dateModified": "2026-6-19",
+    "inLanguage": "fa",
+    "url": "https://fast-rub.ParsSource.ir/features/index.html"
+  }
+  </script>
+
+<style>
+    :root {
+      --bg: #fafafa;
+      --surface: #ffffff;
+      --text: #1e1e2f;
+      --text-secondary: #5a5a7a;
+      --brand: #7b1fa2;
+      --brand-dark: #4a148c;
+      --brand-light: #b39ddb;
+      --accent: #ffb300;
+      --border: #e0d0ea;
+      --sidebar-bg: #f5f0fa;
+      --code-bg: #1e1e2a;
+      --code-text: #cdd6f4;
+      --table-hover: #ede7f6;
+      --shadow: rgba(0,0,0,0.05);
+      --copy-btn-bg: #2d2d3f;
+      --copy-btn-text: #ffd54f;
+      --signature-bg: #f3e9fd;
+    }
+
+    [data-theme="dark"] {
+      --bg: #0a0a0f;
+      --surface: #13131a;
+      --text: #cdd6f4;
+      --text-secondary: #6c7086;
+      --brand: #89b4fa;
+      --brand-dark: #b4befe;
+      --brand-light: #45475a;
+      --accent: #f9e2af;
+      --border: #1e1e2a;
+      --sidebar-bg: #0f0f15;
+      --code-bg: #11111b;
+      --code-text: #cdd6f4;
+      --table-hover: #1a1a24;
+      --shadow: rgba(0,0,0,0.3);
+      --copy-btn-bg: #313244;
+      --copy-btn-text: #89b4fa;
+      --signature-bg: #1a1a24;
+    }
+
+    .theme-toggle {
+      position: fixed;
+      bottom: 24px;
+      left: 24px;
+      z-index: 1000;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-size: 1.2rem;
+      cursor: pointer;
+      box-shadow: 0 2px 12px var(--shadow);
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .theme-toggle:hover {
+      transform: scale(1.1);
+      border-color: var(--brand);
+    }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: 'Vazirmatn', system-ui, -apple-system, 'Segoe UI', Roboto, Tahoma, Arial, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+    a {
+      text-decoration: none;
+      color: var(--brand);
+    }
+    a:hover {
+      text-decoration: underline;
+    }
+    .wrapper {
+      display: flex;
+      flex: 1;
+      max-width: 1440px;
+      margin: 0 auto;
+      width: 100%;
+      background: var(--surface);
+      box-shadow: 0 0 30px var(--shadow);
+      transition: background-color 0.3s ease;
+    }
+
+    .sidebar {
+      width: 280px;
+      background: var(--sidebar-bg);
+      border-left: 1px solid var(--border);
+      padding: 2rem 1.5rem;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+      transition: background-color 0.3s ease, border-color 0.3s ease;
+    }
+    .sidebar h1 {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: var(--brand-dark);
+      margin-bottom: 0.2rem;
+      line-height: 1.2;
+    }
+    .sidebar .sub {
+      color: var(--brand);
+      font-weight: 400;
+      font-size: 0.95rem;
+      margin-bottom: 2rem;
+      border-bottom: 2px solid var(--border);
+      padding-bottom: 1rem;
+    }
+    .nav-links {
+      list-style: none;
+      margin-bottom: 2.5rem;
+    }
+    .nav-links li {
+      margin-bottom: 0.6rem;
+    }
+    .nav-links a {
+      display: block;
+      padding: 0.4rem 0.8rem;
+      border-radius: 30px;
+      font-weight: 500;
+      color: var(--brand-dark);
+      transition: all 0.2s;
+    }
+    .nav-links a:hover {
+      background: var(--table-hover);
+      text-decoration: none;
+    }
+    .nav-links .active {
+      background: var(--brand-light);
+      color: white;
+    }
+    .toc-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--brand-dark);
+      margin: 1.5rem 0 0.8rem;
+      padding-top: 1rem;
+      border-top: 2px solid var(--border);
+    }
+    .toc-list {
+      list-style: none;
+      padding-right: 0;
+    }
+    .toc-list li {
+      margin-bottom: 0.4rem;
+      font-size: 0.9rem;
+    }
+    .toc-list a {
+      color: var(--text-secondary);
+      display: inline-block;
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+    }
+    .toc-list a:hover {
+      background: var(--table-hover);
+    }
+
+    .main {
+      flex: 1;
+      padding: 2.5rem 3rem;
+      background: var(--surface);
+      min-width: 0;
+      transition: background-color 0.3s ease;
+    }
+    .main-header {
+      margin-bottom: 2.5rem;
+    }
+    .main-header h1 {
+      font-size: 2.4rem;
+      font-weight: 700;
+      color: var(--brand-dark);
+      margin-bottom: 0.5rem;
+    }
+    .main-header p {
+      color: var(--text-secondary);
+      font-size: 1.1rem;
+    }
+
+  
+    .method {
+      margin-bottom: 4rem;
+      scroll-margin-top: 1rem;
+    }
+    .method h2 {
+      font-size: 1.9rem;
+      font-weight: 600;
+      color: var(--text);
+      border-bottom: 3px solid var(--accent);
+      padding-bottom: 0.5rem;
+      margin-bottom: 1.8rem;
+    }
+    .method .signature {
+      background: var(--signature-bg);
+      padding: 0.8rem 1.5rem;
+      border-radius: 40px;
+      display: inline-block;
+      font-family: 'Courier New', Courier, monospace;
+      direction: ltr;
+      color: var(--text);
+      font-weight: 500;
+      margin-bottom: 1.5rem;
+    }
+    .method .desc {
+      margin-bottom: 1.8rem;
+      color: var(--text-secondary);
+    }
+    .table-responsive {
+      overflow-x: auto;
+      margin: 1.5rem 0;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.95rem;
+      background: var(--surface);
+      transition: background-color 0.3s ease;
+    }
+    th {
+      background: var(--brand-light);
+      color: white;
+      font-weight: 600;
+      padding: 0.9rem 1.2rem;
+      text-align: right;
+    }
+    td {
+      padding: 0.9rem 1.2rem;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+    }
+    tr:last-child td {
+      border-bottom: none;
+    }
+    td:first-child, th:first-child {
+      font-family: 'Courier New', monospace;
+      direction: ltr;
+    }
+    td code {
+      background: var(--signature-bg);
+      padding: 0.2rem 0.4rem;
+      border-radius: 6px;
+      font-size: 0.85rem;
+    }
+
+    .code-block-wrapper {
+      position: relative;
+      margin: 2rem 0 1.2rem;
+      direction: ltr;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 8px 20px var(--shadow);
+    }
+    .copy-btn {
+      position: absolute;
+      left: 0.8rem;
+      top: 0.8rem;
+      background: var(--copy-btn-bg);
+      color: var(--copy-btn-text);
+      border: none;
+      border-radius: 30px;
+      padding: 0.35rem 1.1rem;
+      font-size: 0.8rem;
+      font-family: 'Vazirmatn', sans-serif;
+      font-weight: 500;
+      cursor: pointer;
+      z-index: 10;
+      transition: 0.2s;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+    .copy-btn:hover {
+      background: var(--brand);
+      color: white;
+    }
+    pre[class*="language-"] {
+      margin: 0;
+      border-radius: 16px;
+      padding: 1.8rem 1.5rem 1.2rem;
+      background: var(--code-bg);
+    }
+
+    .footer {
+      margin-top: 3rem;
+      padding-top: 2rem;
+      border-top: 2px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.95rem;
+    }
+    .footer a {
+      color: var(--brand);
+      font-weight: 600;
+    }
+
+    @media (max-width: 900px) {
+      .wrapper {
+        flex-direction: column;
+      }
+      .sidebar {
+        width: 100%;
+        height: auto;
+        position: relative;
+        border-left: none;
+        border-bottom: 1px solid var(--border);
+      }
+      .main {
+        padding: 1.8rem;
+      }
+      .theme-toggle {
+        bottom: 16px;
+        left: 16px;
+        width: 38px;
+        height: 38px;
+      }
+    }
+  </style>
+
+  <button class="theme-toggle" onclick="toggleTheme()" aria-label="تغییر تم" title="تغییر تم دارک/روشن">
+    <span id="theme-icon">🌙</span>
+  </button>
+
+  <script>
+    (function() {
+      var saved = localStorage.getItem('theme');
+      if (saved) {
+        document.documentElement.setAttribute('data-theme', saved);
+      }
+      updateIcon();
+    })();
+
+    function toggleTheme() {
+      var current = document.documentElement.getAttribute('data-theme');
+      var next = current === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next);
+      localStorage.setItem('theme', next);
+      updateIcon();
+    }
+
+    function updateIcon() {
+      var icon = document.getElementById('theme-icon');
+      var theme = document.documentElement.getAttribute('data-theme');
+      icon.textContent = theme === 'dark' ? '☀️' : '🌙';
+    }
+  </script>
+</head>
+<body>
+  <div class="wrapper">
+    <aside class="sidebar">
+      <h1>Fast Rub</h1>
+      <div class="sub">مستندات کتابخانه</div>
+      <ul class="nav-links">
+        <li><a href="../index.html">معرفی</a></li>
+        <li><a href="../methods/index.html">متد‌ها</a></li>
+        <li><a href="../models/index.html">مدل ها</a></li>
+        <li><a href="#" class="active">قابلیت ها</a></li>
+        <li><a href="../pyrubi/index.html">یوزر بات</a></li>
+      </ul>
+      <div class="toc-title">📌 فهرست مدل‌ها</div>
+      <ul id="toc-list" class="toc-list"></ul>
+    </aside>
+
+    <main class="main">
+      <div class="main-header">
+        <h1>قابلیت ها</h1>
+        <p>کلاس‌های کمکی، ساختار دیتا و قابلیت های منصحر به فرد در فست‌روب.</p>
+      </div>
+      <div id="features-container"></div>
+      <footer class="footer">
+        <a href="../index.html">→ معرفی</a>
+        <a href="../methods/index.html">→ متد‌ها</a>
+        <a href="../models/index.html">→ مدل ها</a>
+        <a href="pyrubi/index.html">یوزر بات ←</a>
+      </footer>
+    </main>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+
+  <script>
+    const featuresData = [
+      {
+        id: "WaitManager",
+        title: "🔹 مدیریت کننده انتظار",
+        description: "این کلاس برای ربات های نسبتا بزرگ است که نیازمند تنظیم مقدار انتظار برای ارسال درخواست ها هستند تا ربات در چت محدود نشود.\nویژگی های این کلاس نسبت به sleep معمولی: پیام های هر چت جداگانه می تواند محاسبه شود - ترافیک ها نوع های مختفی دارند و میتوانند توسط کاربر یا متود ها اضافه شوند",
+        class_signature: "class WaitManager",
+        init_params: [
+          ["low_traffic", "int = 60", "حداکثر تعداد پیام در پنجره زمانی برای 'ترافیک کم'"],
+          ["medium_traffic", "int = 100", "حداکثر تعداد پیام برای 'ترافیک متوسط' (بیشتر از این = زیاد)"],
+          ["low_wait", "float = 0.0", "تاخیر/ثانیه در ترافیک کم"],
+          ["medium_wait", "float = 0.0", "تاخیر/ثانیه در ترافیک متوسط"],
+          ["high_wait", "float = 3.0", "تاخیر/ثانیه در ترافیک زیاد"],
+          ["time_window", "float = 60", "بازه زمانی/ثانیه برای شمارش پیام ها"],
+          ["auto_track", "bool = False", "اگر مقدار True باشد هر پیام که دریافت شود یک پیام به کانال sending اضافه می شود"],
+          ["per_chat", "bool = True", "ترافیک هر چت جداگانه محاسبه شود"],
+          ["track_after_send", "bool = False", "ترافیک بعد از ارسال پیام ثبت شود"],
+          ["sending", "bool = True", "کانال 'ارسال پیام' فعال باشد"],
+          ["banning", "bool = False", "کانال 'اخراج(بن) کردن' فعال باشد"],
+          ["forwarding", "bool = False", "کانال 'فوروارد' فعال باشد"],
+          ["uploading", "bool = False", "کانال 'آپلود فایل' فعال باشد"],
+          ["editing", "bool = False", "کانال 'ویرایش پیام' فعال باشد"],
+          ["deleting", "bool = False", "کانال 'حذف پیام' فعال باشد"],
+        ],
+        methods: [
+          {
+            name: "add_traffic",
+            signature: "add_traffic(count, channel, chat_id)",
+            description: "افزودن ترافیک به کانال مورد نظر با مقدار ترافیک دلخواه",
+            params: [
+              ["count", "int = 1", "تعداد مقدار ترافیک"],
+              ["channel", '"sending" | "banning" | "forwarding" | "uploading" | "editing" | "deleting" = "sending"', "کانال مورد نظر"],
+              ["chat_id", "Literal['Markdown', 'HTML'] | None", "چت آیدی(اگه per_chat = False)"]
+            ],
+          },
+          {
+            name: "get_time",
+            signature: "get_time(channel, chat_id)",
+            description: "دریافت مقدار wait_send مناسب برای کانال و چت مورد نظر",
+            params: [
+              ["channel", '"sending" | "banning" | "forwarding" | "uploading" | "editing" | "deleting" = "sending"', "کانال مورد نظر"],
+              ["chat_id", "Literal['Markdown', 'HTML'] | None", "چت آیدی"]
+            ],
+            returns: "float",
+          },
+          {
+            name: "reset",
+            signature: "reset(channel, chat_id)",
+            description: "پاک کردن تاریخچه ترافیک",
+            params: [
+              ["channel", '"sending" | "banning" | "forwarding" | "uploading" | "editing" | "deleting" = "sending"', "کانال مورد نظر(None = همه کانال ها)"],
+              ["chat_id", "Literal['Markdown', 'HTML'] | None", "چت آیدی(اگه ورودی بدهید فقط همان چت ریست می شود)"]
+            ],
+          },
+          {
+              name: "track",
+              signature: "track(chat_id=None)",
+              description: "ثبت خودکار ترافیک (برای auto_track استفاده می‌شود)",
+              params: [
+                  ["chat_id", "str | None", "چت آیدی (اگه per_chat=True)"],
+              ],
+          },
+        ],
+        example: `# مثال ساده
+from fast_rub import Client, WaitManager
+
+wm = WaitManager(
+    low_traffic=30,
+    medium_traffic=50,
+    low_wait=0.0,
+    medium_wait=0.5,
+    high_wait=2.0,
+    time_window=30.0,
+    auto_track=True,
+)
+
+bot = Client("my_bot", token="...", wait_manager=wm)
+
+@bot.on_message()
+async def handler(msg: Message):
+    # auto_track فعاله، هر پیام خودکار ثبت میشه
+    # wait_send خودکار از WaitManager خونده میشه
+    await msg.reply("سلام!")
+
+# کنترل دستی با کانال های جداگانه
+
+wm = WaitManager(
+    sending=True,   # ارسال پیام
+    banning=True,   # بن کردن
+    forwarding=False,
+    per_chat=True,  # هر گروه جداگانه
+    track_after_send=False,  # قبل از ارسال پیش‌بینی کن
+)
+
+bot = Client("my_bot", token="...", wait_manager=wm)
+
+@bot.on_message(filters.commands(["ban"]))
+async def ban_handler(msg: Message):
+    # ثبت ترافیک در کانال banning
+    bot.wait_manager.add_traffic(channel="banning", chat_id=msg.chat_id)
+
+    # بن کردن (wait_send خودکار از کانال banning خونده میشه)
+    await bot.ban_chat_member(msg.chat_id, msg.reply_to_message_id)
+    await msg.reply("کاربر بن شد!")
+
+
+# ریست کردن ترافیک هر ساعت
+
+import asyncio
+
+async def reset_hourly(wm):
+    while True:
+        await asyncio.sleep(3600) # 1 ساعت
+        wm.reset()
+
+asyncio.create_task(reset_hourly(bot.wait_manager))`
+      },
+{
+    id: "Conversation",
+    title: "💬 مکالمه‌های چندمرحله‌ای (روش کلاسیک)",
+    description: "سیستم Conversation به شما اجازه می‌دهد مکالمات چندمرحله‌ای را با State Machine داخلی مدیریت کنید. بدون ذخیرهٔ دستی state. نقطهٔ ورود با `@entry` و مراحل با `@state` تعریف می‌شوند.",
+    class_signature: "class Conversation(name, timeout)",
+    init_params: [
+        ["name", "str = 'default'", "نام یکتای مکالمه (برای مدیریت چندین مکالمه همزمان)"],
+        ["timeout", "float = 300.0", "مدت‌زمان بی‌پاسخی تا پاکسازی خودکار (ثانیه)"],
+    ],
+    properties: [
+        {name: "END", type: "str", description: "مقدار ویژه برای پایان دادن به مکالمه. هر state که این را برگرداند، مکالمه خاتمه می‌یابد و داده‌های کاربر پاک می‌شود."},
+    ],
+    methods: [
+        {
+            name: "handle",
+            params: [
+                ["update", "Update", "آپدیت دریافتی"],
+                ["client", "Client", "کلاینت ربات"],
+            ],
+            returns: "bool",
+            description: "پردازش یک آپدیت در مکالمه. بررسی می‌کند کاربر در کدام state است و handler مناسب را صدا می‌زند. خودکار توسط Client فراخوانی می‌شود. True = مکالمه ادامه دارد.",
+        },
+        {
+            name: "entry",
+            params: [
+                ["commands", "list[str] | None", "لیست دستورات (مثلاً `['/register', 'ثبت‌نام']`)"],
+                ["text", "str | None", "متن دقیق برای شروع مکالمه"],
+                ["filters", "Filter | None", "فیلتر(ها) برای شروع مکالمه"],
+            ],
+            returns: "—",
+            description: "دکوراتور نقطهٔ ورود مکالمه را مشخص می‌کند. وقتی کاربر دستور یا متن مشخصی را بفرستد، مکالمه شروع می‌شود.",
+        },
+        {
+            name: "state",
+            params: [
+                ["state_name", "str", "نام مرحله (مثلاً `'waiting_name'`)"],
+            ],
+            returns: "—",
+            description: "دکوراتور یک مرحله از مکالمه را تعریف می‌کند. تابع این state باید state بعدی یا `Conversation.END` را برگرداند.",
+        },
+    ],
+    subsections: [
+        {
+            subtitle: "🧩 ConversationManager",
+            class_signature: "class ConversationManager",
+            description: "مدیریت چندین مکالمهٔ همزمان. اولویت با مکالمه‌ای است که کاربر قبلاً در آن وارد شده است.",
+            methods: [
+                {
+                    name: "add",
+                    params: [["conversation", "Conversation", "شیء Conversation"]],
+                    returns: "—",
+                    description: "یک Conversation را به مدیر اضافه می‌کند.",
+                },
+                {
+                    name: "remove",
+                    params: [["name", "str", "نام مکالمه"]],
+                    returns: "—",
+                    description: "یک Conversation را از مدیر حذف می‌کند.",
+                },
+            ],
+        },
+    ],
+    example: `from fast_rub import Client, Conversation, filters
+
+bot = Client("my_bot")
+await bot.start()
+
+# ── ساخت مکالمه ──
+register = Conversation(name="register")
+
+@register.entry(commands=["/register"])
+async def ask_name(msg, data):
+    await msg.reply("📝 اسمت چیه؟")
+    return "waiting_name"
+
+@register.state("waiting_name")
+async def get_name(msg, data):
+    data["name"] = msg.text
+    await msg.reply(f"👋 سلام {msg.text}!\\n🎂 چند سالته؟")
+    return "waiting_age"
+
+@register.state("waiting_age")
+async def get_age(msg, data):
+    if not msg.text.isdigit():
+        await msg.reply("❌ یه عدد وارد کن.")
+        return "waiting_age"
+    
+    data["age"] = int(msg.text)
+    await msg.reply(f"✅ ثبت‌نام کامل شد!\\n👤 {data['name']}\\n🎂 {data['age']} ساله")
+    return Conversation.END
+
+bot.add_conversation(register)
+
+@bot.on_message(filters.commands(["/start"]))
+async def start(msg):
+    await msg.reply("برای ثبت‌نام /register رو بزن.")
+
+await bot.run()`
+},
+{
+    id: "DataForm",
+    title: "📋 فرم‌های هوشمند (DataForm + entry_form)",
+    description: "سیستم DataForm به شما اجازه می‌دهد فرم‌های جمع‌آوری اطلاعات را به‌صورت declarative تعریف کنید. فقط «چی می‌خواهید» را بگویید — اعتبارسنجی، کیبورد، callbackها، و حرکت بین فیلدها همه خودکار انجام می‌شود.",
+    class_signature: "class DataForm",
+    init_params: [
+        ["on_start", "Callable | None", "قبل از اولین سوال"],
+        ["on_finish", "Callable | None", "بعد از آخرین فیلد (data را دریافت می‌کند)"],
+        ["on_cancel", "Callable | None", "وقتی کاربر /cancel زد"],
+        ["on_error", "Callable | None", "وقتی خطایی رخ داد"],
+        ["on_timeout", "Callable | None", "وقتی فرم timeout شد"],
+        ["allow_back", "bool = False", "اجازهٔ برگشت با /back"],
+        ["allow_skip", "bool = False", "اجازهٔ رد کردن با /skip"],
+    ],
+    subsections: [
+        {
+            subtitle: "📝 فیلد Text",
+            class_signature: "Text(prompt, ...)",
+            properties: [
+                {name: "prompt", type: "str", description: "متن سوال"},
+                {name: "min_len", type: "int = 0", description: "حداقل طول متن"},
+                {name: "max_len", type: "int = 4096", description: "حداکثر طول متن"},
+                {name: "email", type: "bool = False", description: "بررسی فرمت ایمیل"},
+                {name: "valid_inputs", type: "list[str] | None", description: "لیست ورودی‌های مجاز"},
+                {name: "invalid_answer", type: "str", description: "پیام خطا"},
+                {name: "func", type: "Callable | None", description: "callback بعد از دریافت مقدار"},
+                {name: "transform", type: "Callable | None", description: "تبدیل مقدار قبل از ذخیره"},
+                {name: "validator", type: "Callable | None", description: "اعتبارسنجی سفارشی"},
+                {name: "retry", type: "int = 0", description: "تعداد دفعات مجاز برای ورود اشتباه"},
+                {name: "timeout", type: "int = 120", description: "زمان انتظار (ثانیه)"},
+                {name: "default", type: "Any | None", description: "مقدار پیش‌فرض"},
+                {name: "hide_input", type: "bool = False", description: "مخفی کردن ورودی"},
+                {name: "skip_if", type: "Callable | None", description: "اگه شرط برقرار بود، این فیلد را نخوان"},
+                {name: "cancel_if", type: "Callable | None", description: "اگه شرط برقرار بود، فرم را کنسل کن"},
+                {name: "back_if", type: "Callable | None", description: "اگه شرط برقرار بود، برگرد به فیلد قبلی"},
+                {name: "hide_if", type: "Callable | None", description: "اگه شرط برقرار بود، سوال را نپرس و default ذخیره کن"},
+                {name: "default_if", type: "Callable | None", description: "اگه شرط برقرار بود، مقدار پیش‌فرض ذخیره کن"},
+                {name: "repeat_if", type: "Callable | None", description: "اگه شرط برقرار بود، دوباره بپرس"},
+                {name: "transform_if", type: "Callable | None", description: "اگه شرط برقرار بود، transform کن"},
+                {name: "pre_func", type: "Callable | None", description: "قبل از پرسیدن سوال صدا زده می‌شود"},
+                {name: "list_args_func", type: "list[str] | None", description: "آرگومان‌های func به‌صورت لیست"},
+                {name: "dict_args_func", type: "dict | None", description: "آرگومان‌های func به‌صورت دیکشنری"},
+            ],
+        },
+        {
+            subtitle: "🔢 فیلد Number",
+            class_signature: "Number(prompt, ...)",
+            properties: [
+                {name: "prompt", type: "str", description: "متن سوال"},
+                {name: "min", type: "int | None", description: "حداقل مقدار"},
+                {name: "max", type: "int | None", description: "حداکثر مقدار"},
+                {name: "keypad", type: "bool = True", description: "نمایش کیبورد عددی"},
+                {name: "max_btn_row", type: "int = 4", description: "تعداد دکمه در هر ردیف"},
+                {name: "sort_by", type: "'asc' | 'desc' | 'none'", description: "ترتیب نمایش اعداد"},
+            ],
+        },
+        {
+            subtitle: "🔘 فیلد Choice",
+            class_signature: "Choice(prompt, ...)",
+            properties: [
+                {name: "prompt", type: "str", description: "متن سوال"},
+                {name: "options", type: "list[str] | Callable", description: "گزینه‌ها (ثابت یا تابع)"},
+                {name: "max_select", type: "int = 1", description: "حداکثر تعداد انتخاب"},
+                {name: "max_btn_row", type: "int = 2", description: "تعداد دکمه در هر ردیف"},
+            ],
+        },
+        {
+            subtitle: "🎯 دکوراتور entry_form@",
+            class_signature: "@register.entry_form(FormClass, ...)",
+            description: "دکوراتور برای ساخت خودکار فرم از روی DataForm. callbackهای دکوراتور اولویت بیشتری نسبت به callbackهای داخل کلاس دارند.",
+            properties: [
+                {name: "FormClass", type: "type[DataForm]", description: "کلاس فرم"},
+                {name: "commands", type: "list[str] | None", description: "دستورات شروع فرم"},
+                {name: "text", type: "str | None", description: "متن شروع فرم"},
+                {name: "filters", type: "Filter | None", description: "فیلتر برای شروع فرم"},
+                {name: "on_start", type: "Callable | None", description: "قبل از اولین سوال"},
+                {name: "on_finish", type: "Callable | None", description: "بعد از آخرین فیلد"},
+                {name: "on_cancel", type: "Callable | None", description: "وقتی کاربر /cancel زد"},
+                {name: "on_error", type: "Callable | None", description: "وقتی خطایی رخ داد"},
+                {name: "on_timeout", type: "Callable | None", description: "وقتی فرم timeout شد"},
+                {name: "timeout", type: "int = 120", description: "تایم‌اوت هر فیلد (ثانیه)"},
+                {name: "allow_back", type: "bool = False", description: "اجازهٔ /back"},
+                {name: "allow_skip", type: "bool = False", description: "اجازهٔ /skip"},
+            ],
+        },
+    ],
+    example: `from fast_rub import Client, Conversation, filters
+from fast_rub.core.forms import Text, Number, DataForm
+
+bot = Client("my_bot")
+await bot.start()
+
+class UserInfo(DataForm):
+    name: Text = Text("👤 نام خود را وارد کنید", min_len=3, max_len=30)
+    age: Number = Number("🎂 چند سالته؟", min=18, max=60, keypad=True)
+
+register = Conversation(name="register")
+
+@register.entry_form(UserInfo, commands=["/register"])
+async def done(msg, data):
+    await msg.reply(f"ثبت شد:\\n👤 {data['name']}\\n🎂 {data['age']}")
+
+class AdvancedForm(DataForm):
+    name: Text = Text("👤 نام؟",
+        min_len=3,
+        repeat_if=lambda v: "admin" in v.lower(),
+    )
+    age: Number = Number("🎂 سن؟", min=18, max=60, keypad=True, sort_by="desc")
+    job: Text = Text("💼 شغل؟",
+        skip_if=lambda data: data.get("age", 0) < 18,
+    )
+    city: Text = Text("🏙️ شهر؟",
+        cancel_if=lambda v: v in ["هیچی", "ولش"],
+    )
+    email: Text = Text("📧 ایمیل؟",
+        back_if=lambda v: v == "برگشت",
+    )
+
+@register.entry_form(AdvancedForm, commands=["/advanced"],
+    on_start=lambda: print("🚀"), on_finish=lambda d: print(f"✅ {d}"),
+    allow_back=True, allow_skip=True)
+async def advanced_done(msg, data):
+    await msg.reply(f"فرم ثبت شد:\\n{data}")
+
+bot.add_conversation(register)
+
+@bot.on_message(filters.command(["/start"]))
+async def answer(msg):
+    await msg.reply("""دستورات
+/register
+/advanced""")
+
+await bot.run()`
+},
+
+{
+    id: "HotReload",
+    title: "🔄 بارگذاری مجدد خودکار (Hot Reload)",
+    description: "Hot Reload به شما اجازه می‌دهد هنگام توسعه، با هر بار ذخیره‌سازی فایل‌ها، ربات به‌طور خودکار ری‌استارت شود. نیازی به توقف و اجرای دستی نیست. با `reload=True` در متد `run()` فعال می‌شود.",
+    note: "برای استفاده از Hot Reload، کتابخانهٔ `watchfiles` باید نصب شده باشد:\n`pip install fastrub[hotreload]` یا `pip install watchfiles`",
+    methods: [
+        {
+            name: "run (پارامتر reload)",
+            params: [
+                ["reload", "bool = False", "فعال‌سازی Hot Reload. فایل جاری (`sys.argv[0]`) تحت نظارت قرار می‌گیرد و با هر تغییر، ری‌استارت می‌شود."],
+                ["poll_interval", "float = 0.0", "فاصلهٔ بین هر بار دریافت پیام‌ها (ثانیه)"],
+            ],
+            returns: "None",
+            description: "متد اصلی اجرای ربات. با `reload=True`، ربات در حالت Hot Reload اجرا می‌شود. یک thread جداگانه تغییرات فایل‌ها را نظارت می‌کند. هر بار که فایلی ذخیره شود، ربات به‌طور خودکار ری‌استارت می‌شود.",
+        },
+        {
+            name: "CLI",
+            params: [
+                ["--reload", "flag", "فعال‌سازی Hot Reload از طریق خط فرمان: `fastrub run --reload`"],
+            ],
+            returns: "None",
+            description: "می‌توانید Hot Reload را از طریق CLI هم فعال کنید. دستور `fastrub run --reload` معادل `reload=True` در `run()` است.",
+        },
+    ],
+    example: `from fast_rub import Client
+
+bot = Client("my_bot")
+
+@bot.on_message()
+async def handler(msg):
+    await msg.reply("سلام!")
+
+# فعال‌سازی Hot Reload از طریق run()
+await bot.run(reload=True)
+
+# یا از طریق CLI:
+# $ fastrub run --reload
+
+# حالا هر بار که فایلی ذخیره کنی، ربات ری‌استارت می‌شه.`
+},
+
+{
+    id: "Scheduler",
+    title: "⏰ زمان‌بندی کارها (Scheduler)",
+    description: "Scheduler به شما اجازه می‌دهد کارهای تکراری را در بازه‌های زمانی مشخص یا در ساعت خاصی از روز اجرا کنید. مناسب برای پاک‌سازی خودکار، ارسال پیام‌های زمان‌بندی‌شده، بک‌آپ و...",
+    class_signature: "class Scheduler(logger=None)",
+    init_params: [
+        ["logger", "logging.Logger | None", "لاگر دلخواه (پیش‌فرض: `fast_rub.scheduler`)"],
+    ],
+    methods: [
+        {
+            name: "every",
+            params: [
+                ["seconds", "int = 0", "فاصله به ثانیه"],
+                ["minutes", "int = 0", "فاصله به دقیقه"],
+                ["hours", "int = 0", "فاصله به ساعت"],
+                ["days", "int = 0", "فاصله به روز"],
+                ["weeks", "int = 0", "فاصله به هفته"],
+                ["months", "int = 0", "فاصله به ماه (تقریبی: ۳۰ روز)"],
+                ["at", "str | None", "ساعت اجرای روزانه (مثلاً `'08:30'`). اگر وارد شود، سایر بازه‌ها نادیده گرفته می‌شوند."],
+            ],
+            returns: "Callable (decorator)",
+            description: "دکوراتور برای تعریف یک کار زمان‌بندی‌شده. می‌توانید بازهٔ زمانی (مثلاً هر ۳۰ دقیقه) یا ساعت مشخص (مثلاً هر روز ساعت ۸:۳۰) را تعیین کنید.",
+        },
+        {
+            name: "cancel_all",
+            params: [],
+            returns: "None",
+            description: "لغو همهٔ کارهای زمان‌بندی‌شدهٔ فعال.",
+        },
+    ],
+    properties: [
+        {name: "count", type: "int", description: "تعداد کارهای زمان‌بندی‌شدهٔ فعال (تسک‌های اجرانشده)"},
+    ],
+    example: `from fast_rub import Client, Scheduler
+
+bot = Client("my_bot")
+scheduler = Scheduler()
+
+# ── هر ۳۰ دقیقه ──
+@scheduler.every(minutes=30)
+async def cleanup():
+    print("🧹 پاک‌سازی خودکار انجام شد.")
+
+# ── هر روز ساعت ۸ صبح ──
+@scheduler.every(at="08:00")
+async def morning_report():
+    print("📊 گزارش صبحگاهی ارسال شد.")
+
+@bot.on_message()
+async def handler(msg):
+    await msg.reply("سلام!")
+
+await bot.run()
+scheduler.cancel_all()`
+},
+
+{
+    id: "Signals",
+    title: "📡 سیستم سیگنال‌ها (Signals)",
+    description: "SignalManager یک سیستم رویدادمحور (Event-driven) شبیه Django Signals است. می‌توانید handlerهایی برای رویدادهای دلخواه ثبت کنید و در هر جای برنامه آن‌ها را فراخوانی (emit) کنید. مناسب برای ارتباط غیرمستقیم بین ماژول‌ها، پلاگین‌ها، و middleware.",
+    class_signature: "class SignalManager",
+    methods: [
+        {
+            name: "on",
+            params: [
+                ["signal_name", "str", "نام سیگنال (مثلاً `'user_registered'`)"],
+            ],
+            returns: "Callable (decorator)",
+            description: "دکوراتور برای ثبت یک handler برای سیگنال مشخص. چندین handler می‌توانند برای یک سیگنال ثبت شوند و همه به ترتیب اجرا می‌شوند.",
+        },
+        {
+            name: "emit",
+            params: [
+                ["signal_name", "str", "نام سیگنال برای فراخوانی"],
+                ["*args", "tuple", "آرگومان‌های موقعیتی که به handlerها پاس داده می‌شوند"],
+                ["**kwargs", "dict", "آرگومان‌های کلیدی که به handlerها پاس داده می‌شوند"],
+            ],
+            returns: "None",
+            description: "همهٔ handlerهای ثبت‌شده برای یک سیگنال را به ترتیب اجرا می‌کند. خطاهای هر handler جداگانه لاگ می‌شود و اجرای بقیه متوقف نمی‌شود.",
+        },
+        {
+            name: "clear",
+            params: [
+                ["signal_name", "str | None", "نام سیگنال برای پاکسازی (None = همه)"],
+            ],
+            returns: "None",
+            description: "handlerهای یک سیگنال خاص یا همهٔ سیگنال‌ها را حذف می‌کند.",
+        },
+    ],
+    example: `from fast_rub import SignalManager
+
+signals = SignalManager()
+
+# ── ثبت handler ──
+@signals.on("user_registered")
+async def send_welcome(user_id, chat_id):
+    print(f"👋 کاربر {user_id} ثبت‌نام کرد!")
+
+@signals.on("user_registered")
+async def log_to_db(user_id, chat_id):
+    print(f"📝 ثبت در دیتابیس: {user_id}")
+
+@signals.on("ban")
+async def ban(user_id, chat_id):
+    print(f"کاربر بن شد: {user_id}")
+
+
+# ── فراخوانی سیگنال ──
+await signals.emit("user_registered", user_id="b...", chat_id="g...")
+
+await signals.emit("ban", user_id="b...", chat_id="g...")
+
+# خروجی:
+# 👋 کاربر b... ثبت‌نام کرد!
+# 📝 ثبت در دیتابیس: b...
+# کاربر بن شد: b...`
+},
+
+{
+    id: "Plugins",
+    title: "🔌 سیستم پلاگین (Plugins)",
+    description: "سیستم پلاگین Fast Rub به شما اجازه می‌دهد قابلیت‌های ربات را به‌صورت ماژولار و قابل اشتراک‌گذاری توسعه دهید. هر پلاگین یک فایل `.py` با تابع `setup(client)` است که به کلاینت دسترسی کامل دارد.",
+    note: "⚠️ پلاگین‌ها به کلاینت دسترسی کامل دارند. فقط از منابع معتبر استفاده کنید.",
+    class_signature: "class PluginManager",
+    methods: [
+        {
+            name: "load",
+            params: [
+                ["client", "Client", "کلاینت ربات"],
+                ["folder", "str = 'plugins'", "مسیر پوشهٔ پلاگین‌ها"],
+                ["logger", "logging.Logger | None", "لاگر دلخواه"],
+            ],
+            returns: "int — تعداد پلاگین‌های لودشده",
+            description: "همهٔ فایل‌های `.py` داخل پوشه (به جز آن‌هایی که با `_` شروع می‌شوند) را اسکن می‌کند و هر کدام که تابع `setup(client)` داشته باشند را اجرا می‌کند. پلاگین‌ها به ترتیب حروف الفبا لود می‌شوند. اگه پوشه وجود نداشته باشد، خودکار ساخته می‌شود.",
+        },
+        {
+            name: "load_single",
+            params: [
+                ["client", "Client", "کلاینت ربات"],
+                ["filepath", "str", "مسیر کامل فایل پلاگین (مثلاً `plugins/admin.py`)"],
+                ["logger", "logging.Logger | None", "لاگر دلخواه"],
+            ],
+            returns: "bool — True اگر با موفقیت لود شد",
+            description: "یک فایل پلاگین مشخص را لود می‌کند. فایل باید تابع `setup(client)` داشته باشد.",
+        },
+    ],
+    example: `from fast_rub import Client, PluginManager
+
+bot = Client("my_bot")
+
+# ── لود همه پلاگین‌ها از پوشه ──
+await bot.load_plugins("my_plugins")
+
+# ── لود یه پلاگین خاص ──
+await bot.load_plugin("plugins/admin.py")
+
+# ── محتوای یه پلاگین نمونه (plugins/admin.py) ──
+async def setup(client):
+    @client.on_message(commands=["/admin"])
+    async def admin_panel(msg):
+        await msg.reply("🔧 پنل ادمین")
+
+@bot.on_message()
+async def handler(msg):
+    await msg.reply("سلام!")
+
+await bot.run()`
+},
+
+{
+    id: "Cache",
+    title: "🗃️ سیستم کش (Cache)",
+    description: "کلاس Cache یک کش عمومی با TTL (Time To Live) و محدودیت سایز است. مناسب برای ذخیرهٔ موقت نتایج queryها، پاسخ‌های API، یا هر داده‌ای که نیاز به دسترسی سریع دارد. از `asyncio.Lock` برای thread-safety استفاده می‌کند.",
+    note: "مسیر import: `from fast_rub.utils import Cache`",
+    class_signature: "class Cache(ttl=None, max_size=None)",
+    init_params: [
+        ["ttl", "float | None = 300.0", "مدت اعتبار کش (ثانیه). بعد از این مدت، داده منقضی می‌شود."],
+        ["max_size", "int | None = 100", "حداکثر تعداد آیتم‌های کش. با پر شدن، قدیمی‌ترین آیتم حذف می‌شود."],
+    ],
+    methods: [
+        {
+            name: "get",
+            params: [
+                ["key", "str", "کلید کش"],
+            ],
+            returns: "Any | None",
+            description: "مقدار ذخیره‌شده برای کلید را برمی‌گرداند. اگه منقضی شده باشد یا وجود نداشته باشد، None برمی‌گرداند.",
+        },
+        {
+            name: "set",
+            params: [
+                ["key", "str", "کلید کش"],
+                ["value", "Any", "مقدار برای ذخیره"],
+            ],
+            returns: "None",
+            description: "یک مقدار را در کش ذخیره می‌کند. اگه کش پر باشد، قدیمی‌ترین آیتم (بر اساس timestamp) حذف می‌شود.",
+        },
+        {
+            name: "clear",
+            params: [],
+            returns: "None",
+            description: "همهٔ آیتم‌های کش را پاک می‌کند.",
+        },
+    ],
+    example: `from fast_rub.utils import Cache
+
+cache = Cache(ttl=60.0, max_size=50)
+
+# ── ذخیره ──
+await cache.set("b...", {"name": "علی", "age": 25})
+
+# ── بازیابی ──
+user = await cache.get("b...")
+if user:
+    print(user["name"])  # "علی"
+
+# ── بعد از ۶۰ ثانیه ──
+await asyncio.sleep(61)
+user = await cache.get("b...")  # None
+
+# ── پاکسازی ──
+await cache.clear()`
+},
+
+{
+    id: "Snapshots",
+    title: "📸 اسنپ‌شات (Snapshot) — Version Control برای ربات",
+    description: "SnapshotManager به شما اجازه می‌دهد از تنظیمات فعلی ربات خود اسنپ‌شات تهیه کنید. شامل تنظیمات Client، WaitManager، Middlewareها، Conversationها، پلاگین‌ها، Cache، و Scheduler. می‌توانید بعداً اسنپ‌شات را بارگذاری و اعمال (restore) کنید. مناسب برای بک‌آپ، اشکال‌زدایی، و بازگشت به حالت قبلی.",
+    class_signature: "class SnapshotManager(client, folder='snapshots')",
+    init_params: [
+        ["client", "Client", "کلاینت ربات"],
+        ["folder", "str = 'snapshots'", "پوشهٔ ذخیرهٔ اسنپ‌شات‌ها"],
+    ],
+    methods: [
+        {
+            name: "save",
+            params: [
+                ["name", "str", "نام اسنپ‌شات (مثلاً `'before_update'`)"],
+            ],
+            returns: "str — مسیر فایل ذخیره‌شده",
+            description: "از تنظیمات فعلی ربات اسنپ‌شات تهیه می‌کند و در فایل JSON ذخیره می‌کند.",
+        },
+        {
+            name: "load",
+            params: [
+                ["name", "str", "نام اسنپ‌شات"],
+            ],
+            returns: "dict | None",
+            description: "محتوای یک اسنپ‌شات را بارگذاری می‌کند (بدون اعمال روی Client).",
+        },
+        {
+            name: "restore",
+            params: [
+                ["name", "str", "نام اسنپ‌شات"],
+            ],
+            returns: "bool",
+            description: "اسنپ‌شات را بارگذاری و روی Client اعمال می‌کند. تنظیمات WaitManager، Cache، main_parse_mode، timeout، ssl_verify و poll_interval بازیابی می‌شوند.",
+        },
+        {
+            name: "list_all",
+            params: [],
+            returns: "list[str]",
+            description: "لیست نام همهٔ اسنپ‌شات‌های موجود.",
+        },
+        {
+            name: "delete",
+            params: [
+                ["name", "str", "نام اسنپ‌شات"],
+            ],
+            returns: "bool",
+            description: "یک اسنپ‌شات را حذف می‌کند.",
+        },
+    ],
+    example: `from fast_rub import Client, SnapshotManager
+
+bot = Client("my_bot")
+snapshots = SnapshotManager(bot)
+
+# ── ذخیره ──
+path = await snapshots.save("before_update")
+print(f"✅ ذخیره شد: {path}")
+
+# ── لیست ──
+all_snaps = await snapshots.list_all()
+print(all_snaps)  # ['before_update']
+
+# ── بازیابی (load فقط می‌خونه، اعمال نمی‌کنه) ──
+data = await snapshots.load("before_update")
+print(data["client"]["parse_mode"])
+
+# ── اعمال روی Client ──
+ok = await snapshots.restore("before_update")
+print(f"✅ بازیابی شد: {ok}")
+
+# ── حذف ──
+await snapshots.delete("before_update")
+
+await bot.run()`
+},
+
+{
+    id: "CLI",
+    title: "💻 خط فرمان (CLI)",
+    description: "Fast Rub یک CLI داخلی دارد که کارهای رایج را سریع‌تر می‌کند: ساخت پروژهٔ جدید با ساختار آماده، اجرای ربات، فعال‌سازی Hot Reload، نمایش نسخه، و باز کردن مستندات.",
+    class_signature: "fastrub <command> [options]",
+    methods: [
+        {
+            name: "new",
+            params: [
+                ["name", "str", "اسم پروژه"],
+            ],
+            returns: "—",
+            description: "یک پروژهٔ جدید با ساختار استاندارد می‌سازد. شامل `main.py`، `config.py`، پوشه‌های `plugins/`، `snapshots/`، `backups/`، `logs/`، `README.md`، `.gitignore` و یک پلاگین نمونه.",
+        },
+        {
+            name: "run",
+            params: [
+                ["--reload", "flag", "فعال‌سازی Hot Reload (بازنشانی خودکار با ذخیرهٔ فایل‌ها)"],
+            ],
+            returns: "—",
+            description: "ربات را از فایل `main.py` اجرا می‌کند. باید در پوشهٔ پروژه باشید.",
+        },
+        {
+            name: "version",
+            params: [],
+            returns: "—",
+            description: "نسخهٔ نصب‌شدهٔ Fast Rub را نمایش می‌دهد.",
+        },
+        {
+            name: "docs",
+            params: [],
+            returns: "—",
+            description: "مستندات آنلاین Fast Rub را در مرورگر باز می‌کند.",
+        },
+    ],
+    example: `# ساخت پروژهٔ جدید
+$ fastrub new my_bot
+# خروجی:
+# ✅ پروژه 'my_bot' با موفقیت ساخته شد!
+#    📁 /home/user/my_bot
+#    📝 /home/user/my_bot/main.py
+#    🔌 /home/user/my_bot/plugins
+#    ⚙️ /home/user/my_bot/config.py
+#
+# 🚀 برای شروع:
+#    cd my_bot
+#    fastrub run
+
+# اجرای ربات
+$ cd my_bot
+$ fastrub run
+
+# اجرا با Hot Reload
+$ fastrub run --reload
+
+# نمایش نسخه
+$ fastrub version
+# Fast Rub v5.2.21
+
+# باز کردن مستندات
+$ fastrub docs`
+},
+
+{
+    id: "ORM",
+    title: "🗄️ دیتابیس داخلی (ORM)",
+    description: "Fast Rub یک ORM داخلی و سبک بر پایهٔ `aiosqlite` دارد. نیازی به نصب کتابخانهٔ جداگانه نیست. از SQL پارامتری برای جلوگیری از SQL Injection استفاده می‌کند. تمام متدها async هستند و از قفل (`asyncio.Lock`) برای thread-safety بهره می‌برند.",
+    note: "مسیر import: `from fast_rub.db import DataBase`",
+    class_signature: "class DataBase(db_name, timeout=10, journal_mode='WAL', synchronous='NORMAL', logger=None)",
+    init_params: [
+        ["db_name", "str", "مسیر فایل دیتابیس (مثلاً `'my_bot.db'`)"],
+        ["timeout", "float = 10", "تایم‌اوت اتصال (ثانیه)"],
+        ["journal_mode", "str = 'WAL'", "حالت journal (WAL برای سرعت بیشتر)"],
+        ["synchronous", "str = 'NORMAL'", "حالت synchronous"],
+        ["logger", "logging.Logger | None", "لاگر دلخواه"],
+    ],
+    methods: [
+        {
+            name: "start",
+            params: [
+                ["tables", "dict", "تعریف جداول: `{'table_name': {'col': 'TYPE', ...}}`"],
+                ["primary_keys", "dict | None", "کلیدهای اصلی: `{'table_name': ['col1', 'col2']}`"],
+            ],
+            returns: "None",
+            description: "جداول را می‌سازد (IF NOT EXISTS) و ستون‌های جدید را به جداول موجود اضافه می‌کند. از ALTER TABLE برای اضافه کردن ستون استفاده می‌کند.",
+        },
+        {
+            name: "find",
+            params: [
+                ["tabel_name", "str", "نام جدول"],
+                ["result", "str", "ستون(های) مورد نظر (مثلاً `'*'` یا `'name'`)"],
+                ["where_values", "dict", "شرط WHERE به‌صورت دیکشنری `{'col': 'value'}`"],
+            ],
+            returns: "tuple | Any | None",
+            description: "اولین ردیفی که با شرط مطابقت دارد را برمی‌گرداند. اگه فقط یک ستون انتخاب شده باشد، مقدار مستقیم آن را برمی‌گرداند.",
+        },
+        {
+            name: "find_all",
+            params: [
+                ["tabel_name", "str", "نام جدول"],
+                ["result", "str = '*'", "ستون(های) مورد نظر"],
+                ["where_values", "dict", "شرط WHERE"],
+                ["order_by", "str | None", "مرتب‌سازی (مثلاً `'created_at DESC'`)"],
+                ["limit", "int | None", "محدودیت تعداد"],
+                ["offset", "int | None", "تعداد رد شدن از ابتدا"],
+            ],
+            returns: "list[tuple]",
+            description: "همهٔ ردیف‌های مطابق با شرط را برمی‌گرداند. پشتیبانی از ORDER BY، LIMIT و OFFSET.",
+        },
+        {
+            name: "find_distinct",
+            params: [
+                ["tabel_name", "str", "نام جدول"],
+                ["result", "str", "ستون مورد نظر"],
+                ["where_values", "dict", "شرط WHERE"],
+            ],
+            returns: "list",
+            description: "مقادیر یکتا (DISTINCT) یک ستون را برمی‌گرداند.",
+        },
+        {
+            name: "find_top_n",
+            params: [
+                ["tabel_name", "str", "نام جدول"],
+                ["group_by", "str", "ستون گروه‌بندی"],
+                ["count_column", "str = 'COUNT(*)'", "ستون شمارش"],
+                ["where_values", "dict", "شرط WHERE"],
+                ["n", "int = 3", "تعداد نتایج"],
+                ["order_desc", "bool = True", "ترتیب نزولی"],
+            ],
+            returns: "list[dict]",
+            description: "N مورد برتر را بر اساس شمارش گروه‌بندی‌شده برمی‌گرداند.",
+        },
+        {
+            name: "most_frequent",
+            params: [
+                ["table_name", "str", "نام جدول"],
+                ["column", "str", "ستون مورد نظر"],
+                ["where_values", "dict | None", "شرط WHERE"],
+            ],
+            returns: "str | None",
+            description: "پرتکرارترین مقدار یک ستون را برمی‌گرداند.",
+        },
+        {
+            name: "write",
+            params: [
+                ["tabel_name", "str", "نام جدول"],
+                ["values", "dict", "مقادیر به‌صورت دیکشنری `{'col': 'value'}`"],
+            ],
+            returns: "bool",
+            description: "یک ردیف جدید در جدول درج می‌کند.",
+        },
+        {
+            name: "update",
+            params: [
+                ["tabel_name", "str", "نام جدول"],
+                ["set_values", "dict", "مقادیر جدید"],
+                ["where_values", "dict", "شرط WHERE"],
+            ],
+            returns: "bool",
+            description: "ردیف‌های مطابق با شرط را به‌روزرسانی می‌کند.",
+        },
+        {
+            name: "delete",
+            params: [
+                ["tabel_name", "str", "نام جدول"],
+                ["where_values", "dict", "شرط WHERE (اگه خالی باشد، همه حذف می‌شوند)"],
+            ],
+            returns: "bool",
+            description: "ردیف‌های مطابق با شرط را حذف می‌کند.",
+        },
+        {
+            name: "exists",
+            params: [
+                ["tabel_name", "str", "نام جدول"],
+                ["where_values", "dict", "شرط WHERE"],
+            ],
+            returns: "bool",
+            description: "بررسی می‌کند آیا ردیفی با شرط داده‌شده وجود دارد.",
+        },
+        {
+            name: "len_rows",
+            params: [
+                ["tabel_name", "str", "نام جدول"],
+                ["where_values", "dict", "شرط WHERE (اختیاری)"],
+            ],
+            returns: "int",
+            description: "تعداد ردیف‌های مطابق با شرط را برمی‌گرداند.",
+        },
+        {
+            name: "count_where",
+            params: [
+                ["table_name", "str", "نام جدول"],
+                ["where_conditions", "str", "شرط WHERE به‌صورت رشته (مثلاً `'time >= ?'`)"],
+                ["vals", "list | None", "مقادیر جایگزین برای `?`ها"],
+            ],
+            returns: "int",
+            description: "تعداد ردیف‌ها با شرط دلخواه (پارامتری).",
+        },
+        {
+            name: "increment",
+            params: [
+                ["tabel_name", "str", "نام جدول"],
+                ["column", "str", "ستون عددی"],
+                ["where_values", "dict", "شرط WHERE"],
+                ["amount", "int = 1", "مقدار افزایش"],
+            ],
+            returns: "bool",
+            description: "مقدار یک ستون عددی را افزایش می‌دهد.",
+        },
+        {
+            name: "add_column_if_not_exists",
+            params: [
+                ["table", "str", "نام جدول"],
+                ["column", "str", "نام ستون"],
+                ["col_type", "str", "نوع ستون (مثلاً `'TEXT'`)"],
+                ["default", "str = 'NULL'", "مقدار پیش‌فرض"],
+            ],
+            returns: "None",
+            description: "اگه ستون وجود نداشته باشد، آن را به جدول اضافه می‌کند.",
+        },
+        {
+            name: "backup",
+            params: [
+                ["path", "str | None", "مسیر ذخیره (پیش‌فرض: `backups/dbname_timestamp.db`)"],
+            ],
+            returns: "str — مسیر فایل بک‌آپ",
+            description: "یک نسخهٔ پشتیبان از دیتابیس تهیه می‌کند.",
+        },
+        {
+            name: "restore",
+            params: [
+                ["path", "str", "مسیر فایل بک‌آپ"],
+            ],
+            returns: "bool",
+            description: "دیتابیس را از یک فایل بک‌آپ بازگردانی می‌کند.",
+        },
+        {
+            name: "close",
+            params: [],
+            returns: "None",
+            description: "اتصال دیتابیس را می‌بندد.",
+        },
+    ],
+    example: `from fast_rub.db import DataBase
+
+db = DataBase("my_bot.db")
+
+# ── شروع ──
+await db.start({
+    "users": {
+        "chat_id": "TEXT NOT NULL",
+        "name": "TEXT",
+        "age": "INTEGER DEFAULT 0",
+    }
+}, primary_keys={"users": ["chat_id"]})
+
+# ── نوشتن ──
+await db.write("users", {"chat_id": "b...", "name": "علی", "age": 25})
+
+# ── پیدا کردن ──
+user = await db.find("users", "*", {"chat_id": "b..."})
+print(user)  # ('b...', 'علی', 25)
+
+# ── بررسی وجود ──
+exists = await db.exists("users", {"chat_id": "b..."})  # True
+
+# ── به‌روزرسانی ──
+await db.update("users", {"age": 26}, {"chat_id": "b..."})
+
+# ── افزایش ──
+await db.increment("users", "age", {"chat_id": "b..."}, 1)  # age = 27
+
+# ── تعداد ──
+count = await db.len_rows("users")  # 1
+
+# ── بک‌آپ ──
+path = await db.backup()  # "backups/my_bot_2026-01-01_12-00-00.db"
+
+# ── بستن ──
+await db.close()`
+},
+
+{
+    id: "antispam",
+    title: "🛡️ AntiSpam — سیستم ضد اسپم پیشرفته",
+    description: "سیستم ضد اسپم داخلی Fast Rub با تشخیص انواع تخلفات: Flood، Rate Limit، پیام تکراری، پیام طولانی، لینک و منشن اسپم. با قابلیت سکوت خودکار، پاکسازی خودکار حافظه، و افزودن قوانین سفارشی.",
+    note: "مسیر import: `from fast_rub.utils import AntiSpam, SpamViolation, AntiSpamRule`",
+    class_signature: "class AntiSpam(flood_max=3, flood_window=2.0, rate_max=5, rate_window=10.0, duplicate_window=30.0, max_message_length=2000, link_max=3, link_window=60.0, mention_max=5, mention_window=60.0, mute_duration=60.0, auto_clear_interval=30)",
+    init_params: [
+        ["flood_max", "int = 3", "حداکثر پیام پشت سر هم در flood_window"],
+        ["flood_window", "float = 2.0", "بازهٔ زمانی Flood (ثانیه)"],
+        ["rate_max", "int = 5", "حداکثر تعداد پیام در rate_window"],
+        ["rate_window", "float = 10.0", "بازهٔ زمانی Rate Limit"],
+        ["duplicate_window", "float = 30.0", "بازهٔ تشخیص پیام تکراری"],
+        ["max_message_length", "int = 2000", "حداکثر طول مجاز پیام"],
+        ["link_max", "int = 3", "حداکثر لینک در link_window"],
+        ["link_window", "float = 60.0", "بازهٔ لینک اسپم"],
+        ["mention_max", "int = 5", "حداکثر منشن در mention_window"],
+        ["mention_window", "float = 60.0", "بازهٔ منشن اسپم"],
+        ["mute_duration", "float = 60.0", "مدت سکوت (ثانیه)"],
+        ["auto_clear_interval", "int = 30", "فاصلهٔ پاکسازی خودکار (ثانیه)"],
+    ],
+    methods: [
+        {
+            name: "check",
+            params: [
+                ["chat_id", "str", "چت آیدی"],
+                ["user_id", "str", "آیدی کاربر"],
+                ["message", "str", "متن پیام"],
+                ["is_private", "bool = False", "آیا پی‌وی است؟"]
+            ],
+            returns: "tuple[bool, str | None, SpamViolation | None]",
+            description: "بررسی اسپم بودن پیام. برمی‌گرداند: (is_spam, reason, violation_type)"
+        },
+        {
+            name: "add_rule",
+            params: [["rule", "AntiSpamRule", "قانون سفارشی"]],
+            returns: "None",
+            description: "افزودن قانون ضد اسپم سفارشی"
+        },
+        {
+            name: "remove_rule",
+            params: [["violation", "SpamViolation", "نوع تخلف"]],
+            returns: "None",
+            description: "حذف یک قانون"
+        },
+        {
+            name: "unmute",
+            params: [
+                ["chat_id", "str", "چت آیدی"],
+                ["user_id", "str | None", "آیدی کاربر"]
+            ],
+            returns: "None",
+            description: "لغو سکوت کاربر"
+        },
+        {
+            name: "is_muted",
+            params: [
+                ["chat_id", "str", "چت آیدی"],
+                ["user_id", "str | None", "آیدی کاربر"]
+            ],
+            returns: "bool",
+            description: "چک وضعیت سکوت کاربر"
+        },
+        {
+            name: "reset",
+            params: [
+                ["chat_id", "str | None", "چت آیدی (None = همه)"],
+                ["user_id", "str | None", "آیدی کاربر"]
+            ],
+            returns: "None",
+            description: "ریست آمار"
+        },
+        {
+            name: "start_auto_clear",
+            params: [],
+            returns: "None",
+            description: "شروع پاکسازی خودکار حافظه"
+        },
+        {
+            name: "stop_auto_clear",
+            params: [],
+            returns: "None",
+            description: "توقف پاکسازی خودکار"
+        },
+    ],
+    subsections: [
+        {
+            subtitle: "🚫 SpamViolation (انواع تخلفات)",
+            properties: [
+                {name: "FLOOD", type: "Enum", description: "پیام پشت سر هم"},
+                {name: "RATE_LIMIT", type: "Enum", description: "تعداد بیش از حد"},
+                {name: "DUPLICATE", type: "Enum", description: "پیام تکراری"},
+                {name: "LONG_MESSAGE", type: "Enum", description: "پیام خیلی طولانی"},
+                {name: "LINK_SPAM", type: "Enum", description: "لینک اسپم"},
+                {name: "MENTION_SPAM", type: "Enum", description: "منشن اسپم"},
+                {name: "BOT_SPAM", type: "Enum", description: "دستورات ربات"},
+            ],
+        },
+    ],
+    example: `from fast_rub.utils import AntiSpam
+
+antispam = AntiSpam(
+    flood_max=5,
+    flood_window=3.0,
+    mute_duration=120.0,
+)
+
+@bot.on_message()
+async def handler(msg: Message):
+    is_spam, reason, violation = antispam.check(
+        msg.chat_id, msg.sender_id, msg.text
+    )
+    
+    if is_spam:
+        await msg.reply(f"🚫 {reason}")
+        await msg.delete()
+    else:
+        await msg.reply("✅ پیام شما پذیرفته شد.")`
+},
+
+
+{
+    id: "webhook_server",
+    title: "🌐 WebhookServer — سرور وب‌هوک داخلی",
+    description: "Fast Rub یک سرور Webhook داخلی دارد که از FastAPI و Flask پشتیبانی می‌کند. می‌توانید پیام‌ها و کلیک‌های دکمه را از طریق Webhook دریافت کنید. از توکن در URL یا بدنهٔ درخواست پشتیبانی می‌کند.",
+    class_signature: "class WebhookServer(client, config, logger=None)",
+    init_params: [
+        ["client", "Client", "کلاینت ربات"],
+        ["config", "WebhookConfig", "تنظیمات Webhook"],
+        ["logger", "logging.Logger | None", "لاگر دلخواه"],
+    ],
+    methods: [
+        {
+            name: "start",
+            params: [],
+            returns: "None",
+            description: "شروع سرور Webhook. برای FastAPI از uvicorn و برای Flask از app.run استفاده می‌کند."
+        },
+        {
+            name: "stop",
+            params: [],
+            returns: "None",
+            description: "توقف سرور (فقط برای FastAPI)."
+        },
+    ],
+    example: `from fast_rub import Client
+from fast_rub import WebhookConfig
+
+bot = Client("my_bot")
+
+await bot.start()
+
+config = WebhookConfig(
+    backend="fastapi",
+    host="0.0.0.0",
+    port=8080,
+    path_prefix="/webhook",
+    use_token_in_url=True,
+)
+
+@bot.on_message_updates()
+async def handler(msg):
+    await msg.reply("Webhook works! 🚀")
+
+await bot.setup_webhooks()
+await bot.run()`
+},
+
+];
+
+    function renderfeatures() {
+      const container = document.getElementById('features-container');
+      const tocList = document.getElementById('toc-list');
+      container.innerHTML = '';
+      tocList.innerHTML = '';
+
+      featuresData.forEach((section, idx) => {
+        const sectionEl = document.createElement('section');
+        sectionEl.className = 'model-section';
+        sectionEl.id = section.id;
+
+        const title = document.createElement('h2');
+        title.textContent = section.title;
+        sectionEl.appendChild(title);
+
+        if (section.description) {
+          const desc = document.createElement('div');
+          desc.className = 'desc';
+          desc.textContent = section.description;
+          sectionEl.appendChild(desc);
+        }
+
+        if (section.class_signature) {
+          const sig = document.createElement('div');
+          sig.className = 'class-signature';
+          sig.textContent = section.class_signature;
+          sectionEl.appendChild(sig);
+        }
+
+        if (section.init_params && section.init_params.length > 0) {
+          const paramsTitle = document.createElement('h3');
+          paramsTitle.textContent = '📥 ورودی‌های';
+          sectionEl.appendChild(paramsTitle);
+
+          const div = document.createElement('div');
+          div.className = 'table-responsive';
+          let table = `<table><thead><tr><th>فیلد</th><th>نوع</th><th>توضیحات</th></tr></thead><tbody>`;
+          section.init_params.forEach(p => {
+            table += `<tr><td><code>${p[0]}</code></td><td>${p[1]}</td><td>${p[2]}</td></tr>`;
+          });
+          table += `</tbody></table>`;
+          div.innerHTML = table;
+          sectionEl.appendChild(div);
+        }
+
+        if (section.properties && section.properties.length > 0) {
+          const propTitle = document.createElement('h3');
+          propTitle.textContent = '📋 پراپرتی‌ها';
+          sectionEl.appendChild(propTitle);
+
+          const div = document.createElement('div');
+          div.className = 'table-responsive';
+          let table = '<table><thead><tr><th>پراپرتی</th><th>نوع</th><th>توضیحات</th></tr></thead><tbody>';
+          section.properties.forEach(p => {
+            table += `<tr><td><code>${p.name}</code></td><td>${p.type}</td><td>${p.description}</td></tr>`;
+          });
+          table += '</tbody></table>';
+          div.innerHTML = table;
+          sectionEl.appendChild(div);
+        }
+
+        if (section.methods && section.methods.length > 0) {
+          const methodTitle = document.createElement('h3');
+          methodTitle.textContent = '⚙️ متدها';
+          sectionEl.appendChild(methodTitle);
+
+          const div = document.createElement('div');
+          div.className = 'table-responsive';
+          let table = '<table><thead><tr><th>متد</th><th>پارامترها</th><th>خروجی</th><th>توضیحات</th></tr></thead><tbody>';
+          section.methods.forEach(m => {
+            let paramsStr = m.params.map(p => `${p[0]}: ${p[1]}`).join(', ');
+            if (!paramsStr) paramsStr = '—';
+            table += `<tr>
+                        <td><code>${m.name}()</code></td>
+                        <td>${paramsStr}</td>
+                        <td>${m.returns || 'None'}</td>
+                        <td>${m.description}</td>
+                      </tr>`;
+          });
+          table += '</tbody></table>';
+          div.innerHTML = table;
+          sectionEl.appendChild(div);
+        }
+
+        if (section.subsections) {
+          section.subsections.forEach(sub => {
+            const subTitle = document.createElement('h3');
+            subTitle.textContent = sub.subtitle;
+            sectionEl.appendChild(subTitle);
+
+            if (sub.class_signature) {
+              const sig = document.createElement('div');
+              sig.className = 'class-signature';
+              sig.style.marginRight = '0';
+              sig.textContent = sub.class_signature;
+              sectionEl.appendChild(sig);
+            }
+
+            if (sub.properties && sub.properties.length > 0) {
+              const div = document.createElement('div');
+              div.className = 'table-responsive';
+              let table = '<table><thead><tr><th>پراپرتی</th><th>نوع</th><th>توضیحات</th></tr></thead><tbody>';
+              sub.properties.forEach(p => {
+                table += `<tr><td><code>${p.name}</code></td><td>${p.type}</td><td>${p.description}</td></tr>`;
+              });
+              table += '</tbody></table>';
+              div.innerHTML = table;
+              sectionEl.appendChild(div);
+            }
+          });
+        }
+
+        if (section.filter_groups) {
+          section.filter_groups.forEach(group => {
+            const groupTitle = document.createElement('h3');
+            groupTitle.textContent = group.group;
+            sectionEl.appendChild(groupTitle);
+
+            const div = document.createElement('div');
+            div.className = 'table-responsive';
+            let table = '<table><thead><tr><th>فیلتر</th><th>پارامتر</th><th>توضیحات</th></tr></thead><tbody>';
+            group.filters.forEach(f => {
+              let params = f.params ? f.params.map(p => `${p[0]}: ${p[1]}`).join(', ') : '—';
+              table += `<tr><td><code>${f.name}</code></td><td>${params}</td><td>${f.description}</td></tr>`;
+            });
+            table += '</tbody></table>';
+            div.innerHTML = table;
+            sectionEl.appendChild(div);
+          });
+        }
+
+        if (section.note) {
+          const noteP = document.createElement('p');
+          noteP.style.background = '#fef9e7';
+          noteP.style.padding = '0.8rem 1.2rem';
+          noteP.style.borderRadius = '8px';
+          noteP.style.borderRight = '4px solid #ffb300';
+          noteP.textContent = '📌 ' + section.note;
+          sectionEl.appendChild(noteP);
+        }
+
+        if (section.example) {
+          const exTitle = document.createElement('p');
+          exTitle.style.fontWeight = 'bold';
+          exTitle.style.margin = '1.8rem 0 0.5rem';
+          exTitle.textContent = '🧪 مثال';
+          sectionEl.appendChild(exTitle);
+
+          const wrapper = document.createElement('div');
+          wrapper.className = 'code-block-wrapper';
+          const btn = document.createElement('button');
+          btn.className = 'copy-btn';
+          btn.textContent = 'کپی';
+          wrapper.appendChild(btn);
+
+          const pre = document.createElement('pre');
+          const code = document.createElement('code');
+          code.className = 'language-python';
+          code.textContent = section.example.trim();
+          pre.appendChild(code);
+          wrapper.appendChild(pre);
+          sectionEl.appendChild(wrapper);
+        }
+
+        container.appendChild(sectionEl);
+
+        const tocItem = document.createElement('li');
+        const tocLink = document.createElement('a');
+        tocLink.href = `#${section.id}`;
+        tocLink.textContent = section.title.replace('🔹', '').trim();
+        tocItem.appendChild(tocLink);
+        tocList.appendChild(tocItem);
+      });
+
+      document.querySelectorAll('.copy-btn').forEach(btn => {
+        btn.addEventListener('click', function (e) {
+          const pre = this.nextElementSibling;
+          const code = pre.querySelector('code');
+          navigator.clipboard.writeText(code.textContent).then(() => {
+            this.textContent = '✅ کپی شد!';
+            setTimeout(() => { this.textContent = 'کپی'; }, 1200);
+          });
+        });
+      });
+
+      if (window.Prism) Prism.highlightAll();
+    }
+
+    window.addEventListener('DOMContentLoaded', renderfeatures);
+  </script>
+</body>
+</html>

@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link rel="icon" href="icon.jpg">
+  <title>Fast Rub | کتابخانه سریع برای ربات‌های روبیکا</title>
+  <meta name="description" content="Fast Rub — سریع‌ترین فریم‌ورک روبیکا با WaitManager، DataForm، Conversation و HTTP/2.">
+  <meta name="author" content="Seyyed Mohamad Hosein Moosavi Raja (OandONE)">
+  <meta property="og:title" content="Fast Rub | کتابخانه سریع ربات روبیکا">
+  <meta property="og:description" content="WaitManager، DataForm، Conversation، HTTP/2.">
+  <meta property="og:image" content="icon.jpg">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Fast Rub | کتابخانه سریع ربات روبیکا">
+  <meta name="twitter:image" content="icon.jpg">
+  
+  <style>
+    :root {
+      --bg: #f8f9fc;
+      --surface: #ffffff;
+      --text: #1a1a2e;
+      --text-secondary: #4a4a6a;
+      --brand: #6c5ce7;
+      --brand-dark: #4a3db5;
+      --accent: #fdcb6e;
+      --border: #e2e4f0;
+      --code-bg: #1e1e2e;
+      --code-text: #f8f8f2;
+      --shadow: 0 2px 12px rgba(0,0,0,0.05);
+      --radius: 16px;
+    }
+    [data-theme="dark"] {
+      --bg: #0d0d15;
+      --surface: #1a1a28;
+      --text: #e2e2f0;
+      --text-secondary: #8e8ea0;
+      --brand: #a29bfe;
+      --brand-dark: #c4b5fd;
+      --accent: #fbbf24;
+      --border: #2a2a3a;
+      --code-bg: #0f0f1a;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Vazirmatn', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.9;
+      direction: rtl;
+      transition: background 0.3s, color 0.3s;
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 30px 20px;
+    }
+
+    /* ── Navbar ── */
+    .navbar {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 0;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(10px);
+    }
+    .navbar .container {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .navbar .brand {
+      font-size: 1.3rem;
+      font-weight: 800;
+      color: var(--brand-dark);
+      text-decoration: none;
+    }
+    .navbar .nav-links {
+      display: flex;
+      gap: 20px;
+      list-style: none;
+      font-size: 0.9rem;
+    }
+    .navbar .nav-links a {
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-weight: 500;
+    }
+    .navbar .nav-links a:hover {
+      color: var(--brand);
+    }
+
+    /* ── Hero ── */
+    .hero {
+      text-align: center;
+      padding: 50px 0 30px;
+    }
+    .hero img {
+      width: 100px;
+      border-radius: 22px;
+      box-shadow: var(--shadow);
+      margin-bottom: 20px;
+    }
+    .hero h1 {
+      font-size: 2.6rem;
+      font-weight: 900;
+      background: linear-gradient(135deg, var(--brand), var(--accent));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .hero .tagline {
+      font-size: 1.2rem;
+      color: var(--text-secondary);
+      margin-top: 8px;
+    }
+
+    /* ── Sections ── */
+    section {
+      margin: 36px 0;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 28px 30px;
+      box-shadow: var(--shadow);
+    }
+    section h2 {
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: var(--brand-dark);
+      margin-bottom: 16px;
+    }
+    section h3 {
+      font-size: 1.1rem;
+      color: var(--text);
+      margin: 20px 0 10px;
+    }
+    section p, section li {
+      color: var(--text-secondary);
+      margin-bottom: 8px;
+    }
+    section ul {
+      padding-right: 20px;
+    }
+    section a {
+      color: var(--brand);
+      font-weight: 600;
+    }
+
+    /* ── Code ── */
+    pre {
+      background: var(--code-bg);
+      color: var(--code-text);
+      padding: 18px 22px;
+      border-radius: 14px;
+      overflow-x: auto;
+      direction: ltr;
+      text-align: left;
+      margin: 14px 0;
+      font-size: 0.85rem;
+      font-family: 'JetBrains Mono', 'Courier New', monospace;
+      line-height: 1.7;
+    }
+    code {
+      background: var(--border);
+      padding: 2px 7px;
+      border-radius: 5px;
+      font-size: 0.9em;
+    }
+    pre code {
+      background: transparent;
+      padding: 0;
+    }
+
+    /* ── Features Grid ── */
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 14px;
+    }
+    .feature-card {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 18px;
+      transition: all 0.25s;
+    }
+    .feature-card:hover {
+      border-color: var(--brand);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow);
+    }
+    .feature-card h3 {
+      margin: 0 0 6px;
+      color: var(--brand-dark);
+      font-size: 1.05rem;
+    }
+    .feature-card p {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      margin: 0;
+    }
+
+    /* ── Stats ── */
+    .stats-list {
+      list-style: none;
+      padding: 0;
+    }
+    .stats-list li {
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 1.05rem;
+    }
+    .stats-list li:last-child { border-bottom: none; }
+
+    /* ── Footer ── */
+    footer {
+      text-align: center;
+      padding: 28px 20px;
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      border-top: 1px solid var(--border);
+      margin-top: 40px;
+    }
+    footer a { color: var(--brand); font-weight: 600; }
+    .footer-links {
+      display: flex;
+      justify-content: center;
+      gap: 24px;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+    }
+
+    /* ── Theme Toggle ── */
+    .theme-toggle {
+      position: fixed;
+      bottom: 24px;
+      left: 24px;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-size: 1.2rem;
+      cursor: pointer;
+      box-shadow: var(--shadow);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+    .theme-toggle:hover { transform: scale(1.1); border-color: var(--brand); }
+
+    @media (max-width: 600px) {
+      .hero h1 { font-size: 1.8rem; }
+      section { padding: 20px; }
+      .navbar .nav-links { gap: 12px; font-size: 0.8rem; }
+    }
+
+    .code-wrapper {
+  position: relative;
+  margin: 14px 0;
+}
+.code-wrapper pre {
+  margin: 0;
+}
+.copy-btn {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background: rgba(255,255,255,0.08);
+  color: #888;
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 8px;
+  padding: 5px 12px;
+  font-size: 0.75rem;
+  cursor: pointer;
+  z-index: 10;
+  transition: all 0.2s;
+  font-family: 'Vazirmatn', sans-serif;
+}
+.copy-btn:hover {
+  background: rgba(255,255,255,0.15);
+  color: #fff;
+}
+
+@font-face {
+  font-family: 'Vazir';
+  src: url('fonts/Vazir.woff2') format('woff2');
+  font-weight: 400;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'JetBrains Mono';
+  src: url('fonts/JetBrainsMono.woff2') format('woff2');
+  font-weight: 400;
+  font-display: swap;
+}
+
+body {
+  font-family: 'Vazir', system-ui, sans-serif;
+}
+pre, code, .signature {
+  font-family: 'JetBrains Mono', 'Courier New', monospace;
+}
+  </style>
+</head>
+<body>
+
+<div class="navbar">
+  <div class="container">
+    <a href="index.html" class="brand">⚡ Fast Rub</a>
+    <ul class="nav-links">
+      <li><a href="index.html">معرفی</a></li>
+      <li><a href="methods/index.html">متدها</a></li>
+      <li><a href="models/index.html">مدل‌ها</a></li>
+      <li><a href="features/index.html">قابلیت‌ها</a></li>
+    </ul>
+  </div>
+</div>
+
+<div class="container">
+
+  <div class="hero">
+    <img src="icon.jpg" alt="Fast Rub">
+    <h1>Fast Rub ⚡</h1>
+    <p class="tagline">سرعت، قدرت و بهینگی در یک کتابخانه</p>
+  </div>
+
+  <section>
+    <p>Fast Rub یک فریم‌ورک مدرن، سریع و سبک برای ساخت ربات‌های روبیکا است. با پشتیبانی کامل از sync/async، HTTP/2، و معماری async-native. روی سخت‌افزار ضعیف (۲۵۶ مگابایت رم DDR1 با Alpine Linux) تست شده.</p>
+  </section>
+
+  <section id="_1">
+    <h2>🚀 مراحل استفاده</h2>
+    <ul>
+      <li>با <a href="https://rubika.ir/BotFather">@BotFather</a> یک بات بسازید.</li>
+      <li>توکن را کپی کنید.</li>
+    </ul>
+    <h3>نصب</h3>
+    <div class="code-wrapper">
+      <button class="copy-btn">📋 کپی</button>
+      <pre><code>pip install --upgrade fastrub</code></pre>
+    </div>
+    <h3>نصب - میرور رانفلر</h3>
+    <div class="code-wrapper">
+      <button class="copy-btn">📋 کپی</button>
+      <pre><code>pip install -i https://mirror-pypi.runflare.com/simple fastrub</code></pre>
+    </div>
+    <h3>شروع سریع</h3>
+    <div class="code-wrapper">
+      <button class="copy-btn">📋 کپی</button>
+    <pre><code>from fast_rub import Client
+from fast_rub.types import Message
+import asyncio
+
+async def robot():
+    bot = Client("my_bot")
+    await bot.start()
+
+    @bot.on_message()
+    async def handler(msg: Message):
+        await msg.reply("**Hello** from Fast Rub! ⚡")
+
+    await bot.run()
+
+asyncio.run(robot())</code></pre>
+</div>
+  </section>
+
+  <section id="_2">
+    <h2>💎 چرا Fast Rub؟</h2>
+    <div class="features-grid">
+      <div class="feature-card"><h3>⚡ سریع‌ترین</h3><p>HTTP/2 و httpx</p></div>
+      <div class="feature-card"><h3>🧠 هوشمندترین</h3><p>WaitManager</p></div>
+      <div class="feature-card"><h3>🗃️ کم‌مصرف</h3><p>۲۵۶MB DDR1</p></div>
+    </div>
+  </section>
+
+  <section id="_3">
+    <h2>✨ ویژگی‌ها</h2>
+    <div class="features-grid">
+      <div class="feature-card"><h3>⏱️ WaitManager</h3><p>مدیریت Rate Limit</p></div>
+      <div class="feature-card"><h3>📋 DataForm</h3><p>فرم‌های هوشمند</p></div>
+      <div class="feature-card"><h3>💬 Conversation</h3><p>State Machine</p></div>
+      <div class="feature-card"><h3>🔍 ۲۰۰+ فیلتر</h3><p>AND/OR/NOT</p></div>
+      <div class="feature-card"><h3>📡 HTTP/2</h3><p>ارتباط سریع</p></div>
+      <div class="feature-card"><h3>🔄 Async-First</h3><p>کاملاً async</p></div>
+    </div>
+  </section>
+
+  <section id="_4">
+    <h2>📊 آمار واقعی</h2>
+    <ul class="stats-list">
+      <li>✅ <strong>۹۵+ ربات</strong> روی یک سرور ۸GB</li>
+      <li>✅ تست روی <strong>۲۵۶MB DDR1</strong></li>
+      <li>✅ فقط <strong>۴ وابستگی</strong></li>
+    </ul>
+  </section>
+
+  <footer>
+    <div class="footer-links">
+      <a href="methods/index.html">متدها</a>
+      <a href="models/index.html">مدل‌ها</a>
+      <a href="features/index.html">قابلیت‌ها</a>
+      <a href="pyrubi/index.html">یوزر بات</a>
+    </div>
+    <p>❤️ <a href="https://github.com/OandONE">OandONE</a></p>
+  </footer>
+
+</div>
+
+<button class="theme-toggle" onclick="toggleTheme()" aria-label="تغییر تم">
+  <span id="theme-icon">🌙</span>
+</button>
+
+<script>
+  (function() {
+    var saved = localStorage.getItem('theme');
+    if (saved) document.documentElement.setAttribute('data-theme', saved);
+    updateIcon();
+  })();
+  function toggleTheme() {
+    var cur = document.documentElement.getAttribute('data-theme');
+    var next = cur === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', next);
+    localStorage.setItem('theme', next);
+    updateIcon();
+  }
+  function updateIcon() {
+    var icon = document.getElementById('theme-icon');
+    var theme = document.documentElement.getAttribute('data-theme');
+    icon.textContent = theme === 'dark' ? '☀️' : '🌙';
+  }
+
+  document.querySelectorAll('.copy-btn').forEach(btn => {
+  btn.addEventListener('click', function() {
+    var code = this.nextElementSibling.textContent;
+    navigator.clipboard.writeText(code).then(() => {
+      this.textContent = '✅ کپی شد';
+      setTimeout(() => { this.textContent = '📋 کپی'; }, 1500);
+    });
+  });
+});
+</script>
+
+</body>
+</html>

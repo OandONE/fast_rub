@@ -1,0 +1,2313 @@
+
+<!DOCTYPE html>
+
+<html class="js-focus-visible js" data-js-focus-visible="" lang="fa">
+<head>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+<meta content="width=device-width,initial-scale=1" name="viewport"/>
+<link href="../icon.jpg" rel="icon"/>
+<meta content="mkdocs-1.3.1, mkdocs-material-8.5.3" name="generator"/><title>متد ها - فورک پایروبی</title>
+<link href="../main.7a952b86.min.css" rel="stylesheet"/><link href="../palette.cbb835fc.min.css" rel="stylesheet"/>
+<style>
+        .CodeMirror {
+          border: 1px solid #ccc;
+          width: 100%;
+          max-height: 400px;
+          border-radius: 6px;
+          margin: 10px 0;
+          font-size: 14px;
+          overflow: auto;
+        }
+      </style>
+<link crossorigin="" href="https://fonts.gstatic.com/" rel="preconnect"/>
+<link href="../css" rel="stylesheet"/>
+<style>:root{--md-text-font:"B Nazanin";--md-code-font:"Roboto Mono"}</style>
+<link href="../termynal.css" rel="stylesheet"/>
+<link href="../custom.css" rel="stylesheet"/>
+<script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+<link href="../style.css" rel="stylesheet"/>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css" rel="stylesheet"/>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/monokai.min.css" rel="stylesheet"/>
+<style>
+    .md-typeset .CodeMirror { direction: ltr; text-align: left; }
+    .md-typeset .CodeMirror {
+      width: 100%; height: auto; max-height: 440px;
+      border-radius: 10px; border: 1px solid #383838;
+      box-shadow: 0 8px 22px rgba(0,0,0,0.18); font-size: 14px;
+    }
+    .md-typeset .CodeMirror-scroll {
+      max-height: inherit; overscroll-behavior: contain; -webkit-overflow-scrolling: touch;
+    }
+    .cm-s-monokai.CodeMirror { background: #272822; color: #f8f8f2; }
+    .code-container { margin: 14px 0 22px; }
+    .code-header {
+      display: flex; align-items: center; justify-content: space-between; gap: .5rem;
+      padding: .6rem .8rem; margin: .5rem 0 0; background: #1f1f1f; color: #e5e5e5;
+      border: 1px solid #383838; border-bottom: none; border-top-left-radius: 10px; border-top-right-radius: 10px;
+      font-size: 12px;
+    }
+    .code-header .language-label { opacity: .85 }
+    .copy-btn {
+      cursor: pointer; user-select: none; border: 1px solid #444; background: #2a2a2a; color: #eaeaea;
+      border-radius: 8px; padding: .28rem .7rem; transition: transform .08s ease, background .2s ease, border .2s ease;
+    }
+    .copy-btn:hover { background: #333; border-color: #555; }
+    .copy-btn:active { transform: scale(.98); }
+    .md-typeset pre.code-block {
+      direction: ltr; text-align: left; max-height: 440px; overflow: auto; overscroll-behavior: contain; border-radius: 10px;
+      box-shadow: 0 8px 22px rgba(0,0,0,0.18);
+    }
+  </style>
+</head>
+<body data-md-color-accent="amber" data-md-color-primary="purple" data-md-color-scheme="default" dir="rtl">
+<script>var palette=__md_get("__palette");if(palette&&"object"==typeof palette.color)for(var key of Object.keys(palette.color))document.body.setAttribute("data-md-color-"+key,palette.color[key])</script>
+<input autocomplete="off" class="md-toggle" data-md-toggle="drawer" id="__drawer" type="checkbox"/>
+<input autocomplete="off" class="md-toggle" data-md-toggle="search" id="__search" type="checkbox"/>
+<label class="md-overlay" for="__drawer"></label>
+<div data-md-component="skip">
+<a class="md-skip" href="#_1">
+          پرش به محتویات
+        </a>
+</div>
+<div data-md-component="announce">
+</div>
+<header class="md-header md-header--shadow" data-md-component="header">
+<nav aria-label="Header" class="md-header__inner md-grid">
+<a aria-label="Rubika Bot Father" class="md-header__button md-logo" data-md-component="logo" href="index.html" title="Rubika Bot Father">
+<h1>PyRubi</h1>
+</a>
+<label class="md-header__button md-icon" for="__drawer">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"></path></svg>
+</label>
+<div class="md-header__title" data-md-component="header-title">
+<div class="md-header__ellipsis">
+<div class="md-header__topic">
+<span class="md-ellipsis">
+            اکانت روبیکا
+          </span>
+</div>
+<div class="md-header__topic" data-md-component="header-topic">
+<span class="md-ellipsis">
+            
+              متد ها
+            
+          </span>
+</div>
+</div>
+</div>
+<form class="md-header__option" data-md-component="palette">
+<input aria-label="Switch to dark mode" class="md-option" data-md-color-accent="amber" data-md-color-media="" data-md-color-primary="purple" data-md-color-scheme="default" id="__palette_1" name="__palette" type="radio"/>
+<label class="md-header__button md-icon" for="__palette_2" title="Switch to dark mode">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5c-.84 0-1.65.15-2.39.42L12 2M3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29L3.34 7m.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14L3.36 17M20.65 7l-1.77 3.79a7.023 7.023 0 0 0-2.38-4.15l4.15.36m-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29L20.64 17M12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44L12 22Z"></path></svg>
+</label>
+<input aria-label="Switch to light mode" class="md-option" data-md-color-accent="amber" data-md-color-media="" data-md-color-primary="purple" data-md-color-scheme="slate" id="__palette_2" name="__palette" type="radio"/>
+<label class="md-header__button md-icon" for="__palette_1" hidden="" title="Switch to light mode">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3 3.19.09m3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95 2.06.05m-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31Z"></path></svg>
+</label>
+</form>
+</nav>
+</header>
+<div class="md-container" data-md-component="container">
+<main class="md-main" data-md-component="main">
+<div class="md-main__inner md-grid">
+<div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" style="top: 60px;">
+<div class="md-sidebar__scrollwrap" style="height: 756px;">
+<div class="md-sidebar__inner">
+<nav aria-label="Navigation" class="md-nav md-nav--primary" data-md-level="0">
+<label class="md-nav__title" for="__drawer">
+<a aria-label="Rubika Bot Father" class="md-nav__button md-logo" data-md-component="logo" href="index.html" title="Rubika Bot Father">
+<img alt="logo" src="../icon.jpg"/>
+</a>
+  </label>
+<ul class="md-nav__list">
+<li class="md-nav__item">
+</li>
+<li class="md-nav__item md-nav__item--active">
+<input class="md-nav__toggle md-toggle" data-md-toggle="toc" id="__toc" type="checkbox"/>
+<label class="md-nav__link md-nav__link--active" for="__toc">
+          متد ها
+          <span class="md-nav__icon md-icon"></span>
+</label>
+<a class="md-nav__link md-nav__link--active" href="index.html">
+        متد ها
+      </a>
+<nav aria-label="فهرست موضوعات" class="md-nav md-nav--secondary">
+<label class="md-nav__title" for="__toc">
+<span class="md-nav__icon md-icon"></span>
+      فهرست موضوعات
+    </label>
+<ul class="md-nav__list" data-md-component="toc">
+<li class="md-nav__item">
+<a class="md-nav__link" href="#_0">
+    __init__(ورودی های اصلی کلاس کلاینت)
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#_1">
+    گرفتن اطلاعات بات
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#send-text">
+    ارسال پیام
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#_3">
+    ارسال نظرسنجی
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#_4">
+    ارسال موقعیت مکانی
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#_5">
+    ارسال مخاطب
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#_6">
+    گرفتن آخرین آپدیت‌ها
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#_7">
+    گرفتن اطلاعات چت
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#_8">
+    فوروارد کردن پیام
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#_9">
+    ویرایش متن پیام
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#_10">
+    حذف پیام
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#send-file">
+    ارسال فایل
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#download">
+    دانلود فایل
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#get_url_file">
+    گرفتن لینک دانلود فایل
+  </a>
+</li>
+</ul>
+</nav>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="./models/index.html">
+        مدل ها
+      </a>
+</li>
+</ul>
+</nav>
+</div>
+</div>
+</div>
+<div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" style="top: 60px;">
+<div class="md-sidebar__scrollwrap" style="height: 756px;">
+<div class="md-sidebar__inner">
+<nav aria-label="فهرست موضوعات" class="md-nav md-nav--secondary">
+<label class="md-nav__title" for="__toc">
+<span class="md-nav__icon md-icon"></span>
+      فهرست موضوعات
+    </label>
+<ul class="md-nav__list" data-md-component="toc">
+<li class="md-nav__item">
+<a class="md-nav__link" href="#_0">
+    __init__(ورودی های اصلی کلاس کلاینت)
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#_1">
+    گرفتن اطلاعات بات
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#send-text">
+    ارسال پیام
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#_3">
+    ارسال نظرسنجی
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#_4">
+    ارسال موقعیت مکانی
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#_5">
+    ارسال مخاطب
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#_6">
+    گرفتن آخرین آپدیت‌ها
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#_7">
+    گرفتن اطلاعات چت
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#_8">
+    فوروارد کردن پیام
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#_9">
+    ویرایش متن پیام
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#_10">
+    حذف پیام
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#send-file">
+    ارسال فایل
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#download">
+    دانلود فایل
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#get_url_file">
+    گرفتن لینک دانلود فایل
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#join_chat">
+    پیوستن به چت
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#leave_chat">
+    ترک چت
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#remove_chat">
+    حذف چت
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#get_chat_info_by_username">
+    گرفتن اطلاعات چت با نام کاربری
+  </a>
+</li>
+</ul>
+</nav>
+</div>
+</div>
+</div>
+<div class="md-content" data-md-component="content">
+<article class="md-content__inner md-typeset">
+<h1>متد ها</h1>
+<h2 id="_0">کلاس کلاینت<a class="headerlink" href="#_0" title="Permanent link"></a></h2>
+<ul>
+<li>متد : <code>__init__(Client)</code></li>
+<li>ورودی</li>
+</ul>
+<div class="md-typeset__scrollwrap"><div class="md-typeset__table"><table>
+<thead>
+<tr>
+<th>فیلد</th>
+<th>نوع</th>
+<th>توضیحات</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>session</code></td>
+<td><code>str or None</code></td>
+<td>اسم سشن برای ذخیره سازی اطلاعات</td>
+</tr>
+<tr>
+<td><code>auth</code></td>
+<td><code>str or None</code></td>
+<td>شناسه اوث</td>
+</tr>
+<tr>
+<td><code>private</code></td>
+<td><code>str or None</code></td>
+<td>شناسه کلید پرایو</td>
+</tr>
+<tr>
+<td><code>platform</code></td>
+<td><code>str = "web"</code></td>
+<td>پلتفرم</td>
+</tr>
+<tr>
+<td><code>api_version</code></td>
+<td><code>int = 6</code></td>
+<td>نسخه ای پی آی ها</td>
+</tr>
+<tr>
+<td><code>proxy</code></td>
+<td><code>bool or None</code></td>
+<td>پروکسی برای ارسال درخواست ها</td>
+</tr>
+<tr>
+<td><code>time_out</code></td>
+<td><code>int = 10</code></td>
+<td>زمان خروج برای درخواست ها</td>
+</tr>
+<tr>
+<td><code>show_progress_bar</code></td>
+<td><code>bool = True</code></td>
+<td>نمایش عملیات های در حال انجام</td>
+</tr>
+</tbody>
+</table></div></div>
+<ul>
+<div class="md-typeset__scrollwrap"><div class="md-typeset__table">
+<div class="md-typeset__scrollwrap"><div class="md-typeset__table"><table>
+</table></div></div>
+<ul>
+<li>
+<p>مثال</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="1:4" style="--md-indicator-x:741px; --md-indicator-width:82px;"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio"/><input id="__tabbed_1_2" name="__tabbed_1" type="radio"/><input id="__tabbed_1_3" name="__tabbed_1" type="radio"/><input id="__tabbed_1_4" name="__tabbed_1" type="radio"/><div class="tabbed-labels"><label for="__tabbed_1_1">Python</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<p></p><div style="text-align: left">
+<div class="code-container">
+<textarea class="code-block-py">from fast_rub.pyrubi import Client
+
+bot = Client("name_session")</textarea>
+</div>
+</div><p></p>
+</div>
+</div>
+<h2 id="_1">گرفتن اطلاعات بات<a class="headerlink" href="#_1" title="Permanent link"></a></h2>
+<ul>
+<li>متد : <code>get_me</code></li>
+</ul>
+<div class="md-typeset__scrollwrap"><div class="md-typeset__table">
+<ul>
+<li>خروجی</li>
+</ul>
+<div class="md-typeset__scrollwrap"><div class="md-typeset__table"><table>
+<thead>
+<tr>
+<th>فیلد</th>
+<th>نوع</th>
+<th>توضیحات</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>get_me</code></td>
+<td><a href="../models/index.html#get_me"><code>get_me</code></a></td>
+<td>بات</td>
+</tr>
+</tbody>
+</table></div></div>
+<ul>
+<li>
+<p>مثال</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="1:4" style="--md-indicator-x:741px; --md-indicator-width:82px;"><input checked="checked" id="__tabbed_0_1" name="__tabbed_0" type="radio"/><input id="__tabbed_0_2" name="__tabbed_0" type="radio"/><input id="__tabbed_0_3" name="__tabbed_0" type="radio"/><input id="__tabbed_0_4" name="__tabbed_0" type="radio"/><div class="tabbed-labels"><label for="__tabbed_0_1">Python</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<p></p><div style="text-align: left">
+<div class="code-container">
+<div class="code-header">
+<div class="language-label">سینک(sync)</div>
+</div>
+<textarea class="code-block-py">from fast_rub.pyrubi import Client
+
+bot = Client("name_session")
+
+def test():
+  me = bot.get_me()
+  print(me)
+test()</textarea>
+</div>
+<div class="code-container">
+<div class="code-header">
+<div class="language-label">آیسینک(async)</div>
+</div>
+<textarea class="code-block-py">from fast_rub.pyrubi import Client
+import asynico
+
+bot = Client("name_session")
+
+def test():
+  me = await bot.get_me()
+  print(me)
+asynico.run(test())</textarea>
+</div>
+</div><p></p>
+</div>
+</div>
+<div class="tabbed-control tabbed-control--prev" hidden=""><button class="tabbed-button" tabindex="-1"></button></div><div class="tabbed-control tabbed-control--next" hidden=""><button class="tabbed-button" tabindex="-1"></button></div></div>
+</li>
+</ul>
+<h2 id="send-text">ارسال پیام<a class="headerlink" href="#send-text" title="Permanent link"></a></h2>
+<ul>
+<li>متد : <code>send_text</code></li>
+<li>ورودی</li>
+</ul>
+<div class="md-typeset__scrollwrap"><div class="md-typeset__table"><table>
+<thead>
+<tr>
+<th>فیلد</th>
+<th>نوع</th>
+<th>توضیحات</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>object_guid</code></td>
+<td><code>str</code></td>
+<td>آبجکت گوید</td>
+</tr>
+<tr>
+<td><code>text</code></td>
+<td><code>str</code></td>
+<td>متن پیام</td>
+</tr>
+<tr>
+<td><code>message_id</code></td>
+<td><code>str or None</code></td>
+<td>در جوابِ پیامِ؟</td>
+</tr>
+</tbody>
+</table></div></div>
+<ul>
+<li>خروجی</li>
+</ul>
+<div class="md-typeset__scrollwrap"><div class="md-typeset__table"><table>
+<thead>
+<tr>
+<th>فیلد</th>
+<th>نوع</th>
+<th>توضیحات</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>message_id</code></td>
+<td><code>str</code></td>
+<td>شناسه پیام</td>
+</tr>
+</tbody>
+</table></div></div>
+<ul>
+<li>
+<p>مثال</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="2:4" style="--md-indicator-x:741px; --md-indicator-width:82px;"><input checked="checked" id="__tabbed_2_1" name="__tabbed_2" type="radio"/><input id="__tabbed_2_2" name="__tabbed_2" type="radio"/><input id="__tabbed_2_3" name="__tabbed_2" type="radio"/><input id="__tabbed_2_4" name="__tabbed_2" type="radio"/><div class="tabbed-labels"><label for="__tabbed_2_1">Python</label></div>
+<div class="tabbed-content" style="text-align: left;">
+<div class="code-header">
+<div class="language-label">سینک(sync)</div>
+</div>
+<textarea class="code-block-py">from fast_rub.pyrubi import Client
+import asyncio
+
+object_guid = "u..."
+text = "test"
+
+bot = Client("name_session")
+
+def test():
+    sending = bot.send_text(object_guid,text)
+
+test()
+</textarea>
+<div class="code-header">
+<div class="language-label">ایسینک(async)</div>
+</div>
+<textarea class="code-block-py">from fast_rub.pyrubi import Client
+import asyncio
+
+object_guid = "u..."
+text = "test"
+
+bot = Client("name_session")
+
+def test():
+    sending = bot.send_text(object_guid,text)
+
+asyncio.run(test())
+</textarea>
+<div class="tabbed-block">
+<p></p><div style="text-align: left">
+<div class="tabbed-control tabbed-control--prev" hidden=""><button class="tabbed-button" tabindex="-1"></button></div><div class="tabbed-control tabbed-control--next" hidden=""><button class="tabbed-button" tabindex="-1"></button></div></div>
+</div></div></div></li>
+</ul>
+<h2 id="_3">ارسال نظرسنجی<a class="headerlink" href="#_3" title="Permanent link"></a></h2>
+<ul>
+<li>متد : <code>send_poll</code></li>
+<li>ورودی</li>
+</ul>
+<div class="md-typeset__scrollwrap"><div class="md-typeset__table"><table>
+<thead>
+<tr>
+<th>فیلد</th>
+<th>نوع</th>
+<th>توضیحات</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>object_guid</code></td>
+<td><code>str</code></td>
+<td>آبجکت گوید</td>
+</tr>
+<tr>
+<td><code>question</code></td>
+<td><code>str</code></td>
+<td>متن سوال</td>
+</tr>
+<tr>
+<td><code>options</code></td>
+<td><code>list</code></td>
+<td>گزینه‌های سوال</td>
+</tr>
+<tr>
+<td><code>message_id</code></td>
+<td><code>str or None</code></td>
+<td>در جواب پیام؟</td>
+</tr>
+</tbody>
+</table></div></div>
+<ul>
+<li>خروجی</li>
+</ul>
+<div class="md-typeset__scrollwrap"><div class="md-typeset__table"><table>
+<thead>
+<tr>
+<th>فیلد</th>
+<th>نوع</th>
+<th>توضیحات</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>message_id</code></td>
+<td><code>str or None</code></td>
+<td>شناسه پیام</td>
+</tr>
+<tr>
+<td><code>multiple_answers</code></td>
+<td><code>bool or None</code></td>
+<td>چند گزینه ای</td>
+</tr>
+<tr>
+<td><code>anonymous</code></td>
+<td><code>bool or None</code></td>
+<td>ناشناس بودن نظرسنجی</td>
+</tr>
+<tr>
+<td><code>quiz</code></td>
+<td><code>bool or None</code></td>
+<td>حالت کوییز</td>
+</tr>
+</tbody>
+</table></div></div>
+<ul>
+<li>
+<p>مثال</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="5:4" style="--md-indicator-x:741px; --md-indicator-width:82px;"><input checked="checked" id="__tabbed_5_1" name="__tabbed_5" type="radio"/><input id="__tabbed_5_2" name="__tabbed_5" type="radio"/><input id="__tabbed_5_3" name="__tabbed_5" type="radio"/><input id="__tabbed_5_4" name="__tabbed_5" type="radio"/><div class="tabbed-labels"><label for="__tabbed_5_1">Python</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block" style="text-align: left;">
+<div class="code-header">
+<div class="language-label">سینک(sync)</div>
+</div>
+<textarea class="code-block-py">from fast_rub.pyrubi import Client
+
+bot = Client("name_session")
+
+def test():
+    list_foods = ["چلو قرمه سبزی", "زرشک پلو با مرغ"]
+    sending = bot.send_poll("object guid", "به چه غذایی علاقه دارید؟", list_foods)
+    print(sending)
+test()
+</textarea>
+<div class="code-header">
+<div class="language-label">آیسینک(async)</div>
+</div>
+<textarea class="code-block-py">import asyncio
+from fast_rub.pyrubi import Client
+
+bot = Client("name_session")
+
+def test():
+    list_foods = ["چلو قرمه سبزی", "زرشک پلو با مرغ"]
+    sending = await bot.send_poll("object guid", "به چه غذایی علاقه دارید؟", list_foods)
+    print(sending)
+asyncio.run(test())
+</textarea>
+</div>
+</div>
+<div class="tabbed-control tabbed-control--prev" hidden=""><button class="tabbed-button" tabindex="-1"></button></div><div class="tabbed-control tabbed-control--next" hidden=""><button class="tabbed-button" tabindex="-1"></button></div></div>
+</li>
+</ul>
+<h2 id="_4">ارسال موقعیت مکانی<a class="headerlink" href="#_4" title="Permanent link"></a></h2>
+<ul>
+<li>متد : <code>send_location</code></li>
+<li>ورودی</li>
+</ul>
+<div class="md-typeset__scrollwrap"><div class="md-typeset__table"><table>
+<thead>
+<tr>
+<th>فیلد</th>
+<th>نوع</th>
+<th>توضیحات</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>object_guid</code></td>
+<td><code>str</code></td>
+<td>آبجکت گوید</td>
+</tr>
+<tr>
+<td><code>latitude</code></td>
+<td><code>str</code></td>
+<td>عرض جغرافیایی</td>
+</tr>
+<tr>
+<td><code>longitude</code></td>
+<td><code>str</code></td>
+<td>طول جغرافیایی</td>
+</tr>
+<tr>
+<td><code>message_id</code></td>
+<td><code>str or None</code></td>
+<td>در جوابِ پیامِ؟</td>
+</tr>
+</tbody>
+</table></div></div>
+<ul>
+<li>خروجی</li>
+</ul>
+<div class="md-typeset__scrollwrap"><div class="md-typeset__table"><table>
+<thead>
+<tr>
+<th>فیلد</th>
+<th>نوع</th>
+<th>توضیحات</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>message_id</code></td>
+<td><code>str</code></td>
+<td>شناسه پیام</td>
+</tr>
+</tbody>
+</table></div></div>
+<ul>
+<li>
+<p>مثال</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="6:4" style="--md-indicator-x:741px; --md-indicator-width:82px;"><input checked="checked" id="__tabbed_6_1" name="__tabbed_6" type="radio"/><input id="__tabbed_6_2" name="__tabbed_6" type="radio"/><input id="__tabbed_6_3" name="__tabbed_6" type="radio"/><input id="__tabbed_6_4" name="__tabbed_6" type="radio"/><div class="tabbed-labels"><label for="__tabbed_6_1">Python</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block" style="text-align: left;">
+<div class="code-header">
+<div class="language-label">سینک(sync)</div>
+</div>
+<textarea class="code-block-py">from fast_rub.pyrubi import Client
+
+bot = Client("name_session")
+
+
+def test():
+    sending = bot.send_location("object guid", "35.6892", "51.3890")
+    print(sending)
+test()
+</textarea>
+<div class="code-header">
+<div class="language-label">آیسینک(async)</div>
+</div>
+<textarea class="code-block-py">from fast_rub.pyrubi import Client
+import asyncio
+
+bot = Client("name_session")
+
+async def test():
+    sending = await bot.send_location("object guid", "35.6892", "51.3890")
+    print(sending)
+asyncio.run(test())
+</textarea>
+</div>
+<div class="tabbed-control tabbed-control--prev" hidden=""><button class="tabbed-button" tabindex="-1"></button></div><div class="tabbed-control tabbed-control--next" hidden=""><button class="tabbed-button" tabindex="-1"></button></div></div>
+</div></li>
+</ul>
+<h2 id="_5">ارسال مخاطب<a class="headerlink" href="#_5" title="Permanent link"></a></h2>
+<ul>
+<li>متد : <code>send_contact</code></li>
+<li>ورودی</li>
+</ul>
+<div class="md-typeset__scrollwrap"><div class="md-typeset__table"><table>
+<thead>
+<tr>
+<th>فیلد</th>
+<th>نوع</th>
+<th>توضیحات</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>object_guid</code></td>
+<td><code>str</code></td>
+<td>آبجکت گوید</td>
+</tr>
+<tr>
+<td><code>first_name</code></td>
+<td><code>str</code></td>
+<td>نام مخاطب</td>
+</tr>
+<tr>
+<td><code>last_name</code></td>
+<td><code>str</code></td>
+<td>نام‌خانوادگی مخاطب</td>
+</tr>
+<tr>
+<td><code>phone_number</code></td>
+<td><code>str</code></td>
+<td>شماره مخاطب</td>
+</tr>
+<tr>
+<td><code>user_guid</code></td>
+<td><code>str</code></td>
+<td>گوید کاربر</td>
+</tr>
+<tr>
+<td><code>message_id</code></td>
+<td><code>str</code></td>
+<td>در جوابِ پیامِ؟</td>
+</tr>
+</tbody>
+</table></div></div>
+<ul>
+<li>خروجی</li>
+</ul>
+<div class="md-typeset__scrollwrap"><div class="md-typeset__table"><table>
+<thead>
+<tr>
+<th>فیلد</th>
+<th>نوع</th>
+<th>توضیحات</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>message_id</code></td>
+<td><code>str</code></td>
+<td>شناسه پیام</td>
+</tr>
+</tbody>
+</table></div></div>
+<ul>
+<li>
+<p>مثال</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="7:4" style="--md-indicator-x:741px; --md-indicator-width:82px;"><input checked="checked" id="__tabbed_7_1" name="__tabbed_7" type="radio"/><input id="__tabbed_7_2" name="__tabbed_7" type="radio"/><input id="__tabbed_7_3" name="__tabbed_7" type="radio"/><input id="__tabbed_7_4" name="__tabbed_7" type="radio"/><div class="tabbed-labels"><label for="__tabbed_7_1">Python</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block" style="text-align: left;">
+<div class="code-header">
+<div class="language-label">سینک(sync)</div>
+</div>
+<textarea class="code-block-py">from fast_rub.pyrubi import Client
+
+bot = Client("name_session")
+
+def test():
+    sending = bot.send_contact("object guid", "first name", "last name", "+989017760881","user guid")
+    print(sending)
+test()
+</textarea>
+<div class="code-header">
+<div class="language-label">آیسینک(async)</div>
+</div>
+<textarea class="code-block-py">from fast_rub.pyrubi import Client
+import asyncio
+
+bot = Client("name_session")
+
+async def test():
+    bot.send_contact("object guid", "first name", "last name", "+989017760881","user guid")
+    print(sending)
+asyncio.run(test())
+</textarea>
+</div>
+<div class="tabbed-control tabbed-control--prev" hidden=""><button class="tabbed-button" tabindex="-1"></button></div><div class="tabbed-control tabbed-control--next" hidden=""><button class="tabbed-button" tabindex="-1"></button></div></div>
+</div></li>
+</ul>
+<h2 id="_6">گرفتن آپدیت پیام ها<a class="headerlink" href="#_6" title="Permanent link"></a></h2>
+<ul>
+<li>متد : <code>on_message</code></li>
+<li>ورودی</li>
+</ul>
+<div class="md-typeset__scrollwrap"><div class="md-typeset__table"><table>
+<thead>
+<tr>
+<th>فیلد</th>
+<th>نوع</th>
+<th>توضیحات</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>filters</code></td>
+<td><code><a href="../models/index.html#filters">filters</a> or None</code></td>
+<td>فیلتر کردن گرفتن پیام</td>
+</tr>
+</tbody>
+</table></div></div>
+<ul>
+<li>خروجی</li>
+</ul>
+<div class="md-typeset__scrollwrap"><div class="md-typeset__table"><table>
+<thead>
+<tr>
+<th>فیلد</th>
+<th>نوع</th>
+<th>توضیحات</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Message</code></td>
+<td><a href="../models/index.html#Message"><code>Message</code></a></td>
+<td>مسیج آپدیت</td>
+</tr>
+</tbody>
+</table></div></div>
+<ul>
+<li>
+<p>مثال</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="8:4" style="--md-indicator-x:741px; --md-indicator-width:82px;"><input checked="checked" id="__tabbed_8_1" name="__tabbed_8" type="radio"/><input id="__tabbed_8_2" name="__tabbed_8" type="radio"/><input id="__tabbed_8_3" name="__tabbed_8" type="radio"/><input id="__tabbed_8_4" name="__tabbed_8" type="radio"/><div class="tabbed-labels"><label for="__tabbed_8_1">Python</label></div>
+<div class="tabbed-content" style="text-align: left;">
+<div class="code-header">
+<div class="language-label">سینک(sync)</div>
+</div>
+<textarea class="code-block-py">from fast_rub.pyrubi import Client
+from fast_rub.pyrubi.types import Message
+
+bot = Client("name_session")
+
+@bot.on_message()
+def test(msg:Message):
+    print(msg)
+    msg.reply("this is a reply text from fast rub fork pyrubi")
+bot.run()
+</textarea>
+<div class="code-header">
+<div class="language-label">آیسینک(async)</div>
+</div>
+<textarea class="code-block-py">from fast_rub.pyrubi import Client
+from fast_rub.pyrubi.types import Message
+
+bot = Client("name_session")
+
+@bot.on_message()
+async def test(msg:Message):
+    print(msg)
+    await msg.reply("this is a reply text from fast rub fork pyrubi")
+bot.run()
+</textarea>
+</div>
+<div class="tabbed-control tabbed-control--prev" hidden=""><button class="tabbed-button" tabindex="-1"></button></div><div class="tabbed-control tabbed-control--next" hidden=""><button class="tabbed-button" tabindex="-1"></button></div></div>
+</li>
+</ul>
+<h2 id="_7">گرفتن اطلاعات چت<a class="headerlink" href="#_7" title="Permanent link"></a></h2>
+<ul>
+<li>متد : <code>get_chat_info</code></li>
+<li>ورودی</li>
+</ul>
+<div class="md-typeset__scrollwrap"><div class="md-typeset__table"><table>
+<thead>
+<tr>
+<th>فیلد</th>
+<th>نوع</th>
+<th>توضیحات</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>object_guid</code></td>
+<td><code>str</code></td>
+<td>آبجکت گوید کاربر/گروه/کانال</td>
+</tr>
+</tbody>
+</table></div></div>
+<ul>
+<li>خروجی</li>
+</ul>
+<div class="md-typeset__scrollwrap"><div class="md-typeset__table"><table>
+<thead>
+<tr>
+<th>فیلد</th>
+<th>نوع</th>
+<th>توضیحات</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>chat</code></td>
+<td><a href="../models/index.html#chat"><code>chat</code></a></td>
+<td>اطلاعات چت</td>
+</tr>
+</tbody>
+</table></div></div>
+<ul>
+<li>
+<p>مثال</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="9:4" style="--md-indicator-x:741px; --md-indicator-width:82px;"><input checked="checked" id="__tabbed_9_1" name="__tabbed_9" type="radio"/><input id="__tabbed_9_2" name="__tabbed_9" type="radio"/><input id="__tabbed_9_3" name="__tabbed_9" type="radio"/><input id="__tabbed_9_4" name="__tabbed_9" type="radio"/><div class="tabbed-labels"><label for="__tabbed_9_1">Python</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block" style="text-align: left;">
+<div class="code-header">
+<div class="language-label">سینک(sync)</div>
+</div>
+<textarea class="code-block-py">from fast_rub.pyrubi import Client
+
+bot = Client("name_session")
+
+def test():
+    info = bot.get_chat_info("object guid")
+    print(info)
+test()
+</textarea>
+<div class="code-header">
+<div class="language-label">آیسینک(async)</div>
+</div>
+<textarea class="code-block-py">from fast_rub.pyrubi import Client
+import asyncio
+
+bot = Client("name_session")
+
+async def test():
+    info = await bot.get_chat_info("object guid")
+    print(info)
+asyncio.run(test())
+</textarea>
+</div>
+</div>
+<div class="tabbed-control tabbed-control--prev" hidden=""><button class="tabbed-button" tabindex="-1"></button></div><div class="tabbed-control tabbed-control--next" hidden=""><button class="tabbed-button" tabindex="-1"></button></div></div>
+</li>
+</ul>
+<h2 id="_8">فوروارد کردن پیام<a class="headerlink" href="#_8" title="Permanent link"></a></h2>
+<ul>
+<li>متد : <code>forward_messages</code></li>
+<li>ورودی</li>
+</ul>
+<div class="md-typeset__scrollwrap"><div class="md-typeset__table"><table>
+<thead>
+<tr>
+<th>فیلد</th>
+<th>نوع</th>
+<th>توضیحات</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>object_guid</code></td>
+<td><code>str</code></td>
+<td>از آبجکت گوید</td>
+</tr>
+<tr>
+<td><code>message_ids</code></td>
+<td><code>list</code></td>
+<td>شناسه های پیام ها</td>
+</tr>
+<tr>
+<td><code>to_object_guid</code></td>
+<td><code>str</code></td>
+<td>به آبجکت گوید</td>
+</tr>
+</tbody>
+</table></div></div>
+<ul>
+<li>خروجی</li>
+</ul>
+<div class="md-typeset__scrollwrap"><div class="md-typeset__table"><table>
+<thead>
+<tr>
+<th>فیلد</th>
+<th>نوع</th>
+<th>توضیحات</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>new_message_id</code></td>
+<td><code>str</code></td>
+<td>شناسه پیام جدید</td>
+</tr>
+</tbody>
+</table></div></div>
+<ul>
+<li>
+<p>مثال</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="10:4" style="--md-indicator-x:741px; --md-indicator-width:82px;"><input checked="checked" id="__tabbed_10_1" name="__tabbed_10" type="radio"/><input id="__tabbed_10_2" name="__tabbed_10" type="radio"/><input id="__tabbed_10_3" name="__tabbed_10" type="radio"/><input id="__tabbed_10_4" name="__tabbed_10" type="radio"/><div class="tabbed-labels"><label for="__tabbed_10_1">Python</label></div>
+<div class="tabbed-content" style="text-align: left;">
+<div class="code-header">
+<div class="language-label">سینک(sync)</div>
+</div>
+<textarea class="code-block-py">from fast_rub.pyrubi import Client
+
+bot = Client("name_session")
+
+def test():
+    sending = bot.forward_messages("from object guid", ["message id"], "to object guid")
+    print(sending)
+test()
+</textarea>
+<div class="code-header">
+<div class="language-label">آیسینک(async)</div>
+</div>
+<textarea class="code-block-py">from fast_rub.pyrubi import Client
+import asyncio
+
+bot = Client("name_session")
+
+async def test():
+    sending = await bot.forward_messages("from object guid", ["message id"], "to object guid")
+    print(sending)
+asyncio.run(test())
+</textarea>
+</div>
+<div class="tabbed-control tabbed-control--prev" hidden=""><button class="tabbed-button" tabindex="-1"></button></div><div class="tabbed-control tabbed-control--next" hidden=""><button class="tabbed-button" tabindex="-1"></button></div></div>
+</li>
+</ul>
+<h2 id="_9">ویرایش متن پیام<a class="headerlink" href="#_9" title="Permanent link"></a></h2>
+<ul>
+<li>متد : <code>edit_message</code></li>
+<li>ورودی</li>
+</ul>
+<div class="md-typeset__scrollwrap"><div class="md-typeset__table"><table>
+<thead>
+<tr>
+<th>فیلد</th>
+<th>نوع</th>
+<th>توضیحات</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>object_guid</code></td>
+<td><code>str</code></td>
+<td>آبجکت گوید</td>
+</tr>
+<tr>
+<td><code>text</code></td>
+<td><code>str</code></td>
+<td>پیام</td>
+</tr>
+<tr>
+<td><code>message_id</code></td>
+<td><code>str</code></td>
+<td>شناسه پیام</td>
+</tr>
+</tbody>
+</table></div></div>
+<ul>
+<li>
+<p>مثال</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="11:4" style="--md-indicator-x:741px; --md-indicator-width:82px;"><input checked="checked" id="__tabbed_11_1" name="__tabbed_11" type="radio"/><input id="__tabbed_11_2" name="__tabbed_11" type="radio"/><input id="__tabbed_11_3" name="__tabbed_11" type="radio"/><input id="__tabbed_11_4" name="__tabbed_11" type="radio"/><div class="tabbed-labels"><label for="__tabbed_11_1">Python</label></div>
+<div class="tabbed-content" style="text-align: left;">
+<div class="code-header">
+<div class="language-label">سینک(sync)</div>
+</div>
+<textarea class="code-block-py">from fast_rub.pyrubi import Client
+
+bot = Client("name_session")
+
+def test():
+    sending = bot.edit_message("Object guid", "new text", "message id")
+    print(sending)
+test()
+</textarea>
+<div class="code-header">
+<div class="language-label">آیسینک(async)</div>
+</div>
+<textarea class="code-block-py">from fast_rub.pyrubi import Client
+import asyncio
+
+bot = Client("name_session")
+
+async def test():
+    sending = await bot.edit_message("Object guid", "new text", "message id")
+    print(sending)
+asyncio.run(test())
+</textarea>
+</div>
+<div class="tabbed-control tabbed-control--prev" hidden=""><button class="tabbed-button" tabindex="-1"></button></div><div class="tabbed-control tabbed-control--next" hidden=""><button class="tabbed-button" tabindex="-1"></button></div></div>
+</li>
+</ul>
+<h2 id="_10">حذف پیام<a class="headerlink" href="#_10" title="Permanent link"></a></h2>
+<ul>
+<li>متد : <code>delete_messages</code></li>
+<li>ورودی</li>
+</ul>
+<div class="md-typeset__scrollwrap"><div class="md-typeset__table"><table>
+<thead>
+<tr>
+<th>فیلد</th>
+<th>نوع</th>
+<th>توضیحات</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>object_guid</code></td>
+<td><code>str</code></td>
+<td>آبجکت گوید</td>
+</tr>
+<tr>
+<td><code>message_ids</code></td>
+<td><code>list</code></td>
+<td>شناسه های پیام ها</td>
+</tr>
+<tr>
+<td><code>delete_for_all</code></td>
+<td><code>bool = True</code></td>
+<td>حذف برای همه</td>
+</tr>
+</tbody>
+</table></div></div>
+<ul>
+<li>
+<p>مثال</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="13:4" style="--md-indicator-x:741px; --md-indicator-width:82px;"><input checked="checked" id="__tabbed_13_1" name="__tabbed_13" type="radio"/><input id="__tabbed_13_2" name="__tabbed_13" type="radio"/><input id="__tabbed_13_3" name="__tabbed_13" type="radio"/><input id="__tabbed_13_4" name="__tabbed_13" type="radio"/><div class="tabbed-labels"><label for="__tabbed_13_1">Python</label></div>
+<div class="tabbed-content" style="text-align: left;">
+<div class="code-header">
+<div class="language-label">سینک(sync)</div>
+</div>
+<textarea class="code-block-py">from fast_rub.pyrubi import Client
+
+bot = Client("name_session)
+
+def test():
+    deleting = bot.delete_messages("object guid", ["message id"])
+    print(deleting)
+test()
+</textarea>
+<div class="code-header">
+<div class="language-label">آیسینک(async)</div>
+</div>
+<textarea class="code-block-py">from fast_rub.pyrubi import Client
+import asyncio
+
+bot = Client("test")
+
+async def test():
+    deleting = await bot.delete_messages("object guid", ["message id"])
+    print(deleting)
+asyncio.run(test())
+</textarea>
+</div>
+<div class="tabbed-control tabbed-control--prev" hidden=""><button class="tabbed-button" tabindex="-1"></button></div><div class="tabbed-control tabbed-control--next" hidden=""><button class="tabbed-button" tabindex="-1"></button></div></div>
+</li>
+</ul>
+<h2 id="send-file">ارسال فایل/ویدیو/تصویر/پیغام صوتی/موسیقی/گیف/ویدیو مسیج<a class="headerlink" href="#send-file" title="Permanent link"></a></h2>
+<ul>
+<li>متد : <code>send_file , send_video , send_image , send_voice , send_music , send_gif , send_video_message</code></li>
+<li>ورودی</li>
+</ul>
+<div class="md-typeset__scrollwrap"><div class="md-typeset__table"><table>
+<thead>
+<tr>
+<th>فیلد</th>
+<th>نوع</th>
+<th>توضیحات</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>object guid</code></td>
+<td><code>str</code></td>
+<td>چت آیدی</td>
+</tr>
+<tr>
+<td><code>file</code></td>
+<td><code>str</code></td>
+<td>فایل</td>
+</tr>
+<tr>
+<td><code>name_file</code></td>
+<td><code>str or None(name_file = "file")</code></td>
+<td>نام فایل</td>
+</tr>
+<tr>
+<td><code>message_id</code></td>
+<td><code>str or None</code></td>
+<td>در جواب ؟</td>
+</tr>
+<tr>
+<td><code>text</code></td>
+<td><code>str or None</code></td>
+<td>کپشن فایل</td>
+</tr>
+<tr>
+<td><code>thumbnail</code></td>
+<td><code>str or None</code></td>
+<td>thumbnail</td>
+</tr>
+<tr>
+<td><code>file_name</code></td>
+<td><code>str or None</code></td>
+<td>اسم فایل</td>
+</tr>
+</tbody>
+</table></div></div>
+<ul>
+<li>
+<p>مثال</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="16:4" style="--md-indicator-x:741px; --md-indicator-width:82px;"><input checked="checked" id="__tabbed_16_1" name="__tabbed_16" type="radio"/><input id="__tabbed_16_2" name="__tabbed_16" type="radio"/><input id="__tabbed_16_3" name="__tabbed_16" type="radio"/><input id="__tabbed_16_4" name="__tabbed_16" type="radio"/><div class="tabbed-labels"><label for="__tabbed_16_1">Python</label></div>
+<div class="tabbed-content" style="text-align: left;">
+<div class="code-header">
+<div class="language-label">سینک(sync)</div>
+</div>
+<textarea class="code-block-py">from fast_rub.pyrubi import Client
+
+bot = Client("name_session")
+
+def test():
+    sending = bot.send_file("object guid", "test.json", file_name="data.json", text="this is a caption")
+    sending2 = bot.send_image("object guid", "test.png", file_name="picture.png", text="this is a caption")
+    print(sending)
+    print(sending2)
+test()
+</textarea>
+<div class="code-header">
+<div class="language-label">آیسینک(async)</div>
+</div>
+<textarea class="code-block-py">from fast_rub.pyrubi import Client
+import asyncio
+
+bot = Client("name_file")
+
+async def test():
+    sending = await bot.send_file("object guid", "test.json", file_name="data.json", text="this is a caption")
+    sending2 = await bot.send_image("object guid", "test.png", file_name="picture.png", text="this is a caption")
+    print(sending)
+    print(sending2)
+asyncio.run(test())
+</textarea>
+</div>
+<div class="tabbed-control tabbed-control--prev" hidden=""><button class="tabbed-button" tabindex="-1"></button></div><div class="tabbed-control tabbed-control--next" hidden=""><button class="tabbed-button" tabindex="-1"></button></div></div>
+</li>
+</ul>
+<h2 id="download">دانلود فایل<a class="headerlink" href="#download" title="Permanent link"></a></h2>
+<ul>
+<li>متد : <code>download</code></li>
+<li>ورودی</li>
+</ul>
+<div class="md-typeset__scrollwrap"><div class="md-typeset__table"><table>
+<thead>
+<tr>
+<th>فیلد</th>
+<th>نوع</th>
+<th>توضیحات</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>object_guid</code></td>
+<td><code>str</code></td>
+<td>آبجکت گوید</td>
+</tr>
+<tr>
+<td><code>message_id</code></td>
+<td><code>str</code></td>
+<td>مسیج آیدی</td>
+</tr>
+<tr>
+<td><code>save</code></td>
+<td><code>bool = False</code></td>
+<td>ذخیره</td
+</tr>
+<tr>
+<td><code>save_as</code></td>
+<td><code>str or None</code></td>
+<td>ذخیره در</td>
+</tr>
+<tr>
+<td><code>save_as</code></td>
+<td><code>str or None</code></td>
+<td>ذخیره در</td>
+</tr>
+<tr>
+<td><code>file_inline</code></td>
+<td><code>dict or None</code></td>
+<td>فایل</td>
+</tr>
+</tbody>
+</table></div></div>
+<ul>
+<li>
+<p>مثال</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="16:4" style="--md-indicator-x:741px; --md-indicator-width:82px;"><input checked="checked" id="__tabbed_17_1" name="__tabbed_17" type="radio"/><input id="__tabbed_17_2" name="__tabbed_17" type="radio"/><input id="__tabbed_17_3" name="__tabbed_17" type="radio"/><input id="__tabbed_17_4" name="__tabbed_17" type="radio"/><div class="tabbed-labels"><label for="__tabbed_17_1">Python</label></div>
+<div class="tabbed-content" style="text-align: left;">
+<div class="code-header">
+<div class="language-label">سینک(sync)</div>
+</div>
+<textarea class="code-block-py">from fast_rub.pyrubi import Client
+
+bot = Client("name_session")
+
+async def test():
+  bot.download("object guid","message id",save=True,save_as="text.bin")
+test()</textarea>
+</div>
+<div class="code-header">
+<div class="language-label">آیسینک(async)</div>
+</div>
+<textarea class="code-block-py">from fast_rub.pyrubi import Client
+import asyncio
+
+bot = Client("name_session")
+
+async def test():
+  await bot.download("object guid","message id",save=True,save_as="text.bin")
+asyncio.run(test())</textarea>
+</div>
+<h2 id="get_url_file">گرفتن لینک دانلود فایل<a class="headerlink" href="#get_url_file" title="Permanent link"></a></h2>
+<ul>
+<li>متد : <code>get_download_link</code></li>
+<li>ورودی</li>
+</ul>
+<div class="md-typeset__scrollwrap"><div class="md-typeset__table"><table>
+<thead>
+<tr>
+<th>فیلد</th>
+<th>نوع</th>
+<th>توضیحات</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>objcet_guid</code></td>
+<td><code>str</code></td>
+<td>آبجکت گوید</td>
+</tr>
+<tr>
+<td><code>message_id</code></td>
+<td><code>str</code></td>
+<td>مسیج آیدی</td>
+</tr>
+<tr>
+<td><code>file_inline</code></td>
+<td><code>str or None</code></td>
+<td>فایل</td>
+</tr></tbody>
+</table></div></div>
+<ul>
+<li>
+<p>مثال</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="16:4" style="--md-indicator-x:741px; --md-indicator-width:82px;"><input checked="checked" id="__tabbed_18_1" name="__tabbed_18" type="radio"/><input id="__tabbed_18_2" name="__tabbed_18" type="radio"/><input id="__tabbed_18_3" name="__tabbed_18" type="radio"/><input id="__tabbed_18_4" name="__tabbed_18" type="radio"/><div class="tabbed-labels"><label for="__tabbed_18_1">Python</label></div>
+<div class="tabbed-content" style="text-align: left;">
+<div class="code-header">
+<div class="language-label">سینک(sync)</div>
+</div>
+<textarea class="code-block-py">from fast_rub.pyrubi import Client
+
+bot = Client("name_session")
+
+async def test():
+  url = bot.get_download_link("objcet_guid", "message id")
+  print(url)
+test()</textarea>
+</div>
+<div class="code-header">
+<div class="language-label">آیسینک(async)</div>
+</div>
+<textarea class="code-block-py">from fast_rub.pyrubi import Client
+import asyncio
+
+bot = Client("name_session")
+
+async def test():
+  url = await bot.get_download_link("objcet_guid", "message id")
+  print(url)
+asyncio.run(test())</textarea>
+</div>
+<h2 id="join_chat">پیوستن به چت<a class="headerlink" href="#join_chat" title="Permanent link"></a></h2>
+<ul>
+<li>متد : <code>join_chat</code></li>
+</ul>
+<ul>
+<li>
+<p>مثال</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="16:4" style="--md-indicator-x:741px; --md-indicator-width:82px;"><input checked="checked" id="__tabbed_19_1" name="__tabbed_19" type="radio"/><input id="__tabbed_19_2" name="__tabbed_19" type="radio"/><input id="__tabbed_19_3" name="__tabbed_19" type="radio"/><input id="__tabbed_19_4" name="__tabbed_19" type="radio"/><div class="tabbed-labels"><label for="__tabbed_19_1">Python</label></div>
+<div class="tabbed-content" style="text-align: left;">
+<div class="code-header">
+<div class="language-label">سینک(sync)</div>
+</div>
+<textarea class="code-block-py">from fast_rub.pyrubi import Client
+
+bot = Client("name_session")
+
+def test():
+  joining = bot.join_chat("link or guid")
+  print(joining)
+test()</textarea>
+</div>
+<div class="code-header">
+<div class="language-label">آیسینک(async)</div>
+</div>
+<textarea class="code-block-py">from fast_rub.pyrubi import Client
+import asyncio
+
+bot = Client("name_session")
+
+async def test():
+  joining = await bot.join_chat("link or guid")
+  print(joining)
+asyncio.run(test())</textarea>
+</div>
+
+<h2 id="leave_chat">ترک چت<a class="headerlink" href="#leave_chat" title="Permanent link"></a></h2>
+<ul>
+<li>متد : <code>leave_chat</code></li>
+<li>ورودی ها</li>
+<div class="md-typeset__scrollwrap"><div class="md-typeset__table"><table>
+<thead>
+<tr>
+<th>فیلد</th>
+<th>نوع</th>
+<th>توضیحات</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>object_guid</code></td>
+<td><code>str</code></td>
+<td>آبجکت گوید</td>
+</tr>
+</tbody>
+</table></div></div>
+</ul>
+<ul>
+<li>
+<p>مثال</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="16:4" style="--md-indicator-x:741px; --md-indicator-width:82px;"><input checked="checked" id="__tabbed_20_1" name="__tabbed_20" type="radio"/><input id="__tabbed_20_2" name="__tabbed_20" type="radio"/><input id="__tabbed_20_3" name="__tabbed_20" type="radio"/><input id="__tabbed_20_4" name="__tabbed_20" type="radio"/><div class="tabbed-labels"><label for="__tabbed_20_1">Python</label></div>
+<div class="tabbed-content" style="text-align: left;">
+<div class="code-header">
+<div class="language-label">سینک(sync)</div>
+</div>
+<textarea class="code-block-py">from fast_rub.pyrubi import Client
+
+bot = Client("name_session")
+
+def test():
+  bot.leave_chat("object guid")
+test()</textarea>
+</div>
+<div class="code-header">
+<div class="language-label">آیسینک(async)</div>
+</div>
+<textarea class="code-block-py">from fast_rub.pyrubi import Client
+import asyncio
+
+bot = Client("name_session")
+
+async def test():
+  version = await bot.leave_chat("object guid")
+asyncio.run(test())</textarea>
+</div>
+
+<h2 id="remove_chat">حذف چت<a class="headerlink" href="#remove_chat" title="Permanent link"></a></h2>
+<ul>
+<li>متد : <code>remove_chat</code></li>
+<li>ورودی ها</li>
+<div class="md-typeset__scrollwrap"><div class="md-typeset__table"><table>
+<thead>
+<tr>
+<th>فیلد</th>
+<th>نوع</th>
+<th>توضیحات</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>object_guid</code></td>
+<td><code>str</code></td>
+<td>آبجکت گوید</td>
+</tr>
+</tbody>
+</table></div></div>
+</ul>
+<ul>
+<li>
+<p>مثال</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="16:4" style="--md-indicator-x:741px; --md-indicator-width:82px;"><input checked="checked" id="__tabbed_21_1" name="__tabbed_21" type="radio"/><input id="__tabbed_21_2" name="__tabbed_21" type="radio"/><input id="__tabbed_21_3" name="__tabbed_21" type="radio"/><input id="__tabbed_21_4" name="__tabbed_21" type="radio"/><div class="tabbed-labels"><label for="__tabbed_21_1">Python</label></div>
+<div class="tabbed-content" style="text-align: left;">
+<div class="code-header">
+<div class="language-label">سینک(sync)</div>
+</div>
+<textarea class="code-block-py">from fast_rub.pyrubi import Client
+
+bot = Client("name_session")
+
+def test():
+  bot.remove_chat("object guid")
+test()</textarea>
+</div>
+<div class="code-header">
+<div class="language-label">آیسینک(async)</div>
+</div>
+<textarea class="code-block-py">from fast_rub.pyrubi import Client
+import asyncio
+
+bot = Client("name_session")
+
+async def test():
+  await bot.remove_chat("object guid")
+asyncio.run(test())</textarea>
+</div>
+
+
+<h2 id="get_chat_info_by_username">گرفتن اطلاعات چت با نام کاربری<a class="headerlink" href="#get_chat_info_by_username" title="Permanent link"></a></h2>
+<ul>
+<li>متد : <code>get_chat_info_by_username</code></li>
+<li>ورودی ها</li>
+<div class="md-typeset__scrollwrap"><div class="md-typeset__table"><table>
+<thead>
+<tr>
+<th>فیلد</th>
+<th>نوع</th>
+<th>توضیحات</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>username</code></td>
+<td><code>str</code></td>
+<td>نام کاربری</td>
+</tr>
+</tbody>
+</table></div></div>
+</ul>
+<ul>
+<li>
+<p>مثال</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="16:4" style="--md-indicator-x:741px; --md-indicator-width:82px;"><input checked="checked" id="__tabbed_22_1" name="__tabbed_22" type="radio"/><input id="__tabbed_22_2" name="__tabbed_22" type="radio"/><input id="__tabbed_22_3" name="__tabbed_22" type="radio"/><input id="__tabbed_22_4" name="__tabbed_22" type="radio"/><div class="tabbed-labels"><label for="__tabbed_22_1">Python</label></div>
+<div class="tabbed-content" style="text-align: left;">
+<div class="code-header">
+<div class="language-label">سینک(sync)</div>
+</div>
+<textarea class="code-block-py">from fast_rub.pyrubi import Client
+
+bot = Client("name_session")
+
+def test():
+  info = bot.get_chat_info_by_username("@O_and_ONE_01")
+  print(info)
+test()</textarea>
+</div>
+<div class="code-header">
+<div class="language-label">آیسینک(async)</div>
+</div>
+<textarea class="code-block-py">from fast_rub.pyrubi import Client
+import asyncio
+
+bot = Client("name_session")
+
+async def test():
+  info = await bot.get_chat_info_by_username("@O_and_ONE_01")
+  print(info)
+asyncio.run(test())</textarea>
+</div>
+
+<h2 id="get_link">گرفتن اطلاعات لینک چت<a class="headerlink" href="#get_link" title="Permanent link"></a></h2>
+<ul>
+<li>متد : <code>get_link</code></li>
+<li>ورودی ها</li>
+<div class="md-typeset__scrollwrap"><div class="md-typeset__table"><table>
+<thead>
+<tr>
+<th>فیلد</th>
+<th>نوع</th>
+<th>توضیحات</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>object_guid</code></td>
+<td><code>str</code></td>
+<td>آبجکت گوید</td>
+</tr>
+</tbody>
+</table></div></div>
+</ul>
+<ul>
+<li>
+<p>مثال</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="16:4" style="--md-indicator-x:741px; --md-indicator-width:82px;"><input checked="checked" id="__tabbed_23_1" name="__tabbed_23" type="radio"/><input id="__tabbed_23_2" name="__tabbed_23" type="radio"/><input id="__tabbed_23_3" name="__tabbed_23" type="radio"/><input id="__tabbed_23_4" name="__tabbed_23" type="radio"/><div class="tabbed-labels"><label for="__tabbed_23_1">Python</label></div>
+<div class="tabbed-content" style="text-align: left;">
+<div class="code-header">
+<div class="language-label">سینک(sync)</div>
+</div>
+<textarea class="code-block-py">from fast_rub.pyrubi import Client
+
+bot = Client("name_session")
+
+def test():
+  link_info = bot.get_link("object guid")
+  print(link_info)
+test()</textarea>
+</div>
+<div class="code-header">
+<div class="language-label">آیسینک(async)</div>
+</div>
+<textarea class="code-block-py">from fast_rub.pyrubi import Client
+import asyncio
+
+bot = Client("name_session")
+
+async def test():
+  link_info = await bot.get_link("object guid")
+  print(link_info)
+asyncio.run(test())</textarea>
+</div>
+
+
+<h2 id="set_admin">تنظیم ادمین<a class="headerlink" href="#set_admin" title="Permanent link"></a></h2>
+<ul>
+<li>متد : <code>set_admin</code></li>
+<li>ورودی ها</li>
+<div class="md-typeset__scrollwrap"><div class="md-typeset__table"><table>
+<thead>
+<tr>
+<th>فیلد</th>
+<th>نوع</th>
+<th>توضیحات</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>object_guid</code></td>
+<td><code>str</code></td>
+<td>آبجکت گوید</td>
+</tr>
+<tr>
+<td><code>member_guid</code></td>
+<td><code>str</code></td>
+<td>ممبر گوید</td>
+</tr>
+<tr>
+<td><code>access_list</code></td>
+<td><code>list</code></td>
+<td>لیست دسترسی ها</td>
+</tr>
+<tr>
+<td><code>custom_title</code></td>
+<td><code>str = None</code></td>
+<td>اسم سفارشی</td>
+</tr>
+</tbody>
+</table></div></div>
+</ul>
+<ul>
+<li>
+<p>مثال</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="16:4" style="--md-indicator-x:741px; --md-indicator-width:82px;"><input checked="checked" id="__tabbed_24_1" name="__tabbed_24" type="radio"/><input id="__tabbed_24_2" name="__tabbed_24" type="radio"/><input id="__tabbed_24_3" name="__tabbed_24" type="radio"/><input id="__tabbed_24_4" name="__tabbed_24" type="radio"/><div class="tabbed-labels"><label for="__tabbed_24_1">Python</label></div>
+<div class="tabbed-content" style="text-align: left;">
+<div class="code-header">
+<div class="language-label">سینک(sync)</div>
+</div>
+<textarea class="code-block-py">from fast_rub.pyrubi import Client
+
+bot = Client("name_session")
+
+def test():
+  admin = bot.set_admin("object guid","member guid",[],"admin test")
+  print(admin)
+test()</textarea>
+</div>
+<div class="code-header">
+<div class="language-label">آیسینک(async)</div>
+</div>
+<textarea class="code-block-py">from fast_rub.pyrubi import Client
+import asyncio
+
+bot = Client("name_session")
+
+async def test():
+  admin = await bot.set_admin("object guid","member guid",[],"admin test")
+  print(admin)
+asyncio.run(test())</textarea>
+</div>
+
+
+<h2 id="unset_admin">برداشتن تنظیم ادمین<a class="headerlink" href="#unset_admin" title="Permanent link"></a></h2>
+<ul>
+<li>متد : <code>unset_admin</code></li>
+<li>ورودی ها</li>
+<div class="md-typeset__scrollwrap"><div class="md-typeset__table"><table>
+<thead>
+<tr>
+<th>فیلد</th>
+<th>نوع</th>
+<th>توضیحات</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>object_guid</code></td>
+<td><code>str</code></td>
+<td>آبجکت گوید</td>
+</tr>
+<tr>
+<td><code>member_guid</code></td>
+<td><code>str</code></td>
+<td>ممبر گوید</td>
+</tr>
+</tbody>
+</table></div></div>
+</ul>
+<ul>
+<li>
+<p>مثال</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="16:4" style="--md-indicator-x:741px; --md-indicator-width:82px;"><input checked="checked" id="__tabbed_25_1" name="__tabbed_25" type="radio"/><input id="__tabbed_25_2" name="__tabbed_25" type="radio"/><input id="__tabbed_25_3" name="__tabbed_25" type="radio"/><input id="__tabbed_25_4" name="__tabbed_25" type="radio"/><div class="tabbed-labels"><label for="__tabbed_25_1">Python</label></div>
+<div class="tabbed-content" style="text-align: left;">
+<div class="code-header">
+<div class="language-label">سینک(sync)</div>
+</div>
+<textarea class="code-block-py">from fast_rub.pyrubi import Client
+
+bot = Client("name_session")
+
+def test():
+  admin = bot.set_admin("object guid","member guid")
+  print(admin)
+test()</textarea>
+</div>
+<div class="code-header">
+<div class="language-label">آیسینک(async)</div>
+</div>
+<textarea class="code-block-py">from fast_rub.pyrubi import Client
+import asyncio
+
+bot = Client("name_session")
+
+async def test():
+  admin = await bot.set_admin("object guid","member guid")
+  print(admin)
+asyncio.run(test())</textarea>
+</div>
+
+
+<h2 id="add_member">افزودن ممبر به چت<a class="headerlink" href="#add_member" title="Permanent link"></a></h2>
+<ul>
+<li>متد : <code>add_member</code></li>
+<li>ورودی ها</li>
+<div class="md-typeset__scrollwrap"><div class="md-typeset__table"><table>
+<thead>
+<tr>
+<th>فیلد</th>
+<th>نوع</th>
+<th>توضیحات</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>object_guid</code></td>
+<td><code>str</code></td>
+<td>آبجکت گوید</td>
+</tr>
+<tr>
+<td><code>member_guids</code></td>
+<td><code>str or list</code></td>
+<td>ممبر گویدها</td>
+</tr>
+</tbody>
+</table></div></div>
+</ul>
+<ul>
+<li>
+<p>مثال</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="16:4" style="--md-indicator-x:741px; --md-indicator-width:82px;"><input checked="checked" id="__tabbed_26_1" name="__tabbed_26" type="radio"/><input id="__tabbed_26_2" name="__tabbed_26" type="radio"/><input id="__tabbed_26_3" name="__tabbed_26" type="radio"/><input id="__tabbed_26_4" name="__tabbed_26" type="radio"/><div class="tabbed-labels"><label for="__tabbed_26_1">Python</label></div>
+<div class="tabbed-content">
+<div class="code-header">
+<div class="language-label">سینک(sync)</div>
+</div>
+<textarea class="code-block-py">from fast_rub.pyrubi import Client
+
+bot = Client("name_session")
+
+def test():
+  add = bot.add_members("object guid","member guid")
+  print(add)
+test()</textarea>
+</div>
+<div class="code-header">
+<div class="language-label">آیسینک(async)</div>
+</div>
+<textarea class="code-block-py">from fast_rub.pyrubi import Client
+import asyncio
+
+bot = Client("name_session")
+
+async def test():
+  add = await bot.add_members("object guid","member guid")
+  print(add)
+asyncio.run(test())</textarea>
+</div>
+
+
+
+<h2 id="ban_member">بن کاربر<a class="headerlink" href="#ban_member" title="Permanent link"></a></h2>
+<ul>
+<li>متد : <code>ban_member</code></li>
+<li>ورودی ها</li>
+<div class="md-typeset__scrollwrap"><div class="md-typeset__table"><table>
+<thead>
+<tr>
+<th>فیلد</th>
+<th>نوع</th>
+<th>توضیحات</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>object_guid</code></td>
+<td><code>str</code></td>
+<td>آبجکت گوید</td>
+</tr>
+<tr>
+<td><code>member_guid</code></td>
+<td><code>str</code></td>
+<td>ممبر گوید</td>
+</tr>
+</tbody>
+</table></div></div>
+</ul>
+<ul>
+<li>
+<p>مثال</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="16:4" style="--md-indicator-x:741px; --md-indicator-width:82px;"><input checked="checked" id="__tabbed_27_1" name="__tabbed_27" type="radio"/><input id="__tabbed_27_2" name="__tabbed_27" type="radio"/><input id="__tabbed_27_3" name="__tabbed_27" type="radio"/><input id="__tabbed_27_4" name="__tabbed_27" type="radio"/><div class="tabbed-labels"><label for="__tabbed_27_1">Python</label></div>
+<div class="tabbed-content">
+<div class="code-header">
+<div class="language-label">سینک(sync)</div>
+</div>
+<textarea class="code-block-py">from fast_rub.pyrubi import Client
+
+bot = Client("name_session")
+
+def test():
+  ban = bot.ban_member("object guid","member guid")
+  print(ban)
+test()</textarea>
+</div>
+<div class="code-header">
+<div class="language-label">آیسینک(async)</div>
+</div>
+<textarea class="code-block-py">from fast_rub.pyrubi import Client
+import asyncio
+
+bot = Client("name_session")
+
+async def test():
+  ban = await bot.ban_member("object guid","member guid")
+  print(ban)
+asyncio.run(test())</textarea>
+</div>
+
+
+
+<h2 id="unban_member">برداشتن بن کاربر<a class="headerlink" href="#unban_member" title="Permanent link"></a></h2>
+<ul>
+<li>متد : <code>unban_member</code></li>
+<li>ورودی ها</li>
+<div class="md-typeset__scrollwrap"><div class="md-typeset__table"><table>
+<thead>
+<tr>
+<th>فیلد</th>
+<th>نوع</th>
+<th>توضیحات</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>object_guid</code></td>
+<td><code>str</code></td>
+<td>آبجکت گوید</td>
+</tr>
+<tr>
+<td><code>member_guid</code></td>
+<td><code>str</code></td>
+<td>ممبر گوید</td>
+</tr>
+</tbody>
+</table></div></div>
+</ul>
+<ul>
+<li>
+<p>مثال</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="16:4" style="--md-indicator-x:741px; --md-indicator-width:82px;"><input checked="checked" id="__tabbed_28_1" name="__tabbed_28" type="radio"/><input id="__tabbed_28_2" name="__tabbed_28" type="radio"/><input id="__tabbed_28_3" name="__tabbed_28" type="radio"/><input id="__tabbed_28_4" name="__tabbed_28" type="radio"/><div class="tabbed-labels"><label for="__tabbed_28_1">Python</label></div>
+<div class="tabbed-content">
+<div class="code-header">
+<div class="language-label">سینک(sync)</div>
+</div>
+<textarea class="code-block-py">from fast_rub.pyrubi import Client
+
+bot = Client("name_session")
+
+def test():
+  unban = bot.unban_member("object guid","member guid")
+  print(unban)
+test()</textarea>
+</div>
+<div class="code-header">
+<div class="language-label">آیسینک(async)</div>
+</div>
+<textarea class="code-block-py">from fast_rub.pyrubi import Client
+import asyncio
+
+bot = Client("name_session")
+
+async def test():
+  unban = await bot.unban_member("object guid","member guid")
+  print(unban)
+asyncio.run(test())</textarea>
+</div>
+
+
+
+<h2 id="get_banned_members">گرفتن لیست کاربران بن شده چت<a class="headerlink" href="#get_banned_members" title="Permanent link"></a></h2>
+<ul>
+<li>متد : <code>get_banned_members</code></li>
+<li>ورودی ها</li>
+<div class="md-typeset__scrollwrap"><div class="md-typeset__table"><table>
+<thead>
+<tr>
+<th>فیلد</th>
+<th>نوع</th>
+<th>توضیحات</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>object_guid</code></td>
+<td><code>str</code></td>
+<td>آبجکت گوید</td>
+</tr>
+<tr>
+<td><code>start_id</code></td>
+<td><code>str = None</code></td>
+<td>َشروع از</td>
+</tr>
+</tbody>
+</table></div></div>
+</ul>
+<ul>
+<li>
+<p>مثال</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="16:4" style="--md-indicator-x:741px; --md-indicator-width:82px;"><input checked="checked" id="__tabbed_29_1" name="__tabbed_29" type="radio"/><input id="__tabbed_29_2" name="__tabbed_29" type="radio"/><input id="__tabbed_29_3" name="__tabbed_29" type="radio"/><input id="__tabbed_29_4" name="__tabbed_29" type="radio"/><div class="tabbed-labels"><label for="__tabbed_29_1">Python</label></div>
+<div class="tabbed-content">
+<div class="code-header">
+<div class="language-label">سینک(sync)</div>
+</div>
+<textarea class="code-block-py">from fast_rub.pyrubi import Client
+
+bot = Client("name_session")
+
+def test():
+  members = bot.get_banned_members("object guid")
+  print(members)
+test()</textarea>
+</div>
+<div class="code-header">
+<div class="language-label">آیسینک(async)</div>
+</div>
+<textarea class="code-block-py">from fast_rub.pyrubi import Client
+import asyncio
+
+bot = Client("name_session")
+
+async def test():
+  members = await bot.get_banned_members("object guid")
+  print(members)
+asyncio.run(test())</textarea>
+</div>
+
+
+
+<h2 id="get_all_members">گرفتن لیست کاربران چت<a class="headerlink" href="#get_all_members" title="Permanent link"></a></h2>
+<ul>
+<li>متد : <code>get_all_members</code></li>
+<li>ورودی ها</li>
+<div class="md-typeset__scrollwrap"><div class="md-typeset__table"><table>
+<thead>
+<tr>
+<th>فیلد</th>
+<th>نوع</th>
+<th>توضیحات</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>object_guid</code></td>
+<td><code>str</code></td>
+<td>آبجکت گوید</td>
+</tr>
+<tr>
+<td><code>search_text</code></td>
+<td><code>str = None</code></td>
+<td>جستجو متن</td>
+</tr>
+<tr>
+<td><code>start_id</code></td>
+<td><code>str = None</code></td>
+<td>َشروع از</td>
+</tr>
+<tr>
+<td><code>just_get_guids</code></td>
+<td><code>bool = False</code></td>
+<td>َدریافت فقط لیست ممبر ها</td>
+</tr>
+</tbody>
+</table></div></div>
+</ul>
+<ul>
+<li>
+<p>مثال</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="16:4" style="--md-indicator-x:741px; --md-indicator-width:82px;"><input checked="checked" id="__tabbed_30_1" name="__tabbed_30" type="radio"/><input id="__tabbed_30_2" name="__tabbed_30" type="radio"/><input id="__tabbed_30_3" name="__tabbed_30" type="radio"/><input id="__tabbed_30_4" name="__tabbed_30" type="radio"/><div class="tabbed-labels"><label for="__tabbed_30_1">Python</label></div>
+<div class="tabbed-content">
+<div class="code-header">
+<div class="language-label">سینک(sync)</div>
+</div>
+<textarea class="code-block-py">from fast_rub.pyrubi import Client
+
+bot = Client("name_session")
+
+def test():
+  members = bot.get_all_members("object guid")
+  print(members)
+test()</textarea>
+</div>
+<div class="code-header">
+<div class="language-label">آیسینک(async)</div>
+</div>
+<textarea class="code-block-py">from fast_rub.pyrubi import Client
+import asyncio
+
+bot = Client("name_session")
+
+async def test():
+  members = await bot.get_all_members("object guid")
+  print(members)
+asyncio.run(test())</textarea>
+</div>
+
+
+
+<h2 id="get_admin_members">گرفتن لیست کاربران ادمین<a class="headerlink" href="#get_admin_members" title="Permanent link"></a></h2>
+<ul>
+<li>متد : <code>get_admin_members</code></li>
+<li>ورودی ها</li>
+<div class="md-typeset__scrollwrap"><div class="md-typeset__table"><table>
+<thead>
+<tr>
+<th>فیلد</th>
+<th>نوع</th>
+<th>توضیحات</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>object_guid</code></td>
+<td><code>str</code></td>
+<td>آبجکت گوید</td>
+</tr>
+<tr>
+<td><code>start_id</code></td>
+<td><code>str = None</code></td>
+<td>َشروع از</td>
+</tr>
+<tr>
+<td><code>just_get_guids</code></td>
+<td><code>bool = False</code></td>
+<td>َدریافت فقط لیست ممبر ها</td>
+</tr>
+</tbody>
+</table></div></div>
+</ul>
+<ul>
+<li>
+<p>مثال</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="16:4" style="--md-indicator-x:741px; --md-indicator-width:82px;"><input checked="checked" id="__tabbed_31_1" name="__tabbed_31" type="radio"/><input id="__tabbed_31_2" name="__tabbed_31" type="radio"/><input id="__tabbed_31_3" name="__tabbed_31" type="radio"/><input id="__tabbed_31_4" name="__tabbed_31" type="radio"/><div class="tabbed-labels"><label for="__tabbed_31_1">Python</label></div>
+<div class="tabbed-content">
+<div class="code-header">
+<div class="language-label">سینک(sync)</div>
+</div>
+<textarea class="code-block-py">from fast_rub.pyrubi import Client
+
+bot = Client("name_session")
+
+def test():
+  members = bot.get_admin_members("object guid")
+  print(members)
+test()</textarea>
+</div>
+<div class="code-header">
+<div class="language-label">آیسینک(async)</div>
+</div>
+<textarea class="code-block-py">from fast_rub.pyrubi import Client
+import asyncio
+
+bot = Client("name_session")
+
+async def test():
+  members = await bot.get_admin_members("object guid")
+  print(members)
+asyncio.run(test())</textarea>
+</div>
+
+
+
+
+<div class="tabbed-control tabbed-control--prev" hidden=""><button class="tabbed-button" tabindex="-1"></button></div><div class="tabbed-control tabbed-control--next" hidden=""><button class="tabbed-button" tabindex="-1"></button></div></li></ul></li></ul></article></div>
+
+
+
+</div>
+<script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var tab,labels=set.querySelector(".tabbed-labels");for(tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+</main></div>
+
+<footer class="md-footer">
+<nav aria-label="Footer" class="md-footer__inner md-grid">
+
+<a aria-label="بعدی: مدل ها" class="md-footer__link md-footer__link--next" href="./models/index.html" rel="next">
+<div class="md-footer__title">
+<div class="md-ellipsis">
+<span class="md-footer__direction">
+                بعدی
+              </span>
+              مدل ها
+            </div>
+</div>
+<div class="md-footer__button md-icon">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4Z"></path></svg>
+</div>
+</a>
+</nav>
+</footer>
+
+<div class="md-dialog" data-md-component="dialog">
+<div class="md-dialog__inner md-typeset"></div>
+</div>
+<script id="__config" type="application/json">{"base": "..", "features": ["search.suggest", "search.highlight", "content.tabs.link"], "search": "../assets/javascripts/workers/search.5bf1dace.min.js", "translations": {"clipboard.copied": "\u06a9\u067e\u06cc \u0634\u062f", "clipboard.copy": "\u06a9\u067e\u06cc \u06a9\u0631\u062f\u0646", "search.config.lang": "en", "search.config.pipeline": " ", "search.config.separator": "[\\s\\-]+", "search.placeholder": "\u062c\u0633\u062a\u062c\u0648", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "\u0633\u0646\u062f\u06cc \u06cc\u0627\u0641\u062a \u0646\u0634\u062f", "search.result.one": "1 \u0633\u0646\u062f \u06cc\u0627\u0641\u062a \u0634\u062f", "search.result.other": "# \u0633\u0646\u062f \u06cc\u0627\u0641\u062a \u0634\u062f", "search.result.placeholder": "\u0628\u0631\u0627\u06cc \u0634\u0631\u0648\u0639 \u062c\u0633\u062a\u062c\u0648 \u062a\u0627\u06cc\u067e \u06a9\u0646\u06cc\u062f", "search.result.term.missing": "Missing", "select.version.title": "Select version"}}</script>
+<script>
+  document.querySelectorAll(".code-block-py").forEach(function(el) {
+    CodeMirror.fromTextArea(el, {
+      mode: "python",
+      theme: "monokai",
+      lineNumbers: true,
+      readOnly: true
+    });
+  });
+</script>
+<script src="../bundle.37e9125f.min.js"></script>
+<script src="../termynal.js"></script>
+<script src="../custom.js"></script>
+<script defer="" src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+<script defer="" src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/python/python.min.js"></script>
+<script>
+    (function() {
+      function createHeader(container, labelText) {
+        var header = document.createElement('div');
+        header.className = 'code-header';
+        var label = document.createElement('div');
+        label.className = 'language-label';
+        label.textContent = labelText || 'Python';
+        var btn = document.createElement('button');
+        btn.className = 'copy-btn';
+        btn.textContent = 'کپی';
+        header.appendChild(label);
+        header.appendChild(btn);
+        container.insertBefore(header, container.firstChild);
+        return btn;
+      }
+      function wrapWithContainer(el) {
+        var container = document.createElement('div');
+        container.className = 'code-container';
+        el.parentNode.insertBefore(container, el);
+        container.appendChild(el);
+        return container;
+      }
+      function initTextareas() {
+        document.querySelectorAll('textarea.code-block-py').forEach(function (el) {
+          var w = wrapWithContainer(el);
+          var cm = CodeMirror.fromTextArea(el, {
+            mode: 'python', theme: 'monokai', lineNumbers: true, readOnly: true, lineWrapping: true
+          });
+          var wrapper = cm.getWrapperElement();
+          wrapper.style.maxHeight = '440px'; wrapper.style.width = '100%';
+          var copyBtn = createHeader(w, 'Python');
+          copyBtn.addEventListener('click', function() {
+            var txt = cm.getValue();
+            if (!navigator.clipboard) {
+              var ta = document.createElement('textarea'); ta.value = txt; document.body.appendChild(ta);
+              ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
+            } else { navigator.clipboard.writeText(txt); }
+            copyBtn.textContent = 'کپی شد!'; setTimeout(function(){ copyBtn.textContent = 'کپی'; }, 1200);
+          });
+          w.insertBefore(wrapper, w.querySelector('.code-header').nextSibling);
+        });
+      }
+      function initPreBlocks() {
+        var nodes = Array.prototype.slice.call(document.querySelectorAll('pre.code-block, pre > code.language-python'));
+        nodes.forEach(function(node) {
+          var isCode = node.tagName === 'CODE';
+          var pre = isCode ? node.parentElement : node;
+          if (!pre || pre.dataset.enhanced === '1') return;
+          pre.dataset.enhanced = '1';
+          var codeEl = isCode ? node : (pre.querySelector('code') || pre);
+          var raw = (codeEl.textContent || '').replace(/\u00a0/g, ' ').trim();
+          var container = wrapWithContainer(pre);
+          var mount = document.createElement('div');
+          container.replaceChild(mount, pre);
+          var cm = CodeMirror(mount, {
+            value: raw, mode: 'python', theme: 'monokai', lineNumbers: true, readOnly: true, lineWrapping: true
+          });
+          var wrapper = cm.getWrapperElement();
+          wrapper.style.maxHeight = '440px'; wrapper.style.width = '100%';
+          var copyBtn = createHeader(container, 'Python');
+          copyBtn.addEventListener('click', function() {
+            var txt = cm.getValue();
+            if (!navigator.clipboard) {
+              var ta = document.createElement('textarea'); ta.value = txt; document.body.appendChild(ta);
+              ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
+            } else { navigator.clipboard.writeText(txt); }
+            copyBtn.textContent = 'کپی شد!'; setTimeout(function(){ copyBtn.textContent = 'کپی'; }, 1200);
+          });
+          container.insertBefore(wrapper, container.querySelector('.code-header').nextSibling);
+        });
+      }
+      function enhance() {
+        if (!window.CodeMirror) return;
+        initTextareas();
+        initPreBlocks();
+      }
+      window.addEventListener('load', enhance);
+    })();
+  </script>
+</body></html>

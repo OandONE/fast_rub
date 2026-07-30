@@ -1,0 +1,2481 @@
+<!DOCTYPE html>
+<html class="js-focus-visible js" data-js-focus-visible="" lang="fa">
+<head>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+<meta content="width=device-width,initial-scale=1" name="viewport"/>
+<link href="../icon.jpg" rel="icon"/>
+<meta content="mkdocs-1.3.1, mkdocs-material-8.5.3" name="generator"/>
+<title>متد ها - فست روب</title>
+<link href="../main.7a952b86.min.css" rel="stylesheet"/>
+<link href="../palette.cbb835fc.min.css" rel="stylesheet"/>
+<style>
+        .CodeMirror {
+          border: 1px solid #ccc;
+          width: 100%;
+          max-height: 400px;
+          border-radius: 6px;
+          margin: 10px 0;
+          font-size: 14px;
+          overflow: auto;
+        }
+      </style>
+<link crossorigin="" href="https://fonts.gstatic.com/" rel="preconnect"/>
+<link href="../css" rel="stylesheet"/>
+<style>:root{--md-text-font:"B Nazanin";--md-code-font:"Roboto Mono"}</style>
+<link href="../termynal.css" rel="stylesheet"/>
+<link href="../custom.css" rel="stylesheet"/>
+<script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+<link href="../style.css" rel="stylesheet"/>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css" rel="stylesheet"/>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/monokai.min.css" rel="stylesheet"/>
+<style>
+    .md-typeset .CodeMirror { direction: ltr; text-align: left; }
+    .md-typeset .CodeMirror {
+      width: 100%; height: auto; max-height: 440px;
+      border-radius: 10px; border: 1px solid #383838;
+      box-shadow: 0 8px 22px rgba(0,0,0,0.18); font-size: 14px;
+    }
+    .md-typeset .CodeMirror-scroll {
+      max-height: inherit; overscroll-behavior: contain; -webkit-overflow-scrolling: touch;
+    }
+    .cm-s-monokai.CodeMirror { background: #272822; color: #f8f8f2; }
+    .code-container { margin: 14px 0 22px; }
+    .code-header {
+      display: flex; align-items: center; justify-content: space-between; gap: .5rem;
+      padding: .6rem .8rem; margin: .5rem 0 0; background: #1f1f1f; color: #e5e5e5;
+      border: 1px solid #383838; border-bottom: none; border-top-left-radius: 10px; border-top-right-radius: 10px;
+      font-size: 12px;
+    }
+    .code-header .language-label { opacity: .85 }
+    .copy-btn {
+      cursor: pointer; user-select: none; border: 1px solid #444; background: #2a2a2a; color: #eaeaea;
+      border-radius: 8px; padding: .28rem .7rem; transition: transform .08s ease, background .2s ease, border .2s ease;
+    }
+    .copy-btn:hover { background: #333; border-color: #555; }
+    .copy-btn:active { transform: scale(.98); }
+    .md-typeset pre.code-block {
+      direction: ltr; text-align: left; max-height: 440px; overflow: auto; overscroll-behavior: contain; border-radius: 10px;
+      box-shadow: 0 8px 22px rgba(0,0,0,0.18);
+    }
+  </style>
+</head>
+<body data-md-color-accent="amber" data-md-color-primary="purple" data-md-color-scheme="default" dir="rtl">
+<script>var palette=__md_get("__palette");if(palette&&"object"==typeof palette.color)for(var key of Object.keys(palette.color))document.body.setAttribute("data-md-color-"+key,palette.color[key])</script>
+<input autocomplete="off" class="md-toggle" data-md-toggle="drawer" id="__drawer" type="checkbox"/>
+<input autocomplete="off" class="md-toggle" data-md-toggle="search" id="__search" type="checkbox"/>
+<label class="md-overlay" for="__drawer"></label>
+<div data-md-component="skip">
+<a class="md-skip" href="#_1">
+          پرش به محتویات
+        </a>
+</div>
+<div data-md-component="announce">
+</div>
+<header class="md-header md-header--shadow" data-md-component="header">
+<nav aria-label="Header" class="md-header__inner md-grid">
+<a aria-label="Rubika Bot Father" class="md-header__button md-logo" data-md-component="logo" href="index.html" title="Rubika Bot Father">
+<h1>Fast Rub</h1>
+</a>
+<label class="md-header__button md-icon" for="__drawer">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"></path></svg>
+</label>
+<div class="md-header__title" data-md-component="header-title">
+<div class="md-header__ellipsis">
+<div class="md-header__topic">
+<span class="md-ellipsis">
+            بات روبیکا
+          </span>
+</div>
+<div class="md-header__topic" data-md-component="header-topic">
+<span class="md-ellipsis">
+            
+              متد ها
+            
+          </span>
+</div>
+</div>
+</div>
+<form class="md-header__option" data-md-component="palette">
+<input aria-label="Switch to dark mode" class="md-option" data-md-color-accent="amber" data-md-color-media="" data-md-color-primary="purple" data-md-color-scheme="default" id="__palette_1" name="__palette" type="radio"/>
+<label class="md-header__button md-icon" for="__palette_2" title="Switch to dark mode">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5c-.84 0-1.65.15-2.39.42L12 2M3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29L3.34 7m.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14L3.36 17M20.65 7l-1.77 3.79a7.023 7.023 0 0 0-2.38-4.15l4.15.36m-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29L20.64 17M12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44L12 22Z"></path></svg>
+</label>
+<input aria-label="Switch to light mode" class="md-option" data-md-color-accent="amber" data-md-color-media="" data-md-color-primary="purple" data-md-color-scheme="slate" id="__palette_2" name="__palette" type="radio"/>
+<label class="md-header__button md-icon" for="__palette_1" hidden="" title="Switch to light mode">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3 3.19.09m3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95 2.06.05m-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31Z"></path></svg>
+</label>
+</form>
+</nav>
+</header>
+<div class="md-container" data-md-component="container">
+<main class="md-main" data-md-component="main">
+<div class="md-main__inner md-grid">
+<div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" style="top: 60px;">
+<div class="md-sidebar__scrollwrap" style="height: 756px;">
+<div class="md-sidebar__inner">
+<nav aria-label="Navigation" class="md-nav md-nav--primary" data-md-level="0">
+<label class="md-nav__title" for="__drawer">
+<a aria-label="Rubika Bot Father" class="md-nav__button md-logo" data-md-component="logo" href="index.html" title="Rubika Bot Father">
+<img alt="logo" src="../icon.jpg"/>
+</a>
+    بات روبیکا
+  </label>
+<ul class="md-nav__list">
+<li class="md-nav__item">
+<a class="md-nav__link" href="../index.html">
+        معرفی
+      </a>
+</li>
+<li class="md-nav__item md-nav__item--active">
+<input class="md-nav__toggle md-toggle" data-md-toggle="toc" id="__toc" type="checkbox"/>
+<label class="md-nav__link md-nav__link--active" for="__toc">
+          متد ها
+          <span class="md-nav__icon md-icon"></span>
+</label>
+<a class="md-nav__link md-nav__link--active" href="index.html">
+        متد ها
+      </a>
+<nav aria-label="فهرست موضوعات" class="md-nav md-nav--secondary">
+<label class="md-nav__title" for="__toc">
+<span class="md-nav__icon md-icon"></span>
+      فهرست موضوعات
+    </label>
+<ul class="md-nav__list" data-md-component="toc">
+<li class="md-nav__item">
+<a class="md-nav__link" href="#_0">
+    __init__(ورودی های اصلی کلاس کلاینت)
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#_1">
+    گرفتن اطلاعات بات
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#text-keypad-inlinekeypad">
+    ارسال پیام (Text, Keypad, InlineKeypad)
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#_3">
+    ارسال نظرسنجی
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#_4">
+    ارسال موقعیت مکانی
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#_5">
+    ارسال مخاطب
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#_6">
+    گرفتن آخرین آپدیت‌ها
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#button_up">
+    گرفتن آپدیت کلیک های دکمه های شیشه ای
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#_7">
+    گرفتن اطلاعات چت
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#_8">
+    فوروارد کردن پیام
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#_9">
+    ویرایش متن پیام
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#_10">
+    حذف پیام
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#commands">
+    تنظیم دستور‌ها (commands)
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#url-endpoint">
+    آپدیت آدرس بات (URL Endpoint)
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#send-file">
+    ارسال فایل
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#send-sticker">
+    ارسال استیکر
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#download">
+    دانلود فایل
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#get_url_file">
+    گرفتن لینک دانلود فایل
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#version_botapi">
+    نسخه BotApi
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#auto_delete">
+    پاکسازی خودکار پیام
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#auto_edit">
+    ویرایش خودکار پیام
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#get_message">
+    گرفتن پیام با آیدی
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#get_messages">
+    گرفتن پیام های قبل یک پیام با آیدی
+  </a>
+</li>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#ban_chat_member">
+    مسدودی کاربر چت
+  </a>
+</li>
+
+<li class="md-nav__item">
+<a class="md-nav__link" href="#unban_chat_member">
+    رفع مسدودی کاربر چت
+  </a>
+</li>
+</ul>
+</nav>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../models/index.html">
+        مدل ها
+      </a>
+</li>
+<li class="md-nav__item">
+                    <a href="pyrubi/index.html" class="md-nav__link">
+                      فورک پایروبی
+                    </a>
+                  </li>
+</ul>
+</nav>
+</div>
+</div>
+</div>
+<div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" style="top: 60px;">
+<div class="md-sidebar__scrollwrap" style="height: 756px;">
+<div class="md-sidebar__inner">
+<nav aria-label="فهرست موضوعات" class="md-nav md-nav--secondary">
+<label class="md-nav__title" for="__toc">
+<span class="md-nav__icon md-icon"></span>
+      فهرست موضوعات
+    </label>
+<ul class="md-nav__list" data-md-component="toc">
+<li class="md-nav__item">
+<a class="md-nav__link" href="#_0">
+    __init__(ورودی های اصلی کلاس کلاینت)
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#_1">
+    گرفتن اطلاعات بات
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#text-keypad-inlinekeypad">
+    ارسال پیام (Text, Keypad, InlineKeypad)
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#_3">
+    ارسال نظرسنجی
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#_4">
+    ارسال موقعیت مکانی
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#_5">
+    ارسال مخاطب
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#_6">
+    گرفتن آخرین آپدیت‌ها
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#button_up">
+    گرفتن آپدیت کلیک های دکمه های شیشه ای
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#_7">
+    گرفتن اطلاعات چت
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#_8">
+    فوروارد کردن پیام
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#_9">
+    ویرایش متن پیام
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#_10">
+    حذف پیام
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#commands">
+    تنظیم دستور‌ها (commands)
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#url-endpoint">
+    آپدیت آدرس بات (URL Endpoint)
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#send-file">
+    ارسال فایل
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#send-sticker">
+    ارسال استیکر
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#download">
+    دانلود فایل
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#get_url_file">
+    گرفتن لینک دانلود فایل
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#version_botapi">
+    نسخه BotApi
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#auto_delete">
+    پاکسازی خودکار پیام
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#auto_edit">
+    ویرایش خودکار پیام
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#get_message">
+    گرفتن پیام با آیدی
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#get_messages">
+    گرفتن پیام های قبل یک پیام با آیدی
+  </a>
+</li>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#ban_chat_member">
+    مسدودی کاربر چت
+  </a>
+</li>
+
+<li class="md-nav__item">
+<a class="md-nav__link" href="#unban_chat_member">
+    رفع مسدودی کاربر چت
+  </a>
+</li>
+
+
+
+</ul>
+</nav>
+</div>
+</div>
+</div>
+<div class="md-content" data-md-component="content">
+<article class="md-content__inner md-typeset">
+<h1>متد ها</h1>
+<h2 id="_0">کلاس کلاینت<a class="headerlink" href="#_0" title="Permanent link"></a></h2>
+<ul>
+<li>متد : <code>__init__ - Client</code></li>
+<li>ورودی</li>
+</ul>
+<div class="md-typeset__scrollwrap"><div class="md-typeset__table"><table>
+<thead>
+<tr>
+<th>فیلد</th>
+<th>نوع</th>
+<th>توضیحات</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>name_session</code></td>
+<td><code>str</code></td>
+<td>اسم سشن برای ذخیره سازی اطلاعات</td>
+</tr>
+<tr>
+<td><code>token</code></td>
+<td><code>str | None</code></td>
+<td>توکن</td>
+</tr>
+<tr>
+<td><code>user_agent</code></td>
+<td><code>str | None</code></td>
+<td>اطلاعات مرورگر ریکوست دهنده</td>
+</tr>
+<tr>
+<td><code>time_out</code></td>
+<td><code>int | None</code></td>
+<td>زمان خروج برای درخواست ها</td>
+</tr>
+<tr>
+<td><code>display_welcome</code></td>
+<td><code>bool | None</code></td>
+<td>خوش آمد گویی کتابخانه</td>
+</tr>
+<tr>
+<td><code>use_to_fastrub_webhook_on_message</code></td>
+<td><code>bool(False for no useing) | str(ادرس وبهوک برای گرفتن مسیج ها)</code></td>
+<td>خودکار بودن وبهوک فست روب یا استفاده از وبهوک جدا برای دریافت پیام ها</td>
+</tr>
+<tr>
+<td><code>use_to_fastrub_webhook_on_button</code></td>
+<td><code>bool(False for no useing) | str(ادرس وبهوک برای گرفتن کلیک دکمه ها)</code></td>
+<td>خودکار بودن وبهوک فست روب یا استفاده از وبهوک جدا برای دریافت کلیک دکمه ها</td>
+</tr>
+<tr>
+<td><code>save_logs</code></td>
+<td><code>bool | None</code></td>
+<td>ذخیره لاگ ها</td>
+</tr>
+<tr>
+<td><code>view_logs</code></td>
+<td><code>bool | None</code></td>
+<td>نمایش لاگ ها</td>
+</tr>
+<tr>
+<td><code>proxy</code></td>
+<td><code>bool | None</code></td>
+<td>پروکسی برای ارسال درخواست ها</td>
+</tr>
+<tr>
+<td><code>main_parse_mode</code></td>
+<td><code>'Markdown' | 'HTML' | None</code></td>
+<td>پارس مود برای متن ها</td>
+</tr>
+<tr>
+<td><code>max_retries</code></td>
+<td><code>int = 3</code></td>
+<td>تعداد تلاش ها برای ارسال درخواست</td>
+</tr>
+<tr>
+<td><code>show_progress</code></td>
+<td><code>bool | None</code></td>
+<td>نمایش پروسس در حال آپلود/دانلود فایل</td>
+</tr>
+<tr>
+<td><code>keeper_messages</code></td>
+<td><code>int = 500</code></td>
+<td>تعداد پیام هایی که برای متود get_message نگهداری شود</td>
+</tr>
+</tbody>
+</table></div></div>
+<p>مثال</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="1:4" style="--md-indicator-x:741px; --md-indicator-width:82px;">
+<input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio"/>
+<input id="__tabbed_1_2" name="__tabbed_1" type="radio"/>
+<input id="__tabbed_1_3" name="__tabbed_1" type="radio"/>
+<input id="__tabbed_1_4" name="__tabbed_1" type="radio"/>
+<div class="tabbed-labels"><label for="__tabbed_1_1">Python</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div style="text-align: left">
+<div class="code-container">
+<textarea class="code-block-py">from fast_rub import Client
+
+bot = Client("name_session")</textarea>
+</div>
+</div>
+</div>
+</div>
+</div>
+<h2 id="_1">گرفتن اطلاعات بات<a class="headerlink" href="#_1" title="Permanent link"></a></h2>
+<ul>
+<li>متد : <code>get_me</code></li>
+</ul>
+<div class="md-typeset__scrollwrap"><div class="md-typeset__table">
+</div></div>
+<ul>
+<li>خروجی</li>
+</ul>
+<div class="md-typeset__scrollwrap"><div class="md-typeset__table"><table>
+<thead>
+<tr>
+<th>فیلد</th>
+<th>نوع</th>
+<th>توضیحات</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>get_me</code></td>
+<td><a href="../models/index.html#Bot"><code>Bot</code></a></td>
+<td>بات</td>
+</tr>
+</tbody>
+</table></div></div>
+<ul>
+<li>مثال</li>
+</ul>
+<div class="tabbed-set tabbed-alternate" data-tabs="1:4" style="--md-indicator-x:741px; --md-indicator-width:82px;">
+<input checked="checked" id="__tabbed_0_1" name="__tabbed_0" type="radio"/>
+<input id="__tabbed_0_2" name="__tabbed_0" type="radio"/>
+<input id="__tabbed_0_3" name="__tabbed_0" type="radio"/>
+<input id="__tabbed_0_4" name="__tabbed_0" type="radio"/>
+<div class="tabbed-labels"><label for="__tabbed_0_1">Python</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div style="text-align: left">
+<div class="code-container">
+<textarea class="code-block-py">
+me = await bot.get_me()
+print(me)
+print(f"bot username » {me.username}")</textarea>
+</div>
+</div>
+</div>
+</div>
+</div>
+<h2 id="text-keypad-inlinekeypad">ارسال پیام (Text, InlineKeypad)<a class="headerlink" href="#text-keypad-inlinekeypad" title="Permanent link"></a></h2>
+<ul>
+<li>متد : <code>send_text</code></li>
+<li>ورودی</li>
+</ul>
+<div class="md-typeset__scrollwrap"><div class="md-typeset__table"><table>
+<thead>
+<tr>
+<th>فیلد</th>
+<th>نوع</th>
+<th>توضیحات</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>text</code></td>
+<td><code>str</code></td>
+<td>متن پیام</td>
+</tr>
+<tr>
+<td><code>chat_id</code></td>
+<td><code>str</code></td>
+<td>چت آیدی</td>
+</tr>
+<tr>
+<td><code>inline_keypad</code></td>
+<td><code>list[<a href="../models/index.html#KeyPad">KeyPad</a>] | None</code></td>
+<td>دکمه های شیشه ای</td>
+</tr>
+<tr>
+<td><code>keypad</code></td>
+<td><code>list[<a href="../models/index.html#KeyPad">KeyPad</a>] | None</code></td>
+<td>دکمه های کیبورد</td>
+</tr>
+<tr>
+<td><code>resize_keyboard</code></td>
+<td><code>bool = True</code></td>
+<td>تغییر خودکار سایز کیبورد</td>
+</tr>
+<tr>
+<td><code>on_time_keyboard</code></td>
+<td><code>bool = False</code></td>
+<td>کیبورد یکبار مصرف(ناپدید شدن دکمه ها پس از کلیک)</td>
+</tr>
+<tr>
+<td><code>disable_notification</code></td>
+<td><code>bool | None</code></td>
+<td>غیرفعال کردن اعلان؟  (پیشفرض false)</td>
+</tr>
+<tr>
+<td><code>reply_to_message_id</code></td>
+<td><code>str | None</code></td>
+<td>در جوابِ پیامِ؟</td>
+</tr>
+<tr>
+<td><code>auto_delete</code></td>
+<td><code>str | None</code></td>
+<td>حذف خودکار پیام</td>
+</tr>
+<tr>
+<td><code>parse_mode</code></td>
+<td><code>"Markdown" | "HTML" = "Markdown"</code></td>
+<td>پارس مود متن</td>
+</tr>
+<tr>
+<td><code>meta_data</code></td>
+<td><code>list = []</code></td>
+<td>لیست متادیتا</td>
+</tr>
+</tbody>
+</table></div></div>
+<ul>
+<li>خروجی</li>
+</ul>
+<div class="md-typeset__scrollwrap"><div class="md-typeset__table"><table>
+<thead>
+<tr>
+<th>فیلد</th>
+<th>نوع</th>
+<th>توضیحات</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>msg_update</code></td>
+<td><a href="../models/index.html#msg_update"><code>msg_update</code></a></td>
+<td>اطلاعات خروجی</td>
+</tr>
+</tbody>
+</table></div></div>
+<ul>
+<li>مثال</li>
+</ul>
+<div class="tabbed-set tabbed-alternate" data-tabs="2:4" style="--md-indicator-x:741px; --md-indicator-width:82px;">
+<input checked="checked" id="__tabbed_2_1" name="__tabbed_2" type="radio"/>
+<input id="__tabbed_2_2" name="__tabbed_2" type="radio"/>
+<input id="__tabbed_2_3" name="__tabbed_2" type="radio"/>
+<input id="__tabbed_2_4" name="__tabbed_2" type="radio"/>
+<div class="tabbed-labels"><label for="__tabbed_2_1">Python</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block" style="text-align: left;">
+<textarea class="code-block-py">sending = await bot.send_text(text, chat_id)
+print(sending)
+buttons = KeyPad()
+buttons.append(
+  buttons.simple("id 1", "button text 1")
+)
+buttons.append(
+  buttons.simple("id 2", "button text 2"),
+  buttons.simple("id 3", "button text 3")
+)
+sending2 = await bot.send_text(text, chat_id, inline_keypad=buttons.get())
+print(sending2)</textarea>
+</div>
+</div>
+</div>
+<h2 id="_3">ارسال نظرسنجی<a class="headerlink" href="#_3" title="Permanent link"></a></h2>
+<ul>
+<li>متد : <code>send_poll</code></li>
+<li>ورودی</li>
+</ul>
+<div class="md-typeset__scrollwrap"><div class="md-typeset__table"><table>
+<thead>
+<tr>
+<th>فیلد</th>
+<th>نوع</th>
+<th>توضیحات</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>chat_id</code></td>
+<td><code>str</code></td>
+<td>چت آیدی</td>
+</tr>
+<tr>
+<td><code>question</code></td>
+<td><code>str</code></td>
+<td>متن سوال</td>
+</tr>
+<tr>
+<td><code>options</code></td>
+<td><code>list</code></td>
+<td>گزینه‌های سوال</td>
+</tr>
+<tr>
+<td><code>type_poll</code></td>
+<td><code>"Regular" | "Quiz" = "Regular"</code></td>
+<td>نوع نظرسنجی</td>
+</tr>
+<tr>
+<td><code>is_anonymous</code></td>
+<td><code>bool = True</code></td>
+<td>ناشناس بودن نظرسنجی</td>
+</tr>
+<tr>
+<td><code>correct_option_index</code></td>
+<td><code>int | None</code></td>
+<td>شماره ایندکس جواب درست نظرسنجی</td>
+</tr>
+<tr>
+<td><code>allows_multiple_answers</code></td>
+<td><code>bool = False</code></td>
+<td>دسترسی برای انتخاب چند گزینه</td>
+</tr>
+<tr>
+<td><code>hint</code></td>
+<td><code>str | None</code></td>
+<td>راهنمایی برای جواب درست به جواب های غلط</td>
+</tr>
+<tr>
+<td><code>reply_to_message_id</code></td>
+<td><code>str | None</code></td>
+<td>در جواب؟</td>
+</tr>
+<tr>
+<td><code>auto_delete</code></td>
+<td><code>int | None</code></td>
+<td>پاکسازی خودکار پیام پس از مدتی(ثانیه)</td>
+</tr>
+</tbody>
+</table></div></div>
+<ul>
+<li>خروجی</li>
+</ul>
+<div class="md-typeset__scrollwrap"><div class="md-typeset__table"><table>
+<thead>
+<tr>
+<th>فیلد</th>
+<th>نوع</th>
+<th>توضیحات</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>msg_update</code></td>
+<td><code><a href="../models/index.html#msg_update">msg_update</a></code></td>
+<td>اطلاعات پیام</td>
+</tr>
+</tbody>
+</table></div></div>
+<ul>
+<li>مثال</li>
+</ul>
+<div class="tabbed-set tabbed-alternate" data-tabs="5:4" style="--md-indicator-x:741px; --md-indicator-width:82px;">
+<input checked="checked" id="__tabbed_5_1" name="__tabbed_5" type="radio"/>
+<input id="__tabbed_5_2" name="__tabbed_5" type="radio"/>
+<input id="__tabbed_5_3" name="__tabbed_5" type="radio"/>
+<input id="__tabbed_5_4" name="__tabbed_5" type="radio"/>
+<div class="tabbed-labels"><label for="__tabbed_5_1">Python</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block" style="text-align: left;">
+<textarea class="code-block-py">list_foods = ["چلو قرمه سبزی", "زرشک پلو با مرغ"]
+sending = await bot.send_poll("chat id", "به چه غذایی علاقه دارید؟", list_foods)
+print(sending)</textarea>
+</div>
+</div>
+</div>
+<h2 id="_4">ارسال موقعیت مکانی<a class="headerlink" href="#_4" title="Permanent link"></a></h2>
+<ul>
+<li>متد : <code>send_location</code></li>
+<li>ورودی</li>
+</ul>
+<div class="md-typeset__scrollwrap"><div class="md-typeset__table"><table>
+<thead>
+<tr>
+<th>فیلد</th>
+<th>نوع</th>
+<th>توضیحات</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>chat_id</code></td>
+<td><code>str</code></td>
+<td>چت آیدی</td>
+</tr>
+<tr>
+<td><code>latitude</code></td>
+<td><code>str</code></td>
+<td>عرض جغرافیایی</td>
+</tr>
+<tr>
+<td><code>longitude</code></td>
+<td><code>str</code></td>
+<td>طول جغرافیایی</td>
+</tr>
+<tr>
+<td><code>chat_keypad</code></td>
+<td><code>str | None</code></td>
+<td>keypad</td>
+</tr>
+<tr>
+<td><code>disable_notification</code></td>
+<td><code>str | None</code></td>
+<td>غیرفعال کردن اعلان؟  (پیشفرض false)</td>
+</tr>
+<tr>
+<td><code>reply_to_message_id</code></td>
+<td><code>str | None</code></td>
+<td>در جوابِ پیامِ؟</td>
+</tr>
+<tr>
+<td><code>chat_keypad_type</code></td>
+<td><code>str | None</code></td>
+<td>نوع keypad</td>
+</tr>
+<tr>
+<td><code>auto_delete</code></td>
+<td><code>int | None</code></td>
+<td>پاکسازی خودکار پیام پس از مدتی(ثانیه)</td>
+</tr>
+</tbody>
+</table></div></div>
+<ul>
+<li>خروجی</li>
+</ul>
+<div class="md-typeset__scrollwrap"><div class="md-typeset__table"><table>
+<thead>
+<tr>
+<th>فیلد</th>
+<th>نوع</th>
+<th>توضیحات</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>msg_update</code></td>
+<td><code><a href="../models/index.html#msg_update">msg_update</a></code></td>
+<td>اطلاعات پیام</td>
+</tr>
+</tbody>
+</table></div></div>
+<ul>
+<li>مثال</li>
+</ul>
+<div class="tabbed-set tabbed-alternate" data-tabs="6:4" style="--md-indicator-x:741px; --md-indicator-width:82px;">
+<input checked="checked" id="__tabbed_6_1" name="__tabbed_6" type="radio"/>
+<input id="__tabbed_6_2" name="__tabbed_6" type="radio"/>
+<input id="__tabbed_6_3" name="__tabbed_6" type="radio"/>
+<input id="__tabbed_6_4" name="__tabbed_6" type="radio"/>
+<div class="tabbed-labels"><label for="__tabbed_6_1">Python</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block" style="text-align: left;">
+<textarea class="code-block-py">sending = await bot.send_location("chat id", "35.6892", "51.3890")
+print(sending)</textarea>
+</div>
+</div>
+</div>
+<h2 id="_5">ارسال مخاطب<a class="headerlink" href="#_5" title="Permanent link"></a></h2>
+<ul>
+<li>متد : <code>send_contact</code></li>
+<li>ورودی</li>
+</ul>
+<div class="md-typeset__scrollwrap"><div class="md-typeset__table"><table>
+<thead>
+<tr>
+<th>فیلد</th>
+<th>نوع</th>
+<th>توضیحات</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>chat_id</code></td>
+<td><code>str</code></td>
+<td>چت آیدی</td>
+</tr>
+<tr>
+<td><code>first_name</code></td>
+<td><code>str</code></td>
+<td>نام مخاطب</td>
+</tr>
+<tr>
+<td><code>last_name</code></td>
+<td><code>str</code></td>
+<td>نام‌خانوادگی مخاطب</td>
+</tr>
+<tr>
+<td><code>phone_number</code></td>
+<td><code>str</code></td>
+<td>شماره مخاطب</td>
+</tr>
+<tr>
+<td><code>chat_keypad</code></td>
+<td><code>str | None</code></td>
+<td>keypad</td>
+</tr>
+<tr>
+<td><code>disable_notification</code></td>
+<td><code>str | None</code></td>
+<td>غیرفعال کردن اعلان؟  (پیشفرض false)</td>
+</tr>
+<tr>
+<td><code>inline_keypad</code></td>
+<td><code>list[<a href="../models.html#keypad">Keypad</a>] | None</code></td>
+<td>دکمه های شیشه ای(اینلاین)</td>
+</tr>
+<tr>
+<td><code>reply_to_message_id</code></td>
+<td><code>str</code></td>
+<td>در جوابِ پیامِ؟</td>
+</tr>
+<tr>
+<td><code>chat_keypad_type</code></td>
+<td><code>str</code></td>
+<td>نوع keypad</td>
+</tr>
+<tr>
+<td><code>auto_delete</code></td>
+<td><code>int | None</code></td>
+<td>پاکسازی خودکار پیام پس از مدتی(ثانیه)</td>
+</tr>
+</tbody>
+</table></div></div>
+<ul>
+<li>خروجی</li>
+</ul>
+<div class="md-typeset__scrollwrap"><div class="md-typeset__table"><table>
+<thead>
+<tr>
+<th>فیلد</th>
+<th>نوع</th>
+<th>توضیحات</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>msg_update</code></td>
+<td><code><a href="../models/index.html#msg_update">msg_update</a></code></td>
+<td>اطلاعات پیام</td>
+</tr>
+</tbody>
+</table></div></div>
+<ul>
+<li>مثال</li>
+</ul>
+<div class="tabbed-set tabbed-alternate" data-tabs="7:4" style="--md-indicator-x:741px; --md-indicator-width:82px;">
+<input checked="checked" id="__tabbed_7_1" name="__tabbed_7" type="radio"/>
+<input id="__tabbed_7_2" name="__tabbed_7" type="radio"/>
+<input id="__tabbed_7_3" name="__tabbed_7" type="radio"/>
+<input id="__tabbed_7_4" name="__tabbed_7" type="radio"/>
+<div class="tabbed-labels"><label for="__tabbed_7_1">Python</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block" style="text-align: left;">
+<textarea class="code-block-py">sending = await bot.send_contact("chat id", "first name", "last name", "+989017760881")
+print(sending)</textarea>
+</div>
+</div>
+</div>
+<h2 id="_6">دکوراتور های گرفتن پیام ها<a class="headerlink" href="#_6" title="Permanent link"></a></h2>
+<ul>
+<li>متد : <code>
+on_message - polling(پولینگ) و
+on_message_updates - webhook(وبهوک)
+</code></li>
+<li>ورودی</li>
+</ul>
+<div class="md-typeset__scrollwrap"><div class="md-typeset__table"><table>
+<thead>
+<tr>
+<th>فیلد</th>
+<th>نوع</th>
+<th>توضیحات</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>filters</code></td>
+<td><code><a href="../models/index.html#filters">filters</a> | None</code></td>
+<td>فیلتر کردن گرفتن پیام</td>
+</tr>
+<tr>
+<td><code>edited_messages</code></td>
+<td><code>bool | "both" = False</code></td>
+<td>گرفتن پیام های ویرایش شده</td>
+</tr>
+<tr>
+<td><code>deleted_messages</code></td>
+<td><code>bool | "both" = False</code></td>
+<td>گرفتن پیام های حذف شده</td>
+</tr>
+</tbody>
+</table></div></div>
+<ul>
+<li>خروجی</li>
+</ul>
+<div class="md-typeset__scrollwrap"><div class="md-typeset__table"><table>
+<thead>
+<tr>
+<th>فیلد</th>
+<th>نوع</th>
+<th>توضیحات</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Message</code></td>
+<td><a href="../models/index.html#Message"><code>Message</code></a></td>
+<td>مسیج آپدیت</td>
+</tr>
+</tbody>
+</table></div></div>
+<ul>
+<li>مثال</li>
+</ul>
+<div class="tabbed-set tabbed-alternate" data-tabs="8:4" style="--md-indicator-x:741px; --md-indicator-width:82px;">
+<input checked="checked" id="__tabbed_8_1" name="__tabbed_8" type="radio"/>
+<input id="__tabbed_8_2" name="__tabbed_8" type="radio"/>
+<input id="__tabbed_8_3" name="__tabbed_8" type="radio"/>
+<input id="__tabbed_8_4" name="__tabbed_8" type="radio"/>
+<div class="tabbed-labels"><label for="__tabbed_8_1">Python</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block" style="text-align: left;">
+<textarea class="code-block-py">import asyncio
+
+@bot.on_message()
+async def test(msg: Message):
+    print(msg)
+    await msg.reply("this is a reply text from fast rub")
+    if msg.text == "/off":
+        bot.stop() # متود خاموش کردن کلاینت
+
+@bot.on_message_updates()
+async def test(msg: Message):
+    print(msg)
+    await msg.reply("this is a reply text from fast rub")
+
+# دیگر دکوراتور ها »
+
+# پیام های ویرایش شده »
+# on_edit_updates - وبهوک
+# on_edit - پولینگ
+
+# پیام های حذف شده »
+# on_delete_updates - وبهوک
+# on_delete - پولینگ
+
+# همه نوع پیام(معمولی و ویرایش شده و حذف شده) »
+# on_all_message_updates - وبهوک
+# on_all_message - پولینگ
+
+asyncio.run(bot.run())</textarea>
+</div>
+</div>
+</div>
+<h2 id="button_up">دکوراتور های پیام های شیشه ای(اینلاین)<a class="headerlink" href="#button_up" title="Permanent link"></a></h2>
+<ul>
+<li>متد : <code>on_button</code></li>
+</ul>
+<ul>
+<li>خروجی</li>
+</ul>
+<div class="md-typeset__scrollwrap"><div class="md-typeset__table"><table>
+<thead>
+<tr>
+<th>فیلد</th>
+<th>نوع</th>
+<th>توضیحات</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Button Updates</code></td>
+<td><a href="../models/index.html#UpdateButton"><code>UpdateButton</code></a></td>
+<td>مسیج آپدیت</td>
+</tr>
+</tbody>
+</table></div></div>
+<ul>
+<li>مثال</li>
+</ul>
+<div class="tabbed-set tabbed-alternate" data-tabs="8:4" style="--md-indicator-x:741px; --md-indicator-width:82px;">
+<input checked="checked" id="__tabbed_9_1" name="__tabbed_9" type="radio"/>
+<input id="__tabbed_9_2" name="__tabbed_9" type="radio"/>
+<input id="__tabbed_9_3" name="__tabbed_9" type="radio"/>
+<input id="__tabbed_9_4" name="__tabbed_9" type="radio"/>
+<div class="tabbed-labels"><label for="__tabbed_9_1">Python</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block" style="text-align: left;">
+<textarea class="code-block-py">import asyncio
+
+@bot.on_button()
+async def test(msg: UpdateButton):
+    print(msg)
+    await msg.send_text("this is a text from fast rub")
+
+asyncio.run(bot.run())</textarea>
+</div>
+</div>
+</div>
+<h2 id="_7">گرفتن اطلاعات چت<a class="headerlink" href="#_7" title="Permanent link"></a></h2>
+<ul>
+<li>متد : <code>get_chat</code></li>
+<li>ورودی</li>
+</ul>
+<div class="md-typeset__scrollwrap"><div class="md-typeset__table"><table>
+<thead>
+<tr>
+<th>فیلد</th>
+<th>نوع</th>
+<th>توضیحات</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>chat_id</code></td>
+<td><code>str</code></td>
+<td>چت آیدی کاربر/گروه/کانال</td>
+</tr>
+</tbody>
+</table></div></div>
+<ul>
+<li>خروجی</li>
+</ul>
+<div class="md-typeset__scrollwrap"><div class="md-typeset__table"><table>
+<thead>
+<tr>
+<th>فیلد</th>
+<th>نوع</th>
+<th>توضیحات</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Chat</code></td>
+<td><a href="../models/index.html#Chat"><code>Chat</code></a></td>
+<td>اطلاعات چت</td>
+</tr>
+</tbody>
+</table></div></div>
+<ul>
+<li>مثال</li>
+</ul>
+<div class="tabbed-set tabbed-alternate" data-tabs="9:4" style="--md-indicator-x:741px; --md-indicator-width:82px;">
+<input checked="checked" id="__tabbed_10_1" name="__tabbed_10" type="radio"/>
+<input id="__tabbed_10_2" name="__tabbed_10" type="radio"/>
+<input id="__tabbed_10_3" name="__tabbed_10" type="radio"/>
+<input id="__tabbed_10_4" name="__tabbed_10" type="radio"/>
+<div class="tabbed-labels"><label for="__tabbed_10_1">Python</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block" style="text-align: left;">
+<textarea class="code-block-py">sending = await bot.get_chat("chat id")
+print(sending)</textarea>
+</div>
+</div>
+</div>
+<h2 id="_8">فوروارد کردن پیام<a class="headerlink" href="#_8" title="Permanent link"></a></h2>
+<ul>
+<li>متد : <code>forward_message</code></li>
+<li>ورودی</li>
+</ul>
+<div class="md-typeset__scrollwrap"><div class="md-typeset__table"><table>
+<thead>
+<tr>
+<th>فیلد</th>
+<th>نوع</th>
+<th>توضیحات</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>from_chat_id</code></td>
+<td><code>str</code></td>
+<td>از چتِ؟</td>
+</tr>
+<tr>
+<td><code>message_id</code></td>
+<td><code>str</code></td>
+<td>شناسه پیام</td>
+</tr>
+<tr>
+<td><code>to_chat_id</code></td>
+<td><code>str</code></td>
+<td>به چتِ؟</td>
+</tr>
+<tr>
+<td><code>disable_notification</code></td>
+<td><code>bool | None</code></td>
+<td>غیرفعال کردن اعلان؟  (پیشفرض false)</td>
+</tr>
+<tr>
+<td><code>auto_delete</code></td>
+<td><code>int | None</code></td>
+<td>پاکسازی خودکار پیام پس از مدتی(ثانیه)</td>
+</tr>
+</tbody>
+</table></div></div>
+<ul>
+<li>خروجی</li>
+</ul>
+<div class="md-typeset__scrollwrap"><div class="md-typeset__table"><table>
+<thead>
+<tr>
+<th>فیلد</th>
+<th>نوع</th>
+<th>توضیحات</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>msg_update</code></td>
+<td><code><a href="../models/index.html#msg_update">msg_update</a></code></td>
+<td>اطلاعات پیام جدید</td>
+</tr>
+</tbody>
+</table></div></div>
+<ul>
+<li>مثال</li>
+</ul>
+<div class="tabbed-set tabbed-alternate" data-tabs="10:4" style="--md-indicator-x:741px; --md-indicator-width:82px;">
+<input checked="checked" id="__tabbed_11_1" name="__tabbed_11" type="radio"/>
+<input id="__tabbed_11_2" name="__tabbed_11" type="radio"/>
+<input id="__tabbed_11_3" name="__tabbed_11" type="radio"/>
+<input id="__tabbed_11_4" name="__tabbed_11" type="radio"/>
+<div class="tabbed-labels"><label for="__tabbed_11_1">Python</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block" style="text-align: left;">
+<textarea class="code-block-py">sending = await bot.forward_message("from chat id", "message id", "to chat id")
+print(sending)</textarea>
+</div>
+</div>
+</div>
+<h2 id="_9">ویرایش متن پیام<a class="headerlink" href="#_9" title="Permanent link"></a></h2>
+<ul>
+<li>متد : <code>edit_message_text</code></li>
+<li>ورودی</li>
+</ul>
+<div class="md-typeset__scrollwrap"><div class="md-typeset__table"><table>
+<thead>
+<tr>
+<th>فیلد</th>
+<th>نوع</th>
+<th>توضیحات</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>chat_id</code></td>
+<td><code>str</code></td>
+<td>چت آیدی</td>
+</tr>
+<tr>
+<td><code>message_id</code></td>
+<td><code>str</code></td>
+<td>شناسه پیام</td>
+</tr>
+<tr>
+<td><code>text</code></td>
+<td><code>str</code></td>
+<td>متن جدید</td>
+</tr>
+<tr>
+<td><code>inline_keypad</code></td>
+<td><code>list | None</code></td>
+<td>دکمه های شیشه ای</td>
+</tr>
+<tr>
+<td><code>parse_mode</code></td>
+<td><code>"Markdown" | "HTML" | None</code></td>
+<td>پارس مود متن</td>
+</tr>
+<tr>
+<td><code>meta_data</code></td>
+<td><code>list = []</code></td>
+<td>متا دیتا</td>
+</tr>
+</tbody>
+</table></div></div>
+<ul>
+<li>خروجی</li>
+</ul>
+<div class="md-typeset__scrollwrap"><div class="md-typeset__table"><table>
+<thead>
+<tr>
+<th>فیلد</th>
+<th>نوع</th>
+<th>توضیحات</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>msg_update</code></td>
+<td><code><a href="../models/index.html#msg_update">msg_update</a></code></td>
+<td>اطلاعات پیام</td>
+</tr>
+</tbody>
+</table></div></div>
+<ul>
+<li>مثال</li>
+</ul>
+<div class="tabbed-set tabbed-alternate" data-tabs="11:4" style="--md-indicator-x:741px; --md-indicator-width:82px;">
+<input checked="checked" id="__tabbed_12_1" name="__tabbed_12" type="radio"/>
+<input id="__tabbed_12_2" name="__tabbed_12" type="radio"/>
+<input id="__tabbed_12_3" name="__tabbed_12" type="radio"/>
+<input id="__tabbed_12_4" name="__tabbed_12" type="radio"/>
+<div class="tabbed-labels"><label for="__tabbed_12_1">Python</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block" style="text-align: left;">
+<textarea class="code-block-py">sending = await bot.edit_message_text("chat id", "message id", "new text")
+print(sending)</textarea>
+</div>
+</div>
+</div>
+<h2 id="_10">حذف پیام<a class="headerlink" href="#_10" title="Permanent link"></a></h2>
+<ul>
+<li>متد : <code>delete_message</code></li>
+<li>ورودی</li>
+</ul>
+<div class="md-typeset__scrollwrap"><div class="md-typeset__table"><table>
+<thead>
+<tr>
+<th>فیلد</th>
+<th>نوع</th>
+<th>توضیحات</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>chat_id</code></td>
+<td><code>str</code></td>
+<td>چت آیدی</td>
+</tr>
+<tr>
+<td><code>message_id</code></td>
+<td><code>str</code></td>
+<td>شناسه پیام</td>
+</tr>
+</tbody>
+</table></div></div>
+<ul>
+<li>مثال</li>
+</ul>
+<div class="tabbed-set tabbed-alternate" data-tabs="13:4" style="--md-indicator-x:741px; --md-indicator-width:82px;">
+<input checked="checked" id="__tabbed_14_1" name="__tabbed_14" type="radio"/>
+<input id="__tabbed_14_2" name="__tabbed_14" type="radio"/>
+<input id="__tabbed_14_3" name="__tabbed_14" type="radio"/>
+<input id="__tabbed_14_4" name="__tabbed_14" type="radio"/>
+<div class="tabbed-labels"><label for="__tabbed_14_1">Python</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block" style="text-align: left;">
+<textarea class="code-block-py">sending = await bot.delete_message("chat id", "message id")
+print(sending)</textarea>
+</div>
+</div>
+</div>
+<h2 id="commands">تنظیم دستور‌ها (commands)<a class="headerlink" href="#commands" title="Permanent link"></a></h2>
+<ul>
+<li>متد : <code>set_commands</code></li>
+<li>مثال</li>
+</ul>
+<div class="tabbed-set tabbed-alternate" data-tabs="14:4" style="--md-indicator-x:741px; --md-indicator-width:82px;">
+<input checked="checked" id="__tabbed_15_1" name="__tabbed_15" type="radio"/>
+<input id="__tabbed_15_2" name="__tabbed_15" type="radio"/>
+<input id="__tabbed_15_3" name="__tabbed_15" type="radio"/>
+<input id="__tabbed_15_4" name="__tabbed_15" type="radio"/>
+<div class="tabbed-labels"><label for="__tabbed_15_1">Python</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block" style="text-align: left;">
+<textarea class="code-block-py">
+await bot.add_commands("/help", "راهنمای ربات")
+await bot.add_commands("/start", "شروع ربات")
+setting = await bot.set_commands()
+print(setting)
+deleting = await bot.delete_commands()
+print(deleting)
+setting = await bot.set_commands(
+  [
+    {"command": "help", "description": "راهنما"}
+  ]
+)
+print(setting)</textarea>
+</div>
+</div>
+</div>
+<h2 id="url-endpoint">آپدیت آدرس بات (URL Endpoint)<a class="headerlink" href="#url-endpoint" title="Permanent link"></a></h2>
+<ul>
+<li>متد : <code>update_endpoint</code></li>
+<li>ورودی</li>
+</ul>
+<div class="md-typeset__scrollwrap"><div class="md-typeset__table"><table>
+<thead>
+<tr>
+<th>فیلد</th>
+<th>نوع</th>
+<th>توضیحات</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>url</code></td>
+<td><code>str</code></td>
+<td>آدرس جدید</td>
+</tr>
+<tr>
+<td><code>type</code></td>
+<td><a href="../models/index.html#EndPoint"><code>EndPoint</code></a></td>
+<td>نوع آدرس</td>
+</tr>
+</tbody>
+</table></div></div>
+<ul>
+<li>مثال</li>
+</ul>
+<div class="tabbed-set tabbed-alternate" data-tabs="15:4" style="--md-indicator-x:741px; --md-indicator-width:82px;">
+<input checked="checked" id="__tabbed_16_1" name="__tabbed_16" type="radio"/>
+<input id="__tabbed_16_2" name="__tabbed_16" type="radio"/>
+<input id="__tabbed_16_3" name="__tabbed_16" type="radio"/>
+<input id="__tabbed_16_4" name="__tabbed_16" type="radio"/>
+<div class="tabbed-labels"><label for="__tabbed_16_1">Python</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block" style="text-align: left;">
+<textarea class="code-block-py">update_endpoint = await bot.update_endpoint("my url end point", "ReceiveUpdate")
+print(update_end_point)</textarea>
+</div>
+</div>
+</div>
+
+<h2 id="send-file">ارسال فایل/ویدیو/تصویر/پیغام صوتی/موسیقی/گیف<a class="headerlink" href="#send-file" title="Permanent link"></a></h2>
+<ul>
+<li>متد : <code>send_file , send_video , send_image , send_voice , send_music , send_gif</code></li>
+<li>ورودی</li>
+</ul>
+<div class="md-typeset__scrollwrap"><div class="md-typeset__table"><table>
+<thead>
+<tr>
+<th>فیلد</th>
+<th>نوع</th>
+<th>توضیحات</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>chat_id</code></td>
+<td><code>str</code></td>
+<td>چت آیدی</td>
+</tr>
+<tr>
+<td><code>file / video / image / voice / music / gif</code></td>
+<td><code>str | Path | bytes</code></td>
+<td>فایل</td>
+</tr>
+<tr>
+<td><code>name_file</code></td>
+<td><code>str | None(name_file = "file")</code></td>
+<td>نام فایل</td>
+</tr>
+<tr>
+<td><code>text</code></td>
+<td><code>str | None</code></td>
+<td>کپشن فایل</td>
+</tr>
+<tr>
+<td><code>reply_to_message_id</code></td>
+<td><code>str | None</code></td>
+<td>در جواب ؟</td>
+</tr>
+<tr>
+<td><code>disable_notification</code></td>
+<td><code>bool | None</code></td>
+<td>غیرفعال کردن اعلان؟  (پیشفرض false)</td>
+</tr>
+<tr>
+<td><code>auto_delete</code></td>
+<td><code>int | None</code></td>
+<td>پاکسازی خودکار پیام پس از مدتی(ثانیه)</td>
+</tr>
+<tr>
+<td><code>parse_mode</code></td>
+<td><code>"Markdown" | "HTML" | None</code></td>
+<td>پارس مود متن</td>
+</tr>
+<tr>
+<td><code>meta_data</code></td>
+<td><code>list = []</code></td>
+<td>متا دیتا</td>
+</tr>
+<tr>
+<td><code>inline_keypad</code></td>
+<td><code>list | None</code></td>
+<td>دکمه های شیشه ای(اینلاین)</td>
+</tr>
+<tr>
+<td><code>keypad</code></td>
+<td><code>list | None</code></td>
+<td>دکمه های کیبورد</td>
+</tr>
+<tr>
+<td><code>resize_keyboard</code></td>
+<td><code>bool = True</code></td>
+<td>تغییر خودکار سایز کیبورد</td>
+</tr>
+<tr>
+<td><code>on_time_keyboard</code></td>
+<td><code>bool = False</code></td>
+<td>کیبورد یکبار مصرف(ناپدید شدن دکمه ها پس از کلیک)</td>
+</tr>
+<tr>
+<td><code>upload_by</code></td>
+<td><code>"aiohttp" | "httpx" = "aiohttp"</code></td>
+<td>آپلود فایل با</td>
+</tr>
+<tr>
+<td><code>show_progress</code></td>
+<td><code>bool = True</code></td>
+<td>نمایشش آپلود شدن فایل</td>
+</tr>
+<tr>
+<td><code>chunk_size</code></td>
+<td><code>int = 64 * 1024</code></td>
+<td>سایز چانک های ارسالی</td>
+</tr>
+</tbody>
+</table></div></div>
+<ul>
+<li>خروجی</li>
+</ul>
+<div class="md-typeset__scrollwrap"><div class="md-typeset__table"><table>
+<thead>
+<tr>
+<th>فیلد</th>
+<th>نوع</th>
+<th>توضیحات</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>msg_update</code></td>
+<td><a href="../models/index.html#msg_update">msg_update</a></td>
+<td>اطلاعات پیام</td>
+</tr>
+</tbody>
+</table></div></div>
+<ul>
+<li>مثال</li>
+</ul>
+<div class="tabbed-set tabbed-alternate" data-tabs="16:4" style="--md-indicator-x:741px; --md-indicator-width:82px;">
+<input checked="checked" id="__tabbed_17.1_1" name="__tabbed_17.1" type="radio"/>
+<input id="__tabbed_17.1_2" name="__tabbed_17.1" type="radio"/>
+<input id="__tabbed_17.1_3" name="__tabbed_17.1" type="radio"/>
+<input id="__tabbed_17.1_4" name="__tabbed_17.1" type="radio"/>
+<div class="tabbed-labels"><label for="__tabbed_17_1">Python</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block" style="text-align: left;">
+<textarea class="code-block-py">sending = await bot.send_file("chat id", "test.json", name_file="data.json", text="this is a caption")
+sending2 = await bot.send_image("chat id", "test.png", name_file="picture.png", text="this is a caption")
+print(sending)
+print(sending2)</textarea>
+</div>
+</div>
+</div>
+
+<h2 id="request_send_file">ارسال درخواست فایل<a class="headerlink" href="#request_send_file" title="Permanent link"></a></h2>
+<ul>
+<li>متد : <code>request_send_file</code></li>
+<li>ورودی</li>
+</ul>
+<div class="md-typeset__scrollwrap"><div class="md-typeset__table"><table>
+<thead>
+<tr>
+<th>فیلد</th>
+<th>نوع</th>
+<th>توضیحات</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>type</code></td>
+<td><code>"File" | "Image" | "Voice" | "Music" | "Gif" | "Video" = "File"</code></td>
+<td>نوع فایل</td>
+</tr>
+</tbody>
+</table></div></div>
+<ul>
+<li>خروجی</li>
+</ul>
+<div class="md-typeset__scrollwrap"><div class="md-typeset__table"><table>
+<thead>
+<tr>
+<th>فیلد</th>
+<th>نوع</th>
+<th>توضیحات</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>dict["upload_url": str]</code></td>
+<td>دیکشنری ادرس آپلود</td>
+<td>ندارد</td>
+</tr>
+</tbody>
+</table></div></div>
+<ul>
+<li>مثال</li>
+</ul>
+<div class="tabbed-set tabbed-alternate" data-tabs="16:4" style="--md-indicator-x:741px; --md-indicator-width:82px;">
+<input checked="checked" id="__tabbed_17.5_1" name="__tabbed_17.5" type="radio"/>
+<input id="__tabbed_17.5_2" name="__tabbed_17.5" type="radio"/>
+<input id="__tabbed_17.5_3" name="__tabbed_17.5" type="radio"/>
+<input id="__tabbed_17.5_4" name="__tabbed_17.5" type="radio"/>
+<div class="tabbed-labels"><label for="__tabbed_17_1">Python</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block" style="text-align: left;">
+<textarea class="code-block-py">request = await bot.request_send_file("Image")
+print(request)</textarea>
+</div>
+</div>
+</div>
+
+<h2 id="send_file_by_file_id">ارسال فایل با آیدی<a class="headerlink" href="#send_file_by_file_id" title="Permanent link"></a></h2>
+<ul>
+<li>متد : <code>send_file_by_file_id</code></li>
+<li>ورودی</li>
+</ul>
+<div class="md-typeset__scrollwrap"><div class="md-typeset__table"><table>
+<thead>
+<tr>
+<th>فیلد</th>
+<th>نوع</th>
+<th>توضیحات</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>chat_id</code></td>
+<td><code>str</code></td>
+<td>چت آیدی</td>
+</tr>
+<tr>
+<td><code>file_id</code></td>
+<td><code>str</code></td>
+<td>فایل آیدی</td>
+</tr>
+<tr>
+<td><code>text</code></td>
+<td><code>str | None</code></td>
+<td>متن</td>
+</tr>
+<tr>
+<td><code>reply_to_message_id</code></td>
+<td><code>str | None</code></td>
+<td>در جواب؟</td>
+</tr>
+<tr>
+<td><code>disable_notification</code></td>
+<td><code>bool | None = None</code></td>
+<td>غیرفعال کردن اعلان</td>
+</tr>
+<tr>
+<td><code>auto_delete</code></td>
+<td><code>int | None = None</code></td>
+<td>پاک شدن خودکار</td>
+</tr>
+<tr>
+<td><code>parse_mode</code></td>
+<td><code>"Markdown" | "HTML" = "Markdown"</code></td>
+<td>پارس مود</td>
+</tr>
+<tr>
+<td><code>meta_data</code></td>
+<td><code>list = []</code></td>
+<td>متادیتا</td>
+</tr>
+<tr>
+<td><code>inline_keypad</code></td>
+<td><code>list | None = None</code></td>
+<td>دکمه شیشه ای(کیپد اینلاین)</td>
+</tr>
+<tr>
+<td><code>keypad</code></td>
+<td><code>list | None = None</code></td>
+<td>دکمه کیبورد(کیپد)</td>
+</tr>
+<tr>
+<td><code>resize_keyboard</code></td>
+<td><code>bool = True</code></td>
+<td>تنظیم خودکار اندازه کیپد</td>
+</tr>
+<tr>
+<td><code>on_time_keyboard</code></td>
+<td><code>bool = False</code></td>
+<td>پاک شدن کیپد کیبورد بعد از یکبار کلیک</td>
+</tr>
+
+</tbody>
+</table></div></div>
+<ul>
+<li>خروجی</li>
+</ul>
+<div class="md-typeset__scrollwrap"><div class="md-typeset__table"><table>
+<thead>
+<tr>
+<th>فیلد</th>
+<th>نوع</th>
+<th>توضیحات</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>msg_update</code></td>
+<td><a href="../models/index.html#msg_update">msg_update</a></td>
+<td>اطلاعات پیام</td>
+</tr>
+</tbody>
+</table></div></div>
+<ul>
+<li>مثال</li>
+</ul>
+<div class="tabbed-set tabbed-alternate" data-tabs="16:4" style="--md-indicator-x:741px; --md-indicator-width:82px;">
+<input checked="checked" id="__tabbed_17.75_1" name="__tabbed_17.75" type="radio"/>
+<input id="__tabbed_17.75_2" name="__tabbed_17.75" type="radio"/>
+<input id="__tabbed_17.75_3" name="__tabbed_17.75" type="radio"/>
+<input id="__tabbed_17.75_4" name="__tabbed_17.75" type="radio"/>
+<div class="tabbed-labels"><label for="__tabbed_17_1">Python</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block" style="text-align: left;">
+<textarea class="code-block-py">sending = await bot.send_file_by_file_id("chat id", "file id")
+print(sending)</textarea>
+</div>
+</div>
+</div>
+
+<h2 id="send-sticker">ارسال استیکر<a class="headerlink" href="#send-sticker" title="Permanent link"></a></h2>
+<ul>
+<li>متد : <code>send_sticker</code></li>
+<li>ورودی</li>
+</ul>
+<div class="md-typeset__scrollwrap"><div class="md-typeset__table"><table>
+<thead>
+<tr>
+<th>فیلد</th>
+<th>نوع</th>
+<th>توضیحات</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>chat_id</code></td>
+<td><code>str</code></td>
+<td>چت آیدی</td>
+</tr>
+<tr>
+<td><code>id_sticker</code></td>
+<td><code>str</code></td>
+<td>آیدی استیکر</td>
+</tr>
+<tr>
+<td><code>reply_to_message_id</code></td>
+<td><code>str | None</code></td>
+<td>در جواب ؟</td>
+</tr>
+<tr>
+<td><code>disable_notification</code></td>
+<td><code>bool | None</code></td>
+<td>غیرفعال کردن اعلان؟  (پیشفرض false)</td>
+</tr>
+<tr>
+<td><code>auto_delete</code></td>
+<td><code>int | None</code></td>
+<td>پاکسازی خودکار پیام پس از مدتی(ثانیه)</td>
+</tr>
+</tbody>
+</table></div></div>
+<ul>
+<li>خروجی</li>
+</ul>
+<div class="md-typeset__scrollwrap"><div class="md-typeset__table"><table>
+<thead>
+<tr>
+<th>فیلد</th>
+<th>نوع</th>
+<th>توضیحات</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>msg_update</code></td>
+<td><a href="../models/index.html#msg_update">msg_update</a></td>
+<td>اطلاعات پیام</td>
+</tr>
+</tbody>
+</table></div></div>
+<ul>
+<li>مثال</li>
+</ul>
+<div class="tabbed-set tabbed-alternate" data-tabs="16:4" style="--md-indicator-x:741px; --md-indicator-width:82px;">
+<input checked="checked" id="__tabbed_17_1" name="__tabbed_17" type="radio"/>
+<input id="__tabbed_17_2" name="__tabbed_17" type="radio"/>
+<input id="__tabbed_17_3" name="__tabbed_17" type="radio"/>
+<input id="__tabbed_17_4" name="__tabbed_17" type="radio"/>
+<div class="tabbed-labels"><label for="__tabbed_17_1">Python</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block" style="text-align: left;">
+<textarea class="code-block-py">sending = await bot.send_sticker("chat id", "sticker id")
+print(sending)</textarea>
+</div>
+</div>
+</div>
+
+<h2 id="download">دانلود فایل<a class="headerlink" href="#download" title="Permanent link"></a></h2>
+<ul>
+<li>متد : <code>download_file</code></li>
+<li>ورودی</li>
+</ul>
+<div class="md-typeset__scrollwrap"><div class="md-typeset__table"><table>
+<thead>
+<tr>
+<th>فیلد</th>
+<th>نوع</th>
+<th>توضیحات</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>id_file</code></td>
+<td><code>str</code></td>
+<td>فایل آیدی</td>
+</tr>
+<tr>
+<td><code>path</code></td>
+<td><code>str</code></td>
+<td>آدرس ذخیره</td>
+</tr>
+<tr>
+<td><code>show_progress</code></td>
+<td><code>bool = True</code></td>
+<td>نمایشش دانلود شدن</td>
+</tr>
+</tbody>
+</table></div></div>
+<ul>
+<li>مثال</li>
+</ul>
+<div class="tabbed-set tabbed-alternate" data-tabs="18:4" style="--md-indicator-x:741px; --md-indicator-width:82px;">
+<input checked="checked" id="__tabbed_18_1" name="__tabbed_18" type="radio"/>
+<input id="__tabbed_18_2" name="__tabbed_18" type="radio"/>
+<input id="__tabbed_18_3" name="__tabbed_18" type="radio"/>
+<input id="__tabbed_18_4" name="__tabbed_18" type="radio"/>
+<div class="tabbed-labels"><label for="__tabbed_18_1">Python</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block" style="text-align: left;">
+<textarea class="code-block-py">await bot.download_file("file id","test.txt")</textarea>
+</div>
+</div>
+</div>
+<h2 id="get_url_file">گرفتن لینک دانلود فایل<a class="headerlink" href="#get_url_file" title="Permanent link"></a></h2>
+<ul>
+<li>متد : <code>get_download_file_url</code></li>
+<li>ورودی</li>
+</ul>
+<div class="md-typeset__scrollwrap"><div class="md-typeset__table"><table>
+<thead>
+<tr>
+<th>فیلد</th>
+<th>نوع</th>
+<th>توضیحات</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>id_file</code></td>
+<td><code>str</code></td>
+<td>فایل آیدی</td>
+</tr>
+</tbody>
+</table></div></div>
+<ul>
+<li>خروجی</li>
+</ul>
+<div class="md-typeset__scrollwrap"><div class="md-typeset__table"><table>
+<thead>
+<tr>
+<th>نوع</th>
+<th>توضیحات</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>str</td>
+<td>لینک دانلود</td>
+</tr>
+</tbody>
+</table></div></div>
+<ul>
+<li>مثال</li>
+</ul>
+<div class="tabbed-set tabbed-alternate" data-tabs="19:4" style="--md-indicator-x:741px; --md-indicator-width:82px;">
+<input checked="checked" id="__tabbed_19_1" name="__tabbed_19" type="radio"/>
+<input id="__tabbed_19_2" name="__tabbed_19" type="radio"/>
+<input id="__tabbed_19_3" name="__tabbed_19" type="radio"/>
+<input id="__tabbed_19_4" name="__tabbed_19" type="radio"/>
+<div class="tabbed-labels"><label for="__tabbed_19_1">Python</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block" style="text-align: left;">
+<textarea class="code-block-py">url = await bot.get_download_file_url("file id")
+print(url)</textarea>
+</div>
+</div>
+</div>
+<h2 id="version_botapi">نسخه BotApi<a class="headerlink" href="#version_botapi" title="Permanent link"></a></h2>
+<ul>
+<li>متد : <code>version_botapi</code></li>
+<li>مثال</li>
+</ul>
+<ul>
+<li>خروجی</li>
+</ul>
+<div class="md-typeset__scrollwrap"><div class="md-typeset__table"><table>
+<thead>
+<tr>
+<th>نوع</th>
+<th>توضیحات</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>str</td>
+<td>نسخه BotApi</td>
+</tr>
+</tbody>
+</table></div></div>
+<div class="tabbed-set tabbed-alternate" data-tabs="20:4" style="--md-indicator-x:741px; --md-indicator-width:82px;">
+<input checked="checked" id="__tabbed_20_1" name="__tabbed_20" type="radio"/>
+<input id="__tabbed_20_2" name="__tabbed_20" type="radio"/>
+<input id="__tabbed_20_3" name="__tabbed_20" type="radio"/>
+<input id="__tabbed_20_4" name="__tabbed_20" type="radio"/>
+<div class="tabbed-labels"><label for="__tabbed_20_1">Python</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block" style="text-align: left;">
+<textarea class="code-block-py">version = await bot.version_botapi()
+print(version)</textarea>
+</div>
+</div>
+</div>
+<h2 id="auto_delete">پاکسازی خودکار پیام<a class="headerlink" href="#auto_delete" title="Permanent link"></a></h2>
+<ul>
+<li>متد : <code>auto_delete</code></li>
+<li>ورودی ها</li>
+</ul>
+<div class="md-typeset__scrollwrap"><div class="md-typeset__table"><table>
+<thead>
+<tr>
+<th>فیلد</th>
+<th>نوع</th>
+<th>توضیحات</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>chat_id</code></td>
+<td><code>str</code></td>
+<td>چت آیدی</td>
+</tr>
+<tr>
+<td><code>message_id</code></td>
+<td><code>str</code></td>
+<td>مسیج آیدی</td>
+</tr>
+<tr>
+<td><code>time_sleep</code></td>
+<td><code>float</code></td>
+<td>زمان ایستادن قبل از پاکسازی پیام</td>
+</tr>
+<tr>
+<td><code>separate_task</code></td>
+<td><code>bool = False</code></td>
+<td>ساخت تسک جدا</td>
+</tr>
+</tbody>
+</table></div></div>
+<ul>
+<li>مثال</li>
+</ul>
+<div class="tabbed-set tabbed-alternate" data-tabs="23:4" style="--md-indicator-x:741px; --md-indicator-width:82px;">
+<input checked="checked" id="__tabbed_23_1" name="__tabbed_23" type="radio"/>
+<input id="__tabbed_23_2" name="__tabbed_23" type="radio"/>
+<input id="__tabbed_23_3" name="__tabbed_23" type="radio"/>
+<input id="__tabbed_23_4" name="__tabbed_23" type="radio"/>
+<div class="tabbed-labels"><label for="__tabbed_23_1">Python</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block" style="text-align: left;">
+<textarea class="code-block-py">await bot.auto_delete("b...","message id",30)</textarea>
+</div>
+</div>
+</div>
+
+<h2 id="auto_edit">ویرایش خودکار پیام<a class="headerlink" href="#auto_edit" title="Permanent link"></a></h2>
+<ul>
+<li>متد : <code>auto_edit</code></li>
+<li>ورودی ها</li>
+</ul>
+<div class="md-typeset__scrollwrap"><div class="md-typeset__table"><table>
+<thead>
+<tr>
+<th>فیلد</th>
+<th>نوع</th>
+<th>توضیحات</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>chat_id</code></td>
+<td><code>str</code></td>
+<td>چت آیدی</td>
+</tr>
+<tr>
+<td><code>message_id</code></td>
+<td><code>str</code></td>
+<td>مسیج آیدی</td>
+</tr>
+<tr>
+<td><code>text</code></td>
+<td><code>str</code></td>
+<td>متن جدید</td>
+</tr>
+<tr>
+<td><code>aute_edit</code></td>
+<td><code>float</code></td>
+<td>زمان ایستادن قبل از ویرایش پیام</td>
+</tr>
+<tr>
+<td><code>inline_keypad</code></td>
+<td><code>list | None</code></td>
+<td>دکمه شیشه ای(اینلاین کیپد)</td>
+</tr>
+<tr>
+<td><code>parse_mode</code></td>
+<td><code>"Markdown" | "HTML" = "Markdown"</code></td>
+<td>پارس مود</td>
+</tr>
+<tr>
+<td><code>meta_data</code></td>
+<td><code>list = []</code></td>
+<td>متادیتا</td>
+</tr>
+<tr>
+<td><code>separate_task</code></td>
+<td><code>bool = False</code></td>
+<td>ساخت تسک جدا</td>
+</tr>
+</tbody>
+</table></div></div>
+<ul>
+<li>مثال</li>
+</ul>
+<div class="tabbed-set tabbed-alternate" data-tabs="23:4" style="--md-indicator-x:741px; --md-indicator-width:82px;">
+<input checked="checked" id="__tabbed_24_1" name="__tabbed_24" type="radio"/>
+<input id="__tabbed_24_2" name="__tabbed_24" type="radio"/>
+<input id="__tabbed_24_3" name="__tabbed_24" type="radio"/>
+<input id="__tabbed_24_4" name="__tabbed_24" type="radio"/>
+<div class="tabbed-labels"><label for="__tabbed_23_1">Python</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block" style="text-align: left;">
+<textarea class="code-block-py">await bot.auto_edit("b...","message id","new text",20)</textarea>
+</div>
+</div>
+</div>
+
+<h2 id="get_message">گرفتن پیام با آیدی<a class="headerlink" href="#get_message" title="Permanent link"></a></h2>
+<ul>
+<li>متد : <code>get_message</code></li>
+<li>ورودی ها</li>
+</ul>
+<div class="md-typeset__scrollwrap"><div class="md-typeset__table"><table>
+<thead>
+<tr>
+<th>فیلد</th>
+<th>نوع</th>
+<th>توضیحات</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>chat_id</code></td>
+<td><code>str</code></td>
+<td>چت آیدی</td>
+</tr>
+<tr>
+<td><code>message_id</code></td>
+<td><code>str</code></td>
+<td>مسیج آیدی</td>
+</tr>
+<tr>
+<td><code>limit_search</code></td>
+<td><code>int = 100</code></td>
+<td>محدودیت جستجو</td>
+</tr>
+<tr>
+<td><code>search_by</code></td>
+<td><code>"messages" | "get_updates" | "all" = "all"</code></td>
+<td>جستجو پیام در بین</td>
+</tr>
+</tbody>
+</table></div></div>
+<ul>
+<li>خروجی</li>
+</ul>
+<div class="md-typeset__scrollwrap"><div class="md-typeset__table"><table>
+<thead>
+<tr>
+<th>فیلد</th>
+<th>نوع</th>
+<th>توضیحات</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Message</code></td>
+<td><a href="../models/index.html#Message">Message</a> | None</td>
+<td>پیام</td>
+</tr>
+</tbody>
+</table></div></div>
+<ul>
+<li>مثال</li>
+</ul>
+<div class="tabbed-set tabbed-alternate" data-tabs="23:4" style="--md-indicator-x:741px; --md-indicator-width:82px;">
+<input checked="checked" id="__tabbed_25_1" name="__tabbed_25" type="radio"/>
+<input id="__tabbed_25_2" name="__tabbed_25" type="radio"/>
+<input id="__tabbed_25_3" name="__tabbed_25" type="radio"/>
+<input id="__tabbed_25_4" name="__tabbed_25" type="radio"/>
+<div class="tabbed-labels"><label for="__tabbed_23_1">Python</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block" style="text-align: left;">
+<textarea class="code-block-py">msg = await bot.get_message("b...","message id")
+if msg:
+    print("پیام » ")
+    print(msg)
+else:
+    print("پیام پیدا نشد !")</textarea>
+</div>
+</div>
+</div>
+
+<h2 id="get_messages">گرفتن پیام های قبل یک پیام<a class="headerlink" href="#get_messages" title="Permanent link"></a></h2>
+<ul>
+<li>متد : <code>get_messages</code></li>
+<li>ورودی ها</li>
+</ul>
+<div class="md-typeset__scrollwrap"><div class="md-typeset__table"><table>
+<thead>
+<tr>
+<th>فیلد</th>
+<th>نوع</th>
+<th>توضیحات</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>chat_id</code></td>
+<td><code>str</code></td>
+<td>چت آیدی</td>
+</tr>
+<tr>
+<td><code>message_id</code></td>
+<td><code>str</code></td>
+<td>مسیج آیدی</td>
+</tr>
+<tr>
+<td><code>limit_search</code></td>
+<td><code>int = 100</code></td>
+<td>محدودیت جستجو</td>
+</tr>
+<tr>
+<td><code>get_befor</code></td>
+<td><code>int = 10</code></td>
+<td>تعداد پیام های قبل مسیج آیدی وارد شده</td>
+</tr>
+<tr>
+<td><code>search_by</code></td>
+<td><code>"messages" | "get_updates" | "all" = "all"</code></td>
+<td>جستجو پیام در بین</td>
+</tr>
+</tbody>
+</table></div></div>
+<ul>
+<li>خروجی</li>
+</ul>
+<div class="md-typeset__scrollwrap"><div class="md-typeset__table"><table>
+<thead>
+<tr>
+<th>فیلد</th>
+<th>نوع</th>
+<th>توضیحات</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Messages</code></td>
+<td>List[<a href="../models/index.html#Message">Message</a>] | None</td>
+<td>لیست پیام ها</td>
+</tr>
+</tbody>
+</table></div></div>
+<ul>
+<li>مثال</li>
+</ul>
+<div class="tabbed-set tabbed-alternate" data-tabs="23:4" style="--md-indicator-x:741px; --md-indicator-width:82px;">
+<input checked="checked" id="__tabbed_26_1" name="__tabbed_26" type="radio"/>
+<input id="__tabbed_26_2" name="__tabbed_26" type="radio"/>
+<input id="__tabbed_26_3" name="__tabbed_26" type="radio"/>
+<input id="__tabbed_26_4" name="__tabbed_26" type="radio"/>
+<div class="tabbed-labels"><label for="__tabbed_23_1">Python</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block" style="text-align: left;">
+<textarea class="code-block-py">msgs = await bot.get_messages("b...","message id")
+if msgs:
+    print("لیست پیام ها » ")
+    print(msgs)
+else:
+    print("پیام پیدا نشد !")</textarea>
+</div>
+</div>
+</div>
+
+
+<h2 id="ban_chat_member">مسدودی عضو چت<a class="headerlink" href="#ban_chat_member" title="Permanent link"></a></h2>
+<ul>
+<li>متد : <code>ban_chat_member</code></li>
+<li>ورودی ها</li>
+</ul>
+<div class="md-typeset__scrollwrap"><div class="md-typeset__table"><table>
+<thead>
+<tr>
+<th>فیلد</th>
+<th>نوع</th>
+<th>توضیحات</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>chat_id</code></td>
+<td><code>str</code></td>
+<td>چت آیدی</td>
+</tr>
+<tr>
+<td><code>user_id</code></td>
+<td><code>str</code></td>
+<td>یوزر آیدی(سندر آیدی)</td>
+</tr>
+</tbody>
+</table></div></div>
+<ul>
+<li>مثال</li>
+</ul>
+<div class="tabbed-set tabbed-alternate" data-tabs="23:4" style="--md-indicator-x:741px; --md-indicator-width:82px;">
+<input checked="checked" id="__tabbed_27_1" name="__tabbed_27" type="radio"/>
+<input id="__tabbed_27_2" name="__tabbed_27" type="radio"/>
+<input id="__tabbed_27_3" name="__tabbed_27" type="radio"/>
+<input id="__tabbed_27_4" name="__tabbed_27" type="radio"/>
+<div class="tabbed-labels"><label for="__tabbed_23_1">Python</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block" style="text-align: left;">
+<textarea class="code-block-py">await bot.ban_chat_member("chat id","user id")</textarea>
+</div>
+</div>
+</div>
+
+<h2 id="unban_chat_member">رفع مسدودی عضو چت<a class="headerlink" href="#unban_chat_member" title="Permanent link"></a></h2>
+<ul>
+<li>متد : <code>unban_chat_member</code></li>
+<li>ورودی ها</li>
+</ul>
+<div class="md-typeset__scrollwrap"><div class="md-typeset__table"><table>
+<thead>
+<tr>
+<th>فیلد</th>
+<th>نوع</th>
+<th>توضیحات</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>chat_id</code></td>
+<td><code>str</code></td>
+<td>چت آیدی</td>
+</tr>
+<tr>
+<td><code>user_id</code></td>
+<td><code>str</code></td>
+<td>یوزر آیدی(سندر آیدی)</td>
+</tr>
+</tbody>
+</table></div></div>
+<ul>
+<li>مثال</li>
+</ul>
+<div class="tabbed-set tabbed-alternate" data-tabs="23:4" style="--md-indicator-x:741px; --md-indicator-width:82px;">
+<input checked="checked" id="__tabbed_28_1" name="__tabbed_28" type="radio"/>
+<input id="__tabbed_28_2" name="__tabbed_28" type="radio"/>
+<input id="__tabbed_28_3" name="__tabbed_28" type="radio"/>
+<input id="__tabbed_28_4" name="__tabbed_28" type="radio"/>
+<div class="tabbed-labels"><label for="__tabbed_23_1">Python</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block" style="text-align: left;">
+<textarea class="code-block-py">await bot.unban_chat_member("chat id","user id")</textarea>
+</div>
+</div>
+</div>
+
+
+
+</article>
+</div>
+</div>
+</main>
+</div>
+<footer class="md-footer">
+<nav aria-label="Footer" class="md-footer__inner md-grid">
+<a aria-label="قبلی: معرفی" class="md-footer__link md-footer__link--prev" href="../index.html" rel="prev">
+<div class="md-footer__button md-icon">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"></path></svg>
+</div>
+<div class="md-footer__title">
+<div class="md-ellipsis">
+<span class="md-footer__direction">قبلی</span>
+              معرفی
+            </div>
+</div>
+</a>
+<a aria-label="بعدی: مدل ها" class="md-footer__link md-footer__link--next" href="../models/index.html" rel="next">
+<div class="md-footer__title">
+<div class="md-ellipsis">
+<span class="md-footer__direction">بعدی</span>
+              مدل ها
+            </div>
+</div>
+<div class="md-footer__button md-icon">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4Z"></path></svg>
+</div>
+</a>
+</nav>
+</footer>
+<div class="md-dialog" data-md-component="dialog">
+<div class="md-dialog__inner md-typeset"></div>
+</div>
+<script id="__config" type="application/json">{"base": "..", "features": ["search.suggest", "search.highlight", "content.tabs.link"], "search": "../assets/javascripts/workers/search.5bf1dace.min.js", "translations": {"clipboard.copied": "\u06a9\u067e\u06cc \u0634\u062f", "clipboard.copy": "\u06a9\u067e\u06cc \u06a9\u0631\u062f\u0646", "search.config.lang": "en", "search.config.pipeline": " ", "search.config.separator": "[\\s\\-]+", "search.placeholder": "\u062c\u0633\u062a\u062c\u0648", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "\u0633\u0646\u062f\u06cc \u06cc\u0627\u0641\u062a \u0646\u0634\u062f", "search.result.one": "1 \u0633\u0646\u062f \u06cc\u0627\u0641\u062a \u0634\u062f", "search.result.other": "# \u0633\u0646\u062f \u06cc\u0627\u0641\u062a \u0634\u062f", "search.result.placeholder": "\u0628\u0631\u0627\u06cc \u0634\u0631\u0648\u0639 \u062c\u0633\u062a\u062c\u0648 \u062a\u0627\u06cc\u067e \u06a9\u0646\u06cc\u062f", "search.result.term.missing": "Missing", "select.version.title": "Select version"}}</script>
+<script>
+  document.querySelectorAll(".code-block-py").forEach(function(el) {
+    CodeMirror.fromTextArea(el, {
+      mode: "python",
+      theme: "monokai",
+      lineNumbers: true,
+      readOnly: true
+    });
+  });
+</script>
+<script src="../bundle.37e9125f.min.js"></script>
+<script src="../termynal.js"></script>
+<script src="../custom.js"></script>
+<script defer="" src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+<script defer="" src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/python/python.min.js"></script>
+<script>
+    (function() {
+      function createHeader(container, labelText) {
+        var header = document.createElement('div');
+        header.className = 'code-header';
+        var label = document.createElement('div');
+        label.className = 'language-label';
+        label.textContent = labelText || 'Python';
+        var btn = document.createElement('button');
+        btn.className = 'copy-btn';
+        btn.textContent = 'کپی';
+        header.appendChild(label);
+        header.appendChild(btn);
+        container.insertBefore(header, container.firstChild);
+        return btn;
+      }
+      function wrapWithContainer(el) {
+        var container = document.createElement('div');
+        container.className = 'code-container';
+        el.parentNode.insertBefore(container, el);
+        container.appendChild(el);
+        return container;
+      }
+      function initTextareas() {
+        document.querySelectorAll('textarea.code-block-py').forEach(function (el) {
+          var w = wrapWithContainer(el);
+          var cm = CodeMirror.fromTextArea(el, {
+            mode: 'python', theme: 'monokai', lineNumbers: true, readOnly: true, lineWrapping: true
+          });
+          var wrapper = cm.getWrapperElement();
+          wrapper.style.maxHeight = '440px'; wrapper.style.width = '100%';
+          var copyBtn = createHeader(w, 'Python');
+          copyBtn.addEventListener('click', function() {
+            var txt = cm.getValue();
+            if (!navigator.clipboard) {
+              var ta = document.createElement('textarea'); ta.value = txt; document.body.appendChild(ta);
+              ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
+            } else { navigator.clipboard.writeText(txt); }
+            copyBtn.textContent = 'کپی شد!'; setTimeout(function(){ copyBtn.textContent = 'کپی'; }, 1200);
+          });
+          w.insertBefore(wrapper, w.querySelector('.code-header').nextSibling);
+        });
+      }
+      function initPreBlocks() {
+        var nodes = Array.prototype.slice.call(document.querySelectorAll('pre.code-block, pre > code.language-python'));
+        nodes.forEach(function(node) {
+          var isCode = node.tagName === 'CODE';
+          var pre = isCode ? node.parentElement : node;
+          if (!pre || pre.dataset.enhanced === '1') return;
+          pre.dataset.enhanced = '1';
+          var codeEl = isCode ? node : (pre.querySelector('code') || pre);
+          var raw = (codeEl.textContent || '').replace(/\u00a0/g, ' ').trim();
+          var container = wrapWithContainer(pre);
+          var mount = document.createElement('div');
+          container.replaceChild(mount, pre);
+          var cm = CodeMirror(mount, {
+            value: raw, mode: 'python', theme: 'monokai', lineNumbers: true, readOnly: true, lineWrapping: true
+          });
+          var wrapper = cm.getWrapperElement();
+          wrapper.style.maxHeight = '440px'; wrapper.style.width = '100%';
+          var copyBtn = createHeader(container, 'Python');
+          copyBtn.addEventListener('click', function() {
+            var txt = cm.getValue();
+            if (!navigator.clipboard) {
+              var ta = document.createElement('textarea'); ta.value = txt; document.body.appendChild(ta);
+              ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
+            } else { navigator.clipboard.writeText(txt); }
+            copyBtn.textContent = 'کپی شد!'; setTimeout(function(){ copyBtn.textContent = 'کپی'; }, 1200);
+          });
+          container.insertBefore(wrapper, container.querySelector('.code-header').nextSibling);
+        });
+      }
+      function enhance() {
+        if (!window.CodeMirror) return;
+        initTextareas();
+        initPreBlocks();
+      }
+      window.addEventListener('load', enhance);
+    })();
+  </script>
+</body>
+</html>

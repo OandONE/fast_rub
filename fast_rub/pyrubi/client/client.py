@@ -1,0 +1,843 @@
+from ..methods import Methods
+from typing import Literal
+
+from ...core.async_sync import *
+from ..filters import Filter
+
+class Client:
+    def __init__(
+        self,
+        session: str | None = None,
+        auth: str | None = None,
+        private: str | None = None,
+        platform: Literal["web", "rubx", "android", "PWA"] = "web",
+        api_version: int = 6,
+        proxy: str | None = None,
+        time_out: int = 10,
+        show_progress_bar: bool = True,
+        run_start: bool = True # = False Version 7
+    ):
+        
+        self.session = session
+        self.platform = platform
+        self.apiVersion = api_version
+        self.proxy = proxy
+        self.timeOut = time_out
+        self.auth = auth
+        self.private = private
+        self.show_progress_bar = show_progress_bar
+        self._is_started = False
+        if run_start:
+            asyncio.run(self.start())
+
+
+    # propertys
+    
+    @property
+    def AUTH(self):
+        return self.auth
+    
+    @property
+    def private_key(self):
+        return self.private
+
+    # Authentication methods
+
+    
+    async def start(self):
+        self._is_started = True
+        if self.session:
+            from ..sessions import Sessions
+            self.sessions = Sessions(self)
+
+            if self.sessions.cheackSessionExists():
+                self.sessionData = self.sessions.loadSessionData()
+            else:
+                self.sessionData = await self.sessions.createSession()
+        else:
+            from ..utils import Utils
+            self.sessionData = {
+                "auth": self.auth,
+                "private_key": Utils.privateParse(private=self.private) if self.private else None
+            }
+        self.auth = self.sessionData["auth"]
+        self.private = self.sessionData["private_key"]
+        self.methods = Methods(
+            sessionData=self.sessionData,
+            platform=self.platform,
+            apiVersion=self.apiVersion,
+            proxy=self.proxy,
+            timeOut=self.timeOut,
+            showProgressBar=self.show_progress_bar
+        )
+    
+    
+    async def send_code(self, phone_number:str, pass_key:str | None = None) -> dict:
+        return await self.methods.sendCode(phoneNumber=phone_number, passKey=pass_key)
+    
+    
+    async def sign_in(self, phone_number:str, phone_code_hash:str, phone_code:str) -> dict:
+        return await self.methods.signIn(phoneNumber=phone_number, phoneCodeHash=phone_code_hash, phoneCode=phone_code)
+    
+    
+    async def register_device(self, device_model:str) -> dict:
+        return await self.methods.registerDevice(deviceModel=device_model)
+    
+    
+    async def logout(self) -> dict:
+        return await self.methods.logout()
+    
+    # Chats methods
+
+    
+    async def get_chats(self, start_id:str | None = None) -> dict:
+        return await self.methods.getChats(startId=start_id)
+    
+    
+    async def get_object_by_username(self,user_name: str) -> dict:
+        return await self.methods.getObjectByUsername(user_name)
+
+    
+    async def get_top_users(self) -> dict:
+        return await self.methods.getTopChatUsers()
+    
+    
+    async def remove_from_top_users(self, object_guid:str) -> dict:
+        return await self.methods.removeFromTopChatUsers(objectGuid=object_guid)
+    
+    
+    async def get_chat_ads(self) -> dict:
+        return await self.methods.getChatAds()
+    
+    
+    async def get_chats_updates(self) -> dict:
+        return await self.methods.getChatsUpdates()
+    
+    
+    async def join_chat(self, guid_or_link:str) -> dict:
+        return await self.methods.joinChat(guidOrLink=guid_or_link)
+
+    
+    async def action_on_join_request(self, object_guid: str, user_guid: str, action: Literal["Accept", "Reject"]):
+        return await self.methods.actionOnJoinRequest(objectGuid=object_guid, userGuid=user_guid, action=action)
+    
+    
+    async def get_join_requests(self, object_guid: str):
+        return await self.methods.getJoinRequests(objectGuid=object_guid)
+    
+    
+    async def leave_chat(self, object_guid:str) -> dict:
+        return await self.methods.leaveChat(objectGuid=object_guid)
+    
+    
+    async def remove_chat(self, object_guid:str) -> dict:
+        return await self.methods.removeChat(objectGuid=object_guid)
+    
+    
+    async def get_chat_info(self, object_guid:str) -> dict:
+        return await self.methods.getChatInfo(objectGuid=object_guid)
+    
+    
+    async def get_chat_info_by_username(self, username:str) -> dict:
+        return await self.methods.getChatInfoByUsername(username=username)
+
+    
+    async def get_link(self, object_guid:str) -> dict:
+        return await self.methods.getChatLink(objectGuid=object_guid)
+    
+    
+    async def set_link(self, object_guid:str) -> dict:
+        return await self.methods.setChatLink(objectGuid=object_guid)
+    
+    
+    async def set_admin(self, object_guid:str, member_guid:str, access_list:list | None, custom_title:str | None = None) -> dict:
+        return await self.methods.setChatAdmin(objectGuid=object_guid, memberGuid=member_guid, accessList=access_list, customTitle=custom_title, action="SetAdmin")
+    
+    
+    async def unset_admin(self, object_guid:str, member_guid:str) -> dict:
+        return await self.methods.setChatAdmin(objectGuid=object_guid, memberGuid=member_guid, accessList=None, customTitle=None, action="UnsetAdmin")
+    
+    
+    async def add_member(self, object_guid:str, member_guids:list |str) -> dict:
+        if isinstance(member_guids,str):
+            member_guids = [member_guids]
+        return await self.methods.addChatMember(objectGuid=object_guid, memberGuids=member_guids)
+
+    
+    async def ban_member(self, object_guid:str, member_guid:str) -> dict:
+        return await self.methods.banChatMember(objectGuid=object_guid, memberGuid=member_guid, action="Set")
+    
+    
+    async def unban_member(self, object_guid:str, member_guid:str) -> dict:
+        return await self.methods.banChatMember(objectGuid=object_guid, memberGuid=member_guid, action="Unset")
+    
+    
+    async def get_banned_members(self, object_guid:str, start_id:str | None = None) -> dict:
+        return await self.methods.getBannedChatMembers(objectGuid=object_guid, startId=start_id)
+
+    
+    async def get_all_members(self, object_guid:str, search_text:str | None = None, start_id:str | None = None, just_get_guids:bool=False) -> dict |list:
+        return await self.methods.getChatAllMembers(objectGuid=object_guid, searchText=search_text, startId=start_id, justGetGuids=just_get_guids)
+    
+    
+    async def get_admin_members(self, object_guid:str, start_id:str | None = None, just_get_guids:bool=False) -> dict |list:
+        return await self.methods.getChatAdminMembers(objectGuid=object_guid, startId=start_id, justGetGuids=just_get_guids)
+    
+    
+    async def user_is_admin(self, object_guid: str, user_guid: str):
+        return await self.methods.userIsAdmin(objectGuid=object_guid,userGuid=user_guid)
+    
+    
+    async def get_admin_access_list(self, object_guid:str, member_guid:str) -> dict:
+        return await self.methods.getChatAdminAccessList(objectGuid=object_guid, memberGuid=member_guid)
+    
+    
+    async def get_chat_preview(self, link:str) -> dict:
+        return await self.methods.chatPreviewByJoinLink(link=link)
+    
+    
+    async def create_voice_chat(self, object_guid:str) -> dict:
+        return await self.methods.createChatVoiceChat(objectGuid=object_guid)
+    
+    
+    async def join_voice_chat(self, object_guid:str, my_guid:str, voice_chat_id:str,sdp_offer_data:str) -> dict:
+        return await self.methods.joinVoiceChat(objectGuid=object_guid, myGuid=my_guid, voiceChatId=voice_chat_id,sdp_offer_data=sdp_offer_data)
+    
+    
+    async def set_voice_chat_setting(self, object_guid:str, voice_chat_id:str, title:str | None = None, join_mute:bool | None=None) -> dict:
+        return await self.methods.setChatVoiceChatSetting(objectGuid=object_guid, voideChatId=voice_chat_id, title=title, joinMuted=join_mute)
+    
+    
+    async def get_voice_chat_updates(self, object_guid:str, voice_chat_id:str) -> dict:
+        return await self.methods.getChatVoiceChatUpdates(objectGuid=object_guid, voideChatId=voice_chat_id)
+    
+    
+    async def get_voice_chat_participants(self, object_guid:str, voice_chat_id:str) -> dict:
+        return await self.methods.getChatVoiceChatParticipants(objectGuid=object_guid, voideChatId=voice_chat_id)
+    
+    
+    async def set_voice_chat_state(self, object_guid:str, voice_chat_id:str, activity:str,participantObjectGuid:str) -> dict:
+        return await self.methods.setChatVoiceChatState(objectGuid=object_guid, voideChatId=voice_chat_id, activity=activity,participantObjectGuid=participantObjectGuid)
+    
+    
+    async def send_voice_chat_activity(self, object_guid:str, voice_chat_id:str, activity:str, participant_object_guid:str) -> dict:
+        return await self.methods.sendChatVoiceChatActivity(objectGuid=object_guid, voideChatId=voice_chat_id, activity=activity, participantObjectGuid=participant_object_guid)    
+    
+    
+    async def leave_voice_chat(self, object_guid:str, voice_chat_id:str) -> dict:
+        return await self.methods.leaveChatVoiceChat(objectGuid=object_guid, voideChatId=voice_chat_id)
+    
+    
+    async def discard_voice_chat(self, object_guid:str, voice_chat_id:str) -> dict:
+        return await self.methods.discardChatVoiceChat(objectGuid=object_guid, voideChatId=voice_chat_id)
+    
+    
+    async def pin_chat(self, object_guid:str) -> dict:
+        return await self.methods.setActionChat(objectGuid=object_guid, action="Pin")
+    
+    
+    async def unpin_chat(self, object_guid:str) -> dict:
+        return await self.methods.setActionChat(objectGuid=object_guid, action="Unpin")
+    
+    
+    async def mute_chat(self, object_guid:str) -> dict:
+        return await self.methods.setActionChat(objectGuid=object_guid, action="Mute")
+    
+    
+    async def unmute_chat(self, object_guid:str) -> dict:
+        return await self.methods.setActionChat(objectGuid=object_guid, action="Unmute")
+    
+    
+    async def seen_chats(self, seen_list:dict) -> dict:
+        """
+        ```python
+
+        seen_list : dict = {"object_guid": "message_id", "object_guid": "message_id", ...}
+
+        ```
+        """
+        return await self.methods.seenChats(seenList=seen_list)
+    
+    
+    async def send_chat_activity(self, object_guid:str, activity:str) -> dict:
+        return await self.methods.sendChatActivity(objectGuid=object_guid, activity=activity)
+    
+    
+    async def search_chat_messages(self, object_guid:str, search_text:str) -> dict:
+        return await self.methods.searchChatMessages(objectGuid=object_guid, searchText=search_text)
+    
+    
+    async def upload_avatar(self, object_guid:str, main_file:str, thumbnail_file:str | None = None) -> dict | None:
+        return await self.methods.uploadAvatar(objectGuid=object_guid, mainFile=main_file, thumbnailFile=thumbnail_file)
+    
+    
+    async def getAvatars(self, object_guid:str) -> dict:
+        return await self.methods.getAvatars(objectGuid=object_guid)
+    
+    
+    async def delete_avatar(self, object_guid:str, avatar_id:str) -> dict:
+        return await self.methods.deleteAvatar(objectGuid=object_guid, avatarId=avatar_id)
+    
+    
+    async def delete_history(self, object_guid:str, last_message_id:str) -> dict:
+        return await self.methods.deleteChatHistory(objectGuid=object_guid, lastMessageId=last_message_id)
+    
+    
+    async def delete_user_chat(self, user_guid:str, last_deleted_message_id:str) -> dict:
+        return await self.methods.deleteUserChat(userGuid=user_guid, lastDeletedMessageId=last_deleted_message_id)
+    
+    
+    async def get_pending_owner(self, object_guid:str) -> dict:
+        return await self.methods.getPendingObjectOwner(objectGuid=object_guid)
+    
+    
+    async def request_change_owner(self, object_guid:str, member_guid:str) -> dict:
+        return await self.methods.requestChangeObjectOwner(objectGuid=object_guid, memberGuid=member_guid)
+    
+    
+    async def accept_request_owner(self, object_guid:str) -> dict:
+        return await self.methods.replyRequestObjectOwner(objectGuid=object_guid, action="Accept")
+    
+    
+    async def reject_request_owner(self, object_guid:str) -> dict:
+        return await self.methods.replyRequestObjectOwner(objectGuid=object_guid, action="Reject")
+    
+    
+    async def cancel_change_owner(self, object_guid:str) -> dict:
+        return await self.methods.cancelChangeObjectOwner(objectGuid=object_guid)
+    
+    
+    async def get_chat_reaction(self, object_guid:str, min_id:str, max_id:str) -> dict:
+        return await self.methods.getChatReaction(objectGuid=object_guid, minId=min_id, maxId=max_id)
+    
+    
+    async def report_chat(self, object_guid:str, description:str) -> dict:
+        return await self.methods.reportObject(objectGuid=object_guid, description=description)
+    
+    
+    async def set_chat_use_time(self, object_guid:str, time:int) -> dict:
+        return await self.methods.setChatUseTime(objectGuid=object_guid, time=time)
+    
+    # User methods
+    
+    
+    async def block_user(self, object_guid:str) -> dict:
+        return await self.methods.setBlockUser(objectGuid=object_guid, action="Block")
+    
+    
+    async def unblock_user(self, object_guid:str) -> dict:
+        return await self.methods.setBlockUser(objectGuid=object_guid, action="Unblock")
+    
+    
+    async def check_user_username(self, username:str) -> dict:
+        return await self.methods.checkUserUsername(username=username)
+    
+    # Group methods
+    
+    
+    async def add_group(self, title:str, member_guids:list) -> dict:
+        return await self.methods.addGroup(title=title, memberGuids=member_guids)
+    
+    
+    async def get_group_default_access(self, object_guid:str) -> dict:
+        return await self.methods.getGroupDefaultAccess(objectGuid=object_guid)
+    
+    
+    async def set_group_default_access(self, object_guid:str, access_list:list=[]) -> dict:
+        return await self.methods.setChatDefaultAccess(objectGuid=object_guid, accessList=access_list)
+
+    
+    async def get_group_mention_list(self, object_guid:str, search_mention:str) -> dict:
+        return await self.methods.getGroupMentionList(objectGuid=object_guid, searchMention=search_mention)
+    
+    
+    async def edit_group_info(self, object_guid:str, title:str | None = None, description:str | None = None, slow_mode:int | None=None, event_messages:bool | None=None, chat_history_for_new_members:bool | None=None, reaction_type:str | None = None, selected_reactions:list | None=None) -> dict:
+        return await self.methods.editGroupInfo(objectGuid=object_guid, title=title, description=description, slowMode=slow_mode, eventMessages=event_messages, chatHistoryForNewMembers=chat_history_for_new_members, reactionType=reaction_type, selectedReactions=selected_reactions)
+    
+    # Channels methods
+    
+    
+    async def add_channel(self, title:str, description:str | None = None, member_guids:list | None=None, private:bool=False) -> dict:
+        return await self.methods.addChannel(title=title, description=description, memberGuids=member_guids, private=private)
+
+    
+    async def edit_channel_info(self, object_guid:str, title:str | None = None, description:str | None = None, username:str | None = None, private:bool | None=None, sign_message:bool | None=None, reaction_type:str | None = None, selected_reactions:list | None=None) -> dict:
+        return await self.methods.editChannelInfo(objectGuid=object_guid, title=title, description=description, username=username, private=private, signMessages=sign_message, reactionType=reaction_type, selectedReactions=selected_reactions)
+    
+    
+    async def check_channel_username(self, username:str) -> dict:
+        return await self.methods.checkChannelUsername(username=username)
+    
+    
+    async def get_channel_seen_count(self, object_guid:str, min_id:str, max_id:str) -> dict:
+        return await self.methods.getChannelSeenCount(objectGuid=object_guid, minId=min_id, maxId=max_id)
+    
+    # Message methods
+    
+    
+    async def send_text(self, object_guid:str, text:str, message_id:str | None = None) -> dict:
+        return await self.methods.sendText(objectGuid=object_guid, text=text, messageId=message_id)
+    
+    
+    async def send_message(
+        self,
+        object_guid: str,
+        text: str | None = None,
+        message_id: str | None = None,
+        # file
+        file: str | None = None,
+        file_name: str | None = None,
+        type_file: Literal["Image", "Video", "Gif", "VideoMessage","Music", "Voice","File"] = "File",
+        is_spoil: bool = False,
+        custom_thumb_inline: str | None = None,
+        time: int | None = None,
+        performer: str | None = None,
+        # poll
+        question: str | None = None,
+        options: list | None = None,
+        type_poll: Literal["Regular", "Quiz"] = "Regular",
+        is_anonymous: bool = True,
+        correct_option_index: int | None = None,
+        allows_multiple_answers: bool = False,
+        hint: str | None = None,
+        # location
+        latitude: int | None = None,
+        longitude: int | None = None,
+        # contact
+        first_name: str | None = None,
+        last_name: str | None = None,
+        phone_number: str | None = None,
+        user_guid: str | None = None
+    ) -> dict | None:
+        return await self.methods.sendMessage(
+            objectGuid=object_guid,
+            text=text,
+            mesageId=message_id,
+            file=file,
+            fileName=file_name,
+            typeFile=type_file,
+            isSpoil=is_spoil,
+            customThumbInline=custom_thumb_inline,
+            time=time,
+            performer=performer,
+            question=question,
+            options=options,
+            typePoll=type_poll,
+            isAnonymous=is_anonymous,
+            correctOptionIndex=correct_option_index,
+            allowsMultipleAnswers=allows_multiple_answers,
+            hint=hint,
+            latitude=latitude,
+            longitude=longitude,
+            firstName=first_name,
+            lastName=last_name,
+            phoneNumber=phone_number,
+            userGuid=user_guid
+        )
+    
+    
+    async def send_file(self, object_guid:str, file:str, message_id:str | None = None, text:str | None = None, file_name:str | None = None) -> dict | None:
+        return await self.methods.sendFile(objectGuid=object_guid, file=file, text=text, messageId=message_id, fileName=file_name)
+    
+    
+    async def send_image(self, object_guid:str, file:str, message_id:str | None = None, text:str | None = None, is_spoil:bool=False, thumbnail:str | None = None, file_name:str | None = None) -> dict | None:
+        return await self.methods.sendImage(objectGuid=object_guid, file=file, text=text, messageId=message_id, isSpoil=is_spoil, thumbInline=thumbnail, fileName=file_name)
+    
+    
+    async def send_video(self, object_guid:str, file:str, message_id:str | None = None, text:str | None = None, is_spoil:bool=False, thumbnail:str | None = None, file_name:str | None = None) -> dict | None:
+        return await self.methods.sendVideo(objectGuid=object_guid, file=file, text=text, messageId=message_id, isSpoil=is_spoil, thumbInline=thumbnail, fileName=file_name)
+    
+    
+    async def send_video_message(self, object_guid:str, file:str, message_id:str | None = None, text:str | None = None, thumbnail:str | None = None, file_name:str | None = None) -> dict | None:
+        return await self.methods.sendVideoMessage(objectGuid=object_guid, file=file, text=text, messageId=message_id, thumbInline=thumbnail, fileName=file_name)
+    
+    
+    async def send_gif(self, object_guid:str, file:str, message_id:str | None = None, text:str | None = None, thumbnail:str | None = None, file_name:str | None = None) -> dict | None:
+        return await self.methods.sendGif(objectGuid=object_guid, file=file, text=text, messageId=message_id, thumbInline=thumbnail, fileName=file_name)
+    
+    
+    async def send_music(self, object_guid:str, file:str, message_id:str | None = None, text:str | None = None, file_name:str | None = None, performer:str | None = None) -> dict | None:
+        return await self.methods.sendMusic(objectGuid=object_guid, file=file, text=text, messageId=message_id, fileName=file_name, performer=performer)
+    
+    
+    async def send_voice(self, object_guid:str, file:str, message_id:str | None = None, text:str | None = None, file_name:str | None = None, time:int=0) -> dict | None:
+        return await self.methods.sendVoice(objectGuid=object_guid, file=file, text=text, messageId=message_id, fileName=file_name, time=time)
+    
+    
+    async def send_location(self, object_guid:str, latitude:int, longitude:int, message_id:str | None = None) -> dict:
+        return await self.methods.sendLocation(objectGuid=object_guid, latitude=latitude, longitude=longitude, messageId=message_id)
+    
+    
+    async def send_message_api_call(self, objectGuid:str, text:str, message_id:str, button_id:str) -> dict:
+        return await self.methods.sendMessageAPICall(objectGuid=objectGuid, text=text, messageId=message_id, buttonId=button_id)
+    
+    
+    async def reaction_message(self, object_guid: str, message_id: str, reaction: int |str) -> dict:
+        return await self.methods.actionOnMessageReaction(objectGuid=object_guid, messageId=message_id, reactionId=reaction, action="Add")
+    
+    
+    async def unreaction_message(self, object_guid: str, message_id: str, reaction: int |str) -> dict:
+        return await self.methods.actionOnMessageReaction(objectGuid=object_guid, messageId=message_id, reactionId=reaction, action="Remove")
+    
+    
+    async def pin_message(self, object_guid:str, message_id:str) -> dict:
+        return await self.methods.setPinMessage(objectGuid=object_guid, messageId=message_id, action="Pin")
+    
+    
+    async def unpin_message(self, object_guid:str, message_id:str) -> dict:
+        return await self.methods.setPinMessage(objectGuid=object_guid, messageId=message_id, action="Unpin")
+    
+    
+    async def resend_message(self, object_guid:str | None = None, message_id:str | None = None, to_object_guid:str | None = None, reply_to_message_id:str | None = None, text:str | None = None, file_inline:dict | None=None) -> dict:
+        return await self.methods.resendMessage(objectGuid=object_guid, messageId=message_id, toObjectGuid=to_object_guid, replyToMessageId=reply_to_message_id, text=text, fileInline=file_inline)
+    
+    
+    async def forward_messages(self, object_guid:str, message_ids:list, to_object_guid:str) -> dict:
+        return await self.methods.forwardMessages(objectGuid=object_guid, messageIds=message_ids, toObjectGuid=to_object_guid)
+    
+    
+    async def edit_message(self, object_guid, text, message_id=None) -> dict:
+        return await self.methods.editMessage(object_guid, text=text, messageId=message_id)
+    
+    
+    async def delete_messages(self, object_guid:str, message_ids:list, delete_for_all:bool=True) -> dict:
+        return await self.methods.deleteMessages(objectGuid=object_guid, messageIds=message_ids, deleteForAll=delete_for_all)
+
+    
+    async def auto_delete(self, object_guid: str, message_id: str, time: int, delete_for_all: bool = True):
+        return await self.methods.autoDelete(objectGuid=object_guid,messageId=message_id,time=time,deleteForAll=delete_for_all)
+    
+    
+    async def seen_messages(self, object_guid:str, min_id:str, max_id:str) -> dict:
+        return await self.methods.seenChatMessages(objectGuid=object_guid, minId=min_id, maxId=max_id)
+    
+    
+    async def get_messages_interval(self, object_guid:str, middle_message_id:str) -> dict:
+        return await self.methods.getMessagesInterval(objectGuid=object_guid, middleMessageId=middle_message_id)
+    
+    
+    async def get_messages(self, object_guid:str, max_message_id:str | None = None, filter_type:str | None = None, limit:int=50) -> dict:
+        return await self.methods.getMessages(objectGuid=object_guid, maxId=max_message_id, filterType=filter_type, limit=limit)
+    
+    
+    async def get_last_message(self, object_guid:str) -> dict:
+        return (await self.methods.getChatInfo(objectGuid=object_guid))["chat"]["last_message"]
+    
+    
+    async def get_last_message_id(self, object_guid:str) -> str:
+        return (await self.methods.getChatInfo(objectGuid=object_guid))["chat"]["last_message_id"]
+    
+    
+    async def get_messages_updates(self, object_guid:str) -> dict:
+        return await self.methods.getMessagesUpdates(objectGuid=object_guid)
+    
+    
+    async def get_messages_by_id(self, object_guid:str, message_ids:list) -> dict:
+        return await self.methods.getMessagesById(objectGuid=object_guid, messageIds=message_ids)
+    
+    
+    async def get_message_share_url(self, object_guid:str, message_id:str) -> dict:
+        return await self.methods.getMessageShareUrl(objectGuid=object_guid, messageId=message_id)
+    
+    
+    async def click_message_url(self, object_guid:str, message_id:str, link_url:str) -> dict:
+        return await self.methods.clickMessageUrl(objectGuid=object_guid, messageId=message_id, linkUrl=link_url)
+    
+    
+    async def request_send_file(self, file_name:str, mime:str, size:int) -> dict:
+        return await self.methods.requestSendFile(fileName=file_name, mime=mime, size=size)
+    
+    # Contact methods
+
+    
+    async def send_contact(self, object_guid:str, first_name:str, last_name:str, phone_number:str, user_guid:str, message_id:str | None = None) -> dict:
+        return await self.methods.sendContact(objectGuid=object_guid, firstName=first_name, lastName=last_name, phoneNumber=phone_number, userGuid=user_guid, messageId=message_id)
+    
+    
+    async def get_contacts(self, start_id:str | None = None) -> dict:
+        return await self.methods.getContacts(startId=start_id)
+    
+    
+    async def get_contacts_last_online(self, user_guids:list) -> dict:
+        return await self.methods.getContactsLastOnline(userGuids=user_guids)
+    
+    
+    async def add_address_book(self, phone:str, first_name:str, last_name:str) -> dict:
+        return await self.methods.addAddressBook(phone=phone, firstName=first_name, lastName=last_name)
+    
+    
+    async def delete_contact(self, object_guid:str) -> dict:
+        return await self.methods.deleteContact(objectGuid=object_guid)
+    
+    
+    async def get_contacts_updates(self) -> dict:
+        return await self.methods.getContactsUpdates()
+    
+    # Sticker methods
+
+    
+    async def send_sticker(self, object_guid:str, emoji:str | None = None, message_id:str | None = None, sticker_data:str | None=None) -> dict:
+        return await self.methods.sendSticker(objectGuid=object_guid, emoji=emoji, messageId=message_id, stickerData=sticker_data)
+    
+    
+    async def get_my_sticker_sets(self) -> dict:
+        return await self.methods.getMyStickerSets()
+    
+    
+    async def get_trend_sticker_sets(self, start_id:str | None = None) -> dict:
+        return await self.methods.getTrendStickerSets(startId=start_id)
+    
+    
+    async def search_stickers(self, search_text:str, start_id:str | None = None) -> dict:
+        return await self.methods.searchStickers(searchText=search_text, startId=start_id)
+    
+    
+    async def add_sticker(self, sticker_set_id:str) -> dict:
+        return await self.methods.actionOnStickerSet(stickerSetId=sticker_set_id, action="Add")
+    
+    
+    async def remove_sticker(self, sticker_set_id:str) -> dict:
+        return await self.methods.actionOnStickerSet(stickerSetId=sticker_set_id, action="Remove")
+    
+    
+    async def get_stickers_by_emoji(self, emoji:str) -> dict:
+        return await self.methods.getStickersByEmoji(emoji=emoji)
+    
+    
+    async def get_stickers_by_set_ids(self, sticker_set_ids:list) -> dict:
+        return await self.methods.getStickersBySetIDs(stickerSetIds=sticker_set_ids)
+    
+    # Gif methods
+
+    
+    async def get_my_gif_set(self) -> dict:
+        return await self.methods.getMyGifSet()
+    
+    
+    async def add_gif(self, object_guid:str, message_id:str) -> dict:
+        return await self.methods.addToMyGifSet(objectGuid=object_guid, messageId=message_id)
+    
+    
+    async def remove_gif(self, file_id:str) -> dict:
+        return await self.methods.removeFromMyGifSet(fileId=file_id)
+    
+    # Poll methods
+
+    
+    async def send_poll(
+        self,
+        object_guid: str,
+        question: str,
+        options: list,
+        allows_multiple_responses: bool = True,
+        is_anonymous: bool = False,
+        type: Literal["Quiz", "Regular"] = "Regular",
+        message_id: str | None = None,
+        correct_option_index: int | None = None,
+        hint: str | None = None
+    ) -> dict:
+        return await self.methods.sendPoll(objectGuid=object_guid, question=question, options=options,allowsMultipleResponses=allows_multiple_responses,isAnonymous=is_anonymous,type=type, messageId=message_id,hint=hint,correctOptionIndex=correct_option_index)
+    
+    
+    async def vote_poll(self, poll_id:str, selection_index:int) -> dict:
+        return await self.methods.votePoll(pollId=poll_id, selectionIndex=selection_index)
+    
+    
+    async def get_poll_status(self, poll_id:str) -> dict:
+        return await self.methods.getPollStatus(pollId=poll_id)
+    
+    
+    async def get_poll_option_voters(self, poll_id:str, selection_index:int, start_id:str | None = None) -> dict:
+        return await self.methods.getPollOptionVoters(pollId=poll_id, selectionIndex=selection_index, startId=start_id)
+    
+    # Live methods
+    
+    
+    async def send_live(self, object_guid:str, thumb_inline:str) -> dict:
+        return await self.methods.sendLive(objectGuid=object_guid, thumbInline=thumb_inline)
+    
+    
+    async def add_live_comment(self, access_token:str, live_id:str, text:str) -> dict:
+        return await self.methods.addLiveComment(accessToken=access_token, liveId=live_id, text=text)
+    
+    
+    async def get_live_status(self, access_token:str, live_id:str) -> dict:
+        return await self.methods.getLiveStatus(accessToken=access_token, liveId=live_id)
+    
+    
+    async def getLiveComments(self, access_token:str, live_id:str) -> dict:
+        return await self.methods.getLiveComments(accessToken=access_token, liveId=live_id)
+    
+    
+    async def getLivePlayUrl(self, access_token:str, live_id:str) -> dict:
+        return await self.methods.getLivePlayUrl(accessToken=access_token, liveId=live_id)
+    
+    # Call methods
+
+    
+    async def requestCall(self, object_guid:str, call_type:str) -> dict:
+        return await self.methods.requestCall(objectGuid=object_guid, callType=call_type)
+    
+    
+    async def discard_call(self, call_id:str, duration:int, reason:str) -> dict:
+        return await self.methods.discardCall(callId=call_id, duration=duration, reason=reason)
+    
+    # Setting methods
+    
+    
+    async def set_setting(self, show_my_last_online:bool | None=None, show_my_phone_number:bool | None=None, show_my_profile_photo:bool | None=None, link_forward_message:bool | None=None, can_join_chat_by:bool | None=None) -> dict:
+        return await self.methods.setSetting(showMyLastOnline=show_my_last_online, showMyPhoneNumber=show_my_phone_number, showMyProfilePhoto=show_my_profile_photo, linkForwardMessage=link_forward_message, canJoinChatBy=can_join_chat_by)
+    
+    
+    async def add_folder(self, folder_name:str, folder_id:str, exclude_chat_ids:list, exclude_chat_types:list, include_chat_ids:list, include_chat_types:list) -> dict:
+        return await self.methods.addFolder(folderName=folder_name, folderId=folder_id, excludeChatIds=exclude_chat_ids, excludeChatTypes=exclude_chat_types, includeChatIds=include_chat_ids, includeChatTypes=include_chat_types)
+    
+    
+    async def get_folders(self, last_state:str | None = None) -> dict:
+        return await self.methods.getFolders(lastState=last_state)
+    
+    
+    async def get_suggested_folders(self) -> dict:
+        return await self.methods.getSuggestedFolders()
+    
+    
+    async def delete_folder(self, folder_id:str) -> dict:
+        return await self.methods.deleteFolder(folderId=folder_id)
+    
+    
+    async def update_profile(self, first_name:str | None = None, last_name:str | None = None, bio:str | None = None, username:str | None = None) -> dict:
+        return await self.methods.updateProfile(firstName=first_name, lastname=last_name, bio=bio, username=username)
+    
+    
+    async def get_my_sessions(self) -> dict:
+        return await self.methods.getMySessions()
+    
+    
+    async def terminate_session(self, session_key:str) -> dict:
+        return await self.methods.terminateSession(sessionKey=session_key)
+    
+    
+    async def terminate_other_sessions(self) -> dict:
+        return await self.methods.terminateOtherSessions()
+    
+    
+    async def check_two_step_passcode(self, password:str) -> dict:
+        return await self.methods.checkTwoStepPasscode(password=password)
+    
+    
+    async def setup_two_step_verification(self, password:str, hint:str, recovery_email:str) -> dict:
+        return await self.methods.setupTwoStepVerification(password=password, hint=hint, recoveryEmail=recovery_email)
+    
+    
+    async def request_recovery_email(self, password:str, recovery_email:str) -> dict:
+        return await self.methods.requestRecoveryEmail(password=password, recoveryEmail=recovery_email)
+    
+    
+    async def verify_recovery_email(self, password:str, code:str) -> dict:
+        return await self.methods.verifyRecoveryEmail(password=password, code=code)
+    
+    
+    async def turn_off_two_step(self, password:str) -> dict:
+        return await self.methods.turnOffTwoStep(password=password)
+    
+    
+    async def change_password(self, password:str, new_password:str, new_hint:str) -> dict:
+        return await self.methods.changePassword(password=password, newPassword=new_password, newHint=new_hint)
+    
+    
+    async def get_two_passcode_status(self) -> dict:
+        return await self.methods.getTwoPasscodeStatus()
+    
+    
+    async def get_privacy_setting(self) -> dict:
+        return await self.methods.getPrivacySetting()
+    
+    
+    async def get_blocked_users(self, start_id:str | None = None) -> dict:
+        return await self.methods.getBlockedUsers(startId=start_id)
+    
+    # Other methods
+
+    
+    async def get_me(self) -> dict:
+        return await self.methods.getMe()
+    
+    
+    async def transcribe_voice(self, object_guid:str, message_id:str) -> dict:
+        return await self.methods.transcribeVoice(objectGuid=object_guid, messageId=message_id)
+    
+    
+    async def reset_contacts(self) -> dict:
+        return await self.methods.resetContacts()
+    
+    
+    async def get_time(self) -> dict:
+        return await self.methods.getTime()
+    
+    
+    async def get_abs_objects(self, object_guids:list) -> dict:
+        return await self.methods.getAbsObjects(objectGuids=object_guids)
+    
+    
+    async def get_link_from_app_url(self, url:str) -> dict:
+        return await self.methods.getLinkFromAppUrl(url=url)
+    
+    
+    async def search_global_objects(self, search_text:str, filters:list | None=None) -> dict:
+        return await self.methods.searchGlobalObjects(searchText=search_text, filters=filters)
+    
+    
+    async def search_global_messages(self, search_text:str) -> dict:
+        return await self.methods.searchGlobalMessages(searchText=search_text)
+    
+    
+    async def check_join(self, object_guid:str, user_guid:str) -> bool | None:
+        return await self.methods.checkJoin(objectGuid=object_guid, userGuid=user_guid)
+    
+    
+    async def get_profile_link_items(self, object_guid:str) -> dict:
+        return await self.methods.getProfileLinkItems(objectGuid=object_guid)
+    
+    
+    async def get_download_link(self, object_guid: str, message_id:str | None = None, file_inline:dict | None=None) -> str | None:
+        return await self.methods.getDownloadLink(objectGuid=object_guid, messageId=message_id, fileInline=file_inline)
+    
+    
+    async def download(self, object_guid: str, message_id:str | None = None, save:bool=False, save_as:str | None = None, file_inline:dict | None=None) -> dict | None:
+        return await self.methods.download(objectGuid=object_guid, messageId=message_id, save=save, saveAs=save_as, fileInline=file_inline)
+    
+    
+    async def request(
+        self,
+        method: str,
+        input: dict = {},
+        tmp_session: bool = False,
+        attempt: int = 0,
+        max_attempt: int = 2
+    ) -> dict:
+        return await self.methods.request(
+            method=method,
+            input=input,
+            tmpSession=tmp_session,
+            attempt=attempt,
+            maxAttempt=max_attempt
+        )
+
+    
+    async def play_voice(self, object_guid: str, file: str) -> None:
+        await self.methods.playVoice(objectGuid=object_guid, file=file)
+    
+    def on_message(self, filters: list[Filter] | list[str] | Filter | None = None):
+        def handler(func):
+            self.methods.add_handler(
+                func=func,
+                filters=filters
+            )
+        return handler
+    
+    async def run(self) -> None:
+        if not self._is_started:
+            await self.start()
+        await self.methods.run()
+
+wrap_all_async_methods(Client)
