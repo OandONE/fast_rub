@@ -4,7 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>فست روب · مستندات متدها</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="مستندات کامل متدهای کتابخانه فست‌روب (Fast Rub) برای ساخت بات روبیکا به صورت کاملا async/sync">
   <meta name="keywords" content="فست روب, Fast Rub, روبیکا, بات روبیکا, Rubika Bot, Python, متدهای روبیکا, Rubika API, مستندات بات روبیکا">
   <meta name="author" content="Seyyed Mohamad Hosein Moosavi Raja">
@@ -25,16 +24,13 @@
   <meta name="twitter:description" content="مستندات کامل متدهای کتابخانه Fast Rub برای ساخت بات روبیکا">
 
   <link rel="canonical" href="https://fast-rub.ParsSource.ir/methods/index.html">
-
   <link rel="icon" type="image/png" href="../icon.jpg">
   <link rel="apple-touch-icon" href="../icon.jpg">
-
   <link rel="manifest" href="/manifest.json">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;700&display=swap" rel="stylesheet">
-
   <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
 
   <script type="application/ld+json">
@@ -247,7 +243,6 @@
       font-size: 1.1rem;
     }
 
-  
     .method {
       margin-bottom: 4rem;
       scroll-margin-top: 1rem;
@@ -471,9 +466,9 @@
           ["proxy", "str | None", "پراکسی برای ارتباطات شبکه"],
           ["main_parse_mode", "'Markdown' | 'HTML' | 'Null' | None", "پارس مود پیش‌فرض پیام‌ها (Null = اعمال جداگانه برای هر متد)"],
           ["base_urls", "list[str]", "لیست آدرس‌های اصلی برای ارسال درخواست"],
-          ["max_retries", "int = 3", "حداکثر تعداد تلاش مجدد در خطاهای شبکه"],
+          ["max_retries", "int = 5", "حداکثر تعداد تلاش مجدد در خطاهای شبکه"],
           ["show_progress", "bool | None", "نمایش لاگ‌های پیشرفت آپلود/دانلود فایل"],
-          ["keeper_messages_ram", "int = 500", "تعداد پیام‌های ذخیره‌شده در رم برای متد get_message"],
+          ["keeper_messages_ram", "int = 5000", "تعداد پیام‌های ذخیره‌شده در رم برای متد get_message"],
           ["keeper_messages_db", "int = 0", "تعداد پیام‌های ذخیره‌شده در دیتابیس برای متد get_message"],
           ["offset_id", "str | None", "آفست آیدی برای شروع گرفتن پیام‌ها (پولینگ)"],
           ["save_offset_id", "bool = True", "ذخیره شدن آفست آیدی در دیتابیس"],
@@ -486,6 +481,10 @@
           ["cache", "Cache | None", "کلاس کش برای مدیریت کش"],
           ["cache_max_size", "int | None", "حداکثر تعداد آیتم‌های کش"],
           ["cache_ttl", "float | None", "مدت زمان اعتبار کش (TTL)"],
+          ["logger", "logging.Logger | None", "لاگر اختصاصی برای کتابخانه"],
+          ["max_retries_upload", "int | None", "حداکثر تلاش برای آپلود فایل"],
+          ["max_retries_download", "int | None", "حداکثر تلاش برای دانلود فایل"],
+          ["config", "BotConfig | None", "شیء پیکربندی اضافی (BotConfig)"],
         ],
         returns: null,
         example: `from fast_rub import Client\n\nbot = Client("my_session")\n# یا با توکن\nbot = Client("my_session", token="BGDISBC...")`
@@ -512,7 +511,7 @@
         example: `me = await bot.get_me()\nprint(me)\nprint(f"bot username » {me.username}")`
       },
       // ===== ۳. send_text =====
-      { // تا اینجا چک شده
+      {
         id: "send_text",
         title: "ارسال پیام متنی (همراه کیبورد و اینلاین)",
         signature: "async send_text(text, chat_id, ...)",
@@ -601,7 +600,7 @@
           ["phone_number", "str", "شماره تلفن"],
           ["chat_keypad", "str | None", "کیبورد همراه با مخاطب"],
           ["chat_keypad_type", "str | None", "نوع کیبورد (مثلاً 'inline' یا 'reply')"],
-          ["inline_keypad", "list[dict] | KeyPad | None", "دکمه‌های شیشه‌ای (اینلاین)"],
+          ["inline_keypad", "list[dict] | KeyPad | None", "دکمه‌های شیشه‌ای (اینلاین) — اضافه شده"],
           ["disable_notification", "bool = False", "غیرفعال کردن اعلان"],
           ["reply_to_message_id", "str | None", "آیدی پیامی که به آن پاسخ داده می‌شود"],
           ["auto_delete", "int | None", "حذف خودکار پیام بعد از چند ثانیه"],
@@ -643,22 +642,20 @@
           ],
           example: `@bot.on_button()\nasync def button_click(upd: UpdateButton):\n    print(upd)\n    await upd.send_text("دکمه کلیک شد!")`
       },
-      // ===== 8.5. run =====
+      // ===== 9. run =====
       {
           id: "run",
           title: "شروع گرفتن پیام ها",
           signature: "await bot.run(poll_interval=0.0, reload=False)",
-          desc: "متود شروع گرفتن پیام های پولینگ/وبهوک",
+          desc: "متود شروع گرفتن پیام های پولینگ/وبهوک. خروجی ندارد.",
           params: [
               ["poll_interval", "float = 0.0", "زمان اسلیپ بین گرفتن پیام ها"],
               ["reload", "bool = False", "<a href='../features/index.html#HotReload'>ریلود شدن ربات</a>"],
           ],
-          returns: [
-              ["UpdateButton", "<a href='../models/index.html#updatebutton'>UpdateButton</a>", "اطلاعات کلیک"],
-          ],
-          example: `@bot.on_button()\nasync def button_click(upd: UpdateButton):\n    print(upd)\n    await upd.send_text("دکمه کلیک شد!")`
+          returns: null,
+          example: `@bot.on_message()\nasync def handler(msg):\n    print(msg.text)\n\nawait bot.run()`
       },
-      // ===== ۹. get_chat =====
+      // ===== ۱۰. get_chat =====
       {
         id: "get_chat",
         title: "گرفتن اطلاعات چت",
@@ -672,7 +669,7 @@
         ],
         example: `chat = await bot.get_chat("b123...")\nprint(chat.title)`
       },
-      // ===== ۱۰. forward_message =====
+      // ===== ۱۱. forward_message =====
       {
         id: "forward_message",
         title: "فوروارد پیام",
@@ -692,7 +689,27 @@
         ],
         example: `fwd = await bot.forward_message("from_id", "msg_id", "to_id")\nprint(fwd)`
       },
-      // ===== ۱۱. edit_message_text =====
+      // ===== ۱۲. forward_messages =====
+      {
+        id: "forward_messages",
+        title: "فوروارد چند پیام",
+        signature: "async forward_messages(from_chat_id, message_ids, to_chat_id, ...)",
+        desc: "چندین پیام را به صورت همزمان فوروارد می‌کند.",
+        params: [
+          ["from_chat_id", "str", "چت آیدی مبدأ"],
+          ["message_ids", "list", "لیست شناسه‌های پیام‌ها"],
+          ["to_chat_id", "str", "چت آیدی مقصد"],
+          ["disable_notification", "bool = False", "غیرفعال کردن اعلان"],
+          ["auto_delete", "int | None", "حذف خودکار پیام بعد از چند ثانیه"],
+          ["wait_send", "float | None", "تأخیر قبل از ارسال درخواست (ثانیه)"],
+          ["return_task", "bool = False", "برگرداندن تسک به جای ارسال مستقیم"],
+        ],
+        returns: [
+          ["list[msg_update]", "List[msg_update]", "لیست پیام‌های فوروارد شده"]
+        ],
+        example: `msgs = await bot.forward_messages("from_id", ["id1","id2"], "to_id")`
+      },
+      // ===== ۱۳. edit_message_text =====
       {
         id: "edit_message_text",
         title: "ویرایش متن پیام",
@@ -715,11 +732,11 @@
         ],
         example: `edited = await bot.edit_message_text("chat_id", "msg_id", "متن جدید")\nprint(edited)`
       },
-      // ===== ۱۲. delete_message =====
+      // ===== ۱۴. delete_message =====
       {
         id: "delete_message",
         title: "حذف پیام",
-        signature: "async delete_message(chat_id, message_id)",
+        signature: "async delete_message(chat_id, message_id, ...)",
         desc: "حذف یک پیام از چت.",
         params: [
           ["chat_id", "str", "چت آیدی"],
@@ -730,7 +747,7 @@
         returns: null,
         example: `await bot.delete_message("chat_id", "msg_id")`
       },
-      // ===== ۱۳. set_commands =====
+      // ===== ۱۵. set_commands =====
       {
         id: "set_commands",
         title: "تنظیم دستورات (commands)",
@@ -740,7 +757,7 @@
         returns: null,
         example: `await bot.add_commands("/help", "راهنمای ربات")\nawait bot.add_commands("/start", "شروع")\nawait bot.set_commands()  # اعمال تغییرات\n\n# یا مستقیم\ncmds = [{"command": "help", "description": "راهنما"}]\nawait bot.set_commands(cmds)\n\n# حذف همه\nawait bot.delete_commands()`
       },
-      // ===== ۱۴. update_endpoint =====
+      // ===== ۱۶. update_endpoint =====
       {
         id: "update_endpoint",
         title: "آپدیت آدرس وب‌هوک (URL Endpoint)",
@@ -753,7 +770,7 @@
         returns: null,
         example: `result = await bot.update_endpoint("https://my.site/webhook", "ReceiveUpdate")\nprint(result)`
       },
-      // ===== ۱۵. ارسال فایل (گروهی) =====
+      // ===== ۱۷. ارسال فایل (گروهی) =====
       {
         id: "send_files",
         title: "ارسال فایل / تصویر / ویدیو / صدا / گیف",
@@ -761,7 +778,7 @@
         desc: "متدهای مجزا برای هر نوع فایل. پارامترها یکسان هستند.",
         params: [
           ["chat_id", "str", "چت آیدی"],
-          ["file", "str | Path | bytes", "فایل ورودی (مسیر یا بایت)"],
+          ["file / image / video / voice / music / gif", "str | Path | bytes", "فایل ورودی (مسیر یا بایت) — نام پارامتر بسته به متد متفاوت است"],
           ["name_file", "str | None", "نام فایل (پیش‌فرض: 'file')"],
           ["text", "str | None", "متن کپشن"],
           ["reply_to_message_id", "str | None", "آیدی پیامی که به آن پاسخ داده می‌شود"],
@@ -783,9 +800,45 @@
         returns: [
           ["msg_update", "<a href='../models/index.html#msg_update'>msg_update</a>", "پیام فایل ارسال شده"]
         ],
-        example: `await bot.send_file("chat_id", "test.json", name_file="data.json", text="caption")\nawait bot.send_image("chat_id", "photo.png")\nawait bot.send_video("chat_id", "vid.mp4")`
+        example: `await bot.send_file("chat_id", "test.json", name_file="data.json", text="caption")\nawait bot.send_image("chat_id", "photo.png")\nawait bot.send_video("chat_id", "vid.mp4")\nawait bot.send_voice("chat_id", "voice.ogg")\nawait bot.send_music("chat_id", "music.mp3")\nawait bot.send_gif("chat_id", "anim.gif")`
       },
-      // ===== ۱۶. request_send_file =====
+      // ===== ۱۸. send_voice (توضیح جداگانه برای وضوح) =====
+      {
+        id: "send_voice_detail",
+        title: "ارسال ویس (صدای ضبط شده)",
+        signature: "async send_voice(chat_id, voice, ...)",
+        desc: "ارسال فایل صوتی (ویس). مانند سایر متدهای فایل، پارامترهای کمکی نیز دارد.",
+        params: [], // جدول بالا کامل است
+        returns: [
+          ["msg_update", "<a href='../models/index.html#msg_update'>msg_update</a>", "پیام ارسال شده"]
+        ],
+        example: `await bot.send_voice("chat_id", "voice.ogg", text="صدای من")`
+      },
+      // ===== ۱۹. send_music =====
+      {
+        id: "send_music_detail",
+        title: "ارسال موزیک",
+        signature: "async send_music(chat_id, music, ...)",
+        desc: "ارسال فایل موسیقی.",
+        params: [],
+        returns: [
+          ["msg_update", "<a href='../models/index.html#msg_update'>msg_update</a>", "پیام ارسال شده"]
+        ],
+        example: `await bot.send_music("chat_id", "song.mp3")`
+      },
+      // ===== ۲۰. send_gif =====
+      {
+        id: "send_gif_detail",
+        title: "ارسال گیف",
+        signature: "async send_gif(chat_id, gif, ...)",
+        desc: "ارسال تصویر متحرک (GIF).",
+        params: [],
+        returns: [
+          ["msg_update", "<a href='../models/index.html#msg_update'>msg_update</a>", "پیام ارسال شده"]
+        ],
+        example: `await bot.send_gif("chat_id", "animation.gif")`
+      },
+      // ===== ۲۱. request_send_file =====
       {
         id: "request_send_file",
         title: "درخواست لینک آپلود فایل",
@@ -799,7 +852,25 @@
         ],
         example: `req = await bot.request_send_file("Image")\nprint(req["upload_url"])`
       },
-      // ===== ۱۷. send_file_by_file_id =====
+      // ===== ۲۲. upload_file =====
+      {
+        id: "upload_file",
+        title: "آپلود فایل روی سرور روبیکا",
+        signature: "async upload_file(url, file_name, file, show_progress=True, chunk_size=1MB)",
+        desc: "فایل را روی سرور آپلود کرده و اطلاعات آن را برمی‌گرداند.",
+        params: [
+          ["url", "str", "آدرس آپلود گرفته‌شده از request_send_file"],
+          ["file_name", "str", "نام فایل"],
+          ["file", "str | Path | bytes", "فایل (مسیر یا بایت)"],
+          ["show_progress", "bool = True", "نمایش نوار پیشرفت"],
+          ["chunk_size", "int = 1048576", "سایز chunk"]
+        ],
+        returns: [
+          ["result", "dict", "پاسخ آپلود شامل file_id و غیره"]
+        ],
+        example: `up = await bot.upload_file(upload_url, "photo.jpg", open("pic.jpg","rb").read())`
+      },
+      // ===== ۲۳. send_file_by_file_id =====
       {
         id: "send_file_by_file_id",
         title: "ارسال فایل با آیدی (file_id)",
@@ -828,7 +899,7 @@
         ],
         example: `await bot.send_file_by_file_id("chat_id", "file_id_123...")`
       },
-      // ===== ۱۸. send_sticker =====
+      // ===== ۲۴. send_sticker =====
       {
         id: "send_sticker",
         title: "ارسال استیکر",
@@ -848,23 +919,53 @@
         ],
         example: `await bot.send_sticker("chat_id", "sticker_id_001")`
       },
-      // ===== ۱۹. download_file =====
+      // ===== ۲۵. get_file (اطلاعات فایل) =====
+      {
+        id: "get_file",
+        title: "گرفتن اطلاعات فایل",
+        signature: "async get_file(id_file)",
+        desc: "اطلاعات فایل (شامل download_url) را برمی‌گرداند.",
+        params: [
+          ["id_file", "str", "آیدی فایل"]
+        ],
+        returns: [
+          ["file_info", "props", "دیکشنری اطلاعات فایل (دارای download_url)"]
+        ],
+        example: `info = await bot.get_file("file_id")\nprint(info["download_url"])`
+      },
+      // ===== ۲۶. download_file =====
       {
         id: "download_file",
         title: "دانلود فایل",
-        signature: "async download_file(id_file, path, show_progress=True)",
+        signature: "async download_file(id_file, path, show_progress=True, max_retries=None, ...)",
         desc: "فایل را با file_id دانلود و در مسیر مشخص ذخیره کنید.",
         params: [
           ["id_file", "str", "آیدی فایل"],
-          ["path", "str", "مسیر ذخیره"],
+          ["path", "str = 'file'", "مسیر ذخیره"],
           ["show_progress", "bool = True", "نمایش پیشرفت"],
           ["wait_send", "float | None", "زمان ایستادن برای قبل از ارسال درخواست"],
           ["return_task", "bool = False", "برگرشتن تسک جدید"],
+          ["max_retries", "int | None", "حداکثر تلاش‌های دانلود"],
         ],
         returns: null,
         example: `await bot.download_file("file_id", "./downloads/test.txt")`
       },
-      // ===== ۲۰. get_download_file_url =====
+      // ===== ۲۷. download_by_url =====
+      {
+        id: "download_by_url",
+        title: "دانلود مستقیم از یک URL",
+        signature: "async download_by_url(url, path='file', show_progress=True, max_retries=None)",
+        desc: "فایل را از یک URL مستقیم دانلود و ذخیره می‌کند (نیاز به file_id ندارد).",
+        params: [
+          ["url", "str", "لینک دانلود مستقیم"],
+          ["path", "str = 'file'", "مسیر ذخیره"],
+          ["show_progress", "bool = True", "نمایش پیشرفت"],
+          ["max_retries", "int | None", "حداکثر تلاش‌های دانلود"],
+        ],
+        returns: null,
+        example: `await bot.download_by_url("https://example.com/file.pdf", "myfile.pdf")`
+      },
+      // ===== ۲۸. get_download_file_url =====
       {
         id: "get_download_file_url",
         title: "گرفتن لینک دانلود مستقیم",
@@ -880,7 +981,25 @@
         ],
         example: `url = await bot.get_download_file_url("file_id")\nprint(url)`
       },
-      // ===== ۲۱. version_botapi =====
+      // ===== ۲۹. download_me_profile =====
+      {
+        id: "download_me_profile",
+        title: "دانلود پروفایل ربات",
+        signature: "async download_me_profile(name_file='bot_avatar.jpg', show_progress=True, wait_send=None, return_task=False, max_retries=None)",
+        desc: "عکس پروفایل خود ربات را دانلود می‌کند.",
+        params: [
+          ["name_file", "str = 'bot_avatar.jpg'", "نام فایل برای ذخیره"],
+          ["show_progress", "bool = True", "نمایش نوار پیشرفت"],
+          ["wait_send", "float | None", "تأخیر قبل از ارسال درخواست"],
+          ["return_task", "bool = False", "برگرداندن تسک به جای ارسال مستقیم"],
+          ["max_retries", "int | None", "حداکثر تلاش‌های دانلود"],
+        ],
+        returns: [
+          ["bool", "bool", "True در صورت دانلود موفق"]
+        ],
+        example: `ok = await bot.download_me_profile("bot_avatar.jpg")`
+      },
+      // ===== ۳۰. version_botapi =====
       {
         id: "version_botapi",
         title: "نسخه BotApi",
@@ -892,7 +1011,7 @@
         ],
         example: `ver = await bot.version_botapi()\nprint(ver)`
       },
-      // ===== ۲۲. auto_delete =====
+      // ===== ۳۱. auto_delete =====
       {
         id: "auto_delete",
         title: "پاکسازی خودکار پیام",
@@ -907,11 +1026,11 @@
         returns: null,
         example: `await bot.auto_delete("b...", "msg_id", 30)`
       },
-      // ===== ۲۳. auto_edit =====
+      // ===== ۳۲. auto_edit =====
       {
         id: "auto_edit",
         title: "ویرایش خودکار پیام",
-        signature: "async auto_edit(chat_id, message_id, text, time_sleep, ...)",
+        signature: "async auto_edit(chat_id, message_id, text, auto_edit, ...)",
         desc: "پس از تأخیر، متن پیام را ویرایش می‌کند.",
         params: [
           ["chat_id", "str", "چت آیدی"],
@@ -928,7 +1047,7 @@
         returns: null,
         example: `await bot.auto_edit("b...", "msg_id", "متن جدید", 20)`
       },
-      // ===== ۲۴. get_message =====
+      // ===== ۳۳. get_message =====
       {
         id: "get_message",
         title: "گرفتن پیام با آیدی",
@@ -946,7 +1065,7 @@
         ],
         example: `msg = await bot.get_message("b...", "msg_id")\nif msg:\n    print(msg.text)`
       },
-      // ===== ۲۵. get_messages =====
+      // ===== ۳۴. get_messages =====
       {
         id: "get_messages",
         title: "گرفتن پیام‌های قبل از یک پیام",
@@ -965,11 +1084,11 @@
         ],
         example: `msgs = await bot.get_messages("b...", "msg_id", get_befor=5)\nfor m in msgs:\n    print(m.text)`
       },
-      // ===== ۲۶. ban_chat_member =====
+      // ===== ۳۵. ban_chat_member =====
       {
         id: "ban_chat_member",
         title: "مسدود کردن عضو از چت",
-        signature: "async ban_chat_member(chat_id, user_id)",
+        signature: "async ban_chat_member(chat_id, user_id, ...)",
         desc: "کاربر را از گروه/کانال حذف و مسدود می‌کند.",
         params: [
           ["chat_id", "str", "چت آیدی"],
@@ -980,11 +1099,11 @@
         returns: null,
         example: `await bot.ban_chat_member("group_id", "user_id")`
       },
-      // ===== ۲۷. unban_chat_member =====
+      // ===== ۳۶. unban_chat_member =====
       {
         id: "unban_chat_member",
         title: "رفع مسدودیت عضو",
-        signature: "async unban_chat_member(chat_id, user_id)",
+        signature: "async unban_chat_member(chat_id, user_id, ...)",
         desc: "کاربر را از حالت مسدود خارج می‌کند.",
         params: [
           ["chat_id", "str", "چت آیدی"],
@@ -995,11 +1114,12 @@
         returns: null,
         example: `await bot.unban_chat_member("group_id", "user_id")`
       },
+      // ===== ۳۷. resend_message =====
       {
         id: "resend_message",
-        title: "ارسال مجدد پیام(کپی پیام)",
+        title: "ارسال مجدد پیام (کپی)",
         signature: "async resend_message(message_id, from_chat_id, to_chat_id, ...)",
-        desc: "پیام را از جایی به جای دیگر مجدد ارسال/کپی می کند.",
+        desc: "پیام را از چت مبدأ دریافت و در چت مقصد دوباره ارسال می‌کند (کپی با دانلود و آپلود مجدد).",
         params: [
           ["message_id", "str", "شناسهٔ پیام"],
           ["from_chat_id", "str", "چت آیدی مبدأ"],
@@ -1013,27 +1133,32 @@
           ["wait_send", "float | None", "تأخیر قبل از ارسال درخواست (ثانیه)"],
           ["return_task", "bool = False", "برگرداندن تسک به جای ارسال مستقیم"],
           ["context", "dict | None", "متغیرهای قالب برای جایگزینی در متن (مثل `{{ name }}`)"],
-          ["auto_escape", "bool = True", "فرار خودکار کاراکترهای HTML/Markdown для جلوگیری از XSS"],
+          ["auto_escape", "bool = True", "فرار خودکار کاراکترهای HTML/Markdown"],
+          ["max_retries", "int | None", "حداکثر تلاش‌های دانلود"],
         ],
-        returns: null,
-        example: `await bot.resend_message("message_id", "from_chat_id", "to_chat_id")`
+        returns: [
+          ["msg_update", "<a href='../models/index.html#msg_update'>msg_update</a>", "پیام کپی‌شده"]
+        ],
+        example: `copied = await bot.resend_message("msg_id", "from_chat", "to_chat")`
       },
+      // ===== ۳۸. add_handler =====
       {
         id: "add_handler",
         title: "افزودن هندلر",
         signature: "async add_handler(handler, type_handler, filters, ...)",
-        desc: "یک فانکشن با ورودی msg می تواند به عنوان یک هندلر ثبت شود از انواع پولینگ/وبهوک/دکمه های شیشه ای.",
+        desc: "یک فانکشن با ورودی msg می تواند به عنوان یک هندلر ثبت شود از انواع پولینگ/وبهوک/دکمه های شیشه ای و سایر رویدادها.",
         params: [
           ["handler", "Callable | tuple", "تابع (یا tuple از `(handler, values)`) برای پردازش رویداد"],
-          ["type_handler", "'polling' | 'webhook' | 'button' | 'start' | 'ready' | 'run' | 'live' | 'error' | 'conversation' | 'middleware' | 'shutdown' | 'button_url' | 'webhook_url'", "نوع هندلر"],
+          ["type_handler", "'polling' | 'webhook' | 'button' | 'start' | 'ready' | 'run' | 'live' | 'error' | 'conversation' | 'middleware' | 'shutdown' | 'button_url' | 'webhook_url' | 'before_send' | 'after_send' | 'before_run' | 'after_run' | 'log'", "نوع هندلر"],
           ["filters", "Filter | InlineFilter | None", "فیلتر(ها) برای محدود کردن پیام‌های دریافتی"],
           ["edited_messages", "False | True | 'both' = False", "گرفتن پیام‌های ویرایش‌شده"],
           ["deleted_messages", "False | True | 'both' = False", "گرفتن پیام‌های حذف‌شده"],
-          ["**values", "dict", "پارامترهای اضافی که به handler پاس داده می‌شوند"],
+          ["**values", "dict", "پارامترهای اضافی که به handler پاس داده می‌شوند (مثلاً `path_url` برای webhook_url)"],
         ],
         returns: null,
-        example: `async def my_handler(msg: Message):\n    if msg.text == "/start":\n        await msg.reply("درود خوش اومدی به ربات من")\n\nbot.add_handler(my_handler, "polling", "to_chat_id")`
+        example: `async def my_handler(msg: Message):\n    if msg.text == "/start":\n        await msg.reply("درود خوش اومدی به ربات من")\n\nbot.add_handler(my_handler, "polling")`
       },
+      // ===== ۳۹. get_updates =====
       {
         id: "get_updates",
         title: "گرفتن اولین پیام ها",
@@ -1046,11 +1171,12 @@
         returns: null,
         example: `first_updates = await bot.get_updates(100, "offset_id")`
       },
+      // ===== ۴۰. send_message =====
       {
         id: "send_message",
         title: "ارسال انواع پیام",
         signature: "async send_message(chat_id, text, ...)",
-        desc: "ارسال انواع پیام.",
+        desc: "ارسال انواع پیام (متن، فایل، نظرسنجی، موقعیت، مخاطب) با یک متد.",
         params: [
           ["text", "str | None", "متن پیام"],
           ["chat_id", "str", "چت آیدی"],
@@ -1095,11 +1221,12 @@
         ],
         example: `await bot.send_message("chat_id", "text", file_id="file id")`
       },
+      // ===== ۴۱. check_join =====
       {
           id: "check_join",
           title: "بررسی عضویت در کانال",
           signature: "async check_join(chat_id, guid_channel, client)",
-          desc: "بررسی می‌کند که کاربر در کانال مورد نظر عضو هست یا نه (به‌صورت تقریبی — به دلیل ادغام با یوزر بات).",
+          desc: "بررسی می‌کند که کاربر در کانال مورد نظر عضو هست یا نه (نیاز به کلاینت یوزر بات).",
           params: [
               ["chat_id", "str", "چت آیدی کاربر"],
               ["guid_channel", "str", "شناسهٔ کانال (GUID)"],
@@ -1110,22 +1237,7 @@
           ],
           example: `is_member = await bot.check_join("user_chat_id", "channel_guid", pyrubi_client)`
       },
-      {
-          id: "download_me_profile",
-          title: "دانلود پروفایل ربات",
-          signature: "async download_me_profile(name_file, show_progress, wait_send, return_task)",
-          desc: "دانلود عکس پروفایل خود ربات.",
-          params: [
-              ["name_file", "str = 'bot_avatar.jpg'", "نام فایل برای ذخیره"],
-              ["show_progress", "bool = True", "نمایش نوار پیشرفت دانلود"],
-              ["wait_send", "float | None", "تأخیر قبل از ارسال درخواست (ثانیه)"],
-              ["return_task", "bool = False", "برگرداندن تسک به جای ارسال مستقیم"],
-          ],
-          returns: [
-              ["status_download", "bool", "وضعیت دانلود"],
-          ],
-          example: `path = await bot.download_me_profile("my_avatar.jpg")`
-      },
+      // ===== ۴۲. add_conversation =====
       {
           id: "add_conversation",
           title: "افزودن مکالمه (Conversation) به ربات",
@@ -1134,16 +1246,15 @@
           params: [
               ["conversation", "Conversation", "شیء Conversation ساخته‌شده (import از `fast_rub`)"],
           ],
-          returns: [
-              ["None", "None", "None"],
-          ],
+          returns: null,
           example: `from fast_rub import Client, Conversation\n\nbot = Client("my_bot")\nregister = Conversation(name="register")\n\n@register.entry(commands=["/register"])\nasync def ask_name(msg, data):\n    await msg.reply("اسمت چیه؟")\n    return "waiting_name"\n\n@register.state("waiting_name")\nasync def get_name(msg, data):\n    data["name"] = msg.text\n    await msg.reply(f"سلام {msg.text}!")\n    return Conversation.END\n\nbot.add_conversation(register)`
       },
+      // ===== ۴۳. on_button_url =====
       {
           id: "on_button_url",
           title: "دکوراتور کلیک دکمه‌های شیشه‌ای با Webhook اختصاصی",
           signature: "@bot.on_button_url(path_url, filters=None)",
-          desc: "مانند `on_button`، اما آدرس webhook مخصوص کلیک‌ها را جداگانه تعیین می‌کند. درخواست‌های کلیک به این مسیر ارسال می‌شوند.",
+          desc: "مانند `on_button`، اما آدرس webhook مخصوص کلیک‌ها را جداگانه تعیین می‌کند.",
           params: [
               ["path_url", "str", "مسیر webhook برای دریافت کلیک‌ها (مثلاً `/webhook/button`)"],
               ["filters", "InlineFilter | None", "فیلتر(ها) برای محدود کردن کلیک‌های دریافتی"],
@@ -1153,68 +1264,64 @@
           ],
           example: `@bot.on_button_url("/my-button-webhook")\nasync def button_click(upd: UpdateButton):\n    await upd.send_text("کلیک دریافت شد!")`
       },
+      // ===== ۴۴. on_ready =====
       {
           id: "on_ready",
           title: "دکوراتور آماده‌بودن کلاینت",
           signature: "@bot.on_ready()",
-          desc: "وقتی کلاینت کاملاً آمادهٔ ارسال درخواست شد و تست ارتباط با سرور با موفقیت انجام شد، این هندلر فراخوانی می‌شود.",
+          desc: "وقتی کلاینت کاملاً آمادهٔ ارسال درخواست شد و تست ارتباط با سرور موفق بود، این هندلر فراخوانی می‌شود.",
           params: [],
-          returns: [
-              ["None", "None", "None"],
-          ],
+          returns: null,
           example: `@bot.on_ready()\nasync def ready():\n    print("✅ ربات آماده است و تست ارتباط موفق بود!")`
       },
+      // ===== ۴۵. on_start =====
       {
           id: "on_start",
           title: "دکوراتور شروع کلاینت (بدون تست ارتباط)",
           signature: "@bot.on_start()",
           desc: "وقتی کلاینت راه‌اندازی می‌شود (متُد `start()` صدا زده می‌شود)، این هندلر اجرا می‌شود. برخلاف `on_ready`، هیچ درخواستی به سرور ارسال نمی‌کند.",
           params: [],
-          returns: [
-              ["None", "None", "None"],
-          ],
+          returns: null,
           example: `@bot.on_start()\nasync def started():\n    print("🚀 کلاینت راه‌اندازی شد.")`
       },
+      // ===== ۴۶. on_run =====
       {
           id: "on_run",
           title: "دکوراتور اجرای حلقهٔ اصلی",
           signature: "@bot.on_run()",
           desc: "وقتی متُد `run()` صدا زده می‌شود و حلقهٔ اصلی دریافت آپدیت‌ها شروع می‌شود، این هندلر فراخوانی می‌شود.",
           params: [],
-          returns: [
-              ["None", "None", "None"],
-          ],
+          returns: null,
           example: `@bot.on_run()\nasync def running():\n    print("🔄 حلقهٔ اصلی دریافت پیام‌ها شروع شد.")`
       },
+      // ===== ۴۷. on_live =====
       {
           id: "on_live",
           title: "دکوراتور زنده شدن ربات (رسیدن به آخرین پیام)",
           signature: "@bot.on_live()",
-          desc: "در حالت Polling، وقتی ربات به آخرین پیام رسید و همهٔ پیام‌های معوقه را پردازش کرد (catch up کامل شد)، این هندلر فراخوانی می‌شود. یعنی ربات کاملاً «زنده» است.",
+          desc: "در حالت Polling، وقتی ربات به آخرین پیام رسید و همهٔ پیام‌های معوقه را پردازش کرد (catch up کامل شد)، این هندلر فراخوانی می‌شود.",
           params: [],
-          returns: [
-              ["None", "None", "None"],
-          ],
+          returns: null,
           example: `@bot.on_live()\nasync def live():\n    print("🟢 ربات زنده است — همهٔ پیام‌های قبلی پردازش شدند.")`
       },
+      // ===== ۴۸. on_error =====
       {
           id: "on_error",
           title: "دکوراتور مدیریت خطا",
           signature: "@bot.on_error(error_detail='message')",
-          desc: "وقتی خطایی در هر بخش از ربات رخ دهد، این هندلر فراخوانی می‌شود. می‌توانید سطح جزئیات خطا را مشخص کنید.",
+          desc: "وقتی خطایی در هر بخش از ربات رخ دهد، این هندلر فراخوانی می‌شود.",
           params: [
               ["error_detail", "'full' | 'message' | 'type' = 'message'", "سطح جزئیات خطا: full (traceback کامل)، message (فقط پیام خطا)، type (فقط نوع خطا)"],
           ],
-          returns: [
-              ["error", "Exception | str | type", "جزئیات خطا بر اساس `error_detail`"],
-          ],
-          example: `@bot.on_error(error_detail="full")\nasync def handle_error(error):\n    print(f"❌ خطا رخ داد:\\n{error}")`
+          returns: null,
+          example: `@bot.on_error(error_detail="full")\nasync def handle_error(error, update=None):\n    print(f"❌ خطا رخ داد:\\n{error}")`
       },
+      // ===== ۴۹. middleware =====
       {
           id: "middleware",
           title: "دکوراتور Middleware",
           signature: "@bot.middleware(filters=None)",
-          desc: "یک لایهٔ میانی (Middleware) به ربات اضافه می‌کند. قبل از رسیدن هر آپدیت به handler اصلی، از middlewareها عبور می‌کند. می‌تواند آپدیت را تأیید، رد، یا تغییر دهد.",
+          desc: "یک لایهٔ میانی (Middleware) به ربات اضافه می‌کند. قبل از رسیدن هر آپدیت به handler اصلی، از middlewareها عبور می‌کند.",
           params: [
               ["filters", "Filter | None", "فیلتر(ها) برای محدود کردن پیام‌هایی که از این middleware عبور می‌کنند"],
           ],
@@ -1223,11 +1330,12 @@
           ],
           example: `@bot.middleware()\nasync def log_middleware(update, next_handler):\n    print(f"📩 پیام از {update.sender_id}")\n    return await next_handler(update)`
       },
+      // ===== ۵۰. load_plugins =====
       {
           id: "load_plugins",
           title: "بارگذاری همهٔ پلاگین‌ها از پوشه",
           signature: "async load_plugins(folder='plugins')",
-          desc: "همهٔ فایل‌های `.py` داخل پوشهٔ مشخص‌شده را به‌عنوان پلاگین بارگذاری می‌کند. فایل‌هایی که با `_` شروع می‌شوند نادیده گرفته می‌شوند.",
+          desc: "همهٔ فایل‌های `.py` داخل پوشهٔ مشخص‌شده را به‌عنوان پلاگین بارگذاری می‌کند.",
           params: [
               ["folder", "str = 'plugins'", "مسیر پوشهٔ پلاگین‌ها"],
           ],
@@ -1236,6 +1344,7 @@
           ],
           example: `count = await bot.load_plugins("my_plugins")\nprint(f"{count} پلاگین بارگذاری شد.")`
       },
+      // ===== ۵۱. load_plugin =====
       {
           id: "load_plugin",
           title: "بارگذاری یک پلاگین خاص",
@@ -1249,22 +1358,22 @@
           ],
           example: `ok = await bot.load_plugin("plugins/my_plugin.py")`
       },
+      // ===== ۵۲. on_shutdown =====
       {
           id: "on_shutdown",
           title: "دکوراتور خاموش‌شدن ربات",
           signature: "@bot.on_shutdown()",
-          desc: "وقتی متُد `close()` صدا زده می‌شود و ربات در حال خاموش شدن است، این هندلر فراخوانی می‌شود. می‌توانید از آن برای بستن اتصال‌ها، ذخیره‌سازی داده‌ها و پاکسازی استفاده کنید.",
+          desc: "وقتی متُد `close()` صدا زده می‌شود و ربات در حال خاموش شدن است، این هندلر فراخوانی می‌شود.",
           params: [],
-          returns: [
-              ["None", "None", "None"],
-          ],
+          returns: null,
           example: `@bot.on_shutdown()\nasync def shutdown():\n    print("🛑 ربات در حال خاموش شدن...")\n    await save_data()`
       },
+      // ===== ۵۳. add_background_task =====
       {
           id: "add_background_task",
           title: "اضافه کردن تسک پس‌زمینه",
           signature: "add_background_task(coro, *args, delay=0.0, **kwargs)",
-          desc: "یک تسک (coroutine) را در پس‌زمینه اجرا می‌کند. می‌توانید با `delay` اجرای آن را به تعویق بیندازید. مناسب برای کارهای دوره‌ای، تایمر، یا پردازش‌های غیرهمزمان.",
+          desc: "یک تسک (coroutine) را در پس‌زمینه اجرا می‌کند. می‌توانید با `delay` اجرای آن را به تعویق بیندازید.",
           params: [
               ["coro", "Callable", "تابع coroutine برای اجرا"],
               ["*args", "tuple", "آرگومان‌های موقعیتی برای تابع"],
@@ -1276,11 +1385,12 @@
           ],
           example: `async def periodic_cleanup():\n    while True:\n        await clean_old_logs()\n        await asyncio.sleep(3600)\n\nbot.add_background_task(periodic_cleanup)`
       },
+      // ===== ۵۴. render =====
       {
           id: "render",
           title: "رندر دستی قالب پیام (با جلوگیری از XSS)",
           signature: "render(template, auto_escape=True, **kwargs)",
-          desc: "یک قالب متنی را با متغیرهای داده‌شده رندر می‌کند. با `auto_escape=True` از حملات XSS جلوگیری می‌شود. خروجی متن رندر‌شده و لیست متادیتای دکمه‌هاست.",
+          desc: "یک قالب متنی را با متغیرهای داده‌شده رندر می‌کند. خروجی متن رندر‌شده و لیست متادیتای دکمه‌هاست.",
           params: [
               ["template", "str", "قالب متنی (مثلاً `سلام {{ name }}`)"],
               ["auto_escape", "bool = True", "فرار خودکار کاراکترهای HTML/Markdown"],
@@ -1292,25 +1402,112 @@
           ],
           example: `text, meta = bot.render("سلام {{ name }}، خوبی؟", name="علی")\nawait bot.send_message(chat_id, text, meta_data=meta)`
       },
+      // ===== ۵۵. setup_webhooks =====
       {
           id: "setup_webhooks",
           title: "معرفی Webhook به سرورهای روبیکا",
           signature: "async setup_webhooks()",
-          desc: "آدرس‌های webhook تنظیم‌شده در کلاس WebhookServer را به سرورهای روبیکا ارسال می‌کند. این متد باید بعد از تنظیم webhookها صدا زده شود.",
+          desc: "آدرس‌های webhook تنظیم‌شده در کلاس WebhookServer را به سرورهای روبیکا ارسال می‌کند. (خروجی ندارد.)",
           params: [],
-          returns: [
-              ["success", "bool", "True اگر webhookها با موفقیت ثبت شدند"],
-          ],
+          returns: null,
           example: `await bot.setup_webhooks()\nprint("✅ Webhookها ثبت شدند.")`
       },
+      // ===== ۵۶. set_main_parse_mode =====
+      {
+          id: "set_main_parse_mode",
+          title: "تغییر پارس مود اصلی کلاینت",
+          signature: "async set_main_parse_mode(parse_mode)",
+          desc: "پارس مود پیش‌فرض را برای تمام متدهای ارسال پیام تغییر می‌دهد. برای بازگشت به پیروی از ورودی متدها، مقدار `'Null'` را بدهید.",
+          params: [
+              ["parse_mode", "'Markdown' | 'HTML' | 'Null' | None", "پارس مود جدید (Null = اعمال جداگانه برای هر متد)"],
+          ],
+          returns: null,
+          example: `await bot.set_main_parse_mode("HTML")`
+      },
+      // ===== ۵۷. send_requests =====
+      {
+          id: "send_requests",
+          title: "ارسال درخواست خام به API",
+          signature: "async send_requests(method, data_)",
+          desc: "درخواست مستقیم به Bot API با retry خودکار. مناسب برای متدهایی که کتابخانه پوشش نداده.",
+          params: [
+              ["method", "str", "نام متد API (مثلاً 'sendMessage')"],
+              ["data_", "dict | None", "دیکشنری پارامترها"],
+          ],
+          returns: [
+              ["response", "dict", "پاسخ خام سرور"]
+          ],
+          example: `resp = await bot.send_requests("getMe")\nprint(resp)`
+      },
+      // ===== ۵۸. from_config =====
+      {
+          id: "from_config",
+          title: "ساخت کلاینت از فایل کانفیگ",
+          signature: "await Client.from_config(config)",
+          desc: "یک کلاس‌متد (classmethod) که یک شیء Client را از مسیر فایل JSON یا دیکشنری تنظیمات می‌سازد.",
+          params: [
+              ["config", "str | dict", "مسیر فایل JSON یا دیکشنری شامل پارامترهای Client"],
+          ],
+          returns: [
+              ["client", "Client", "نمونهٔ ساخته‌شده از Client"]
+          ],
+          example: `bot = await Client.from_config("config.json")\n# یا\nbot = await Client.from_config({"name_session": "bot1", "token": "..."})`
+      },
+      // ===== ۵۹. دکوراتورهای polling/webhook مخفی (on_edit, on_delete, etc) =====
+      {
+          id: "extra_decorators",
+          title: "دکوراتورهای اضافه (ویرایش، حذف، همه)",
+          signature: "@bot.on_edit(filters=None)  @bot.on_delete(filters=None)  @bot.on_all_message(filters=None)",
+          desc: "دکوراتورهای میانبر برای دریافت فقط ویرایش‌ها، حذف‌ها، یا همهٔ پیام‌ها (پولینگ). نسخه‌های webhook هم وجود دارند: `on_edit_updates`, `on_delete_updates`, `on_all_message_updates`.",
+          params: [
+              ["filters", "Filter | None", "فیلتر پیام (اختیاری)"],
+          ],
+          returns: [
+              ["Message", "<a href='../models/index.html#update'>Message</a>", "شی اطلاعات پیام"]
+          ],
+          example: `@bot.on_edit()\nasync def edited(msg: Message):\n    print("ویرایش شد:", msg.text)\n\n@bot.on_delete_updates()\nasync def deleted(msg: Message):\n    print("حذف شد:", msg.message_id)`
+      },
+      // ===== ۶۰. دکوراتورهای before_send / after_send =====
+      {
+          id: "before_after_send",
+          title: "هندلرهای پیش/پس از ارسال",
+          signature: "@bot.before_send()  @bot.after_send()",
+          desc: "قبل از هر ارسال (اگر `before_send` مقدار `False` برگرداند، ارسال لغو می‌شود) و بعد از هر ارسال (با دسترسی به نتیجه) اجرا می‌شوند.",
+          params: [],
+          returns: null,
+          example: `@bot.before_send()\nasync def check_spam(**kwargs):\n    if "اسپم" in kwargs.get("text", ""):\n        return False\n    return True\n\n@bot.after_send()\nasync def log_send(result, **kwargs):\n    print("ارسال شد:", result)`
+      },
+      // ===== ۶۱. دکوراتورهای before_run / after_run =====
+      {
+          id: "before_after_run",
+          title: "هندلرهای پیش/پس از run",
+          signature: "@bot.before_run()  @bot.after_run()",
+          desc: "قبل از شروع حلقهٔ اصلی (`run()`) و بعد از توقف حلقه اجرا می‌شوند.",
+          params: [],
+          returns: null,
+          example: `@bot.before_run()\nasync def setup_db():\n    print("اتصال به دیتابیس")\n\n@bot.after_run()\nasync def cleanup():\n    print("پاکسازی منابع")`
+      },
+      // ===== ۶۲. on_log =====
+      {
+          id: "on_log",
+          title: "هندلر رویدادهای لاگ",
+          signature: "@bot.on_log()",
+          desc: "هر رویداد لاگ (با جزئیات) به این هندلر ارسال می‌شود.",
+          params: [],
+          returns: null,
+          example: `@bot.on_log()\nasync def log_handler(log_entry):\n    print(log_entry)`
+      },
+      // ===== ۶۳. helpers (close/stop) اصلاح‌شده =====
       {
         id: "helpers",
-        title: "متود های کمکی",
-        signature: "cloes();stop()",
-        desc: "فانکشن stop برای توقف گرفتن آپدیت ها توسط ربات و  فانکشن cloes برای آزاد سازی کامل منابع و متوقف کردن کامل ربات.",
-        params: null,
+        title: "متود های کمکی (close و stop)",
+        signature: "close(type_stop='all') ; stop()",
+        desc: "`stop()` فقط دریافت آپدیت‌ها را متوقف می‌کند. `close()` کل منابع را آزاد کرده و ربات را کاملاً خاموش می‌کند. می‌توانید با `type_stop='running'` فقط حلقه را متوقف کنید (مانند stop).",
+        params: [
+          ["type_stop", "'all' | 'running' = 'all'", "نوع توقف: all = آزادسازی کامل، running = فقط توقف حلقه"],
+        ],
         returns: null,
-        example: `await bot.stop()\nawait bot.cloes()`
+        example: `# توقف موقت\nawait bot.stop()\n\n# خاموشی کامل\nawait bot.close()\n\n# توقف حلقه بدون آزادسازی کامل\nawait bot.close(type_stop='running')`
       },
     ];
 
@@ -1320,8 +1517,7 @@
       container.innerHTML = '';
       tocList.innerHTML = '';
 
-      methodsData.forEach((method, index) => {
-
+      methodsData.forEach((method) => {
         const section = document.createElement('section');
         section.className = 'method';
         section.id = method.id;
@@ -1420,7 +1616,7 @@
       });
 
       document.querySelectorAll('.copy-btn').forEach(btn => {
-        btn.addEventListener('click', function(e) {
+        btn.addEventListener('click', function() {
           const pre = this.nextElementSibling;
           const code = pre.querySelector('code');
           navigator.clipboard.writeText(code.textContent).then(() => {
@@ -1437,6 +1633,5 @@
 
     window.addEventListener('DOMContentLoaded', renderDocs);
   </script>
-
 </body>
 </html>

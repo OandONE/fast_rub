@@ -353,11 +353,11 @@ class Update(BaseModels):
 
     @property
     def button(self) -> dict | None:
-        """data button clicked / اطلاعات دکمه کلیک شده"""
+        Utils.deprecated_property("button_id", "new_message.aux_data.button")
         return self.new_message.aux_data.button
     @property
     def button_id(self) -> str | None:
-        """button id clicked button / آیدی دکمه کلیک شده"""
+        Utils.deprecated_property("button_id", "new_message.aux_data.button_id")
         return self.new_message.aux_data.button_id
     
     # Reply

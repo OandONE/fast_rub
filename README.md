@@ -89,7 +89,6 @@ from fast_rub.types import Update
 
 async def main():
     bot = Client("my_bot")
-    await bot.start()
 
     @bot.on_message(filters.text("سلام"))
     async def say_hello(msg: Update):
@@ -109,11 +108,10 @@ from fast_rub.types import UpdateButton
 
 async def main():
     bot = Client("my_bot")
-    await bot.start()
 
     @bot.on_button()
     async def button_click(msg: UpdateButton):
-        await msg.send_text(f"دکمهٔ {msg.button_id} فشرده شد")
+        await msg.send_text(f"دکمهٔ {msg.new_message.aux_data.button_id} فشرده شد")
 
     await bot.run()
 
@@ -215,8 +213,8 @@ async def ask_name(msg, data):
 
 @register.state("waiting_name")
 async def get_name(msg, data):
-    data["name"] = msg.text
-    await msg.reply(f"سلام {msg.text}!")
+    data["name"] = msg.new_message.text
+    await msg.reply(f"سلام {msg.new_message.text}!")
     return Conversation.END
 
 bot.add_conversation(register)

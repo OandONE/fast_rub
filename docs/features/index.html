@@ -428,14 +428,14 @@
         <li><a href="#" class="active">قابلیت ها</a></li>
         <li><a href="../pyrubi/index.html">یوزر بات</a></li>
       </ul>
-      <div class="toc-title">📌 فهرست مدل‌ها</div>
+      <div class="toc-title">📌 فهرست قابلیت‌ها</div>
       <ul id="toc-list" class="toc-list"></ul>
     </aside>
 
     <main class="main">
       <div class="main-header">
         <h1>قابلیت ها</h1>
-        <p>کلاس‌های کمکی، ساختار دیتا و قابلیت های منصحر به فرد در فست‌روب.</p>
+        <p>کلاس‌های کمکی، ساختار دیتا و قابلیت های منحصربه‌فرد در فست‌روب.</p>
       </div>
       <div id="features-container"></div>
       <footer class="footer">
@@ -461,7 +461,7 @@
           ["low_traffic", "int = 60", "حداکثر تعداد پیام در پنجره زمانی برای 'ترافیک کم'"],
           ["medium_traffic", "int = 100", "حداکثر تعداد پیام برای 'ترافیک متوسط' (بیشتر از این = زیاد)"],
           ["low_wait", "float = 0.0", "تاخیر/ثانیه در ترافیک کم"],
-          ["medium_wait", "float = 0.0", "تاخیر/ثانیه در ترافیک متوسط"],
+          ["medium_wait", "float = 1.0", "تاخیر/ثانیه در ترافیک متوسط"],
           ["high_wait", "float = 3.0", "تاخیر/ثانیه در ترافیک زیاد"],
           ["time_window", "float = 60", "بازه زمانی/ثانیه برای شمارش پیام ها"],
           ["auto_track", "bool = False", "اگر مقدار True باشد هر پیام که دریافت شود یک پیام به کانال sending اضافه می شود"],
@@ -473,6 +473,7 @@
           ["uploading", "bool = False", "کانال 'آپلود فایل' فعال باشد"],
           ["editing", "bool = False", "کانال 'ویرایش پیام' فعال باشد"],
           ["deleting", "bool = False", "کانال 'حذف پیام' فعال باشد"],
+          ["sleep_callback", "Callable | None = None", "کالبک سفارشی برای محاسبه زمان انتظار بر اساس آمار ترافیک ( channel, messages_count, last_time, total_requests, ... )"],
         ],
         methods: [
           {
@@ -1591,6 +1592,41 @@ await bot.setup_webhooks()
 await bot.run()`
 },
 
+{
+    id: "BotConfig",
+    title: "⚙️ BotConfig — تنظیمات پیشرفته ربات",
+    description: "کلاس BotConfig به شما اجازه می‌دهد تنظیمات جزئی و پیشرفته ربات را بدون تغییر در کد اصلی فریم‌ورک، به دلخواه خود تنظیم کنید. شامل کنترل اعتبارسنجی شناسه‌های چت، بهینه‌سازی خودکار متن، مدیریت طول مجاز پیام‌ها، جلوگیری از حملات XSS و تنظیم رفتار تلاش مجدد در خطاهای شبکه.",
+    class_signature: "class BotConfig",
+    init_params: [
+        ["validate_chat_id", "bool = True", "اعتبارسنجی chat_id پیش از هر درخواست. اگر از صحت chat_idهای ورودی اطمینان دارید، می‌توانید برای افزایش سرعت، این گزینه را غیرفعال کنید."],
+        ["optimize_text", "bool = True", "بهینه‌سازی متن پیش از ارسال. فاصله‌های تکراری (بیش از یک space) را به یک فاصله کاهش می‌دهد."],
+        ["strip_text", "bool = True", "حذف فاصله‌های خالی (whitespace) از ابتدا و انتهای پیام."],
+        ["max_text_length", "int | None = None", "حداکثر طول مجاز برای متن پیام (به کاراکتر). پیام‌های بلندتر از این مقدار بریده می‌شوند."],
+        ["compress_long_text", "bool = False", "افزودن '...' به انتهای پیام‌های بلند هنگام برش. فقط زمانی اعمال می‌شود که max_text_length رد شده باشد."],
+        ["auto_escape", "bool = True", "فرار خودکار کاراکترهای HTML و Markdown برای جلوگیری از حملات XSS. توصیه می‌شود همیشه روشن باشد."],
+        ["retry_on_timeout", "bool = True", "تلاش مجدد خودکار در صورت timeout شدن درخواست. برای شبکه‌های ناپایدار یا سرورهای شلوغ مفید است."],
+    ],
+    example: `from fast_rub import Client, BotConfig
+
+config = BotConfig(
+    validate_chat_id=False,
+    optimize_text=True,
+    strip_text=True,
+    max_text_length=2048,
+    compress_long_text=True,
+    auto_escape=True,
+    retry_on_timeout=True,
+)
+bot = Client("my_bot", config=config)
+
+@bot.on_message()
+async def handler(msg):
+    # متن به‌طور خودکار بهینه و escape می‌شود
+    await msg.reply("سلام!")
+
+await bot.run()`
+}
+
 ];
 
     function renderfeatures() {
@@ -1762,7 +1798,7 @@ await bot.run()`
         const tocItem = document.createElement('li');
         const tocLink = document.createElement('a');
         tocLink.href = `#${section.id}`;
-        tocLink.textContent = section.title.replace('🔹', '').trim();
+        tocLink.textContent = section.title.replace('🔹', '').replace('⚙️', '').trim();
         tocItem.appendChild(tocLink);
         tocList.appendChild(tocItem);
       });

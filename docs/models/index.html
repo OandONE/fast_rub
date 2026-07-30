@@ -480,817 +480,879 @@
         example: `from fast_rub.button import KeyPad\n\nkey = KeyPad()\nkey.append(\n    key.simple("btn1", "دکمه اول")\n)\nkey.append(\n    key.simple("btn2", "دکمه دوم"),\n    key.simple("btn3", "سوم")\n)\nprint(key.build())\nbtn = key.get_data_by_id("btn1")`
       },
 
-      // ============ ۲. Update (Message) ============
-{
-    id: "update",
-    title: "📩 Message (Update)",
-    description: "آبجکت پیام دریافتی — شامل اطلاعات پیام، فایل، ریپلای، متادیتا و ... . این کلاس با نام‌های `Update`، `Message` و `Updates` نیز در دسترس است.",
-    note: "مسیر import: `from fast_rub.types import Update` یا `from fast_rub.types import Message`",
-    class_signature: "class Update(update_data: dict, client: Client)",
-    properties: [
-        { name: "text", type: "str | None", description: "متن پیام" },
-        { name: "message_id", type: "str", description: "آیدی پیام" },
-        { name: "chat_id", type: "str", description: "چت‌آیدی" },
-        { name: "time", type: "int", description: "زمان ارسال (unix)" },
-        { name: "sender_type", type: "Literal['User','Group','Channel']", description: "نوع فرستنده" },
-        { name: "sender_id", type: "str", description: "آیدی فرستنده" },
-        { name: "is_edited", type: "bool", description: "آیا پیام ویرایش شده؟" },
-        { name: "file", type: "dict | None", description: "اطلاعات فایل (در صورت وجود)" },
-        { name: "file_id", type: "str | None", description: "آیدی فایل" },
-        { name: "file_name", type: "str | None", description: "نام فایل" },
-        { name: "size_file", type: "int | None", description: "سایز فایل (بایت)" },
-        { name: "type_file", type: "str", description: "دسته‌بندی فایل (text, image, video, ...)" },
-        { name: "button", type: "dict | None", description: "اطلاعات دکمه کلیک شده" },
-        { name: "button_id", type: "str | None", description: "آیدی دکمه کلیک شده" },
-        { name: "is_reply", type: "bool", description: "آیا ریپلای شده؟" },
-        { name: "reply_to_message_id", type: "str | None", description: "آیدی پیام ریپلای شده" },
-        { name: "metadata", type: "dict | None", description: "متادیتای کامل" },
-        { name: "meta_data_parts", type: "metadata_prop | None", description: "آبجکت متادیتا (لیست قسمت‌ها)" },
-        { name: "is_forward", type: "bool", description: "آیا فوروارد شده؟" },
-        { name: "forward_from", type: "str | None", description: "نوع مبدأ فوروارد" },
-        { name: "forward_message_id", type: "str | None", description: "آیدی پیام اصلی فوروارد شده" },
-        { name: "forward_from_sender_id", type: "str | None", description: "آیدی فرستنده اصلی" },
-        { name: "is_contact", type: "bool", description: "آیا پیام مخاطب است؟" },
-        { name: "contact_phone_number", type: "str | None", description: "شماره مخاطب" },
-        { name: "contact_first_name", type: "str | None", description: "نام مخاطب" },
-        { name: "contact_last_name", type: "str | None", description: "نام خانوادگی مخاطب" },
-        { name: "is_sticker", type: "bool", description: "آیا استیکر است؟" },
-        { name: "sticker_emoji_character", type: "str | None", description: "اموجی استیکر" },
-        { name: "sticker_sticker_id", type: "str | None", description: "آیدی استیکر" },
-        { name: "sticker_file", type: "File | dict", description: "فایل استیکر" },
-        { name: "removed_message_id", type: "str | None", description: "آیدی پیام حذف شده" },
-        { name: "update_time", type: "int | None", description: "زمان آپدیت (برای ویرایش)" }
-    ],
-    methods: [
-        {
+      // ============ ۲. Update (Message) – بازنویسی شده با ساختار جدید ============
+      {
+        id: "update",
+        title: "📩 Message (Update)",
+        description: "آبجکت پیام دریافتی — شامل اطلاعات پیام، فایل، ریپلای، متادیتا و ... . با نام‌های `Update`، `Message` و `Updates` نیز در دسترس است. پراپرتی‌های اصلی پیام (متن، فرستنده، فایل و ...) اکنون در `update.new_message` قرار دارند.",
+        note: "مسیر import: `from fast_rub.types import Update` یا `from fast_rub.types import Message`",
+        class_signature: "class Update(update_data: dict, client: Client)",
+        properties: [
+          { name: "chat_id", type: "str", description: "چت‌آیدی" },
+          { name: "sender_type", type: "Literal['User','Group','Channel']", description: "نوع فرستنده" },
+          { name: "removed_message_id", type: "str | None", description: "آیدی پیام حذف شده" },
+          { name: "update_time", type: "int | None", description: "زمان آپدیت (برای ویرایش)" },
+          { name: "new_message", type: "NewMessage", description: "آبجکت NewMessage حاوی داده‌های پیام (جزئیات در زیر)" }
+        ],
+        methods: [
+          // ----- regex -----
+          {
             name: "regex",
             params: [
-                ["pattern", "str", "الگوی regex"],
-                ["flags", "int = 0", "پرچم‌های re"],
-                ["text", "str | None", "متن جایگزین برای بررسی"]
+              ["pattern", "str", "الگوی regex"],
+              ["flags", "int = 0", "پرچم‌های re"],
+              ["text", "str | None", "متن جایگزین برای بررسی"]
             ],
             returns: "bool",
             description: "بررسی متن پیام با الگوی regex"
-        },
-        {
+          },
+          // ----- get_chat_id_info -----
+          {
             name: "get_chat_id_info",
-            params: [
-                ["chat_id", "str | None", "چت‌آیدی — پیشفرض chat_id خود پیام"]
-            ],
+            params: [["chat_id", "str | None", "چت‌آیدی — پیشفرض chat_id خود پیام"]],
             returns: "Chat",
             description: "گرفتن اطلاعات چت (گروه، کانال یا کاربر)"
-        },
-        {
+          },
+          // ----- reply -----
+          {
             name: "reply",
             params: [
-                ["text", "str | None", "متن پیام"],
-                ["inline_keypad", "list | KeyPad | None", "دکمه‌های شیشه‌ای"],
-                ["keypad", "list | KeyPad | None", "دکمه‌های کیبورد"],
-                ["resize_keyboard", "bool = True", "تغییر خودکار سایز کیبورد"],
-                ["on_time_keyboard", "bool = False", "کیبورد یکبار مصرف"],
-                ["auto_delete", "int | None", "پاکسازی خودکار (ثانیه)"],
-                ["parse_mode", "'Markdown' | 'HTML' | None = 'Markdown'", "پارس مود"],
-                ["meta_data", "list | None", "متادیتا"],
-                ["wait_send", "float | None", "تأخیر قبل از ارسال"],
-                ["return_task", "bool = False", "برگرداندن تسک"],
-                ["context", "dict | None", "متغیرهای قالب"],
-                ["auto_escape", "bool = True", "فرار خودکار XSS"],
-                ["file", "str | Path | bytes | None", "فایل"],
-                ["name_file", "str | None", "نام فایل"],
-                ["type_file", "'File' | 'Image' | 'Voice' | 'Music' | 'Gif' | 'Video' = 'File'", "نوع فایل"],
-                ["file_id", "str | None", "آیدی فایل"],
-                ["show_progress", "bool = True", "نمایش پیشرفت آپلود"],
-                ["chunk_size", "int = 1MB", "سایز چانک"],
-                ["question", "str | None", "سوال نظرسنجی"],
-                ["options", "list | None", "گزینه‌های نظرسنجی"],
-                ["type_poll", "'Regular' | 'Quiz' = 'Regular'", "نوع نظرسنجی"],
-                ["is_anonymous", "bool = True", "ناشناس بودن رأی‌ها"],
-                ["correct_option_index", "int | None", "ایندکس گزینه صحیح"],
-                ["allows_multiple_answers", "bool = False", "چند انتخابی"],
-                ["hint", "str | None", "راهنمایی پاسخ"],
-                ["latitude", "str | None", "عرض جغرافیایی"],
-                ["longitude", "str | None", "طول جغرافیایی"],
-                ["first_name", "str | None", "نام مخاطب"],
-                ["last_name", "str | None", "نام خانوادگی مخاطب"],
-                ["phone_number", "str | None", "شماره تلفن"],
-                ["chat_id", "str | None", "چت‌آیدی مقصد (پیشفرض chat_id پیام)"],
-                ["reply_to_message_id", "str | None", "آیدی پیام ریپلای شده"]
+              ["text", "str | None", "متن پیام"],
+              ["inline_keypad", "list | KeyPad | None", "دکمه‌های شیشه‌ای"],
+              ["keypad", "list | KeyPad | None", "دکمه‌های کیبورد"],
+              ["resize_keyboard", "bool = True", "تغییر خودکار سایز کیبورد"],
+              ["on_time_keyboard", "bool = False", "کیبورد یکبار مصرف"],
+              ["auto_delete", "int | None", "پاکسازی خودکار (ثانیه)"],
+              ["parse_mode", "'Markdown' | 'HTML' | None = 'Markdown'", "پارس مود"],
+              ["meta_data", "list | None", "متادیتا"],
+              ["wait_send", "float | None", "تأخیر قبل از ارسال"],
+              ["return_task", "bool = False", "برگرداندن تسک"],
+              ["context", "dict | None", "متغیرهای قالب"],
+              ["auto_escape", "bool = True", "فرار خودکار XSS"],
+              ["file", "str | Path | bytes | None", "فایل"],
+              ["name_file", "str | None", "نام فایل"],
+              ["type_file", "'File' | 'Image' | 'Voice' | 'Music' | 'Gif' | 'Video' = 'File'", "نوع فایل"],
+              ["file_id", "str | None", "آیدی فایل"],
+              ["show_progress", "bool = True", "نمایش پیشرفت آپلود"],
+              ["chunk_size", "int = 1MB", "سایز چانک"],
+              ["question", "str | None", "سوال نظرسنجی"],
+              ["options", "list | None", "گزینه‌های نظرسنجی"],
+              ["type_poll", "'Regular' | 'Quiz' = 'Regular'", "نوع نظرسنجی"],
+              ["is_anonymous", "bool = True", "ناشناس بودن رأی‌ها"],
+              ["correct_option_index", "int | None", "ایندکس گزینه صحیح"],
+              ["allows_multiple_answers", "bool = False", "چند انتخابی"],
+              ["hint", "str | None", "راهنمایی پاسخ"],
+              ["latitude", "str | None", "عرض جغرافیایی"],
+              ["longitude", "str | None", "طول جغرافیایی"],
+              ["first_name", "str | None", "نام مخاطب"],
+              ["last_name", "str | None", "نام خانوادگی مخاطب"],
+              ["phone_number", "str | None", "شماره تلفن"],
+              ["chat_id", "str | None", "چت‌آیدی مقصد (پیشفرض chat_id پیام)"],
+              ["reply_to_message_id", "str | None", "آیدی پیام ریپلای شده"]
             ],
             returns: "msg_update | Task[msg_update]",
             description: "ریپلای جامع — پشتیبانی از متن، فایل، نظرسنجی، موقعیت مکانی، مخاطب"
-        },
-        {
+          },
+          // ----- reply_text -----
+          {
             name: "reply_text",
             params: [
-                ["text", "str", "متن پیام"],
-                ["inline_keypad", "list | KeyPad | None", "دکمه‌های شیشه‌ای"],
-                ["keypad", "list | KeyPad | None", "دکمه‌های کیبورد"],
-                ["resize_keyboard", "bool = True", "تغییر سایز کیبورد"],
-                ["on_time_keyboard", "bool = False", "کیبورد یکبار مصرف"],
-                ["auto_delete", "int | None", "پاکسازی خودکار"],
-                ["parse_mode", "'Markdown' | 'HTML' | None = 'Markdown'", "پارس مود"],
-                ["meta_data", "list | None", "متادیتا"],
-                ["wait_send", "float | None", "تأخیر قبل از ارسال"],
-                ["return_task", "bool = False", "برگرداندن تسک"],
-                ["chat_id", "str | None", "چت‌آیدی مقصد"],
-                ["reply_to_message_id", "str | None", "آیدی پیام ریپلای شده"],
-                ["context", "dict | None", "متغیرهای قالب"],
-                ["auto_escape", "bool = True", "فرار خودکار XSS"]
+              ["text", "str", "متن پیام"],
+              ["inline_keypad", "list | KeyPad | None", "دکمه‌های شیشه‌ای"],
+              ["keypad", "list | KeyPad | None", "دکمه‌های کیبورد"],
+              ["resize_keyboard", "bool = True", "تغییر سایز کیبورد"],
+              ["on_time_keyboard", "bool = False", "کیبورد یکبار مصرف"],
+              ["auto_delete", "int | None", "پاکسازی خودکار"],
+              ["parse_mode", "'Markdown' | 'HTML' | None = 'Markdown'", "پارس مود"],
+              ["meta_data", "list | None", "متادیتا"],
+              ["wait_send", "float | None", "تأخیر قبل از ارسال"],
+              ["return_task", "bool = False", "برگرداندن تسک"],
+              ["chat_id", "str | None", "چت‌آیدی مقصد"],
+              ["reply_to_message_id", "str | None", "آیدی پیام ریپلای شده"],
+              ["context", "dict | None", "متغیرهای قالب"],
+              ["auto_escape", "bool = True", "فرار خودکار XSS"]
             ],
             returns: "msg_update | Task[msg_update]",
             description: "ریپلای فقط متن"
-        },
-        {
+          },
+          // ----- reply_poll -----
+          {
             name: "reply_poll",
             params: [
-                ["question", "str", "سوال نظرسنجی"],
-                ["options", "list", "گزینه‌ها"],
-                ["type_poll", "'Regular' | 'Quiz' = 'Regular'", "نوع نظرسنجی"],
-                ["is_anonymous", "bool = True", "ناشناس بودن"],
-                ["correct_option_index", "int | None", "ایندکس گزینه صحیح"],
-                ["allows_multiple_answers", "bool = False", "چند انتخابی"],
-                ["hint", "str | None", "راهنمایی"],
-                ["auto_delete", "int | None", "پاکسازی خودکار"],
-                ["wait_send", "float | None", "تأخیر قبل از ارسال"],
-                ["return_task", "bool = False", "برگرداندن تسک"],
-                ["chat_id", "str | None", "چت‌آیدی مقصد"],
-                ["reply_to_message_id", "str | None", "آیدی ریپلای"]
+              ["question", "str", "سوال نظرسنجی"],
+              ["options", "list", "گزینه‌ها"],
+              ["type_poll", "'Regular' | 'Quiz' = 'Regular'", "نوع نظرسنجی"],
+              ["is_anonymous", "bool = True", "ناشناس بودن"],
+              ["correct_option_index", "int | None", "ایندکس گزینه صحیح"],
+              ["allows_multiple_answers", "bool = False", "چند انتخابی"],
+              ["hint", "str | None", "راهنمایی"],
+              ["auto_delete", "int | None", "پاکسازی خودکار"],
+              ["wait_send", "float | None", "تأخیر قبل از ارسال"],
+              ["return_task", "bool = False", "برگرداندن تسک"],
+              ["chat_id", "str | None", "چت‌آیدی مقصد"],
+              ["reply_to_message_id", "str | None", "آیدی ریپلای"]
             ],
             returns: "msg_update | Task[msg_update]",
             description: "ریپلای نظرسنجی"
-        },
-        {
+          },
+          // ----- reply_contact -----
+          {
             name: "reply_contact",
             params: [
-                ["first_name", "str", "نام"],
-                ["phone_number", "str", "شماره تلفن"],
-                ["last_name", "str = ''", "نام خانوادگی"],
-                ["auto_delete", "int | None", "پاکسازی خودکار"],
-                ["inline_keypad", "list | KeyPad | None", "دکمه شیشه‌ای"],
-                ["wait_send", "float | None", "تأخیر قبل از ارسال"],
-                ["return_task", "bool = False", "برگرداندن تسک"],
-                ["chat_id", "str | None", "چت‌آیدی مقصد"],
-                ["reply_to_message_id", "str | None", "آیدی ریپلای"]
+              ["first_name", "str", "نام"],
+              ["phone_number", "str", "شماره تلفن"],
+              ["last_name", "str = ''", "نام خانوادگی"],
+              ["auto_delete", "int | None", "پاکسازی خودکار"],
+              ["inline_keypad", "list | KeyPad | None", "دکمه شیشه‌ای"],
+              ["wait_send", "float | None", "تأخیر قبل از ارسال"],
+              ["return_task", "bool = False", "برگرداندن تسک"],
+              ["chat_id", "str | None", "چت‌آیدی مقصد"],
+              ["reply_to_message_id", "str | None", "آیدی ریپلای"]
             ],
             returns: "msg_update | Task[msg_update]",
             description: "ریپلای مخاطب"
-        },
-        {
+          },
+          // ----- reply_location -----
+          {
             name: "reply_location",
             params: [
-                ["latitude", "str", "عرض جغرافیایی"],
-                ["longitude", "str", "طول جغرافیایی"],
-                ["auto_delete", "int | None", "پاکسازی خودکار"],
-                ["wait_send", "float | None", "تأخیر قبل از ارسال"],
-                ["return_task", "bool = False", "برگرداندن تسک"],
-                ["chat_id", "str | None", "چت‌آیدی مقصد"],
-                ["reply_to_message_id", "str | None", "آیدی ریپلای"]
+              ["latitude", "str", "عرض جغرافیایی"],
+              ["longitude", "str", "طول جغرافیایی"],
+              ["auto_delete", "int | None", "پاکسازی خودکار"],
+              ["wait_send", "float | None", "تأخیر قبل از ارسال"],
+              ["return_task", "bool = False", "برگرداندن تسک"],
+              ["chat_id", "str | None", "چت‌آیدی مقصد"],
+              ["reply_to_message_id", "str | None", "آیدی ریپلای"]
             ],
             returns: "msg_update | Task[msg_update]",
             description: "ریپلای موقعیت مکانی"
-        },
-        {
+          },
+          // ----- reply_file (reply_document) -----
+          {
             name: "reply_file",
             params: [
-                ["file", "str | Path | bytes", "فایل"],
-                ["name_file", "str | None", "نام فایل"],
-                ["text", "str | None", "کپشن"],
-                ["type_file", "'File' | 'Image' | 'Voice' | 'Music' | 'Gif' | 'Video' = 'File'", "نوع فایل"],
-                ["disable_notification", "bool = False", "غیرفعال کردن اعلان"],
-                ["auto_delete", "int | None", "پاکسازی خودکار"],
-                ["parse_mode", "'Markdown' | 'HTML' | None = 'Markdown'", "پارس مود"],
-                ["meta_data", "list | None", "متادیتا"],
-                ["inline_keypad", "list | KeyPad | None", "دکمه شیشه‌ای"],
-                ["keypad", "list | KeyPad | None", "کیبورد"],
-                ["resize_keyboard", "bool = True", "تغییر سایز"],
-                ["on_time_keyboard", "bool = False", "یکبار مصرف"],
-                ["show_progress", "bool = True", "نمایش پیشرفت"],
-                ["chunk_size", "int = 1MB", "سایز چانک"],
-                ["wait_send", "float | None", "تأخیر"],
-                ["return_task", "bool = False", "برگرداندن تسک"],
-                ["context", "dict | None", "متغیرهای قالب"],
-                ["auto_escape", "bool = True", "فرار XSS"],
-                ["chat_id", "str | None", "چت‌آیدی مقصد"],
-                ["reply_to_message_id", "str | None", "آیدی ریپلای"]
+              ["file", "str | Path | bytes", "فایل"],
+              ["name_file", "str | None", "نام فایل"],
+              ["text", "str | None", "کپشن"],
+              ["type_file", "'File' | 'Image' | 'Voice' | 'Music' | 'Gif' | 'Video' = 'File'", "نوع فایل"],
+              ["disable_notification", "bool = False", "غیرفعال کردن اعلان"],
+              ["auto_delete", "int | None", "پاکسازی خودکار"],
+              ["parse_mode", "'Markdown' | 'HTML' | None = 'Markdown'", "پارس مود"],
+              ["meta_data", "list | None", "متادیتا"],
+              ["inline_keypad", "list | KeyPad | None", "دکمه شیشه‌ای"],
+              ["keypad", "list | KeyPad | None", "کیبورد"],
+              ["resize_keyboard", "bool = True", "تغییر سایز"],
+              ["on_time_keyboard", "bool = False", "یکبار مصرف"],
+              ["show_progress", "bool = True", "نمایش پیشرفت"],
+              ["chunk_size", "int = 1MB", "سایز چانک"],
+              ["wait_send", "float | None", "تأخیر"],
+              ["return_task", "bool = False", "برگرداندن تسک"],
+              ["context", "dict | None", "متغیرهای قالب"],
+              ["auto_escape", "bool = True", "فرار XSS"],
+              ["chat_id", "str | None", "چت‌آیدی مقصد"],
+              ["reply_to_message_id", "str | None", "آیدی ریپلای"]
             ],
             returns: "msg_update | Task[msg_update]",
             description: "ریپلای فایل (عمومی). `reply_document` هم همین است."
-        },
-        {
+          },
+          // ----- reply_image -----
+          {
             name: "reply_image",
             params: [
-                ["image", "str | Path | bytes", "فایل تصویر"],
-                ["name_file", "str | None", "نام فایل"],
-                ["text", "str | None", "کپشن"],
-                ["disable_notification", "bool = False", "اعلان"],
-                ["auto_delete", "int | None", "پاکسازی"],
-                ["parse_mode", "'Markdown' | 'HTML' | None = 'Markdown'", "پارس مود"],
-                ["meta_data", "list | None", "متادیتا"],
-                ["inline_keypad", "list | KeyPad | None", "دکمه شیشه‌ای"],
-                ["keypad", "list | KeyPad | None", "کیبورد"],
-                ["resize_keyboard", "bool = True", "تغییر سایز"],
-                ["on_time_keyboard", "bool = False", "یکبار مصرف"],
-                ["show_progress", "bool = True", "پیشرفت"],
-                ["chunk_size", "int = 1MB", "چانک"],
-                ["wait_send", "float | None", "تأخیر"],
-                ["return_task", "bool = False", "تسک"],
-                ["context", "dict | None", "متغیرهای قالب"],
-                ["auto_escape", "bool = True", "XSS"],
-                ["chat_id", "str | None", "مقصد"],
-                ["reply_to_message_id", "str | None", "ریپلای"]
+              ["image", "str | Path | bytes", "فایل تصویر"],
+              ["name_file", "str | None", "نام فایل"],
+              ["text", "str | None", "کپشن"],
+              ["disable_notification", "bool = False", "اعلان"],
+              ["auto_delete", "int | None", "پاکسازی"],
+              ["parse_mode", "'Markdown' | 'HTML' | None = 'Markdown'", "پارس مود"],
+              ["meta_data", "list | None", "متادیتا"],
+              ["inline_keypad", "list | KeyPad | None", "دکمه شیشه‌ای"],
+              ["keypad", "list | KeyPad | None", "کیبورد"],
+              ["resize_keyboard", "bool = True", "تغییر سایز"],
+              ["on_time_keyboard", "bool = False", "یکبار مصرف"],
+              ["show_progress", "bool = True", "پیشرفت"],
+              ["chunk_size", "int = 1MB", "چانک"],
+              ["wait_send", "float | None", "تأخیر"],
+              ["return_task", "bool = False", "تسک"],
+              ["context", "dict | None", "متغیرهای قالب"],
+              ["auto_escape", "bool = True", "XSS"],
+              ["chat_id", "str | None", "مقصد"],
+              ["reply_to_message_id", "str | None", "ریپلای"]
             ],
             returns: "msg_update | Task[msg_update]",
             description: "ریپلای تصویر"
-        },
-        {
+          },
+          // ----- reply_video -----
+          {
             name: "reply_video",
             params: [
-                ["video", "str | Path | bytes", "فایل ویدیو"],
-                ["name_file", "str | None", "نام فایل"],
-                ["text", "str | None", "کپشن"],
-                ["disable_notification", "bool = False", "اعلان"],
-                ["auto_delete", "int | None", "پاکسازی"],
-                ["parse_mode", "'Markdown' | 'HTML' | None = 'Markdown'", "پارس مود"],
-                ["meta_data", "list | None", "متادیتا"],
-                ["inline_keypad", "list | KeyPad | None", "دکمه شیشه‌ای"],
-                ["keypad", "list | KeyPad | None", "کیبورد"],
-                ["resize_keyboard", "bool = True", "تغییر سایز"],
-                ["on_time_keyboard", "bool = False", "یکبار مصرف"],
-                ["show_progress", "bool = True", "پیشرفت"],
-                ["chunk_size", "int = 1MB", "چانک"],
-                ["wait_send", "float | None", "تأخیر"],
-                ["return_task", "bool = False", "تسک"],
-                ["context", "dict | None", "متغیرهای قالب"],
-                ["auto_escape", "bool = True", "XSS"],
-                ["chat_id", "str | None", "مقصد"],
-                ["reply_to_message_id", "str | None", "ریپلای"]
+              ["video", "str | Path | bytes", "فایل ویدیو"],
+              ["name_file", "str | None", "نام فایل"],
+              ["text", "str | None", "کپشن"],
+              ["disable_notification", "bool = False", "اعلان"],
+              ["auto_delete", "int | None", "پاکسازی"],
+              ["parse_mode", "'Markdown' | 'HTML' | None = 'Markdown'", "پارس مود"],
+              ["meta_data", "list | None", "متادیتا"],
+              ["inline_keypad", "list | KeyPad | None", "دکمه شیشه‌ای"],
+              ["keypad", "list | KeyPad | None", "کیبورد"],
+              ["resize_keyboard", "bool = True", "تغییر سایز"],
+              ["on_time_keyboard", "bool = False", "یکبار مصرف"],
+              ["show_progress", "bool = True", "پیشرفت"],
+              ["chunk_size", "int = 1MB", "چانک"],
+              ["wait_send", "float | None", "تأخیر"],
+              ["return_task", "bool = False", "تسک"],
+              ["context", "dict | None", "متغیرهای قالب"],
+              ["auto_escape", "bool = True", "XSS"],
+              ["chat_id", "str | None", "مقصد"],
+              ["reply_to_message_id", "str | None", "ریپلای"]
             ],
             returns: "msg_update | Task[msg_update]",
             description: "ریپلای ویدیو"
-        },
-        {
+          },
+          // ----- reply_voice -----
+          {
             name: "reply_voice",
             params: [
-                ["voice", "str | Path | bytes", "فایل ویس"],
-                ["name_file", "str | None", "نام فایل"],
-                ["text", "str | None", "کپشن"],
-                ["disable_notification", "bool = False", "اعلان"],
-                ["auto_delete", "int | None", "پاکسازی"],
-                ["parse_mode", "'Markdown' | 'HTML' | None = 'Markdown'", "پارس مود"],
-                ["meta_data", "list | None", "متادیتا"],
-                ["inline_keypad", "list | KeyPad | None", "دکمه شیشه‌ای"],
-                ["keypad", "list | KeyPad | None", "کیبورد"],
-                ["resize_keyboard", "bool = True", "تغییر سایز"],
-                ["on_time_keyboard", "bool = False", "یکبار مصرف"],
-                ["show_progress", "bool = True", "پیشرفت"],
-                ["chunk_size", "int = 1MB", "چانک"],
-                ["wait_send", "float | None", "تأخیر"],
-                ["return_task", "bool = False", "تسک"],
-                ["context", "dict | None", "متغیرهای قالب"],
-                ["auto_escape", "bool = True", "XSS"],
-                ["chat_id", "str | None", "مقصد"],
-                ["reply_to_message_id", "str | None", "ریپلای"]
+              ["voice", "str | Path | bytes", "فایل ویس"],
+              ["name_file", "str | None", "نام فایل"],
+              ["text", "str | None", "کپشن"],
+              ["disable_notification", "bool = False", "اعلان"],
+              ["auto_delete", "int | None", "پاکسازی"],
+              ["parse_mode", "'Markdown' | 'HTML' | None = 'Markdown'", "پارس مود"],
+              ["meta_data", "list | None", "متادیتا"],
+              ["inline_keypad", "list | KeyPad | None", "دکمه شیشه‌ای"],
+              ["keypad", "list | KeyPad | None", "کیبورد"],
+              ["resize_keyboard", "bool = True", "تغییر سایز"],
+              ["on_time_keyboard", "bool = False", "یکبار مصرف"],
+              ["show_progress", "bool = True", "پیشرفت"],
+              ["chunk_size", "int = 1MB", "چانک"],
+              ["wait_send", "float | None", "تأخیر"],
+              ["return_task", "bool = False", "تسک"],
+              ["context", "dict | None", "متغیرهای قالب"],
+              ["auto_escape", "bool = True", "XSS"],
+              ["chat_id", "str | None", "مقصد"],
+              ["reply_to_message_id", "str | None", "ریپلای"]
             ],
             returns: "msg_update | Task[msg_update]",
             description: "ریپلای ویس"
-        },
-        {
+          },
+          // ----- reply_music -----
+          {
             name: "reply_music",
             params: [
-                ["music", "str | Path | bytes", "فایل موزیک"],
-                ["name_file", "str | None", "نام فایل"],
-                ["text", "str | None", "کپشن"],
-                ["disable_notification", "bool = False", "اعلان"],
-                ["auto_delete", "int | None", "پاکسازی"],
-                ["parse_mode", "'Markdown' | 'HTML' | None = 'Markdown'", "پارس مود"],
-                ["meta_data", "list | None", "متادیتا"],
-                ["inline_keypad", "list | KeyPad | None", "دکمه شیشه‌ای"],
-                ["keypad", "list | KeyPad | None", "کیبورد"],
-                ["resize_keyboard", "bool = True", "تغییر سایز"],
-                ["on_time_keyboard", "bool = False", "یکبار مصرف"],
-                ["show_progress", "bool = True", "پیشرفت"],
-                ["chunk_size", "int = 1MB", "چانک"],
-                ["wait_send", "float | None", "تأخیر"],
-                ["return_task", "bool = False", "تسک"],
-                ["context", "dict | None", "متغیرهای قالب"],
-                ["auto_escape", "bool = True", "XSS"],
-                ["chat_id", "str | None", "مقصد"],
-                ["reply_to_message_id", "str | None", "ریپلای"]
+              ["music", "str | Path | bytes", "فایل موزیک"],
+              ["name_file", "str | None", "نام فایل"],
+              ["text", "str | None", "کپشن"],
+              ["disable_notification", "bool = False", "اعلان"],
+              ["auto_delete", "int | None", "پاکسازی"],
+              ["parse_mode", "'Markdown' | 'HTML' | None = 'Markdown'", "پارس مود"],
+              ["meta_data", "list | None", "متادیتا"],
+              ["inline_keypad", "list | KeyPad | None", "دکمه شیشه‌ای"],
+              ["keypad", "list | KeyPad | None", "کیبورد"],
+              ["resize_keyboard", "bool = True", "تغییر سایز"],
+              ["on_time_keyboard", "bool = False", "یکبار مصرف"],
+              ["show_progress", "bool = True", "پیشرفت"],
+              ["chunk_size", "int = 1MB", "چانک"],
+              ["wait_send", "float | None", "تأخیر"],
+              ["return_task", "bool = False", "تسک"],
+              ["context", "dict | None", "متغیرهای قالب"],
+              ["auto_escape", "bool = True", "XSS"],
+              ["chat_id", "str | None", "مقصد"],
+              ["reply_to_message_id", "str | None", "ریپلای"]
             ],
             returns: "msg_update | Task[msg_update]",
             description: "ریپلای موزیک"
-        },
-        {
+          },
+          // ----- reply_gif -----
+          {
             name: "reply_gif",
             params: [
-                ["gif", "str | Path | bytes", "فایل گیف"],
-                ["name_file", "str | None", "نام فایل"],
-                ["text", "str | None", "کپشن"],
-                ["disable_notification", "bool = False", "اعلان"],
-                ["auto_delete", "int | None", "پاکسازی"],
-                ["parse_mode", "'Markdown' | 'HTML' | None = 'Markdown'", "پارس مود"],
-                ["meta_data", "list | None", "متادیتا"],
-                ["inline_keypad", "list | KeyPad | None", "دکمه شیشه‌ای"],
-                ["keypad", "list | KeyPad | None", "کیبورد"],
-                ["resize_keyboard", "bool = True", "تغییر سایز"],
-                ["on_time_keyboard", "bool = False", "یکبار مصرف"],
-                ["show_progress", "bool = True", "پیشرفت"],
-                ["chunk_size", "int = 1MB", "چانک"],
-                ["wait_send", "float | None", "تأخیر"],
-                ["return_task", "bool = False", "تسک"],
-                ["context", "dict | None", "متغیرهای قالب"],
-                ["auto_escape", "bool = True", "XSS"],
-                ["chat_id", "str | None", "مقصد"],
-                ["reply_to_message_id", "str | None", "ریپلای"]
+              ["gif", "str | Path | bytes", "فایل گیف"],
+              ["name_file", "str | None", "نام فایل"],
+              ["text", "str | None", "کپشن"],
+              ["disable_notification", "bool = False", "اعلان"],
+              ["auto_delete", "int | None", "پاکسازی"],
+              ["parse_mode", "'Markdown' | 'HTML' | None = 'Markdown'", "پارس مود"],
+              ["meta_data", "list | None", "متادیتا"],
+              ["inline_keypad", "list | KeyPad | None", "دکمه شیشه‌ای"],
+              ["keypad", "list | KeyPad | None", "کیبورد"],
+              ["resize_keyboard", "bool = True", "تغییر سایز"],
+              ["on_time_keyboard", "bool = False", "یکبار مصرف"],
+              ["show_progress", "bool = True", "پیشرفت"],
+              ["chunk_size", "int = 1MB", "چانک"],
+              ["wait_send", "float | None", "تأخیر"],
+              ["return_task", "bool = False", "تسک"],
+              ["context", "dict | None", "متغیرهای قالب"],
+              ["auto_escape", "bool = True", "XSS"],
+              ["chat_id", "str | None", "مقصد"],
+              ["reply_to_message_id", "str | None", "ریپلای"]
             ],
             returns: "msg_update | Task[msg_update]",
             description: "ریپلای گیف"
-        },
-        {
+          },
+          // ----- forward -----
+          {
             name: "forward",
             params: [
-                ["to_chat_id", "str", "چت‌آیدی مقصد"],
-                ["auto_delete", "int | None", "پاکسازی خودکار"],
-                ["wait_send", "float | None", "تأخیر"],
-                ["return_task", "bool = False", "برگرداندن تسک"],
-                ["from_chat_id", "str | None", "چت‌آیدی مبدأ (پیشفرض chat_id پیام)"],
-                ["message_id", "str | None", "آیدی پیام (پیشفرض message_id پیام)"]
+              ["to_chat_id", "str", "چت‌آیدی مقصد"],
+              ["auto_delete", "int | None", "پاکسازی خودکار"],
+              ["wait_send", "float | None", "تأخیر"],
+              ["return_task", "bool = False", "برگرداندن تسک"],
+              ["from_chat_id", "str | None", "چت‌آیدی مبدأ (پیشفرض chat_id پیام)"],
+              ["message_id", "str | None", "آیدی پیام (پیشفرض message_id پیام)"]
             ],
             returns: "msg_update | Task[msg_update]",
             description: "فوروارد پیام"
-        },
-        {
+          },
+          // ----- download -----
+          {
             name: "download",
             params: [
-                ["path", "str = 'file'", "مسیر ذخیره فایل"],
-                ["file_id", "str | None", "آیدی فایل"],
-                ["show_progress", "bool = True", "نمایش پیشرفت"],
-                ["wait_send", "float | None", "تأخیر"],
-                ["return_task", "bool = False", "برگرداندن تسک"]
+              ["path", "str = 'file'", "مسیر ذخیره فایل"],
+              ["file_id", "str | None", "آیدی فایل"],
+              ["show_progress", "bool = True", "نمایش پیشرفت"],
+              ["wait_send", "float | None", "تأخیر"],
+              ["return_task", "bool = False", "برگرداندن تسک"]
             ],
             returns: "None | Task[None]",
             description: "دانلود فایل پیام"
-        },
-        {
+          },
+          // ----- get_download_file_url -----
+          {
             name: "get_download_file_url",
             params: [
-                ["file_id", "str | None", "آیدی فایل"],
-                ["wait_send", "float | None", "تأخیر"],
-                ["return_task", "bool = False", "برگرداندن تسک"]
+              ["file_id", "str | None", "آیدی فایل"],
+              ["wait_send", "float | None", "تأخیر"],
+              ["return_task", "bool = False", "برگرداندن تسک"]
             ],
             returns: "str | None | Task[str | None]",
             description: "دریافت لینک دانلود فایل"
-        },
-        {
+          },
+          // ----- delete -----
+          {
             name: "delete",
             params: [
-                ["chat_id", "str | None", "چت‌آیدی (پیشفرض chat_id پیام)"],
-                ["message_id", "str | None", "آیدی پیام (پیشفرض message_id پیام)"],
-                ["wait_send", "float | None", "تأخیر"],
-                ["return_task", "bool = False", "برگرداندن تسک"]
+              ["chat_id", "str | None", "چت‌آیدی (پیشفرض chat_id پیام)"],
+              ["message_id", "str | None", "آیدی پیام (پیشفرض message_id پیام)"],
+              ["wait_send", "float | None", "تأخیر"],
+              ["return_task", "bool = False", "برگرداندن تسک"]
             ],
             returns: "props | Task[props]",
             description: "حذف پیام"
-        },
-        {
+          },
+          // ----- ban -----
+          {
             name: "ban",
             params: [
-                ["chat_id", "str | None", "چت‌آیدی"],
-                ["user_id", "str | None", "آیدی کاربر"],
-                ["wait_send", "float | None", "تأخیر"],
-                ["return_task", "bool = False", "برگرداندن تسک"]
+              ["chat_id", "str | None", "چت‌آیدی"],
+              ["user_id", "str | None", "آیدی کاربر"],
+              ["wait_send", "float | None", "تأخیر"],
+              ["return_task", "bool = False", "برگرداندن تسک"]
             ],
             returns: "props | Task[props]",
             description: "مسدود کردن کاربر"
-        },
-        {
+          },
+          // ----- unban -----
+          {
             name: "unban",
             params: [
-                ["chat_id", "str | None", "چت‌آیدی"],
-                ["user_id", "str | None", "آیدی کاربر"],
-                ["wait_send", "float | None", "تأخیر"],
-                ["return_task", "bool = False", "برگرداندن تسک"]
+              ["chat_id", "str | None", "چت‌آیدی"],
+              ["user_id", "str | None", "آیدی کاربر"],
+              ["wait_send", "float | None", "تأخیر"],
+              ["return_task", "bool = False", "برگرداندن تسک"]
             ],
             returns: "props | Task[props]",
             description: "رفع مسدودیت کاربر"
-        },
-        {
+          },
+          // ----- ban_reply -----
+          {
             name: "ban_reply",
             params: [
-                ["chat_id", "str | None", "چت‌آیدی"],
-                ["wait_send", "float | None", "تأخیر"],
-                ["return_task", "bool = False", "برگرداندن تسک"]
+              ["chat_id", "str | None", "چت‌آیدی"],
+              ["wait_send", "float | None", "تأخیر"],
+              ["return_task", "bool = False", "برگرداندن تسک"]
             ],
             returns: "props | Task[props] | None",
             description: "مسدود کردن کاربر پیام ریپلای شده"
-        },
-        {
+          },
+          // ----- unban_reply -----
+          {
             name: "unban_reply",
             params: [
-                ["chat_id", "str | None", "چت‌آیدی"],
-                ["wait_send", "float | None", "تأخیر"],
-                ["return_task", "bool = False", "برگرداندن تسک"]
+              ["chat_id", "str | None", "چت‌آیدی"],
+              ["wait_send", "float | None", "تأخیر"],
+              ["return_task", "bool = False", "برگرداندن تسک"]
             ],
             returns: "props | Task[props] | None",
             description: "رفع مسدودیت کاربر پیام ریپلای شده"
-        },
-        {
+          },
+          // ----- get_reply -----
+          {
             name: "get_reply",
             params: [
-                ["chat_id", "str | None", "چت‌آیدی"],
-                ["message_id", "str | None", "آیدی پیام"]
+              ["chat_id", "str | None", "چت‌آیدی"],
+              ["message_id", "str | None", "آیدی پیام"]
             ],
             returns: "Update | None",
             description: "گرفتن آبجکت پیام ریپلای شده"
-        },
-        {
+          },
+          // ----- resend_message (copy_message) -----
+          {
             name: "resend_message",
             params: [
-                ["to_chat_id", "str | None", "چت‌آیدی مقصد"],
-                ["auto_delete", "int | None", "پاکسازی"],
-                ["parse_mode", "'Markdown' | 'HTML' = 'Markdown'", "پارس مود"],
-                ["meta_data", "list", "متادیتا"],
-                ["name_save_file", "str | None", "نام ذخیره فایل"],
-                ["show_progress", "bool = True", "پیشرفت"],
-                ["chunk_size", "int = 1MB", "چانک"],
-                ["wait_send", "float | None", "تأخیر"],
-                ["return_task", "bool = False", "تسک"],
-                ["context", "dict | None", "متغیرهای قالب"],
-                ["auto_escape", "bool = True", "XSS"]
+              ["to_chat_id", "str | None", "چت‌آیدی مقصد"],
+              ["auto_delete", "int | None", "پاکسازی"],
+              ["parse_mode", "'Markdown' | 'HTML' = 'Markdown'", "پارس مود"],
+              ["meta_data", "list", "متادیتا"],
+              ["name_save_file", "str | None", "نام ذخیره فایل"],
+              ["show_progress", "bool = True", "پیشرفت"],
+              ["chunk_size", "int = 1MB", "چانک"],
+              ["wait_send", "float | None", "تأخیر"],
+              ["return_task", "bool = False", "تسک"],
+              ["context", "dict | None", "متغیرهای قالب"],
+              ["auto_escape", "bool = True", "XSS"]
             ],
             returns: "msg_update | Task[msg_update]",
             description: "بازنشر پیام (copy_message هم همین است)"
-        },
-        {
+          },
+          // ----- to_dict -----
+          {
             name: "to_dict",
             params: [],
             returns: "dict",
             description: "تبدیل آبجکت پیام به دیکشنری"
-        },
-        {
+          },
+          // ----- get -----
+          {
             name: "get",
             params: [
-                ["key", "str", "کلید مورد نظر"],
-                ["default", "Any = None", "مقدار پیشفرض"]
+              ["key", "str", "کلید مورد نظر"],
+              ["default", "Any = None", "مقدار پیشفرض"]
             ],
             returns: "Any",
             description: "دسترسی انعطاف‌پذیر به داده‌ها با کلید"
-        }
-    ],
-    example: `from fast_rub.types import Message
+          }
+        ],
+        subsections: [
+          {
+            subtitle: "📦 new_message (NewMessage)",
+            class_signature: "class NewMessage(BaseModels)",
+            properties: [
+              { name: "text", type: "str | None", description: "متن پیام" },
+              { name: "message_id", type: "str", description: "آیدی پیام" },
+              { name: "time", type: "int", description: "زمان ارسال (unix)" },
+              { name: "sender_id", type: "str", description: "آیدی فرستنده" },
+              { name: "is_edited", type: "bool", description: "آیا پیام ویرایش شده؟" },
+              { name: "reply_to_message_id", type: "str | None", description: "آیدی پیام ریپلای شده" },
+              { name: "is_forward", type: "bool", description: "آیا فوروارد شده؟" },
+              { name: "is_contact", type: "bool", description: "آیا پیام مخاطب است؟" },
+              { name: "is_sticker", type: "bool", description: "آیا استیکر است؟" },
+              { name: "file", type: "File", description: "آبجکت فایل (پایین‌تر شرح داده شده)" },
+              { name: "button", type: "Button", description: "اطلاعات دکمه کلیک شده (aux_data)" },
+              { name: "forward", type: "Forward", description: "اطلاعات فوروارد" },
+              { name: "metadata", type: "MetaData", description: "متادیتای پیام (کلاس MetaData در update)" },
+              { name: "contact", type: "Contact", description: "اطلاعات مخاطب" },
+              { name: "sticker", type: "Sticker", description: "اطلاعات استیکر" },
+            ]
+          },
+          {
+            subtitle: "📎 File (آبجکت فایل)",
+            class_signature: "class File(BaseModels)",
+            properties: [
+              { name: "file", type: "dict | None", description: "دادهٔ خام فایل" },
+              { name: "file_id", type: "str | None", description: "آیدی فایل" },
+              { name: "file_name", type: "str | None", description: "نام فایل" },
+              { name: "size_file", type: "int | None", description: "سایز فایل (بایت)" },
+              { name: "type_file", type: "str | None", description: "نوع فایل (image, video, ...)" },
+            ]
+          },
+          {
+            subtitle: "🔘 Button (aux_data)",
+            class_signature: "class Button(BaseModels)",
+            properties: [
+              { name: "button", type: "dict | None", description: "دادهٔ دکمه کلیک شده" },
+              { name: "button_id", type: "str | None", description: "آیدی دکمه" },
+            ]
+          },
+          {
+            subtitle: "↗️ Forward (فوروارد)",
+            class_signature: "class Forward(BaseModels)",
+            properties: [
+              { name: "is_forward", type: "bool", description: "فوروارد شده؟" },
+              { name: "forward_from", type: "str | None", description: "نوع مبدأ فوروارد" },
+              { name: "forward_from_type_from", type: "str | None", description: "نوع دقیق مبدأ (User, Group, Channel)" },
+              { name: "forward_message_id", type: "str | None", description: "آیدی پیام اصلی" },
+              { name: "forward_from_sender_id", type: "str | None", description: "آیدی فرستنده اصلی" },
+            ]
+          },
+          {
+            subtitle: "🏷️ MetaData (متادیتای پیام)",
+            class_signature: "class MetaData(BaseModels)",
+            properties: [
+              { name: "metadata", type: "dict | None", description: "دادهٔ خام متادیتا" },
+              { name: "meta_data_parts", type: "MetaDataProp | None", description: "لیست قسمت‌های متادیتا (کلاس `metadata`)" },
+            ]
+          },
+          {
+            subtitle: "👤 Contact (مخاطب)",
+            class_signature: "class Contact(BaseModels)",
+            properties: [
+              { name: "is_contact", type: "bool", description: "پیام مخاطب است؟" },
+              { name: "phone_number", type: "str | None", description: "شماره تلفن" },
+              { name: "first_name", type: "str | None", description: "نام" },
+              { name: "last_name", type: "str | None", description: "نام خانوادگی" },
+            ]
+          },
+          {
+            subtitle: "🎯 Sticker (استیکر)",
+            class_signature: "class Sticker(BaseModels)",
+            properties: [
+              { name: "is_sticker", type: "bool", description: "استیکر است؟" },
+              { name: "emoji_character", type: "str | None", description: "ایموجی استیکر" },
+              { name: "sticker_id (id)", type: "str | None", description: "شناسه استیکر" },
+              { name: "file", type: "FileSticker | dict", description: "فایل استیکر (FileSticker)" },
+            ]
+          },
+        ],
+        example: `from fast_rub.types import Message
 
 @bot.on_message()
 async def handler(msg: Message):
-    # پراپرتی‌ها
-    print(msg.text)
-    print(msg.sender_id)
+    # دسترسی از طریق new_message
+    print(msg.new_message.text)
+    print(msg.new_message.sender_id)
     print(msg.chat_id)
+
+    # فایل
+    if msg.new_message.file.file_id:
+        print(msg.new_message.file.file_id)
+        await msg.download("file.txt")
     
-    # ریپلای ساده
-    await msg.reply_text("دریافت شد!")
-    
-    # ریپلای با فایل
-    if msg.file:
-        await msg.download("myfile.txt")
-    
-    # ریپلای با کیبورد
-    await msg.reply("انتخاب کن:", inline_keypad=[
-        [{"text": "گزینه ۱", "callback": "opt1"}]
-    ])
-    
+    # دکمه
+    if msg.new_message.button.button_id:
+        print(msg.new_message.button.button_id)
+
+    # ریپلای
+    await msg.reply_text("سلام!")
+
     # فوروارد
-    await msg.forward("another_chat_id")
+    if msg.new_message.is_forward:
+        print(msg.new_message.forward.forward_from)
     
-    # گرفتن پیام ریپلای شده
-    replied = await msg.get_reply()
-    if replied:
-        print(replied.text)`
-},
-      // ============ ۳. UpdateButton (Button Update) ============
-{
-    id: "updatebutton",
-    title: "🔹 UpdateButton (کلیک دکمه شیشه‌ای)",
-    description: "آبجکت کلیک روی دکمه شیشه‌ای (اینلاین). با نام‌های `InlineUpdate`, `ButtonUpdate`, `InlineMessage` و ... نیز قابل دسترس است.",
-    class_signature: "class UpdateButton(data: dict, client: Client)",
-    properties: [
-        { name: "raw_data", type: "dict", description: "داده خام دریافتی" },
-        { name: "button_id", type: "str", description: "آیدی دکمه کلیک شده" },
-        { name: "chat_id", type: "str", description: "چت‌آیدی محل کلیک" },
-        { name: "message_id", type: "str", description: "آیدی پیام حاوی دکمه" },
-        { name: "sender_id", type: "str", description: "آیدی کاربر کلیک کننده" },
-        { name: "text", type: "str", description: "متن دکمه کلیک شده" }
-    ],
-    methods: [
-        {
+    # استیکر
+    if msg.new_message.is_sticker:
+        print(msg.new_message.sticker.emoji_character)`
+      },
+
+      // ============ ۳. UpdateButton (Button Update) – بدون تغییر ============
+      {
+        id: "updatebutton",
+        title: "🔹 UpdateButton (کلیک دکمه شیشه‌ای)",
+        description: "آبجکت کلیک روی دکمه شیشه‌ای (اینلاین). با نام‌های `InlineUpdate`, `ButtonUpdate`, `InlineMessage` و ... نیز قابل دسترس است.",
+        class_signature: "class UpdateButton(data: dict, client: Client)",
+        properties: [
+          { name: "raw_data", type: "dict", description: "داده خام دریافتی" },
+          { name: "button_id", type: "str", description: "آیدی دکمه کلیک شده" },
+          { name: "chat_id", type: "str", description: "چت‌آیدی محل کلیک" },
+          { name: "message_id", type: "str", description: "آیدی پیام حاوی دکمه" },
+          { name: "sender_id", type: "str", description: "آیدی کاربر کلیک کننده" },
+          { name: "text", type: "str", description: "متن دکمه کلیک شده" }
+        ],
+        methods: [
+          // ارسال متن
+          {
             name: "send_text",
-            signature: "async send_text(text, inline_keypad=None, keypad=None, resize_keyboard=True, on_time_keyboard=False, disable_notification=False, auto_delete=None, reply_to_message_id=None, parse_mode='Markdown', meta_data=None, wait_send=None, return_task=False, context=None, auto_escape=True, chat_id=None)",
-            description: "ارسال فقط متن به چتی که دکمه در آن کلیک شده",
             params: [
-                ["text", "str", "متن پیام"],
-                ["inline_keypad", "list | KeyPad | None", "دکمه‌های شیشه‌ای"],
-                ["keypad", "list | KeyPad | None", "دکمه‌های کیبورد"],
-                ["resize_keyboard", "bool = True", "تغییر خودکار سایز کیبورد"],
-                ["on_time_keyboard", "bool = False", "کیبورد یکبار مصرف"],
-                ["disable_notification", "bool = False", "غیرفعال کردن اعلان"],
-                ["auto_delete", "int | None", "پاکسازی خودکار (ثانیه)"],
-                ["reply_to_message_id", "str | None", "آیدی پیام برای ریپلای"],
-                ["parse_mode", "'Markdown' | 'HTML' | None = 'Markdown'", "پارس مود"],
-                ["meta_data", "list | None", "متادیتا"],
-                ["wait_send", "float | None", "تأخیر قبل از ارسال"],
-                ["return_task", "bool = False", "برگرداندن تسک"],
-                ["context", "dict | None", "متغیرهای قالب"],
-                ["auto_escape", "bool = True", "فرار خودکار XSS"],
-                ["chat_id", "str | None", "چت‌آیدی مقصد (پیشفرض chat_id کلیک)"]
+              ["text", "str", "متن پیام"],
+              ["inline_keypad", "list | KeyPad | None", "دکمه‌های شیشه‌ای"],
+              ["keypad", "list | KeyPad | None", "دکمه‌های کیبورد"],
+              ["resize_keyboard", "bool = True", "تغییر خودکار سایز کیبورد"],
+              ["on_time_keyboard", "bool = False", "کیبورد یکبار مصرف"],
+              ["disable_notification", "bool = False", "غیرفعال کردن اعلان"],
+              ["auto_delete", "int | None", "پاکسازی خودکار (ثانیه)"],
+              ["reply_to_message_id", "str | None", "آیدی پیام برای ریپلای"],
+              ["parse_mode", "'Markdown' | 'HTML' | None = 'Markdown'", "پارس مود"],
+              ["meta_data", "list | None", "متادیتا"],
+              ["wait_send", "float | None", "تأخیر قبل از ارسال"],
+              ["return_task", "bool = False", "برگرداندن تسک"],
+              ["context", "dict | None", "متغیرهای قالب"],
+              ["auto_escape", "bool = True", "فرار خودکار XSS"],
+              ["chat_id", "str | None", "چت‌آیدی مقصد (پیشفرض chat_id کلیک)"]
             ],
             returns: "msg_update"
-        },
-        {
+          },
+          // ارسال پیام کامل
+          {
             name: "send_message",
-            signature: "async send_message(text=None, inline_keypad=None, keypad=None, resize_keyboard=True, on_time_keyboard=False, reply_to_message_id=None, auto_delete=None, parse_mode='Markdown', meta_data=None, wait_send=None, return_task=False, context=None, auto_escape=True, disable_notification=False, file=None, name_file=None, type_file='File', file_id=None, show_progress=True, chunk_size=1MB, question=None, options=None, type_poll='Regular', is_anonymous=True, correct_option_index=None, allows_multiple_answers=False, hint=None, latitude=None, longitude=None, first_name=None, last_name=None, phone_number=None, chat_id=None)",
-            description: "ارسال پیام جامع — پشتیبانی از متن، فایل، نظرسنجی، موقعیت مکانی، مخاطب",
             params: [
-                ["text", "str | None", "متن پیام"],
-                ["inline_keypad", "list | KeyPad | None", "دکمه‌های شیشه‌ای"],
-                ["keypad", "list | KeyPad | None", "دکمه‌های کیبورد"],
-                ["resize_keyboard", "bool = True", "تغییر خودکار سایز کیبورد"],
-                ["on_time_keyboard", "bool = False", "کیبورد یکبار مصرف"],
-                ["reply_to_message_id", "str | None", "آیدی پیام برای ریپلای"],
-                ["auto_delete", "int | None", "پاکسازی خودکار"],
-                ["parse_mode", "'Markdown' | 'HTML' | None = 'Markdown'", "پارس مود"],
-                ["meta_data", "list | None", "متادیتا"],
-                ["wait_send", "float | None", "تأخیر قبل از ارسال"],
-                ["return_task", "bool = False", "برگرداندن تسک"],
-                ["context", "dict | None", "متغیرهای قالب"],
-                ["auto_escape", "bool = True", "فرار خودکار XSS"],
-                ["disable_notification", "bool = False", "غیرفعال کردن اعلان"],
-                ["file", "str | Path | bytes | None", "فایل"],
-                ["name_file", "str | None", "نام فایل"],
-                ["type_file", "'File' | 'Image' | 'Voice' | 'Music' | 'Gif' | 'Video' = 'File'", "نوع فایل"],
-                ["file_id", "str | None", "آیدی فایل"],
-                ["show_progress", "bool = True", "نمایش پیشرفت آپلود"],
-                ["chunk_size", "int = 1MB", "سایز چانک"],
-                ["question", "str | None", "سوال نظرسنجی"],
-                ["options", "list | None", "گزینه‌ها"],
-                ["type_poll", "'Regular' | 'Quiz' = 'Regular'", "نوع نظرسنجی"],
-                ["is_anonymous", "bool = True", "ناشناس بودن"],
-                ["correct_option_index", "int | None", "ایندکس گزینه صحیح"],
-                ["allows_multiple_answers", "bool = False", "چند انتخابی"],
-                ["hint", "str | None", "راهنمایی"],
-                ["latitude", "str | None", "عرض جغرافیایی"],
-                ["longitude", "str | None", "طول جغرافیایی"],
-                ["first_name", "str | None", "نام مخاطب"],
-                ["last_name", "str | None", "نام خانوادگی مخاطب"],
-                ["phone_number", "str | None", "شماره تلفن"],
-                ["chat_id", "str | None", "چت‌آیدی مقصد"]
+              ["text", "str | None", "متن پیام"],
+              ["inline_keypad", "list | KeyPad | None", "دکمه‌های شیشه‌ای"],
+              ["keypad", "list | KeyPad | None", "دکمه‌های کیبورد"],
+              ["resize_keyboard", "bool = True", "تغییر خودکار سایز کیبورد"],
+              ["on_time_keyboard", "bool = False", "کیبورد یکبار مصرف"],
+              ["reply_to_message_id", "str | None", "آیدی پیام برای ریپلای"],
+              ["auto_delete", "int | None", "پاکسازی خودکار"],
+              ["parse_mode", "'Markdown' | 'HTML' | None = 'Markdown'", "پارس مود"],
+              ["meta_data", "list | None", "متادیتا"],
+              ["wait_send", "float | None", "تأخیر قبل از ارسال"],
+              ["return_task", "bool = False", "برگرداندن تسک"],
+              ["context", "dict | None", "متغیرهای قالب"],
+              ["auto_escape", "bool = True", "فرار خودکار XSS"],
+              ["disable_notification", "bool = False", "غیرفعال کردن اعلان"],
+              ["file", "str | Path | bytes | None", "فایل"],
+              ["name_file", "str | None", "نام فایل"],
+              ["type_file", "'File' | 'Image' | 'Voice' | 'Music' | 'Gif' | 'Video' = 'File'", "نوع فایل"],
+              ["file_id", "str | None", "آیدی فایل"],
+              ["show_progress", "bool = True", "نمایش پیشرفت آپلود"],
+              ["chunk_size", "int = 1MB", "سایز چانک"],
+              ["question", "str | None", "سوال نظرسنجی"],
+              ["options", "list | None", "گزینه‌ها"],
+              ["type_poll", "'Regular' | 'Quiz' = 'Regular'", "نوع نظرسنجی"],
+              ["is_anonymous", "bool = True", "ناشناس بودن"],
+              ["correct_option_index", "int | None", "ایندکس گزینه صحیح"],
+              ["allows_multiple_answers", "bool = False", "چند انتخابی"],
+              ["hint", "str | None", "راهنمایی"],
+              ["latitude", "str | None", "عرض جغرافیایی"],
+              ["longitude", "str | None", "طول جغرافیایی"],
+              ["first_name", "str | None", "نام مخاطب"],
+              ["last_name", "str | None", "نام خانوادگی مخاطب"],
+              ["phone_number", "str | None", "شماره تلفن"],
+              ["chat_id", "str | None", "چت‌آیدی مقصد"]
             ],
             returns: "msg_update"
-        },
-        {
+          },
+          // نظرسنجی
+          {
             name: "send_pool",
-            signature: "async send_pool(question, options, type_poll='Regular', is_anonymous=True, correct_option_index=None, allows_multiple_answers=False, hint=None, auto_delete=None, reply_to_message_id=None, chat_id=None)",
-            description: "ارسال نظرسنجی (نام متد در کد `send_pool` است)",
             params: [
-                ["question", "str", "سوال"],
-                ["options", "list", "گزینه‌ها"],
-                ["type_poll", "'Regular' | 'Quiz' = 'Regular'", "نوع"],
-                ["is_anonymous", "bool = True", "ناشناس"],
-                ["correct_option_index", "int | None", "گزینه صحیح (Quiz)"],
-                ["allows_multiple_answers", "bool = False", "چند انتخابی"],
-                ["hint", "str | None", "راهنمایی"],
-                ["auto_delete", "int | None", "پاکسازی"],
-                ["reply_to_message_id", "str | None", "ریپلای"],
-                ["chat_id", "str | None", "مقصد"]
+              ["question", "str", "سوال"],
+              ["options", "list", "گزینه‌ها"],
+              ["type_poll", "'Regular' | 'Quiz' = 'Regular'", "نوع"],
+              ["is_anonymous", "bool = True", "ناشناس"],
+              ["correct_option_index", "int | None", "گزینه صحیح (Quiz)"],
+              ["allows_multiple_answers", "bool = False", "چند انتخابی"],
+              ["hint", "str | None", "راهنمایی"],
+              ["auto_delete", "int | None", "پاکسازی"],
+              ["reply_to_message_id", "str | None", "ریپلای"],
+              ["chat_id", "str | None", "مقصد"]
             ],
             returns: "msg_update"
-        },
-        {
+          },
+          // مخاطب
+          {
             name: "send_contact",
-            signature: "async send_contact(first_name, last_name, phone_number, auto_delete=None, reply_to_message_id=None, inline_keypad=None, chat_id=None)",
-            description: "ارسال مخاطب",
             params: [
-                ["first_name", "str", "نام"],
-                ["last_name", "str", "نام خانوادگی"],
-                ["phone_number", "str", "شماره"],
-                ["auto_delete", "int | None", "پاکسازی"],
-                ["reply_to_message_id", "str | None", "ریپلای"],
-                ["inline_keypad", "list | KeyPad | None", "دکمه شیشه‌ای"],
-                ["chat_id", "str | None", "مقصد"]
+              ["first_name", "str", "نام"],
+              ["last_name", "str", "نام خانوادگی"],
+              ["phone_number", "str", "شماره"],
+              ["auto_delete", "int | None", "پاکسازی"],
+              ["reply_to_message_id", "str | None", "ریپلای"],
+              ["inline_keypad", "list | KeyPad | None", "دکمه شیشه‌ای"],
+              ["chat_id", "str | None", "مقصد"]
             ],
             returns: "msg_update"
-        },
-        {
+          },
+          // موقعیت مکانی
+          {
             name: "send_location",
-            signature: "async send_location(latitude, longitude, auto_delete=None, reply_to_message_id=None, chat_id=None)",
-            description: "ارسال موقعیت مکانی",
             params: [
-                ["latitude", "str", "عرض جغرافیایی"],
-                ["longitude", "str", "طول جغرافیایی"],
-                ["auto_delete", "int | None", "پاکسازی"],
-                ["reply_to_message_id", "str | None", "ریپلای"],
-                ["chat_id", "str | None", "مقصد"]
+              ["latitude", "str", "عرض جغرافیایی"],
+              ["longitude", "str", "طول جغرافیایی"],
+              ["auto_delete", "int | None", "پاکسازی"],
+              ["reply_to_message_id", "str | None", "ریپلای"],
+              ["chat_id", "str | None", "مقصد"]
             ],
             returns: "msg_update"
-        },
-        {
+          },
+          // فایل عمومی
+          {
             name: "send_file",
-            signature: "async send_file(file, name_file=None, text=None, type_file='File', auto_delete=None, reply_to_message_id=None, parse_mode='Markdown', meta_data=None, inline_keypad=None, keypad=None, resize_keyboard=True, on_time_keyboard=False, show_progress=True, chat_id=None, chunk_size=1MB, wait_send=None, return_task=False, context=None, auto_escape=True, disable_notification=False)",
-            description: "ارسال فایل (عمومی)",
             params: [
-                ["file", "str | Path | bytes", "فایل"],
-                ["name_file", "str | None", "نام فایل"],
-                ["text", "str | None", "کپشن"],
-                ["type_file", "'File' | 'Image' | 'Voice' | 'Music' | 'Gif' | 'Video' = 'File'", "نوع"],
-                ["auto_delete", "int | None", "پاکسازی"],
-                ["reply_to_message_id", "str | None", "ریپلای"],
-                ["parse_mode", "'Markdown' | 'HTML' | None = 'Markdown'", "پارس مود"],
-                ["meta_data", "list | None", "متادیتا"],
-                ["inline_keypad", "list | KeyPad | None", "دکمه شیشه‌ای"],
-                ["keypad", "list | KeyPad | None", "کیبورد"],
-                ["resize_keyboard", "bool = True", "تغییر سایز"],
-                ["on_time_keyboard", "bool = False", "یکبار مصرف"],
-                ["show_progress", "bool = True", "نمایش پیشرفت"],
-                ["chat_id", "str | None", "مقصد"],
-                ["chunk_size", "int = 1MB", "چانک"],
-                ["wait_send", "float | None", "تأخیر"],
-                ["return_task", "bool = False", "تسک"],
-                ["context", "dict | None", "متغیرهای قالب"],
-                ["auto_escape", "bool = True", "فرار XSS"],
-                ["disable_notification", "bool = False", "اعلان"]
+              ["file", "str | Path | bytes", "فایل"],
+              ["name_file", "str | None", "نام فایل"],
+              ["text", "str | None", "کپشن"],
+              ["type_file", "'File' | 'Image' | 'Voice' | 'Music' | 'Gif' | 'Video' = 'File'", "نوع"],
+              ["auto_delete", "int | None", "پاکسازی"],
+              ["reply_to_message_id", "str | None", "ریپلای"],
+              ["parse_mode", "'Markdown' | 'HTML' | None = 'Markdown'", "پارس مود"],
+              ["meta_data", "list | None", "متادیتا"],
+              ["inline_keypad", "list | KeyPad | None", "دکمه شیشه‌ای"],
+              ["keypad", "list | KeyPad | None", "کیبورد"],
+              ["resize_keyboard", "bool = True", "تغییر سایز"],
+              ["on_time_keyboard", "bool = False", "یکبار مصرف"],
+              ["show_progress", "bool = True", "نمایش پیشرفت"],
+              ["chat_id", "str | None", "مقصد"],
+              ["chunk_size", "int = 1MB", "چانک"],
+              ["wait_send", "float | None", "تأخیر"],
+              ["return_task", "bool = False", "تسک"],
+              ["context", "dict | None", "متغیرهای قالب"],
+              ["auto_escape", "bool = True", "فرار XSS"],
+              ["disable_notification", "bool = False", "اعلان"]
             ],
             returns: "msg_update"
-        },
-        {
+          },
+          // send_document
+          {
             name: "send_document",
-            signature: "async send_document(file, name_file=None, text=None, auto_delete=None, reply_to_message_id=None, parse_mode='Markdown', meta_data=None, inline_keypad=None, keypad=None, resize_keyboard=True, on_time_keyboard=False, show_progress=True, chat_id=None, chunk_size=1MB, wait_send=None, return_task=False, context=None, auto_escape=True, disable_notification=False)",
-            description: "ارسال فایل (داکیومنت)",
             params: [
-                ["file", "str | Path | bytes", "فایل"],
-                ["name_file", "str | None", "نام فایل"],
-                ["text", "str | None", "کپشن"],
-                ["auto_delete", "int | None", "پاکسازی"],
-                ["reply_to_message_id", "str | None", "ریپلای"],
-                ["parse_mode", "'Markdown' | 'HTML' | None = 'Markdown'", "پارس مود"],
-                ["meta_data", "list | None", "متادیتا"],
-                ["inline_keypad", "list | KeyPad | None", "دکمه شیشه‌ای"],
-                ["keypad", "list | KeyPad | None", "کیبورد"],
-                ["resize_keyboard", "bool = True", "تغییر سایز"],
-                ["on_time_keyboard", "bool = False", "یکبار مصرف"],
-                ["show_progress", "bool = True", "پیشرفت"],
-                ["chat_id", "str | None", "مقصد"],
-                ["chunk_size", "int = 1MB", "چانک"],
-                ["wait_send", "float | None", "تأخیر"],
-                ["return_task", "bool = False", "تسک"],
-                ["context", "dict | None", "متغیرهای قالب"],
-                ["auto_escape", "bool = True", "XSS"],
-                ["disable_notification", "bool = False", "اعلان"]
+              ["file", "str | Path | bytes", "فایل"],
+              ["name_file", "str | None", "نام فایل"],
+              ["text", "str | None", "کپشن"],
+              ["auto_delete", "int | None", "پاکسازی"],
+              ["reply_to_message_id", "str | None", "ریپلای"],
+              ["parse_mode", "'Markdown' | 'HTML' | None = 'Markdown'", "پارس مود"],
+              ["meta_data", "list | None", "متادیتا"],
+              ["inline_keypad", "list | KeyPad | None", "دکمه شیشه‌ای"],
+              ["keypad", "list | KeyPad | None", "کیبورد"],
+              ["resize_keyboard", "bool = True", "تغییر سایز"],
+              ["on_time_keyboard", "bool = False", "یکبار مصرف"],
+              ["show_progress", "bool = True", "پیشرفت"],
+              ["chat_id", "str | None", "مقصد"],
+              ["chunk_size", "int = 1MB", "چانک"],
+              ["wait_send", "float | None", "تأخیر"],
+              ["return_task", "bool = False", "تسک"],
+              ["context", "dict | None", "متغیرهای قالب"],
+              ["auto_escape", "bool = True", "XSS"],
+              ["disable_notification", "bool = False", "اعلان"]
             ],
             returns: "msg_update"
-        },
-        {
+          },
+          // تصویر
+          {
             name: "send_image",
-            signature: "async send_image(image, name_file=None, text=None, auto_delete=None, reply_to_message_id=None, parse_mode='Markdown', meta_data=None, inline_keypad=None, keypad=None, resize_keyboard=True, on_time_keyboard=False, show_progress=True, chat_id=None, chunk_size=1MB, wait_send=None, return_task=False, context=None, auto_escape=True, disable_notification=False)",
-            description: "ارسال تصویر",
             params: [
-                ["image", "str | Path | bytes", "فایل تصویر"],
-                ["name_file", "str | None", "نام فایل"],
-                ["text", "str | None", "کپشن"],
-                ["auto_delete", "int | None", "پاکسازی"],
-                ["reply_to_message_id", "str | None", "ریپلای"],
-                ["parse_mode", "'Markdown' | 'HTML' | None = 'Markdown'", "پارس مود"],
-                ["meta_data", "list | None", "متادیتا"],
-                ["inline_keypad", "list | KeyPad | None", "دکمه شیشه‌ای"],
-                ["keypad", "list | KeyPad | None", "کیبورد"],
-                ["resize_keyboard", "bool = True", "تغییر سایز"],
-                ["on_time_keyboard", "bool = False", "یکبار مصرف"],
-                ["show_progress", "bool = True", "پیشرفت"],
-                ["chat_id", "str | None", "مقصد"],
-                ["chunk_size", "int = 1MB", "چانک"],
-                ["wait_send", "float | None", "تأخیر"],
-                ["return_task", "bool = False", "تسک"],
-                ["context", "dict | None", "متغیرهای قالب"],
-                ["auto_escape", "bool = True", "XSS"],
-                ["disable_notification", "bool = False", "اعلان"]
+              ["image", "str | Path | bytes", "فایل تصویر"],
+              ["name_file", "str | None", "نام فایل"],
+              ["text", "str | None", "کپشن"],
+              ["auto_delete", "int | None", "پاکسازی"],
+              ["reply_to_message_id", "str | None", "ریپلای"],
+              ["parse_mode", "'Markdown' | 'HTML' | None = 'Markdown'", "پارس مود"],
+              ["meta_data", "list | None", "متادیتا"],
+              ["inline_keypad", "list | KeyPad | None", "دکمه شیشه‌ای"],
+              ["keypad", "list | KeyPad | None", "کیبورد"],
+              ["resize_keyboard", "bool = True", "تغییر سایز"],
+              ["on_time_keyboard", "bool = False", "یکبار مصرف"],
+              ["show_progress", "bool = True", "پیشرفت"],
+              ["chat_id", "str | None", "مقصد"],
+              ["chunk_size", "int = 1MB", "چانک"],
+              ["wait_send", "float | None", "تأخیر"],
+              ["return_task", "bool = False", "تسک"],
+              ["context", "dict | None", "متغیرهای قالب"],
+              ["auto_escape", "bool = True", "XSS"],
+              ["disable_notification", "bool = False", "اعلان"]
             ],
             returns: "msg_update"
-        },
-        {
+          },
+          // ویدیو
+          {
             name: "send_video",
-            signature: "async send_video(video, name_file=None, text=None, auto_delete=None, reply_to_message_id=None, parse_mode='Markdown', meta_data=None, inline_keypad=None, keypad=None, resize_keyboard=True, on_time_keyboard=False, show_progress=True, chat_id=None, chunk_size=1MB, wait_send=None, return_task=False, context=None, auto_escape=True, disable_notification=False)",
-            description: "ارسال ویدیو",
             params: [
-                ["video", "str | Path | bytes", "فایل ویدیو"],
-                ["name_file", "str | None", "نام فایل"],
-                ["text", "str | None", "کپشن"],
-                ["auto_delete", "int | None", "پاکسازی"],
-                ["reply_to_message_id", "str | None", "ریپلای"],
-                ["parse_mode", "'Markdown' | 'HTML' | None = 'Markdown'", "پارس مود"],
-                ["meta_data", "list | None", "متادیتا"],
-                ["inline_keypad", "list | KeyPad | None", "دکمه شیشه‌ای"],
-                ["keypad", "list | KeyPad | None", "کیبورد"],
-                ["resize_keyboard", "bool = True", "تغییر سایز"],
-                ["on_time_keyboard", "bool = False", "یکبار مصرف"],
-                ["show_progress", "bool = True", "پیشرفت"],
-                ["chat_id", "str | None", "مقصد"],
-                ["chunk_size", "int = 1MB", "چانک"],
-                ["wait_send", "float | None", "تأخیر"],
-                ["return_task", "bool = False", "تسک"],
-                ["context", "dict | None", "متغیرهای قالب"],
-                ["auto_escape", "bool = True", "XSS"],
-                ["disable_notification", "bool = False", "اعلان"]
+              ["video", "str | Path | bytes", "فایل ویدیو"],
+              ["name_file", "str | None", "نام فایل"],
+              ["text", "str | None", "کپشن"],
+              ["auto_delete", "int | None", "پاکسازی"],
+              ["reply_to_message_id", "str | None", "ریپلای"],
+              ["parse_mode", "'Markdown' | 'HTML' | None = 'Markdown'", "پارس مود"],
+              ["meta_data", "list | None", "متادیتا"],
+              ["inline_keypad", "list | KeyPad | None", "دکمه شیشه‌ای"],
+              ["keypad", "list | KeyPad | None", "کیبورد"],
+              ["resize_keyboard", "bool = True", "تغییر سایز"],
+              ["on_time_keyboard", "bool = False", "یکبار مصرف"],
+              ["show_progress", "bool = True", "پیشرفت"],
+              ["chat_id", "str | None", "مقصد"],
+              ["chunk_size", "int = 1MB", "چانک"],
+              ["wait_send", "float | None", "تأخیر"],
+              ["return_task", "bool = False", "تسک"],
+              ["context", "dict | None", "متغیرهای قالب"],
+              ["auto_escape", "bool = True", "XSS"],
+              ["disable_notification", "bool = False", "اعلان"]
             ],
             returns: "msg_update"
-        },
-        {
+          },
+          // ویس
+          {
             name: "send_voice",
-            signature: "async send_voice(voice, name_file=None, text=None, auto_delete=None, reply_to_message_id=None, parse_mode='Markdown', meta_data=None, inline_keypad=None, keypad=None, resize_keyboard=True, on_time_keyboard=False, show_progress=True, chat_id=None, chunk_size=1MB, wait_send=None, return_task=False, context=None, auto_escape=True, disable_notification=False)",
-            description: "ارسال ویس",
             params: [
-                ["voice", "str | Path | bytes", "فایل ویس"],
-                ["name_file", "str | None", "نام فایل"],
-                ["text", "str | None", "کپشن"],
-                ["auto_delete", "int | None", "پاکسازی"],
-                ["reply_to_message_id", "str | None", "ریپلای"],
-                ["parse_mode", "'Markdown' | 'HTML' | None = 'Markdown'", "پارس مود"],
-                ["meta_data", "list | None", "متادیتا"],
-                ["inline_keypad", "list | KeyPad | None", "دکمه شیشه‌ای"],
-                ["keypad", "list | KeyPad | None", "کیبورد"],
-                ["resize_keyboard", "bool = True", "تغییر سایز"],
-                ["on_time_keyboard", "bool = False", "یکبار مصرف"],
-                ["show_progress", "bool = True", "پیشرفت"],
-                ["chat_id", "str | None", "مقصد"],
-                ["chunk_size", "int = 1MB", "چانک"],
-                ["wait_send", "float | None", "تأخیر"],
-                ["return_task", "bool = False", "تسک"],
-                ["context", "dict | None", "متغیرهای قالب"],
-                ["auto_escape", "bool = True", "XSS"],
-                ["disable_notification", "bool = False", "اعلان"]
+              ["voice", "str | Path | bytes", "فایل ویس"],
+              ["name_file", "str | None", "نام فایل"],
+              ["text", "str | None", "کپشن"],
+              ["auto_delete", "int | None", "پاکسازی"],
+              ["reply_to_message_id", "str | None", "ریپلای"],
+              ["parse_mode", "'Markdown' | 'HTML' | None = 'Markdown'", "پارس مود"],
+              ["meta_data", "list | None", "متادیتا"],
+              ["inline_keypad", "list | KeyPad | None", "دکمه شیشه‌ای"],
+              ["keypad", "list | KeyPad | None", "کیبورد"],
+              ["resize_keyboard", "bool = True", "تغییر سایز"],
+              ["on_time_keyboard", "bool = False", "یکبار مصرف"],
+              ["show_progress", "bool = True", "پیشرفت"],
+              ["chat_id", "str | None", "مقصد"],
+              ["chunk_size", "int = 1MB", "چانک"],
+              ["wait_send", "float | None", "تأخیر"],
+              ["return_task", "bool = False", "تسک"],
+              ["context", "dict | None", "متغیرهای قالب"],
+              ["auto_escape", "bool = True", "XSS"],
+              ["disable_notification", "bool = False", "اعلان"]
             ],
             returns: "msg_update"
-        },
-        {
+          },
+          // موزیک
+          {
             name: "send_music",
-            signature: "async send_music(music, name_file=None, text=None, auto_delete=None, reply_to_message_id=None, parse_mode='Markdown', meta_data=None, inline_keypad=None, keypad=None, resize_keyboard=True, on_time_keyboard=False, show_progress=True, chat_id=None, chunk_size=1MB, wait_send=None, return_task=False, context=None, auto_escape=True, disable_notification=False)",
-            description: "ارسال موزیک",
             params: [
-                ["music", "str | Path | bytes", "فایل موزیک"],
-                ["name_file", "str | None", "نام فایل"],
-                ["text", "str | None", "کپشن"],
-                ["auto_delete", "int | None", "پاکسازی"],
-                ["reply_to_message_id", "str | None", "ریپلای"],
-                ["parse_mode", "'Markdown' | 'HTML' | None = 'Markdown'", "پارس مود"],
-                ["meta_data", "list | None", "متادیتا"],
-                ["inline_keypad", "list | KeyPad | None", "دکمه شیشه‌ای"],
-                ["keypad", "list | KeyPad | None", "کیبورد"],
-                ["resize_keyboard", "bool = True", "تغییر سایز"],
-                ["on_time_keyboard", "bool = False", "یکبار مصرف"],
-                ["show_progress", "bool = True", "پیشرفت"],
-                ["chat_id", "str | None", "مقصد"],
-                ["chunk_size", "int = 1MB", "چانک"],
-                ["wait_send", "float | None", "تأخیر"],
-                ["return_task", "bool = False", "تسک"],
-                ["context", "dict | None", "متغیرهای قالب"],
-                ["auto_escape", "bool = True", "XSS"],
-                ["disable_notification", "bool = False", "اعلان"]
+              ["music", "str | Path | bytes", "فایل موزیک"],
+              ["name_file", "str | None", "نام فایل"],
+              ["text", "str | None", "کپشن"],
+              ["auto_delete", "int | None", "پاکسازی"],
+              ["reply_to_message_id", "str | None", "ریپلای"],
+              ["parse_mode", "'Markdown' | 'HTML' | None = 'Markdown'", "پارس مود"],
+              ["meta_data", "list | None", "متادیتا"],
+              ["inline_keypad", "list | KeyPad | None", "دکمه شیشه‌ای"],
+              ["keypad", "list | KeyPad | None", "کیبورد"],
+              ["resize_keyboard", "bool = True", "تغییر سایز"],
+              ["on_time_keyboard", "bool = False", "یکبار مصرف"],
+              ["show_progress", "bool = True", "پیشرفت"],
+              ["chat_id", "str | None", "مقصد"],
+              ["chunk_size", "int = 1MB", "چانک"],
+              ["wait_send", "float | None", "تأخیر"],
+              ["return_task", "bool = False", "تسک"],
+              ["context", "dict | None", "متغیرهای قالب"],
+              ["auto_escape", "bool = True", "XSS"],
+              ["disable_notification", "bool = False", "اعلان"]
             ],
             returns: "msg_update"
-        },
-        {
+          },
+          // گیف
+          {
             name: "send_gif",
-            signature: "async send_gif(gif, name_file=None, text=None, auto_delete=None, reply_to_message_id=None, parse_mode='Markdown', meta_data=None, inline_keypad=None, keypad=None, resize_keyboard=True, on_time_keyboard=False, show_progress=True, chat_id=None, chunk_size=1MB, wait_send=None, return_task=False, context=None, auto_escape=True, disable_notification=False)",
-            description: "ارسال گیف",
             params: [
-                ["gif", "str | Path | bytes", "فایل گیف"],
-                ["name_file", "str | None", "نام فایل"],
-                ["text", "str | None", "کپشن"],
-                ["auto_delete", "int | None", "پاکسازی"],
-                ["reply_to_message_id", "str | None", "ریپلای"],
-                ["parse_mode", "'Markdown' | 'HTML' | None = 'Markdown'", "پارس مود"],
-                ["meta_data", "list | None", "متادیتا"],
-                ["inline_keypad", "list | KeyPad | None", "دکمه شیشه‌ای"],
-                ["keypad", "list | KeyPad | None", "کیبورد"],
-                ["resize_keyboard", "bool = True", "تغییر سایز"],
-                ["on_time_keyboard", "bool = False", "یکبار مصرف"],
-                ["show_progress", "bool = True", "پیشرفت"],
-                ["chat_id", "str | None", "مقصد"],
-                ["chunk_size", "int = 1MB", "چانک"],
-                ["wait_send", "float | None", "تأخیر"],
-                ["return_task", "bool = False", "تسک"],
-                ["context", "dict | None", "متغیرهای قالب"],
-                ["auto_escape", "bool = True", "XSS"],
-                ["disable_notification", "bool = False", "اعلان"]
+              ["gif", "str | Path | bytes", "فایل گیف"],
+              ["name_file", "str | None", "نام فایل"],
+              ["text", "str | None", "کپشن"],
+              ["auto_delete", "int | None", "پاکسازی"],
+              ["reply_to_message_id", "str | None", "ریپلای"],
+              ["parse_mode", "'Markdown' | 'HTML' | None = 'Markdown'", "پارس مود"],
+              ["meta_data", "list | None", "متادیتا"],
+              ["inline_keypad", "list | KeyPad | None", "دکمه شیشه‌ای"],
+              ["keypad", "list | KeyPad | None", "کیبورد"],
+              ["resize_keyboard", "bool = True", "تغییر سایز"],
+              ["on_time_keyboard", "bool = False", "یکبار مصرف"],
+              ["show_progress", "bool = True", "پیشرفت"],
+              ["chat_id", "str | None", "مقصد"],
+              ["chunk_size", "int = 1MB", "چانک"],
+              ["wait_send", "float | None", "تأخیر"],
+              ["return_task", "bool = False", "تسک"],
+              ["context", "dict | None", "متغیرهای قالب"],
+              ["auto_escape", "bool = True", "XSS"],
+              ["disable_notification", "bool = False", "اعلان"]
             ],
             returns: "msg_update"
-        },
-        {
-            name: "to_dict",
-            signature: "to_dict() -> dict",
-            description: "تبدیل آبجکت به دیکشنری",
-            params: [],
-            returns: "dict"
-        }
-    ],
-    example: `@bot.on_button()\nasync def click(upd: UpdateButton):\n    print(upd.button_id)\n    await upd.send_text("دکمه کلیک شد!")`
-},
+          },
+          // to_dict
+          { name: "to_dict", signature: "to_dict() -> dict", description: "تبدیل آبجکت به دیکشنری", params: [], returns: "dict" }
+        ],
+        example: `@bot.on_button()\nasync def click(upd: UpdateButton):\n    print(upd.button_id)\n    await upd.send_text("دکمه کلیک شد!")`
+      },
+
       // ============ ۴. msg_update ============
       {
         id: "msg_update",
@@ -1300,60 +1362,43 @@ async def handler(msg: Message):
         properties: [
           { name: "message_id", type: "str", description: "آیدی پیام ارسال شده" },
           { name: "chat_id", type: "str", description: "چت‌آیدی مقصد" },
-          {
-            name: "update_data",
-            type: "dict",
-            description: "دیتا خام دریافتی از سرور"
-          }
+          { name: "update_data", type: "dict", description: "دیتا خام دریافتی از سرور" }
         ],
-        // ============ متدهای کلاس msg_update با تمام پارامترها ============
         methods: [
-          // ----- edit_text -----
           {
             name: "edit_text",
-            signature: "async edit_text(new_text: str, inline_keypad: Optional[list] = None, parse_mode: Literal['Markdown', 'HTML'] | None = 'Markdown') -> msg_update",
-            description: "ویرایش متن پیام ارسال شده",
             params: [
               ["new_text", "str", "متن جدید پیام"],
               ["inline_keypad", "Optional[list]", "دکمه‌های شیشه‌ای جدید (پیشفرض None)"],
               ["parse_mode", "Literal['Markdown', 'HTML'] | None", "پارس مود (پیشفرض 'Markdown')"],
-              ["context", "dict | None", "متغیرهای قالب برای جایگزینی در متن (مثل `{{ name }}`)"],
-              ["auto_escape", "bool = True", "فرار خودکار کاراکترهای HTML/Markdown برای جلوگیری از XSS"],
+              ["context", "dict | None", "متغیرهای قالب برای جایگزینی در متن (مثل {{ name }})"],
+              ["auto_escape", "bool = True", "فرار خودکار کاراکترهای HTML/Markdown برای جلوگیری از XSS"]
             ],
-            returns: "<a href='#msg_update'>msg_update</a>"
+            returns: "msg_update"
           },
-          
-          // ----- get_message -----
           {
             name: "get_message",
-            signature: "async get_message() -> Optional[Update]",
-            description: "گرفتن اطلاعات کامل پیام (شی Update)",
             params: [],
-            returns: "Optional[<a href='#update'>Update</a>]"
+            returns: "Optional[Update]",
+            description: "گرفتن اطلاعات کامل پیام (شی Update)"
           },
-          
-          // ----- delete_message -----
           {
             name: "delete_message",
-            signature: "async delete_message() -> props",
-            description: "حذف پیام ارسال شده",
             params: [],
-            returns: "props"
+            returns: "props",
+            description: "حذف پیام ارسال شده"
           },
-          
-          // ----- to_dict -----
           {
             name: "to_dict",
-            signature: "to_dict() -> dict",
-            description: "تبدیل آبجکت msg_update به دیکشنری",
             params: [],
-            returns: "dict"
+            returns: "dict",
+            description: "تبدیل آبجکت msg_update به دیکشنری"
           }
         ],
         example: `sent = await bot.send_text("سلام", chat_id)\nprint(sent.message_id)\nawait sent.edit_text("سلام عزیز")`
       },
 
-      // ============ ۵. مدل‌های پایه (Bot, Chat) ============
+      // ============ ۵. Bot & Chat ============
       {
         id: "base_models",
         title: "🔹 Bot & Chat",
@@ -1388,174 +1433,175 @@ async def handler(msg: Message):
       },
 
       // ============ ۶. فیلترها ============
-{
-    id: "filters",
-    title: "🔍 فیلترها (Filters)",
-    description: "کلاس‌های فیلتر برای محدود کردن هندلرها در `on_message`. فیلترها به دو دستهٔ `Filter` (Sync) و `AsyncFilter` (Async) تقسیم می‌شوند. می‌توانید با `&` (AND)، `|` (OR) و `~` (NOT) آن‌ها را ترکیب کنید.",
-    subsections: [
-        {
+      {
+        id: "filters",
+        title: "🔍 فیلترها (Filters)",
+        description: "کلاس‌های فیلتر برای محدود کردن هندلرها در `on_message`. فیلترها به دو دستهٔ `Filter` (Sync) و `AsyncFilter` (Async) تقسیم می‌شوند. می‌توانید با `&` (AND)، `|` (OR) و `~` (NOT) آن‌ها را ترکیب کنید.",
+        subsections: [
+          {
             subtitle: "🧱 کلاس‌های پایه",
             class_signature: "class Filter / class AsyncFilter",
             description: "برای ساخت فیلتر سفارشی، از `Filter` (Sync) یا `AsyncFilter` (Async) ارث‌بری کنید و متد `__call__` یا `__acall__` را پیاده‌سازی کنید.",
-        },
-    ],
-    filter_groups: [
-        {
+          },
+        ],
+        filter_groups: [
+          {
             group: "✍️ فیلترهای متن",
             filters: [
-                { name: "text(pattern)", params: [["pattern", "str"]], description: "برابری دقیق متن پیام" },
-                { name: "regex(pattern, flags=0)", params: [["pattern", "str"], ["flags", "int"]], description: "انطباق با الگوی regex" },
-                { name: "in_text(text)", params: [["text", "str"]], description: "وجود یک رشته در متن پیام" },
-                { name: "starts_with(prefix)", params: [["prefix", "str | tuple[str]"]], description: "شروع متن با پیشوند" },
-                { name: "ends_with(suffix)", params: [["suffix", "str"]], description: "پایان متن با پسوند" },
-                { name: "text_length(min_len=0, max_len=inf)", params: [["min_len", "int"], ["max_len", "float"]], description: "طول متن بین بازه" },
-                { name: "is_text", params: [], description: "پیام دارای متن است (None نباشد)" },
-                { name: "has_username (is_username)", params: [], description: "متن پیام دارای username@ است" },
+              { name: "text(pattern)", params: [["pattern", "str"]], description: "برابری دقیق متن پیام" },
+              { name: "regex(pattern, flags=0)", params: [["pattern", "str"], ["flags", "int"]], description: "انطباق با الگوی regex (میانبر: `re`)" },
+              { name: "commands(commands)", params: [["commands", "list"]], description: "برابری متن با یکی از دستورات (پیشوند `/` اختیاری)" },
+              { name: "in_text(text)", params: [["text", "str"]], description: "وجود یک رشته در متن پیام" },
+              { name: "starts_with(prefix)", params: [["prefix", "str | tuple[str]"]], description: "شروع متن با پیشوند" },
+              { name: "ends_with(suffix)", params: [["suffix", "str"]], description: "پایان متن با پسوند" },
+              { name: "text_length(min_len=0, max_len=inf)", params: [["min_len", "int"], ["max_len", "float"]], description: "طول متن بین بازه" },
+              { name: "is_text", params: [], description: "پیام دارای متن است (None نباشد)" },
+              { name: "has_username (is_username)", params: [], description: "متن پیام دارای username@ است" },
             ]
-        },
-        {
+          },
+          {
             group: "👤 فیلترهای فرستنده و چت",
             filters: [
-                { name: "sender_id(id)", params: [["id", "str"]], description: "برابری sender_id" },
-                { name: "sender_ids(ids)", params: [["ids", "list"]], description: "عضویت sender_id در لیست" },
-                { name: "chat_ids(ids)", params: [["ids", "list"]], description: "عضویت chat_id در لیست" },
-                { name: "is_user", params: [], description: "فرستنده کاربر (PV)" },
-                { name: "is_group", params: [], description: "فرستنده گروه" },
-                { name: "is_channel", params: [], description: "فرستنده کانال" },
+              { name: "sender_id(id)", params: [["id", "str"]], description: "برابری sender_id" },
+              { name: "sender_ids(ids)  /  user_ids(ids)", params: [["ids", "list"]], description: "عضویت sender_id در لیست" },
+              { name: "chat_ids(ids)", params: [["ids", "list"]], description: "عضویت chat_id در لیست" },
+              { name: "is_user", params: [], description: "فرستنده کاربر (PV)" },
+              { name: "is_group", params: [], description: "فرستنده گروه" },
+              { name: "is_channel", params: [], description: "فرستنده کانال" },
             ]
-        },
-        {
+          },
+          {
             group: "📎 فیلترهای فایل",
             filters: [
-                { name: "is_file", params: [], description: "پیام دارای فایل است" },
-                { name: "file_name(name)", params: [["name", "str"]], description: "نام فایل برابر با name" },
-                { name: "size_file(size)", params: [["size", "int"]], description: "سایز فایل برابر با size (بایت)" },
-                { name: "is_video", params: [], description: "فایل ویدیویی" },
-                { name: "is_image (is_photo, is_picture)", params: [], description: "فایل تصویری" },
-                { name: "is_audio", params: [], description: "فایل صوتی" },
-                { name: "is_voice", params: [], description: "فایل ویس" },
-                { name: "is_document", params: [], description: "فایل داکیومنت" },
-                { name: "is_web", params: [], description: "فایل‌های وب" },
-                { name: "is_code", params: [], description: "فایل‌های کد (py, js, ...)" },
-                { name: "is_archive", params: [], description: "فایل‌های فشرده" },
-                { name: "is_executable", params: [], description: "فایل‌های اجرایی" },
+              { name: "is_file", params: [], description: "پیام دارای فایل است" },
+              { name: "file_name(name)", params: [["name", "str"]], description: "نام فایل برابر با name" },
+              { name: "size_file(size)", params: [["size", "int"]], description: "سایز فایل برابر با size (بایت)" },
+              { name: "is_video", params: [], description: "فایل ویدیویی" },
+              { name: "is_image (is_photo, is_picture)", params: [], description: "فایل تصویری" },
+              { name: "is_audio", params: [], description: "فایل صوتی" },
+              { name: "is_voice", params: [], description: "فایل ویس" },
+              { name: "is_document", params: [], description: "فایل داکیومنت" },
+              { name: "is_web", params: [], description: "فایل‌های وب" },
+              { name: "is_code", params: [], description: "فایل‌های کد (py, js, ...)" },
+              { name: "is_archive", params: [], description: "فایل‌های فشرده" },
+              { name: "is_executable", params: [], description: "فایل‌های اجرایی" },
             ]
-        },
-        {
+          },
+          {
             group: "🎨 فیلترهای متادیتا (فرمت متن)",
             filters: [
-                { name: "has_metadata_type(type)", params: [["type", "str"]], description: "وجود متادیتا با type مشخص" },
-                { name: "is_metadata_type(type)", params: [["type", "str"]], description: "کل متن از نوع متادیتای یکسان type" },
-                { name: "has_bold", params: [], description: "دارای متن بولد" },
-                { name: "has_italic", params: [], description: "دارای متن ایتالیک" },
-                { name: "has_underline", params: [], description: "دارای متن زیرخط‌دار" },
-                { name: "has_strike", params: [], description: "دارای متن خط‌خورده" },
-                { name: "has_mono", params: [], description: "دارای متن مونواسپیس" },
-                { name: "has_spoiler", params: [], description: "دارای متن اسپویلر" },
-                { name: "has_link", params: [], description: "دارای لینک" },
-                { name: "is_bold", params: [], description: "کل متن بولد" },
-                { name: "is_italic", params: [], description: "کل متن ایتالیک" },
-                { name: "is_underline", params: [], description: "کل متن زیرخط‌دار" },
-                { name: "is_strike", params: [], description: "کل متن خط‌خورده" },
-                { name: "is_mono", params: [], description: "کل متن مونواسپیس" },
-                { name: "is_spoiler", params: [], description: "کل متن اسپویلر" },
-                { name: "is_link", params: [], description: "کل متن لینک" },
+              { name: "has_metadata_type(type)", params: [["type", "str"]], description: "وجود متادیتا با type مشخص" },
+              { name: "is_metadata_type(type)", params: [["type", "str"]], description: "کل متن از نوع متادیتای یکسان type" },
+              { name: "has_bold", params: [], description: "دارای متن بولد" },
+              { name: "has_italic", params: [], description: "دارای متن ایتالیک" },
+              { name: "has_underline", params: [], description: "دارای متن زیرخط‌دار" },
+              { name: "has_strike", params: [], description: "دارای متن خط‌خورده" },
+              { name: "has_mono", params: [], description: "دارای متن مونواسپیس" },
+              { name: "has_spoiler", params: [], description: "دارای متن اسپویلر" },
+              { name: "has_link", params: [], description: "دارای لینک" },
+              { name: "is_bold", params: [], description: "کل متن بولد" },
+              { name: "is_italic", params: [], description: "کل متن ایتالیک" },
+              { name: "is_underline", params: [], description: "کل متن زیرخط‌دار" },
+              { name: "is_strike", params: [], description: "کل متن خط‌خورده" },
+              { name: "is_mono", params: [], description: "کل متن مونواسپیس" },
+              { name: "is_spoiler", params: [], description: "کل متن اسپویلر" },
+              { name: "is_link", params: [], description: "کل متن لینک" },
             ]
-        },
-        {
+          },
+          {
             group: "📌 فیلترهای وضعیت پیام و استیکر",
             filters: [
-                { name: "is_forward", params: [], description: "پیام فوروارد شده" },
-                { name: "is_reply", params: [], description: "پیام دارای ریپلای" },
-                { name: "is_sticker", params: [], description: "پیام استیکر است" },
-                { name: "is_contact", params: [], description: "پیام مخاطب است" },
-                { name: "sticker_emoji_character(emoji)", params: [["emoji", "str"]], description: "ایموجی استیکر برابر با emoji" },
-                { name: "sticker_sticker_id(id)", params: [["id", "str"]], description: "شناسهٔ استیکر" },
-                { name: "contact_phone_number(phone)", params: [["phone", "str"]], description: "شماره تلفن مخاطب" },
-                { name: "contact_first_name(name)", params: [["name", "str"]], description: "نام مخاطب" },
-                { name: "contact_last_name(name)", params: [["name", "str"]], description: "نام خانوادگی مخاطب" },
+              { name: "is_forward", params: [], description: "پیام فوروارد شده" },
+              { name: "is_reply", params: [], description: "پیام دارای ریپلای" },
+              { name: "is_sticker", params: [], description: "پیام استیکر است" },
+              { name: "is_contact", params: [], description: "پیام مخاطب است" },
+              { name: "sticker_emoji_character(emoji)", params: [["emoji", "str"]], description: "ایموجی استیکر برابر با emoji" },
+              { name: "sticker_sticker_id(id)", params: [["id", "str"]], description: "شناسهٔ استیکر" },
+              { name: "contact_phone_number(phone)", params: [["phone", "str"]], description: "شماره تلفن مخاطب" },
+              { name: "contact_first_name(name)", params: [["name", "str"]], description: "نام مخاطب" },
+              { name: "contact_last_name(name)", params: [["name", "str"]], description: "نام خانوادگی مخاطب" },
             ]
-        },
-        {
+          },
+          {
             group: "⏱️ فیلترهای زمانی و سیستمی",
             filters: [
-                { name: "time(from_time=0, end_time=inf)", params: [["from_time", "float"], ["end_time", "float"]], description: "زمان فعلی بین بازه" },
-                { name: "update_time(time)", params: [["time", "int"]], description: "برابری زمان آپدیت" },
-                { name: "removed_message_id(id)", params: [["id", "str"]], description: "شناسهٔ پیام حذف‌شده" },
-                { name: "crash_protection", params: [], description: "جلوگیری از کراش (کاراکترهای مخرب)" },
+              { name: "time(from_time=0, end_time=inf)", params: [["from_time", "float"], ["end_time", "float"]], description: "زمان فعلی بین بازه" },
+              { name: "update_time(time)", params: [["time", "int"]], description: "برابری زمان آپدیت" },
+              { name: "removed_message_id(id)", params: [["id", "str"]], description: "شناسهٔ پیام حذف‌شده" },
+              { name: "crash_protection", params: [], description: "جلوگیری از کراش (کاراکترهای مخرب)" },
             ]
-        },
-        {
+          },
+          {
             group: "🔘 فیلترهای دکمه و فوروارد",
             filters: [
-                { name: "button_id(id)", params: [["id", "str"]], description: "برابری button_id" },
-                { name: "startswith_button_id(prefix)", params: [["prefix", "str | tuple[str]"]], description: "شروع button_id با prefix" },
-                { name: "forward_from_sender_id(id)", params: [["id", "str"]], description: "برابری sender_id فوروارد" },
+              { name: "button_id(id)", params: [["id", "str"]], description: "برابری button_id" },
+              { name: "startswith_button_id(prefix)", params: [["prefix", "str | tuple[str]"]], description: "شروع button_id با prefix" },
+              { name: "forward_from_sender_id(id)", params: [["id", "str"]], description: "برابری sender_id فوروارد" },
             ]
-        },
-        {
+          },
+          {
             group: "🧠 فیلترهای پیشرفته (Async)",
             filters: [
-                { name: "where(func) / Where", params: [["func", "Callable[[Update], bool]"]], description: "فیلتر با شرط دلخواه (Sync)" },
-                { name: "check(func) / Check", params: [["func", "Callable[..., bool | Awaitable[bool]]"]], description: "فیلتر با تابع شرط دلخواه (Sync یا Async)" },
-                { name: "validate(email, is_digit, min_length, max_length)", params: [["email", "bool"], ["is_digit", "bool"], ["min_length", "int"], ["max_length", "int"]], description: "اعتبارسنجی ورودی کاربر" },
-                { name: "db_exists(tabel_name, where_builder, db)", params: [["tabel_name", "str"], ["where_builder", "Callable"], ["db", "DataBase"]], description: "وجود رکورد در دیتابیس" },
-                { name: "db_not_exists(tabel_name, where_builder, db)", params: [["tabel_name", "str"], ["where_builder", "Callable"], ["db", "DataBase"]], description: "عدم وجود رکورد در دیتابیس" },
-                { name: "db_count(tabel_name, where_builder, min_count, db)", params: [["tabel_name", "str"], ["where_builder", "Callable"], ["min_count", "int"], ["db", "DataBase"]], description: "تعداد رکوردها >= min_count" },
-                { name: "db_value_equals(tabel_name, column, where_builder, expected_value, db)", params: [["tabel_name", "str"], ["column", "str"], ["where_builder", "Callable"], ["expected_value", "Any"], ["db", "DataBase"]], description: "برابری مقدار یک ستون با expected_value" },
+              { name: "where(func) / Where", params: [["func", "Callable[[Update], bool]"]], description: "فیلتر با شرط دلخواه (Sync)" },
+              { name: "check(func) / Check", params: [["func", "Callable[..., bool | Awaitable[bool]]"]], description: "فیلتر با تابع شرط دلخواه (Sync یا Async)" },
+              { name: "validate(email, is_digit, min_length, max_length)", params: [["email", "bool"], ["is_digit", "bool"], ["min_length", "int"], ["max_length", "int"]], description: "اعتبارسنجی ورودی کاربر" },
+              { name: "db_exists(tabel_name, where_builder, db)", params: [["tabel_name", "str"], ["where_builder", "Callable"], ["db", "DataBase"]], description: "وجود رکورد در دیتابیس" },
+              { name: "db_not_exists(tabel_name, where_builder, db)", params: [["tabel_name", "str"], ["where_builder", "Callable"], ["db", "DataBase"]], description: "عدم وجود رکورد در دیتابیس" },
+              { name: "db_count(tabel_name, where_builder, min_count, db)", params: [["tabel_name", "str"], ["where_builder", "Callable"], ["min_count", "int"], ["db", "DataBase"]], description: "تعداد رکوردها >= min_count" },
+              { name: "db_value_equals(tabel_name, column, where_builder, expected_value, db)", params: [["tabel_name", "str"], ["column", "str"], ["where_builder", "Callable"], ["expected_value", "Any"], ["db", "DataBase"]], description: "برابری مقدار یک ستون با expected_value" },
             ]
-        },
-        {
+          },
+          {
             group: "🔗 ترکیب‌کننده‌های منطقی",
             filters: [
-                { name: "and_filter(*filters)", params: [["*filters", "Filter"]], description: "همه فیلترها True باشند (AND)" },
-                { name: "or_filter(*filters)", params: [["*filters", "Filter"]], description: "حداقل یکی True باشد (OR)" },
-                { name: "not_filter(filter)", params: [["filter", "Filter"]], description: "نقیض یک فیلتر (NOT)" },
-                { name: "filter1 & filter2", params: [], description: "عملگر & برای AND" },
-                { name: "filter1 | filter2", params: [], description: "عملگر | برای OR" },
-                { name: "~filter", params: [], description: "عملگر ~ برای NOT" },
+              { name: "and_filter(*filters)", params: [["*filters", "Filter"]], description: "همه فیلترها True باشند (AND)" },
+              { name: "or_filter(*filters)", params: [["*filters", "Filter"]], description: "حداقل یکی True باشد (OR)" },
+              { name: "not_filter(filter)", params: [["filter", "Filter"]], description: "نقیض یک فیلتر (NOT)" },
+              { name: "filter1 & filter2", params: [], description: "عملگر & برای AND" },
+              { name: "filter1 | filter2", params: [], description: "عملگر | برای OR" },
+              { name: "~filter", params: [], description: "عملگر ~ برای NOT" },
             ]
-        },
-        {
+          },
+          {
             group: "📦 نمونه‌های آماده (Pre-built Instances)",
             filters: [
-                { name: "is_user", params: [], description: "نمونهٔ آمادهٔ IsUser" },
-                { name: "is_group", params: [], description: "نمونهٔ آمادهٔ IsGroup" },
-                { name: "is_channel", params: [], description: "نمونهٔ آمادهٔ IsChannel" },
-                { name: "is_reply", params: [], description: "نمونهٔ آمادهٔ IsReply" },
-                { name: "is_forward", params: [], description: "نمونهٔ آمادهٔ IsForward" },
-                { name: "is_link", params: [], description: "نمونهٔ آمادهٔ IsLink" },
-                { name: "is_spoiler", params: [], description: "نمونهٔ آمادهٔ IsSpoiler" },
-                { name: "is_mono", params: [], description: "نمونهٔ آمادهٔ IsMono" },
-                { name: "is_strike", params: [], description: "نمونهٔ آمادهٔ IsStrike" },
-                { name: "is_underline", params: [], description: "نمونهٔ آمادهٔ IsUnderline" },
-                { name: "is_italic", params: [], description: "نمونهٔ آمادهٔ IsItalic" },
-                { name: "is_bold", params: [], description: "نمونهٔ آمادهٔ IsBold" },
-                { name: "has_spoiler", params: [], description: "نمونهٔ آمادهٔ HasSpoiler" },
-                { name: "has_mono", params: [], description: "نمونهٔ آمادهٔ HasMono" },
-                { name: "has_strike", params: [], description: "نمونهٔ آمادهٔ HasStrike" },
-                { name: "has_underline", params: [], description: "نمونهٔ آمادهٔ HasUnderline" },
-                { name: "has_italic", params: [], description: "نمونهٔ آمادهٔ HasItalic" },
-                { name: "has_bold", params: [], description: "نمونهٔ آمادهٔ HasBold" },
-                { name: "is_contact", params: [], description: "نمونهٔ آمادهٔ IsContact" },
-                { name: "is_sticker", params: [], description: "نمونهٔ آمادهٔ IsSticker" },
-                { name: "is_text", params: [], description: "نمونهٔ آمادهٔ IsText" },
-                { name: "is_file", params: [], description: "نمونهٔ آمادهٔ IsFile" },
-                { name: "is_video", params: [], description: "نمونهٔ آمادهٔ IsVideo" },
-                { name: "is_image (is_photo, is_picture)", params: [], description: "نمونهٔ آمادهٔ IsImage" },
-                { name: "is_audio", params: [], description: "نمونهٔ آمادهٔ IsAudio" },
-                { name: "is_archive", params: [], description: "نمونهٔ آمادهٔ IsArchive" },
-                { name: "is_voice", params: [], description: "نمونهٔ آمادهٔ IsVoice" },
-                { name: "is_document", params: [], description: "نمونهٔ آمادهٔ IsDocument" },
-                { name: "is_code", params: [], description: "نمونهٔ آمادهٔ IsCode" },
-                { name: "is_web", params: [], description: "نمونهٔ آمادهٔ IsWeb" },
-                { name: "is_executable", params: [], description: "نمونهٔ آمادهٔ IsExecutable" },
-                { name: "has_username (is_username)", params: [], description: "نمونهٔ آمادهٔ HasUserName" },
-                { name: "crash_protection", params: [], description: "نمونهٔ آمادهٔ CrashProtection" },
+              { name: "is_user", params: [], description: "نمونهٔ آمادهٔ IsUser" },
+              { name: "is_group", params: [], description: "نمونهٔ آمادهٔ IsGroup" },
+              { name: "is_channel", params: [], description: "نمونهٔ آمادهٔ IsChannel" },
+              { name: "is_reply", params: [], description: "نمونهٔ آمادهٔ IsReply" },
+              { name: "is_forward", params: [], description: "نمونهٔ آمادهٔ IsForward" },
+              { name: "is_link", params: [], description: "نمونهٔ آمادهٔ IsLink" },
+              { name: "is_spoiler", params: [], description: "نمونهٔ آمادهٔ IsSpoiler" },
+              { name: "is_mono", params: [], description: "نمونهٔ آمادهٔ IsMono" },
+              { name: "is_strike", params: [], description: "نمونهٔ آمادهٔ IsStrike" },
+              { name: "is_underline", params: [], description: "نمونهٔ آمادهٔ IsUnderline" },
+              { name: "is_italic", params: [], description: "نمونهٔ آمادهٔ IsItalic" },
+              { name: "is_bold", params: [], description: "نمونهٔ آمادهٔ IsBold" },
+              { name: "has_spoiler", params: [], description: "نمونهٔ آمادهٔ HasSpoiler" },
+              { name: "has_mono", params: [], description: "نمونهٔ آمادهٔ HasMono" },
+              { name: "has_strike", params: [], description: "نمونهٔ آمادهٔ HasStrike" },
+              { name: "has_underline", params: [], description: "نمونهٔ آمادهٔ HasUnderline" },
+              { name: "has_italic", params: [], description: "نمونهٔ آمادهٔ HasItalic" },
+              { name: "has_bold", params: [], description: "نمونهٔ آمادهٔ HasBold" },
+              { name: "is_contact", params: [], description: "نمونهٔ آمادهٔ IsContact" },
+              { name: "is_sticker", params: [], description: "نمونهٔ آمادهٔ IsSticker" },
+              { name: "is_text", params: [], description: "نمونهٔ آمادهٔ IsText" },
+              { name: "is_file", params: [], description: "نمونهٔ آمادهٔ IsFile" },
+              { name: "is_video", params: [], description: "نمونهٔ آمادهٔ IsVideo" },
+              { name: "is_image (is_photo, is_picture)", params: [], description: "نمونهٔ آمادهٔ IsImage" },
+              { name: "is_audio", params: [], description: "نمونهٔ آمادهٔ IsAudio" },
+              { name: "is_archive", params: [], description: "نمونهٔ آمادهٔ IsArchive" },
+              { name: "is_voice", params: [], description: "نمونهٔ آمادهٔ IsVoice" },
+              { name: "is_document", params: [], description: "نمونهٔ آمادهٔ IsDocument" },
+              { name: "is_code", params: [], description: "نمونهٔ آمادهٔ IsCode" },
+              { name: "is_web", params: [], description: "نمونهٔ آمادهٔ IsWeb" },
+              { name: "is_executable", params: [], description: "نمونهٔ آمادهٔ IsExecutable" },
+              { name: "has_username (is_username)", params: [], description: "نمونهٔ آمادهٔ HasUserName" },
+              { name: "crash_protection", params: [], description: "نمونهٔ آمادهٔ CrashProtection" },
             ]
-        },
-    ],
-    example: `from fast_rub import filters
+          },
+        ],
+        example: `from fast_rub import filters
 
 # فیلتر ساده
 @bot.on_message(filters.text("/start"))
@@ -1581,74 +1627,76 @@ class CustomFilter(filters.Filter):
         return "سلام" in update.text
 
 @bot.on_message(CustomFilter())`
-},
-{
-    id: "inline_filters",
-    title: "🔘 فیلترهای دکمه‌های شیشه‌ای (Inline Filters)",
-    description: "فیلترهای مخصوص `on_button` و `on_button_url`. مشابه فیلترهای `on_message`، ولی برای `UpdateButton` طراحی شده‌اند. می‌توانید با `&` (AND)، `|` (OR) و `~` (NOT) آن‌ها را ترکیب کنید.",
-    subsections: [
-        {
+      },
+
+      // ============ فیلترهای اینلاین ============
+      {
+        id: "inline_filters",
+        title: "🔘 فیلترهای دکمه‌های شیشه‌ای (Inline Filters)",
+        description: "فیلترهای مخصوص `on_button` و `on_button_url`. مشابه فیلترهای `on_message`، ولی برای `UpdateButton` طراحی شده‌اند. می‌توانید با `&` (AND)، `|` (OR) و `~` (NOT) آن‌ها را ترکیب کنید.",
+        subsections: [
+          {
             subtitle: "🧱 کلاس‌های پایه",
             class_signature: "class InlineFilter / class InlineAsyncFilter",
             description: "برای ساخت فیلتر سفارشی، از `InlineFilter` (Sync) یا `InlineAsyncFilter` (Async) ارث‌بری کنید.",
-        },
-    ],
-    filter_groups: [
-        {
+          },
+        ],
+        filter_groups: [
+          {
             group: "🔘 فیلترهای button_id",
             filters: [
-                { name: "button_id(id)", params: [["id", "str"]], description: "برابری دقیق button_id" },
-                { name: "startswith_button_id(prefix)", params: [["prefix", "str | tuple[str]"]], description: "شروع button_id با prefix" },
-                { name: "endswith_button_id(suffix)", params: [["suffix", "str | tuple[str]"]], description: "پایان button_id با suffix" },
+              { name: "button_id(id)", params: [["id", "str"]], description: "برابری دقیق button_id" },
+              { name: "startswith_button_id(prefix)", params: [["prefix", "str | tuple[str]"]], description: "شروع button_id با prefix" },
+              { name: "endswith_button_id(suffix)", params: [["suffix", "str | tuple[str]"]], description: "پایان button_id با suffix" },
             ]
-        },
-        {
+          },
+          {
             group: "✍️ فیلترهای متن دکمه",
             filters: [
-                { name: "text(text)", params: [["text", "str"]], description: "برابری دقیق متن دکمه" },
-                { name: "startswith_text(prefix)", params: [["prefix", "str | tuple[str]"]], description: "شروع متن دکمه با prefix" },
-                { name: "endswith_text(suffix)", params: [["suffix", "str | tuple[str]"]], description: "پایان متن دکمه با suffix" },
-                { name: "in_text(text)", params: [["text", "str"]], description: "وجود یک رشته در متن دکمه" },
-                { name: "text_length(min_len, max_len)", params: [["min_len", "int"], ["max_len", "float"]], description: "طول متن دکمه بین بازه" },
+              { name: "text(text)", params: [["text", "str"]], description: "برابری دقیق متن دکمه" },
+              { name: "startswith_text(prefix)", params: [["prefix", "str | tuple[str]"]], description: "شروع متن دکمه با prefix" },
+              { name: "endswith_text(suffix)", params: [["suffix", "str | tuple[str]"]], description: "پایان متن دکمه با suffix" },
+              { name: "in_text(text)", params: [["text", "str"]], description: "وجود یک رشته در متن دکمه" },
+              { name: "text_length(min_len, max_len)", params: [["min_len", "int"], ["max_len", "float"]], description: "طول متن دکمه بین بازه" },
             ]
-        },
-        {
+          },
+          {
             group: "👤 فیلترهای فرستنده و چت",
             filters: [
-                { name: "sender_ids(ids)", params: [["ids", "str | list[str]"]], description: "عضویت sender_id در لیست" },
-                { name: "chat_ids(ids)", params: [["ids", "str | list[str]"]], description: "عضویت chat_id در لیست" },
+              { name: "sender_ids(ids)", params: [["ids", "str | list[str]"]], description: "عضویت sender_id در لیست" },
+              { name: "chat_ids(ids)", params: [["ids", "str | list[str]"]], description: "عضویت chat_id در لیست" },
             ]
-        },
-        {
+          },
+          {
             group: "⏱️ فیلترهای زمانی",
             filters: [
-                { name: "time(from_time=0, end_time=inf)", params: [["from_time", "float"], ["end_time", "float"]], description: "زمان فعلی بین بازه" },
+              { name: "time(from_time=0, end_time=inf)", params: [["from_time", "float"], ["end_time", "float"]], description: "زمان فعلی بین بازه" },
             ]
-        },
-        {
+          },
+          {
             group: "🧠 فیلترهای پیشرفته",
             filters: [
-                { name: "where(func) / Where", params: [["func", "Callable[[UpdateButton], bool]"]], description: "فیلتر با شرط دلخواه (Sync)" },
-                { name: "check(func) / Check", params: [["func", "Callable[..., bool | Awaitable[bool]]"]], description: "فیلتر با تابع شرط دلخواه (Sync یا Async)" },
-                { name: "db_exists(tabel_name, where_builder, db)", params: [["tabel_name", "str"], ["where_builder", "Callable"], ["db", "DataBase"]], description: "وجود رکورد در دیتابیس (Async)" },
-                { name: "db_not_exists(tabel_name, where_builder, db)", params: [["tabel_name", "str"], ["where_builder", "Callable"], ["db", "DataBase"]], description: "عدم وجود رکورد در دیتابیس (Async)" },
-                { name: "db_count(tabel_name, where_builder, min_count, db)", params: [["tabel_name", "str"], ["where_builder", "Callable"], ["min_count", "int"], ["db", "DataBase"]], description: "تعداد رکوردها >= min_count (Async)" },
-                { name: "db_value_equals(tabel_name, column, where_builder, expected_value, db)", params: [["tabel_name", "str"], ["column", "str"], ["where_builder", "Callable"], ["expected_value", "Any"], ["db", "DataBase"]], description: "برابری مقدار ستون با expected_value (Async)" },
+              { name: "where(func) / Where", params: [["func", "Callable[[UpdateButton], bool]"]], description: "فیلتر با شرط دلخواه (Sync)" },
+              { name: "check(func) / Check", params: [["func", "Callable[..., bool | Awaitable[bool]]"]], description: "فیلتر با تابع شرط دلخواه (Sync یا Async)" },
+              { name: "db_exists(tabel_name, where_builder, db)", params: [["tabel_name", "str"], ["where_builder", "Callable"], ["db", "DataBase"]], description: "وجود رکورد در دیتابیس (Async)" },
+              { name: "db_not_exists(tabel_name, where_builder, db)", params: [["tabel_name", "str"], ["where_builder", "Callable"], ["db", "DataBase"]], description: "عدم وجود رکورد در دیتابیس (Async)" },
+              { name: "db_count(tabel_name, where_builder, min_count, db)", params: [["tabel_name", "str"], ["where_builder", "Callable"], ["min_count", "int"], ["db", "DataBase"]], description: "تعداد رکوردها >= min_count (Async)" },
+              { name: "db_value_equals(tabel_name, column, where_builder, expected_value, db)", params: [["tabel_name", "str"], ["column", "str"], ["where_builder", "Callable"], ["expected_value", "Any"], ["db", "DataBase"]], description: "برابری مقدار ستون با expected_value (Async)" },
             ]
-        },
-        {
+          },
+          {
             group: "🔗 ترکیب‌کننده‌های منطقی",
             filters: [
-                { name: "and_filter(*filters)", params: [["*filters", "InlineFilter"]], description: "همه فیلترها True باشند (AND)" },
-                { name: "or_filter(*filters)", params: [["*filters", "InlineFilter"]], description: "حداقل یکی True باشد (OR)" },
-                { name: "not_filter(filter)", params: [["filter", "InlineFilter"]], description: "نقیض یک فیلتر (NOT)" },
-                { name: "filter1 & filter2", params: [], description: "عملگر & برای AND" },
-                { name: "filter1 | filter2", params: [], description: "عملگر | برای OR" },
-                { name: "~filter", params: [], description: "عملگر ~ برای NOT" },
+              { name: "and_filter(*filters)", params: [["*filters", "InlineFilter"]], description: "همه فیلترها True باشند (AND)" },
+              { name: "or_filter(*filters)", params: [["*filters", "InlineFilter"]], description: "حداقل یکی True باشد (OR)" },
+              { name: "not_filter(filter)", params: [["filter", "InlineFilter"]], description: "نقیض یک فیلتر (NOT)" },
+              { name: "filter1 & filter2", params: [], description: "عملگر & برای AND" },
+              { name: "filter1 | filter2", params: [], description: "عملگر | برای OR" },
+              { name: "~filter", params: [], description: "عملگر ~ برای NOT" },
             ]
-        },
-    ],
-    example: `from fast_rub import filters  # inline filters هم از همین مسیر import می‌شوند
+          },
+        ],
+        example: `from fast_rub import filters  # inline filters هم از همین مسیر import می‌شوند
 
 # فیلتر ساده با button_id
 @bot.on_button(filters.button_id("home"))
@@ -1670,20 +1718,22 @@ async def post_btn(upd: UpdateButton):
 @bot.on_button(filters.db_exists("users", lambda u: {"chat_id": u.chat_id}, db=my_db))
 async def registered_click(upd: UpdateButton):
     await upd.send_text("کاربر ثبت‌نام‌شده کلیک کرد.")`
-},
+      },
+
+      // ============ خطاها ============
       {
-    id: "Errors",
-    title: "⚠️ خطاها (Exceptions)",
-    description: "Fast Rub چندین Exception سفارشی دارد که می‌توانید از آن‌ها برای مدیریت خطاهای خاص استفاده کنید. همهٔ آن‌ها از `Exception` ارث‌بری می‌کنند.",
-    note: "مسیر import: `from fast_rub.types import errors` یا `from fast_rub.types import exceptions`",
-    properties: [
-        {name: "TokenInvalid", type: "Exception", description: "توکن ربات نامعتبر است یا منقضی شده."},
-        {name: "PollInvalid", type: "Exception", description: "اطلاعات نظرسنجی نامعتبر است (مثلاً گزینه‌های خالی یا فرمت اشتباه)."},
-        {name: "ServerRubikaError", type: "Exception", description: "خطای سمت سرور روبیکا (مثلاً ۵۰۲، ۴۰۳، یا پاسخ غیرمنتظره)."},
-        {name: "CreateSessionError", type: "Exception", description: "خطا در ساخت یا بارگذاری Session (فایل سشن خراب یا ناقص)."},
-        {name: "InvalidID", type: "Exception", description: "شناسهٔ واردشده (chat_id, message_id, user_id) نامعتبر است."},
-    ],
-    example: `from fast_rub.types import errors
+        id: "Errors",
+        title: "⚠️ خطاها (Exceptions)",
+        description: "Fast Rub چندین Exception سفارشی دارد که می‌توانید از آن‌ها برای مدیریت خطاهای خاص استفاده کنید. همهٔ آن‌ها از `Exception` ارث‌بری می‌کنند.",
+        note: "مسیر import: `from fast_rub.types import errors` یا `from fast_rub.types import exceptions`",
+        properties: [
+          {name: "TokenInvalid", type: "Exception", description: "توکن ربات نامعتبر است یا منقضی شده."},
+          {name: "PollInvalid", type: "Exception", description: "اطلاعات نظرسنجی نامعتبر است (مثلاً گزینه‌های خالی یا فرمت اشتباه)."},
+          {name: "ServerRubikaError", type: "Exception", description: "خطای سمت سرور روبیکا (مثلاً ۵۰۲، ۴۰۳، یا پاسخ غیرمنتظره)."},
+          {name: "CreateSessionError", type: "Exception", description: "خطا در ساخت یا بارگذاری Session (فایل سشن خراب یا ناقص)."},
+          {name: "InvalidID", type: "Exception", description: "شناسهٔ واردشده (chat_id, message_id, user_id) نامعتبر است."},
+        ],
+        example: `from fast_rub.types import errors
 
 try:
     await bot.send_message("invalid_chat_id", "سلام")
@@ -1693,163 +1743,78 @@ except errors.TokenInvalid:
     print("❌ توکن نامعتبر است.")
 except errors.InvalidID:
     print("❌ شناسه نامعتبر است.")`
-},
+      },
 
-{
-    id: "metadata",
-    title: "🎨 MetaData — قالب‌بندی متن",
-    description: "کلاس MetaData برای قالب‌بندی متن پیام‌ها با استایل‌های مختلف (بولد، اسپویل، لینک، منشن، ...) در دو حالت Markdown و HTML.",
-    note: "مسیر import: `from fast_rub.types import MetaData, ParseMode, Style`",
-    class_signature: "class MetaData(parse_mode='Markdown')",
-    init_params: [
-        ["parse_mode", "'Markdown' | 'HTML' = 'Markdown'", "حالت قالب‌بندی پیش‌فرض"],
-    ],
-    methods: [
-        {
+      // ============ MetaData (قالب‌بندی) ============
+      {
+        id: "metadata",
+        title: "🎨 MetaData — قالب‌بندی متن",
+        description: "کلاس MetaData برای قالب‌بندی متن پیام‌ها با استایل‌های مختلف (بولد، اسپویل، لینک، منشن، ...) در دو حالت Markdown و HTML.",
+        note: "مسیر import: `from fast_rub.types import MetaData, ParseMode, Style`",
+        class_signature: "class MetaData(parse_mode='Markdown')",
+        init_params: [
+          ["parse_mode", "'Markdown' | 'HTML' = 'Markdown'", "حالت قالب‌بندی پیش‌فرض"],
+        ],
+        methods: [
+          {
             name: "format_text",
             params: [
-                ["text", "str", "متن ورودی"],
-                ["style", "Style", "نوع استایل (مثلاً `Style.BOLD`)"],
-                ["**kwargs", "dict", "پارامترهای اضافی (مثلاً `link` برای لینک، `sender_id` برای منشن)"],
+              ["text", "str", "متن ورودی"],
+              ["style", "Style", "نوع استایل (مثلاً `Style.BOLD`)"],
+              ["**kwargs", "dict", "پارامترهای اضافی (مثلاً `link` برای لینک، `sender_id` برای منشن)"],
             ],
             returns: "str",
             description: "متن را با استایل مشخص قالب‌بندی می‌کند."
-        },
-        {
-            name: "bold",
-            params: [["text", "str", "متن"]],
-            returns: "str",
-            description: "متن بولد — **text**"
-        },
-        {
-            name: "spoil",
-            params: [["text", "str", "متن"]],
-            returns: "str",
-            description: "متن اسپویل — ||text||"
-        },
-        {
-            name: "underline",
-            params: [["text", "str", "متن"]],
-            returns: "str",
-            description: "متن زیرخط‌دار — __text__"
-        },
-        {
-            name: "strike",
-            params: [["text", "str", "متن"]],
-            returns: "str",
-            description: "متن خط‌خورده — ~~text~~"
-        },
-        {
-            name: "copy",
-            params: [["text", "str", "متن"]],
-            returns: "str",
-            description: "متن کپی (مونواسپیس) — `text`"
-        },
-        {
-            name: "code",
-            params: [["text", "str", "متن"]],
-            returns: "str",
-            description: "بلاک کد — ```text```"
-        },
-        {
-            name: "link",
-            params: [
-                ["text", "str", "متن نمایشی"],
-                ["link", "str", "آدرس لینک"]
-            ],
-            returns: "str",
-            description: "متن لینک‌دار — [text](link)"
-        },
-        {
-            name: "mention",
-            params: [
-                ["text", "str", "متن نمایشی"],
-                ["sender_id", "str", "آیدی کاربر"]
-            ],
-            returns: "str",
-            description: "منشن کاربر — [text](sender_id)"
-        },
-    ],
-    example: `from fast_rub.types import MetaData
+          },
+          { name: "bold", params: [["text", "str", "متن"]], returns: "str", description: "متن بولد — **text**" },
+          { name: "spoil", params: [["text", "str", "متن"]], returns: "str", description: "متن اسپویل — ||text||" },
+          { name: "underline", params: [["text", "str", "متن"]], returns: "str", description: "متن زیرخط‌دار — __text__" },
+          { name: "strike", params: [["text", "str", "متن"]], returns: "str", description: "متن خط‌خورده — ~~text~~" },
+          { name: "copy", params: [["text", "str", "متن"]], returns: "str", description: "متن کپی (مونواسپیس) — `text`" },
+          { name: "code", params: [["text", "str", "متن"]], returns: "str", description: "بلاک کد — ```text```" },
+          { name: "link", params: [["text", "str", "متن نمایشی"], ["link", "str", "آدرس لینک"]], returns: "str", description: "متن لینک‌دار — [text](link)" },
+          { name: "mention", params: [["text", "str", "متن نمایشی"], ["sender_id", "str", "آیدی کاربر"]], returns: "str", description: "منشن کاربر — [text](sender_id)" },
+        ],
+        example: `from fast_rub.types import MetaData
 
 md = MetaData()
-
-# استایل‌های ساده
 text = md.bold("سلام")        # **سلام**
 text = md.spoil("اسپویل")     # ||اسپویل||
 text = md.copy("کد")          # \`کد\`
-
-# لینک
 text = md.link("کلیک کن", "https://example.com")
-# [کلیک کن](https://example.com)
-
-# منشن
-text = md.mention("علی", "user_guid_123")
-# [علی](user_guid_123)
-
-# HTML mode
 md_html = MetaData(parse_mode="HTML")
 text = md_html.bold("سلام")   # <b>سلام</b>`
-},
+      },
 
-{
-    id: "file",
-    title: "📎 File — آبجکت فایل",
-    description: "آبجکت فایل که توسط `Update.sticker_file` و `Update.file` استفاده می‌شود.",
-    class_signature: "class File(data: dict)",
-    properties: [
-        { name: "file_id", type: "str", description: "آیدی فایل" },
-        { name: "file_name", type: "str", description: "نام فایل" },
-        { name: "size", type: "int", description: "سایز فایل (بایت)" },
-    ],
-},
-{
-    id: "file_category",
-    title: "📂 get_file_category — تشخیص نوع فایل",
-    description: "تابعی برای تشخیص نوع فایل بر اساس پسوند آن.",
-    class_signature: "get_file_category(filename: str) -> str",
-    methods: [
-        {
+      // ============ get_file_category ============
+      {
+        id: "file_category",
+        title: "📂 get_file_category — تشخیص نوع فایل",
+        description: "تابعی برای تشخیص نوع فایل بر اساس پسوند آن.",
+        class_signature: "get_file_category(filename: str) -> str",
+        methods: [
+          {
             name: "get_file_category",
             params: [["filename", "str", "نام فایل"]],
             returns: "str",
             description: "نوع فایل را برمی‌گرداند: image, video, audio, voice, document, web, code, archive, executable, other"
-        }
-    ],
-},
-{
-    id: "metadata_prop",
-    title: "🏷️ metadata — آبجکت متادیتا",
-    description: "آبجکت متادیتای پیام که توسط `Update.meta_data_parts` استفاده می‌شود.",
-    class_signature: "class metadata(data: list)",
-    methods: [
-        {
-            name: "from_index",
-            params: [["index", "int", "اندیس"]],
-            returns: "int",
-            description: "شروع موقعیت متادیتا در متن"
-        },
-        {
-            name: "length",
-            params: [["index", "int", "اندیس"]],
-            returns: "int",
-            description: "طول متادیتا"
-        },
-        {
-            name: "type",
-            params: [["index", "int", "اندیس"]],
-            returns: "str",
-            description: "نوع متادیتا (bold, italic, link, ...)"
-        },
-        {
-            name: "link_url",
-            params: [["index", "int", "اندیس"]],
-            returns: "str | None",
-            description: "لینک متادیتا (در صورت وجود)"
-        },
-    ],
-},
+          }
+        ],
+      },
 
+      // ============ metadata_prop ============
+      {
+        id: "metadata_prop",
+        title: "🏷️ metadata — آبجکت متادیتا",
+        description: "آبجکت متادیتای پیام که توسط `Update.new_message.metadata.meta_data_parts` استفاده می‌شود.",
+        class_signature: "class metadata(data: list)",
+        methods: [
+          { name: "from_index", params: [["index", "int", "اندیس"]], returns: "int", description: "شروع موقعیت متادیتا در متن" },
+          { name: "length", params: [["index", "int", "اندیس"]], returns: "int", description: "طول متادیتا" },
+          { name: "type", params: [["index", "int", "اندیس"]], returns: "str", description: "نوع متادیتا (bold, italic, link, ...)" },
+          { name: "link_url", params: [["index", "int", "اندیس"]], returns: "str | None", description: "لینک متادیتا (در صورت وجود)" },
+        ],
+      },
     ];
 
     function renderModels() {
@@ -1858,7 +1823,7 @@ text = md_html.bold("سلام")   # <b>سلام</b>`
       container.innerHTML = '';
       tocList.innerHTML = '';
 
-      modelsData.forEach((section, idx) => {
+      modelsData.forEach((section) => {
         const sectionEl = document.createElement('section');
         sectionEl.className = 'model-section';
         sectionEl.id = section.id;
@@ -1883,7 +1848,7 @@ text = md_html.bold("سلام")   # <b>سلام</b>`
 
         if (section.init_params && section.init_params.length > 0) {
           const paramsTitle = document.createElement('h3');
-          paramsTitle.textContent = '📥 ورودی‌های';
+          paramsTitle.textContent = '📥 ورودی‌ها';
           sectionEl.appendChild(paramsTitle);
 
           const div = document.createElement('div');
@@ -1922,8 +1887,7 @@ text = md_html.bold("سلام")   # <b>سلام</b>`
           div.className = 'table-responsive';
           let table = '<table><thead><tr><th>متد</th><th>پارامترها</th><th>خروجی</th><th>توضیحات</th></tr></thead><tbody>';
           section.methods.forEach(m => {
-            let paramsStr = m.params.map(p => `${p[0]}: ${p[1]}`).join(', ');
-            if (!paramsStr) paramsStr = '—';
+            let paramsStr = m.params ? m.params.map(p => `${p[0]}: ${p[1]}`).join(', ') : '—';
             table += `<tr>
                         <td><code>${m.name}()</code></td>
                         <td>${paramsStr}</td>
