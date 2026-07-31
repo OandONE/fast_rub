@@ -6,9 +6,16 @@ import asyncio
 from ..filters import Filter, legacy_filter
 import inspect
 import json
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from ..methods import Methods
 
 class Socket:
-    def __init__(self, methods):
+    def __init__(
+        self,
+        methods: "Methods"
+    ):
         self.methods = methods
         self.handlers = {}
         self._running = False

@@ -31,11 +31,7 @@ dependencies = [
     "httpx[http2]<=0.28.1",
     "aiofiles<=24.1.0",
     "aiosqlite<=0.21.0",
-    "filetype",
-    "mutagen",
-    "pycryptodome",
-    "tqdm",
-    "websockets",
+    "tqdm"
 ]
 
 [project.urls]
@@ -49,14 +45,15 @@ include = ["fast_rub", "fast_rub.*"]
 fast_rub = ["pyrightconfig.json"]
 
 [tool.setuptools.dynamic]
-version = {attr = "fast_rub.__version__"}
+version = {attr = "fast_rub.utils.version.v"}
 
 [project.optional-dependencies]
+pyrubi = ["pycryptodome", "websockets", "mutagen", "filetype", "aiohttp"]
 hotreload = ["watchfiles"]
 fastapi = ["fastapi", "uvicorn"]
 flask = ["flask"]
 jalali = ["jdatetime"]
-full = ["fastapi", "uvicorn", "flask", "watchfiles", "jdatetime"]
+full = ["fastapi", "uvicorn", "flask", "watchfiles", "jdatetime", "pycryptodome", "websockets", "mutagen", "filetype", "aiohttp"]
 
 [project.scripts]
 fastrub = "fast_rub.cli:main"

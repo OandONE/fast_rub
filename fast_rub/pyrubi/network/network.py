@@ -1,329 +1,222 @@
-from json import dumps, loads
+from typing import Any
+from pathlib import Path
 from tqdm import tqdm
-from typing import Any, Protocol, Optional, Union
-import httpx
-import aiohttp
-from ..utils import Configs
-from ..exceptions import *
-from .helper import Helper
-from ..utils import *
+import aiofiles
+import os
+
+from ...network.network import Network as BaseNetwork
 
 
-class MethodsProtocol(Protocol):
-    sessionData: Any
-    crypto: Any
-    proxy: str | None
-    platform: str
-    apiVersion: int
-    timeOut: int
-    showProgressBar: bool
-    async def requestSendFile(
-        self, fileName: str, mime: str, size: int
-    ) -> dict: ...
-
-
-class Network:
-    def __init__(self, methods: MethodsProtocol) -> None:
-        self.methods = methods
-        self.sessionData = methods.sessionData
-        self.crypto = methods.crypto
+class Network(BaseNetwork):
+    """
+    pyrubi network layer — extends Fast Rub's Network with
+    pyrubi-specific upload/download methods.
+    Uses httpx instead of aiohttp.
+    """
+    
+    def __init__(
+        self,
+        token: str,
+        client: Any,
+        logger: Any = None,
+        max_retries: int = 3,
+        user_agent: str | None = None,
+        base_urls: list | None = None,
+        proxy: str | None = None,
+        rate_limit: int = 20,
+        ssl_verify: bool = True,
+        max_retries_upload: int | None = None,
+        max_retries_download: int | None = None,
+        session_data: dict | None = None,
+        show_progress: bool = True,
+    ):
+        if base_urls is None:
+            base_urls = [
+                "https://messengerg2b1.iranlms.ir/",
+            ]
         
-        if methods.proxy:
-            import os
-            if isinstance(methods.proxy, dict):
-                proxy_str = methods.proxy.get("http") or methods.proxy.get("https") or list(methods.proxy.values())[0]
-            else:
-                proxy_str = methods.proxy
-            
-            os.environ['HTTP_PROXY'] = proxy_str
-            os.environ['HTTPS_PROXY'] = proxy_str
-            os.environ['ALL_PROXY'] = proxy_str
-        
-        self.httpx_client = httpx.AsyncClient(
-            timeout=methods.timeOut,
-            trust_env=True
+        super().__init__(
+            token=token,
+            client=client,
+            logger=logger,
+            max_retries=max_retries,
+            user_agent=user_agent,
+            base_urls=base_urls,
+            proxy=proxy,
+            rate_limit=rate_limit,
+            ssl_verify=ssl_verify,
+            max_retries_upload=max_retries_upload,
+            max_retries_download=max_retries_download,
         )
         
-        self.proxy_str = None
-        if methods.proxy:
-            if isinstance(methods.proxy, dict):
-                self.proxy_str = methods.proxy.get("http") or methods.proxy.get("https") or list(methods.proxy.values())[0]
-            else:
-                self.proxy_str = methods.proxy
-        
-        self.aiohttp_session = None
-
-    async def _get_aiohttp_session(self):
-        if self.aiohttp_session is None:
-            connector = aiohttp.TCPConnector()
-            
-            if self.proxy_str:
-                self.aiohttp_session = aiohttp.ClientSession(
-                    connector=connector,
-                    trust_env=True
-                )
-            else:
-                self.aiohttp_session = aiohttp.ClientSession(
-                    connector=connector
-                )
-        
-        return self.aiohttp_session
-
-    async def request(self, method: str, input: dict = {}, tmpSession: bool = False, 
-                     attempt: int = 0, maxAttempt: int = 2) -> dict:
-        url: str = Helper.getApiServer()
-        platform: str = self.methods.platform.lower()
-        apiVersion: int = self.methods.apiVersion
-        configs = Configs()
-        
-        if platform in ["rubx", "rubikax"]:
-            client: dict = configs.clients["android"]
-            client["package"] = "ir.rubx.bapp"
-        elif platform in ["android"]:
-            client: dict = configs.clients["android"]
-        else:
-            client: dict = configs.clients["web"]
-
-        auth_key = "tmp_session" if tmpSession else "auth"
-        auth_value = (
-            self.crypto.auth if tmpSession else
-            self.crypto.changeAuthType(self.sessionData["auth"]) if apiVersion > 5 else
-            self.sessionData["auth"]
-        )
-        
-        data = {
-            "api_version": str(apiVersion),
-            auth_key: auth_value,
-            "data_enc": self.crypto.encrypt(
-                dumps({
-                    "method": method,
-                    "input": input,
-                    "client": client
-                })
-            )
-        }
-
-        headers: dict = {
-            "Referer": "https://web.rubika.ir/",
-            "Content-Type": "application/json; charset=utf-8",
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
-        }
-
-        if not tmpSession and apiVersion > 5:
-            data["sign"] = self.crypto.makeSignFromData(data["data_enc"])
-
-        while attempt <= maxAttempt:
-            try:
-                response = await self.httpx_client.post(
-                    url=url,
-                    headers=headers,
-                    json=data
-                )
-                response.raise_for_status()
-                
-                result_data = response.json()
-                decrypted_data = self.crypto.decrypt(result_data["data_enc"])
-                result = loads(decrypted_data)
-                
-                if result["status"] == "OK":
-                    if tmpSession:
-                        result["data"]["tmp_session"] = self.crypto.auth
-                    return result["data"]
-                else:
-                    raise Utils.raise_error(result)
-                    
-            except (httpx.RequestError, httpx.HTTPStatusError, ValueError) as e:
-                attempt += 1
-                if attempt > maxAttempt:
-                    raise httpx.NetworkError(f"Request failed after {maxAttempt} attempts: {str(e)}")
-                continue
-
-        raise httpx.NetworkError("Request failed")
-
-    async def upload(
-        self, 
-        file: str | bytes, 
-        fileName: str | None = None, 
-        chunkSize: int = 131072
+        self.session_data = session_data or {}
+        self.show_progress = show_progress
+    
+    async def upload_file(
+        self,
+        file: str | Path | bytes,
+        upload_url: str,
+        access_hash_send: str,
+        file_id: str,
+        file_name: str | None = None,
+        chunk_size: int = 131072,
     ) -> dict | None:
+        """
+        Upload a file to the given upload_url using httpx.
+        Replacement for the old aiohttp-based upload.
+        """
+        from ..utils import Utils
+        
+        # Prepare file data
         if isinstance(file, str):
             if Utils.checkLink(url=file):
-                response = await self.httpx_client.get(file)
+                response = await self._client.get(file) # pyright: ignore[reportOptionalMemberAccess]
                 response.raise_for_status()
                 file_bytes: bytes = response.content
-                mime: str = Utils.getMimeFromByte(file_bytes)
-                fileName = fileName or Utils.generateFileName(mime=mime)
+                mime = Utils.getMimeFromByte(file_bytes)
+                file_name = file_name or Utils.generateFileName(mime=mime)
                 file = file_bytes
             else:
-                fileName = fileName or file
-                with open(file, "rb") as fh:
-                    file = fh.read()
+                file_name = file_name or file
+                async with aiofiles.open(file, "rb") as fh:
+                    file = await fh.read()
                 mime = Utils.getMimeFromByte(file)
-
         elif isinstance(file, bytes):
             mime = Utils.getMimeFromByte(file)
-            fileName = fileName or Utils.generateFileName(mime=mime)
+            file_name = file_name or Utils.generateFileName(mime=mime)
         else:
             raise FileNotFoundError("Enter a valid path or url or bytes of file.")
-
-        async def send_chunk(session: aiohttp.ClientSession, data: bytes, 
-                           upload_url: str, headers: dict, maxAttempts: int = 2) -> dict | None:
-            for attempt in range(maxAttempts):
-                try:
-                    async with session.post(
-                        upload_url,
-                        headers=headers,
-                        data=data,
-                        timeout=aiohttp.ClientTimeout(total=self.methods.timeOut)
-                    ) as response:
-                        response.raise_for_status()
-                        return await response.json()
-                except Exception as e:
-                    print(f"\nError uploading file! (Attempt {attempt + 1}/{maxAttempts}): {e}")
-            
-            print("\nFailed to upload the file!")
-            return None
-
-        requestSendFileData = await self.methods.requestSendFile(
-            fileName=fileName,
-            mime=mime,
-            size=len(file)
-        )
-
-        session = await self._get_aiohttp_session()
         
-        headers = {
-            "auth": self.sessionData["auth"],
-            "access-hash-send": requestSendFileData["access_hash_send"],
-            "file-id": requestSendFileData["id"],
+        total_size = len(file)
+        total_parts = (total_size + chunk_size - 1) // chunk_size
+        
+        headers_base = {
+            "auth": self.session_data.get("auth", ""),
+            "access-hash-send": access_hash_send,
+            "file-id": file_id,
         }
-
-        totalParts = (len(file) + chunkSize - 1) // chunkSize
-
-        processBar: tqdm | None = None
-
-        if self.methods.showProgressBar:
-            processBar = tqdm(
-                desc=f"Uploading {fileName}",
-                total=len(file),
+        
+        pbar = None
+        if self.show_progress:
+            pbar = tqdm(
+                desc=f"Uploading {file_name}",
+                total=total_size,
                 unit="B",
                 unit_scale=True,
                 unit_divisor=1024,
             )
-
-        for partNumber in range(1, totalParts + 1):
-            startIdx = (partNumber - 1) * chunkSize
-            endIdx = min(startIdx + chunkSize, len(file))
-            chunk_headers = headers.copy()
-            chunk_headers["chunk-size"] = str(endIdx - startIdx)
-            chunk_headers["part-number"] = str(partNumber)
-            chunk_headers["total-part"] = str(totalParts)
+        
+        for part_number in range(1, total_parts + 1):
+            start_idx = (part_number - 1) * chunk_size
+            end_idx = min(start_idx + chunk_size, total_size)
+            chunk = file[start_idx:end_idx]
             
-            data = file[startIdx:endIdx]
-            hashFileReceive = await send_chunk(
-                session, 
-                data, 
-                requestSendFileData["upload_url"],
-                chunk_headers
+            headers = headers_base.copy()
+            headers["chunk-size"] = str(end_idx - start_idx)
+            headers["part-number"] = str(part_number)
+            headers["total-part"] = str(total_parts)
+            
+            response = await self._client.post( # pyright: ignore[reportOptionalMemberAccess]
+                upload_url,
+                content=chunk,
+                headers=headers,
+                timeout=None,
             )
             
-            if processBar is not None:
-                processBar.update(len(data))
-
-            if not hashFileReceive:
+            if response.status_code != 200:
+                if pbar:
+                    pbar.close()
                 return None
             
-            if partNumber == totalParts:
-                if not hashFileReceive.get("data"):
+            if pbar:
+                pbar.update(len(chunk))
+            
+            if part_number == total_parts:
+                result = response.json()
+                if pbar:
+                    pbar.close()
+                
+                if not result.get("data"):
                     return None
                 
-                requestSendFileData["file"] = file
-                requestSendFileData["access_hash_rec"] = hashFileReceive["data"]["access_hash_rec"]
-                requestSendFileData["file_name"] = fileName
-                requestSendFileData["mime"] = mime
-                requestSendFileData["size"] = len(file)
-                return requestSendFileData
+                return {
+                    "file": file,
+                    "access_hash_rec": result["data"]["access_hash_rec"],
+                    "file_name": file_name,
+                    "mime": mime,
+                    "size": total_size,
+                }
         
+        if pbar:
+            pbar.close()
         return None
-
-    async def download(self, accessHashRec: str, fileId: str, dcId: str, 
-                      size: int, fileName: str, chunkSize: int = 262143, 
-                      attempt: int = 0, maxAttempts: int = 2) -> bytes | None:
+    
+    async def download_file(
+        self,
+        access_hash_rec: str,
+        file_id: str,
+        dc_id: str,
+        size: int,
+        file_name: str,
+        chunk_size: int = 262143,
+        save_path: str | None = None,
+    ) -> bytes | None:
+        """
+        Download a file from Rubika servers using httpx.
+        Replacement for the old aiohttp-based download.
+        """
+        url = f"https://messenger{dc_id}.iranlms.ir/GetFile.ashx"
+        
         headers = {
-            "auth": self.sessionData["auth"],
-            "access-hash-rec": accessHashRec,
-            "dc-id": dcId,
-            "file-id": fileId,
-            "Host": f"messenger{dcId}.iranlms.ir",
+            "auth": self.session_data.get("auth", ""),
+            "access-hash-rec": access_hash_rec,
+            "dc-id": dc_id,
+            "file-id": file_id,
+            "Host": f"messenger{dc_id}.iranlms.ir",
             "client-app-name": "Main",
             "client-app-version": "3.5.7",
             "client-package": "app.rbmain.a",
             "client-platform": "Android",
             "Connection": "Keep-Alive",
-            "Content-Type": "application/json",
-            "User-Agent": "okhttp/3.12.1"
+            "User-Agent": "okhttp/3.12.1",
         }
-
-        session = await self._get_aiohttp_session()
-        url = f"https://messenger{dcId}.iranlms.ir/GetFile.ashx"
-
-        processBar: tqdm | None = None
-
-        if self.methods.showProgressBar:
-            processBar = tqdm(
-                desc=f"Downloading {fileName}",
+        
+        pbar = None
+        if self.show_progress:
+            pbar = tqdm(
+                desc=f"Downloading {file_name}",
                 total=size,
                 unit="B",
                 unit_scale=True,
                 unit_divisor=1024,
             )
-
-        for retry in range(maxAttempts):
-            try:
-                data: bytes = b""
-                
-                async with session.post(
-                    url,
-                    headers=headers,
-                    timeout=aiohttp.ClientTimeout(total=self.methods.timeOut)
-                ) as response:
-                    response.raise_for_status()
+        
+        data = b""
+        
+        async with self._client.stream("POST", url, headers=headers) as response: # pyright: ignore[reportOptionalMemberAccess]
+            response.raise_for_status()
+            
+            async for chunk in response.aiter_bytes(chunk_size):
+                if chunk:
+                    data += chunk
+                    if pbar:
+                        pbar.update(len(chunk))
                     
-                    async for chunk in response.content.iter_chunked(chunkSize):
-                        if chunk:
-                            data += chunk
-                            if processBar is not None:
-                                processBar.update(len(chunk))
-                        
-                        if len(data) >= size:
-                            if processBar is not None:
-                                processBar.close()
-                            return data[:size]
-                
-            except Exception as e:
-                attempt += 1
-                if attempt <= maxAttempts:
-                    print(f"\nError downloading file! (Attempt {attempt}/{maxAttempts}): {e}")
-                    continue
-                
-                if processBar is not None:
-                    processBar.close()
-                raise TimeoutError("Failed to download the file!")
+                    if len(data) >= size:
+                        if pbar:
+                            pbar.close()
+                        data = data[:size]
+                        break
         
-        if processBar is not None:
-            processBar.close()
-        return None
-
-    async def close(self):
-        """Close all HTTP sessions"""
-        await self.httpx_client.aclose()
+        if pbar:
+            pbar.close()
         
-        if self.aiohttp_session:
-            await self.aiohttp_session.close()
-            self.aiohttp_session = None
-
-    async def __aenter__(self):
-        return self
-
-    async def __aexit__(self, exc_type, exc_val, exc_tb):
-        await self.close()
+        # Optionally save to disk
+        if save_path:
+            dir_path = os.path.dirname(save_path)
+            if dir_path:
+                os.makedirs(dir_path, exist_ok=True)
+            async with aiofiles.open(save_path, "wb") as f:
+                await f.write(data)
+        
+        return data if data else None
