@@ -48,13 +48,15 @@ fast_rub = ["pyrightconfig.json"]
 version = {attr = "fast_rub.utils.version.v"}
 
 [project.optional-dependencies]
-pyrubi = ["pycryptodome", "websockets", "mutagen", "filetype", "aiohttp"]
-userbot = ["pycryptodome", "websockets", "mutagen", "filetype", "aiohttp"]
+pyrubi = ["pycryptodome", "websockets", "mutagen", "filetype"]
+userbot = ["pycryptodome", "websockets", "mutagen", "filetype"]
+pyrubi-rtc = ["aiortc"]
+userbot-rtc = ["aiortc"]
 hotreload = ["watchfiles"]
 fastapi = ["fastapi", "uvicorn"]
 flask = ["flask"]
 jalali = ["jdatetime"]
-full = ["fastapi", "uvicorn", "flask", "watchfiles", "jdatetime", "pycryptodome", "websockets", "mutagen", "filetype", "aiohttp"]
+full = ["fastapi", "uvicorn", "flask", "watchfiles", "jdatetime", "pycryptodome", "websockets", "mutagen", "filetype", "aiortc"]
 
 [project.scripts]
 fastrub = "fast_rub.cli:main"

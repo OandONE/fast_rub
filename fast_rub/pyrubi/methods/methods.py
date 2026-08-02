@@ -974,7 +974,7 @@ class Methods:
                 customThumbInline = Utils.getImageThumbnail(
                     customThumbInline
                     if isinstance(customThumbInline, bytes)
-                    else (await self.network.httpx_client.request("GET", customThumbInline)).content
+                    else (await self.network._client.request("GET", customThumbInline)).content # pyright: ignore[reportOptionalMemberAccess]
                     if Utils.checkLink(customThumbInline)
                     else open(customThumbInline, "rb").read()
                 ) if customThumbInline else None
@@ -1536,7 +1536,7 @@ class Methods:
             by = thumbInline
         elif isinstance(thumbInline,str):
             if Utils.checkLink(thumbInline):
-                by = (await self.network.httpx_client.request("GET", thumbInline)).content
+                by = (await self.network._client.request("GET", thumbInline)).content # pyright: ignore[reportOptionalMemberAccess]
                 if not isinstance(by, bytes):
                     raise ValueError("Error !")
             else:
