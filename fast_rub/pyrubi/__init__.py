@@ -1,7 +1,7 @@
 import importlib
 
 # List of modules that pyrubi needs
-_PYRUBI_DEPS = ["Crypto", "websockets", "mutagen", "filetype", "aiohttp"]
+_PYRUBI_DEPS = ["Crypto", "websockets", "mutagen", "filetype"]
 
 _missing = []
 for _dep in _PYRUBI_DEPS:
