@@ -8,9 +8,7 @@ import asyncio
 import json
 import logging
 import os
-import time
-from pathlib import Path
-from typing import Any, Literal, Protocol
+from typing import Any, Protocol
 
 import aiofiles
 import httpx
@@ -18,6 +16,7 @@ from tqdm import tqdm
 
 from ..exceptions import *
 from ..utils import Utils, Configs
+from ...utils import Utils as UtilsFastRub
 from .helper import Helper
 
 
@@ -140,6 +139,8 @@ class Network:
         """
         if input is None:
             input = {}
+
+        input = UtilsFastRub.clean_dict(input)
 
         url = Helper.getApiServer()
         platform = self.platform.lower()
