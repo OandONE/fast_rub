@@ -12,13 +12,9 @@ from ..exceptions import (
     InvalidInput
 )
 import asyncio
-from typing import (
-    Optional,
-    Union,
-    Literal
-)
+from typing import Literal
+
 from ...core.async_sync import *
-from typing import Optional, Union, List
 from ..filters import Filter
 
 class Methods:

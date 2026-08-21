@@ -8,7 +8,7 @@ import asyncio
 import json
 import logging
 import os
-from typing import Any, Protocol
+from typing import Any, TYPE_CHECKING
 
 import aiofiles
 import httpx
@@ -19,23 +19,8 @@ from ..utils import Utils, Configs
 from ...utils import Utils as UtilsFastRub
 from .helper import Helper
 
-
-# 
-# Protocol for the methods object that
-# is passed to the old Network.
-# 
-class MethodsProtocol(Protocol):
-    sessionData: dict[str, Any]
-    crypto: Any
-    proxy: str | None
-    platform: str
-    apiVersion: int
-    timeOut: int
-    showProgressBar: bool
-
-    async def requestSendFile(self, fileName: str, mime: str, size: int) -> dict:
-        ...
-
+if TYPE_CHECKING:
+    from ..methods import Methods
 
 # 
 # Network
@@ -45,7 +30,7 @@ class Network:
 
     def __init__(
         self,
-        methods: MethodsProtocol,
+        methods: "Methods",
         *,
         max_retries: int = 3,
         rate_limit: int = 20,
