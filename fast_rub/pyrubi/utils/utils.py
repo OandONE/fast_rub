@@ -259,7 +259,7 @@ class Utils:
         if mp3:
             return mp3.MP3(file).info.length
         else:
-            raise ImportError("Library 'mutagen' is not installed. for install: 'pip install mutagen' or 'pip install fastrub[pyrubi]'")
+            raise ImportError("Library 'mutagen' is not installed. for install: 'pip install fastrub[pyrubi]'")
 
     @staticmethod
     def getMusicArtist(data: bytes) -> str:
@@ -267,7 +267,7 @@ class Utils:
             if File:
                 audio = File(BytesIO(data), easy=True)
             else:
-                raise ImportError("Library 'mutagen' is not installed. for install: 'pip install mutagen' or 'pip install fastrub[pyrubi]'")
+                raise ImportError("Library 'mutagen' is not installed. for install: 'pip install fastrub[pyrubi]'")
             if audio and "artist" in audio:
                 return audio["artist"][0]
             return "pyrubi"

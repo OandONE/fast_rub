@@ -1,4 +1,7 @@
-import websockets
+try:
+    import websockets
+except ImportError:
+    websockets = None
 from .helper import Helper
 from ..types import Message
 from ..exceptions import NotRegistered, TooRequests
@@ -23,6 +26,8 @@ class Socket:
     
     async def connect(self):
         print("Connecting to the WebSocket...")
+        if websockets is None:
+            raise ImportError("The websockets library is not installed! for install: 'pip install fastrub[pyrubi]'")
         self._running = True
         socket_server = await Helper.get_socket_server()
         async with websockets.connect(socket_server) as ws:
