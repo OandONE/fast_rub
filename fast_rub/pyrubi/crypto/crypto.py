@@ -1,15 +1,21 @@
-from Crypto.Util.Padding import pad, unpad
 from base64 import b64encode as b64e, urlsafe_b64decode as b64d, b64decode
-from Crypto.Cipher import AES
-from Crypto.PublicKey import RSA
-from Crypto.Hash import SHA256
-from Crypto.Signature import pkcs1_15
-from Crypto.Cipher import PKCS1_OAEP
-from typing import Optional
+
+try:
+    from Crypto.Util.Padding import pad, unpad
+    from Crypto.Cipher import AES
+    from Crypto.PublicKey import RSA
+    from Crypto.Hash import SHA256
+    from Crypto.Signature import pkcs1_15
+    from Crypto.Cipher import PKCS1_OAEP
+    CRYPTO_AVAILABLE = True
+except ImportError:
+    CRYPTO_AVAILABLE = False
 
 class Cryption:
-
     def __init__(self, auth: str, private_key: str | None = None):
+        if not CRYPTO_AVAILABLE:
+            raise ImportError("Library 'Crypto' is not installed. for install: 'pip install fastrub[pycryptodome]'")
+        
         self.auth = auth
         
         if auth:
@@ -17,7 +23,7 @@ class Cryption:
             self.iv = bytearray.fromhex('0' * 32)
 
         if private_key:
-            self.keypair = RSA.import_key(private_key.encode('UTF-8'))
+            self.keypair = RSA.import_key(private_key.encode('UTF-8')) # pyright: ignore[reportPossiblyUnboundVariable]
 
     def replaceCharAt(self, e, t, i):
         return e[0:t] + i + e[t + len(i):]
@@ -39,27 +45,35 @@ class Cryption:
         return n
 
     def encrypt(self, text):
-        raw = pad(text.encode('UTF-8'), AES.block_size)
-        aes = AES.new(self.key, AES.MODE_CBC, self.iv)
+        if not CRYPTO_AVAILABLE:
+            raise ImportError("Library 'Crypto' is not installed. for install: 'pip install fastrub[pycryptodome]'")
+        raw = pad(text.encode('UTF-8'), AES.block_size) # pyright: ignore[reportPossiblyUnboundVariable]
+        aes = AES.new(self.key, AES.MODE_CBC, self.iv) # pyright: ignore[reportPossiblyUnboundVariable]
         enc = aes.encrypt(raw)
         result = b64e(enc).decode('UTF-8')
         return result
 
     def decrypt(self, text):
-        aes = AES.new(self.key, AES.MODE_CBC, self.iv)
+        if not CRYPTO_AVAILABLE:
+            raise ImportError("Library 'Crypto' is not installed. for install: 'pip install fastrub[pycryptodome]'")
+        aes = AES.new(self.key, AES.MODE_CBC, self.iv) # pyright: ignore[reportPossiblyUnboundVariable]
         dec = aes.decrypt(b64d(text.encode('UTF-8')))
-        result = unpad(dec, AES.block_size).decode('UTF-8')
+        result = unpad(dec, AES.block_size).decode('UTF-8') # pyright: ignore[reportPossiblyUnboundVariable]
         return result
 
-    def makeSignFromData(self, data_enc:str):
-        sha_data = SHA256.new(data_enc.encode('UTF-8'))
-        signature = pkcs1_15.new(self.keypair).sign(sha_data)
+    def makeSignFromData(self, data_enc: str):
+        if not CRYPTO_AVAILABLE:
+            raise ImportError("Library 'Crypto' is not installed. for install: 'pip install fastrub[pycryptodome]'")
+        sha_data = SHA256.new(data_enc.encode('UTF-8')) # pyright: ignore[reportPossiblyUnboundVariable]
+        signature = pkcs1_15.new(self.keypair).sign(sha_data) # pyright: ignore[reportPossiblyUnboundVariable]
         return b64e(signature).decode('UTF-8')
 
     @staticmethod
-    def decryptRsaOaep(private: str, data_enc:str):
-        keyPair = RSA.import_key(private.encode('UTF-8'))
-        return PKCS1_OAEP.new(keyPair).decrypt(b64decode(data_enc)).decode('UTF-8')
+    def decryptRsaOaep(private: str, data_enc: str):
+        if not CRYPTO_AVAILABLE:
+            raise ImportError("Library 'Crypto' is not installed. for install: 'pip install fastrub[pycryptodome]'")
+        keyPair = RSA.import_key(private.encode('UTF-8')) # pyright: ignore[reportPossiblyUnboundVariable]
+        return PKCS1_OAEP.new(keyPair).decrypt(b64decode(data_enc)).decode('UTF-8') # pyright: ignore[reportPossiblyUnboundVariable]
     
     def changeAuthType(self, auth_enc):
         n = ''
@@ -70,16 +84,17 @@ class Cryption:
             if s in lowercase:
                 n += chr(((32 - (ord(s) - 97)) % 26) + 97)
             elif s in uppercase:
-                n += chr(((29- (ord(s) - 65)) % 26) + 65)
+                n += chr(((29 - (ord(s) - 65)) % 26) + 65)
             elif s in digits:
-                n += chr(((13 - (ord(s)- 48)) % 10) + 48)
+                n += chr(((13 - (ord(s) - 48)) % 10) + 48)
             else:
                 n += s
         return n
     
     def rsaKeyGenrate(self):
-        keyPair = RSA.generate(1024)
+        if not CRYPTO_AVAILABLE:
+            raise ImportError("Library 'Crypto' is not installed. for install: 'pip install fastrub[pycryptodome]'")
+        keyPair = RSA.generate(1024) # pyright: ignore[reportPossiblyUnboundVariable]
         public = self.changeAuthType(b64e(keyPair.publickey().export_key()).decode('UTF-8'))
         privarte = keyPair.export_key().decode('UTF-8')
         return public, privarte
-
