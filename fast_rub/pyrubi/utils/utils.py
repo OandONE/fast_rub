@@ -217,7 +217,7 @@ class Utils:
         else:
             new_width = 40
             new_height = round(new_width * height / width)
-        image = image.resize((new_width, new_height), Image.LANCZOS)
+        image = image.resize((new_width, new_height), Image.LANCZOS) # pyright: ignore[reportAttributeAccessIssue]
         changed_image = BytesIO()
         image.save(changed_image, format="PNG")
         return b64encode(changed_image.getvalue()).decode("UTF-8")
@@ -246,7 +246,7 @@ class Utils:
             remove(temp_path)
             return thumbnail_b64, resolution, duration
         except ImportError:
-            print("Can't get video data! Please install the moviepy library with: pip install moviepy")
+            print("Can't get video data! Please install the moviepy library with: 'pip install moviepy'")
             return Configs.defaultTumbInline, [900, 720], 1
         except:
             return Configs.defaultTumbInline, [900, 720], 1

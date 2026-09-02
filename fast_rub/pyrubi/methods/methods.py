@@ -1926,6 +1926,12 @@ class Methods:
 
             rtcConnection = RTCPeerConnection()
             player: MediaPlayer = MediaPlayer(file)
+
+            if player.audio is None:
+                print(f"Error: Cannot load audio from file: {file}")
+                await rtcConnection.close()
+                return
+
             rtcConnection.addTrack(player.audio)
             spdOffer = await rtcConnection.createOffer()
             await rtcConnection.setLocalDescription(spdOffer)
@@ -1992,7 +1998,7 @@ class Methods:
             asyncio.create_task(rtcConnection.close())
 
         except ImportError:
-            print("The aiortc library is not installed!")
+            raise ImportError("The aiortc library is not installed! for install: 'pip install aiortc' or 'pip install fastrub[pyrubi-aiortc]'")
 
     def add_handler(self, func, filters: list[Filter] | list[str] | Filter | None = None) -> None:
         self.socket.add_handler(
