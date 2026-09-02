@@ -225,7 +225,7 @@ class Utils:
     @staticmethod
     def getVideoData(data: bytes) -> tuple:
         try:
-            from moviepy.editor import VideoFileClip
+            from moviepy import VideoFileClip
             with NamedTemporaryFile(delete=False, dir=".") as temp_video:
                 temp_video.write(data)
                 temp_path = temp_video.name
@@ -238,7 +238,7 @@ class Utils:
                 duration = clip.duration
                 resolution = clip.size
                 thumbnail = clip.get_frame(0)
-                thumbnail_image = Image.fromarray(thumbnail)
+                thumbnail_image = Image.fromarray(thumbnail) # pyright: ignore[reportArgumentType]
                 thumbnail_buffer = BytesIO()
                 thumbnail_image.save(thumbnail_buffer, format="JPEG")
                 thumbnail_b64 = b64encode(thumbnail_buffer.getvalue()).decode("UTF-8")
