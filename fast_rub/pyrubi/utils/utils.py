@@ -11,10 +11,13 @@ from re import (
 from base64 import b64encode
 from io import BytesIO
 from tempfile import NamedTemporaryFile
-from mutagen import (
-    mp3,
-    File
-)
+try:
+    from mutagen import (
+        mp3,
+        File
+    )
+except ImportError:
+    mp3, File = None, None
 from filetype import guess
 from os import (
     system,
@@ -256,18 +259,24 @@ class Utils:
         file = BytesIO()
         file.write(data)
         file.seek(0)
-        return mp3.MP3(file).info.length
+        if mp3:
+            return mp3.MP3(file).info.length
+        else:
+            raise ImportError("Library 'mutagen' is not installed. for install: 'pip install mutagen' or 'pip install fastrub[pyrubi]'")
 
     @staticmethod
     def getMusicArtist(data: bytes) -> str:
         try:
-            audio = File(BytesIO(data), easy=True)
+            if File:
+                audio = File(BytesIO(data), easy=True)
+            else:
+                raise ImportError("Library 'mutagen' is not installed. for install: 'pip install mutagen' or 'pip install fastrub[pyrubi]'")
             if audio and "artist" in audio:
                 return audio["artist"][0]
             return "pyrubi"
         except Exception:
             return "pyrubi"
-    
+
     @staticmethod
     def reaction_to_id(reaction: str) -> int:
         if len(reaction) != 1:
