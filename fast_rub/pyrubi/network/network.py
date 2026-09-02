@@ -127,7 +127,7 @@ class Network:
 
         input = UtilsFastRub.clean_dict(input)
 
-        url = Helper.getApiServer()
+        url = Helper.get_api_server()
         platform = self.platform.lower()
         api_version = self.apiVersion
 

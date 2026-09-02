@@ -24,7 +24,8 @@ class Socket:
     async def connect(self):
         print("Connecting to the WebSocket...")
         self._running = True
-        async with websockets.connect(Helper.getSocketServer()) as ws:
+        socket_server = await Helper.get_socket_server()
+        async with websockets.connect(socket_server) as ws:
             self._ws = ws
             await self.on_open(ws)
             async for message in ws:
