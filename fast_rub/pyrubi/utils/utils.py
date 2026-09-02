@@ -199,8 +199,7 @@ class Utils:
         try:
             from PIL import Image
         except ImportError:
-            system("pip install pillow")
-            from PIL import Image
+            raise ImportError("Library 'pillow' is not installed. for install: 'pip install pillow' or 'pip install fastrub[pyrubi-pillow]'")
         width, height = Image.open(BytesIO(data)).size
         return width, height
 
@@ -209,8 +208,7 @@ class Utils:
         try:
             from PIL import Image
         except ImportError:
-            system("pip install pillow")
-            from PIL import Image
+            raise ImportError("Library 'pillow' is not installed. for install: 'pip install pillow' or 'pip install fastrub[pyrubi-pillow]'")
         image = Image.open(BytesIO(data))
         width, height = image.size
         if height > width:
@@ -235,8 +233,7 @@ class Utils:
             try:
                 from PIL import Image
             except ImportError:
-                system("pip install pillow")
-                from PIL import Image
+                raise ImportError("Library 'pillow' is not installed. for install: 'pip install pillow' or 'pip install fastrub[pyrubi-pillow]'")
             with VideoFileClip(temp_path) as clip:
                 duration = clip.duration
                 resolution = clip.size
