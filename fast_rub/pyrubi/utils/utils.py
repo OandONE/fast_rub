@@ -5,8 +5,7 @@ from random import (
 from time import time
 from re import (
     finditer,
-    sub,
-    DOTALL
+    sub
 )
 from base64 import b64encode
 from io import BytesIO
@@ -18,7 +17,10 @@ try:
     )
 except ImportError:
     mp3, File = None, None
-from filetype import guess
+try:
+    from filetype import guess
+except ImportError:
+    guess = None
 from os import (
     system,
     chmod,
@@ -26,7 +28,6 @@ from os import (
 )
 from .configs import Configs
 from .reacrions import REACTION_MAP
-from typing import Optional
 from ..exceptions import *
 
 
@@ -187,6 +188,8 @@ class Utils:
 
     @staticmethod
     def getMimeFromByte(data: bytes) -> str:
+        if guess is None:
+            raise ImportError("The filetype library is not installed! for install: 'pip install fastrub[pyrubi]'")
         mime = guess(data)
         return "pyrubi" if mime is None else mime.extension
 
