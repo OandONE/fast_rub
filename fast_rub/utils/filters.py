@@ -173,6 +173,14 @@ class commands(Filter):
                 return True
         return False
 
+class command(Filter):
+    """filter text message by command / فیلتر کردن متن پیام با دستور"""
+    def __init__(self, command: str):
+        self.command = command
+
+    def __call__(self, update: 'Update') -> bool:
+        return update.new_message.text == f"/{self.command}"
+
 class sender_ids(Filter):
     """filter sender id message by sender ids / فیلتر کردن سندر آیدی پیام با سندر آیدی ها"""
     def __init__(self, sender_ids: list):
@@ -778,6 +786,7 @@ class not_filter(Filter):
 
 
 is_user = IsUser()
+is_private = is_user
 is_group = IsGroup()
 is_channel = IsChannel()
 
