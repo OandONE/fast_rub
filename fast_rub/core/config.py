@@ -14,33 +14,33 @@ class BotConfig:
 
     Parameters
     ----------
-    validate_chat_id : bool = True
+    validate_chat_id: bool = True
         اعتبارسنجی chat_id پیش از هر درخواست.
         اگر از صحت chat_idهای ورودی اطمینان دارید،
         می‌توانید برای افزایش سرعت، این گزینه را غیرفعال کنید.
 
-    optimize_text : bool = True
+    optimize_text: bool = False
         بهینه‌سازی متن پیش از ارسال.
         فاصله‌های تکراری (بیش از یک space) را به یک فاصله کاهش می‌دهد.
         برای تمیزسازی محتوای تولیدشده توسط کاربر مفید است.
 
-    strip_text : bool = True
+    strip_text: bool = True
         حذف فاصله‌های خالی (whitespace) از ابتدا و انتهای پیام.
         پیام‌هایی مانند "   سلام   " را به "سلام" تبدیل می‌کند.
 
-    max_text_length : int = None
+    max_text_length: int = None
         حداکثر طول مجاز برای متن پیام (به کاراکتر).
         پیام‌های بلندتر از این مقدار بریده می‌شوند.
 
-    compress_long_text : bool = False
+    compress_long_text: bool = False
         افزودن "..." به انتهای پیام‌های بلند هنگام برش.
         فقط زمانی اعمال می‌شود که max_text_length رد شده باشد.
 
-    auto_escape : bool = True
+    auto_escape: bool = True
         فرار خودکار کاراکترهای HTML و Markdown برای جلوگیری از حملات XSS.
         توصیه می‌شود همیشه روشن باشد مگر در شرایط خاص.
 
-    retry_on_timeout : bool = True
+    retry_on_timeout: bool = True
         تلاش مجدد خودکار در صورت timeout شدن درخواست.
         برای شبکه‌های ناپایدار یا سرورهای شلوغ مفید است.
 
@@ -58,7 +58,7 @@ class BotConfig:
     def __init__(
         self,
         validate_chat_id: bool = True,
-        optimize_text: bool = True,
+        optimize_text: bool = False,
         strip_text: bool = True,
         max_text_length: int | None = None,
         compress_long_text: bool = False,
