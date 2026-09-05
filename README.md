@@ -333,7 +333,7 @@ await signals.emit("user_registered", user_id="123", chat_id="456")
 
 ```python
 async def setup(client):
-    @client.on_message(filters.command(["admin"]))
+    @client.on_message(filters.commands(["admin"]))
     async def panel(msg):
         await msg.reply("🔧 پنل ادمین")
 ```
@@ -381,15 +381,109 @@ fastrub docs            # مستندات
 ## 📁 ساختار پروژه
 
 ```
-fast_rub/
-├── core/              # هستهٔ فریم‌ورک (Client، Conversation، Middleware، Plugins...)
-├── pyrubi/            # یوزر بات (fork از pyrubi)
-├── types/             # Update، Message، Button، MetaData، Errors...
-├── core/forms/        # DataForm، Text، Number، Choice
-├── utils/             # WaitManager، فیلترها، Cache، AntiSpam، Snapshot...
-├── db/                # ORM داخلی (DataBase)
-├── button/            # KeyPad
-└── network/           # HTTP/2 Client
+fast_rub
+├── button # KeyPad
+│   ├── __init__.py
+│   └── key_pad.py # KeyPad | InlineKeyPad
+├── cli.py # CLI - fastrub cmd
+├── core # core fastrub
+│   ├── async_sync.py # Converter async to sync funcs
+│   ├── background.py # BackGround tasks
+│   ├── client.py # Client core fastrub
+│   ├── config.py # Config client
+│   ├── conversation.py # Conversation classic and DataForm
+│   ├── forms # Forms for DataForm conversation
+│   │   ├── config.py # Config the DataForm
+│   │   ├── data_form.py # Config the DataForm
+│   │   ├── fields.py # Fields - Number, Text, Choice
+│   │   ├── __init__.py
+│   │   └── manager.py # Manager DataForm in conversation.py
+│   ├── helpers.py # Helpers for client
+│   ├── hotreload.py # Hot reload client
+│   ├── __init__.py
+│   ├── middleware.py # Middleware client
+│   ├── plugins.py # Plugins client
+│   ├── scheduler.py # Scheduler for scheduling tasks
+│   ├── signals.py # Signals (like Django Framework)
+│   └── webhook_server.py # Web Server client for webhook local
+├── db # DataBases
+│   ├── database.py # DataBase ORM fastrub
+│   ├── __init__.py
+│   ├── message_keeper.py # DB Message Keeper for find message by message id
+│   └── session.py # DB Sessions fastrub({name}.faru)
+├── __init__.py
+├── network # Network fastrub
+│   ├── __init__.py
+│   └── network.py # Network fastrub - Httpx HTTP/2
+├── pyrightconfig.json # Config for Pyright Extension to ignore errors for code that runs synchronously but is async
+├── pyrubi # UserBot - Pyrubi(Forked)
+│   ├── client # core client
+│   │   ├── client.py # core client - API to fast_rub/methods
+│   │   └── __init__.py
+│   ├── crypto # Cryper
+│   │   ├── crypto.py # De/En cryper Conect UserBot rubika
+│   │   └── __init__.py
+│   ├── enums.py # Enums client
+│   ├── exceptions.py # Exceptions
+│   ├── filters.py # Filters Messages
+│   ├── __init__.py
+│   ├── methods # API Methods
+│   │   ├── __init__.py
+│   │   └── methods.py # Concter to rubika API
+│   ├── network # Network UserBot
+│   │   ├── helper.py # Helper network
+│   │   ├── __init__.py
+│   │   ├── network.py # Network API
+│   │   └── socket.py # Web Socket rubika
+│   ├── sessions # Session
+│   │   ├── __init__.py
+│   │   └── sessions.py # Session manager
+│   ├── types # Types
+│   │   ├── __init__.py
+│   │   └── socket # Types Web Socket
+│   │       ├── __init__.py
+│   │       └── message.py # Message Class
+│   └── utils # Utils UserBot
+│       ├── configs.py # Config client
+│       ├── __init__.py
+│       ├── reacrions.py # ReActions utils
+│       └── utils.py # Utils UserBot
+├── type # Conect to types folder
+│   └── __init__.py
+├── types # Types fastrub
+│   ├── errors.py # Exception fastrub
+│   ├── exceptions.py # Alias errors.py
+│   ├── forms.py # Alias fast_rub/core/forms
+│   ├── get_type.py # Utils for Update Class
+│   ├── __init__.py
+│   ├── metadata.py # Utils for Update Class - MetaData Message
+│   ├── models # Models client
+│   │   ├── base_model # Base Models for Bot & Chat Classs
+│   │   ├── bot.py # Bot Model
+│   │   ├── chat.py # Chat Model
+│   │   └── __init__.py
+│   ├── props.py
+│   ├── prop_update.py
+│   ├── update_button.py # Inline Message/Update Type fastrub
+│   ├── update.py # Message/Update Type fastrub
+│   └── webhook.py # WebHook config
+└── utils # Utils fastrub
+    ├── antispam.py # Anti Spam client
+    ├── cache.py # Cache client
+    ├── colors.py # Utils for color print client(display_welcome)
+    ├── encryption.py # Crypter token bot
+    ├── filters.py # Filters for Messages
+    ├── __init__.py
+    ├── inline_filters.py # InlineFilters for Inline Messages
+    ├── logger.py # Logger client
+    ├── metadata.py # Creator text for format Markdown/HTML
+    ├── run_filter.py # Utils client run async/sync filter
+    ├── snapshot.py # SnapShot JSON client
+    ├── template.py # Anti-XSS in message text
+    ├── text_parser.py # Text Parser MetaData for text message - Markdown | HTML
+    ├── utils.py # More utils
+    ├── version.py # Version fastrub
+    └── wait_manager.py # Manager Waiting for sending request(send_message, ban, ...)
 ```
 
 [⬆ بازگشت به فهرست](#-فهرست-مطالب)
@@ -406,7 +500,7 @@ fast_rub/
 
 ## 📚 مستندات
 
-- [مستندات رسمی](https://fast-rub.ParsSource.ir)
+- [مستندات رسمی](https://fast-rub.ParsSource.ir) | [مستندات رسمی(گیتهاب)](https://oandone.github.io/fast_rub)
 - [گیت‌هاب](https://github.com/OandONE/fast_rub)
 - [PyPI](https://pypi.org/project/fastrub/)
 

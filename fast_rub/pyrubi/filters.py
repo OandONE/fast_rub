@@ -1,6 +1,4 @@
-from typing import List
 import re
-import time as ti
 from .types import Message
 from .utils import Utils
 
