@@ -319,7 +319,7 @@ class Network:
         self,
         url: str,
         path: str = "file",
-        show_progress: bool = True,
+        show_progress: bool = False,
         max_retries: int | None = None
     ) -> bool:
         retries = max_retries if max_retries is not None else self.max_retries_download
@@ -378,7 +378,7 @@ class Network:
         url: str,
         file_path: str | Path | bytes,
         file_name: str,
-        show_progress: bool = True,
+        show_progress: bool = False,
         chunk_size: int = 1024 * 1024, # 1 MB
         max_retries: int | None = None,
     ) -> dict[str, Any]:

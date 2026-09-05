@@ -14,7 +14,7 @@ import aiofiles
 import httpx
 
 try:
-    from tqdm import tqdm
+    from tqdm.asyncio import tqdm
 except ImportError:
     tqdm = None
 

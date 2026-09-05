@@ -14,7 +14,7 @@ class Client:
         api_version: int = 6,
         proxy: str | None = None,
         time_out: int = 10,
-        show_progress_bar: bool = True,
+        show_progress_bar: bool = False,
         max_retries: int = 5,
         run_start: bool = True # = False Version 7
     ):
