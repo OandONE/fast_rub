@@ -15,6 +15,7 @@ class Client:
         proxy: str | None = None,
         time_out: int = 10,
         show_progress_bar: bool = True,
+        max_retries: int = 5,
         run_start: bool = True # = False Version 7
     ):
         
@@ -27,6 +28,7 @@ class Client:
         self.private = private
         self.show_progress_bar = show_progress_bar
         self._is_started = False
+        self.max_retries = max_retries
         if run_start:
             asyncio.run(self.start())
 

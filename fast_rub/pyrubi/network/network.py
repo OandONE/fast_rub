@@ -32,7 +32,7 @@ class Network:
         self,
         methods: "Methods",
         *,
-        max_retries: int = 3,
+        max_retries: int = 5,
         rate_limit: int = 20,
         logger: logging.Logger | None = None,
     ) -> None:

@@ -25,6 +25,7 @@ class Methods:
         apiVersion: int,
         proxy: str | None = None,
         timeOut: int = 30,
+        max_retries: int = 5,
         showProgressBar: bool = True
     ) -> None:
         self.platform = platform.lower()
@@ -40,7 +41,10 @@ class Methods:
             auth=sessionData["auth"],
             private_key=sessionData["private_key"]
         ) if sessionData else Cryption(auth=Utils.randomTmpSession())
-        self.network = Network(methods=self)
+        self.network = Network(
+            methods=self,
+            max_retries=max_retries
+        )
         self.socket = Socket(methods=self)
 
     # Authentication methods
