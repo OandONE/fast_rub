@@ -72,6 +72,41 @@ class Client:
             timeOut=self.timeOut,
             showProgressBar=self.show_progress_bar
         )
+
+    def _extract_message_id(self, result: dict) -> str | None:
+        if not isinstance(result, dict):
+            return None
+
+        message_id = result.get("message_id")
+        if message_id:
+            return message_id
+
+        message_update = result.get("message_update")
+        if isinstance(message_update, dict):
+            message_id = message_update.get("message_id")
+            if message_id:
+                return message_id
+
+            message_data = message_update.get("message")
+            if isinstance(message_data, dict):
+                message_id = message_data.get("message_id")
+                if message_id:
+                    return message_id
+
+        message_data = result.get("message")
+        if isinstance(message_data, dict):
+            message_id = message_data.get("message_id")
+            if message_id:
+                return message_id
+
+        return None
+
+    def _schedule_auto_delete(self, result: dict | None, object_guid: str, auto_delete: int | None):
+        if not auto_delete or not result:
+            return
+        message_id = self._extract_message_id(result)
+        if message_id:
+            asyncio.create_task(self.auto_delete(object_guid, message_id, auto_delete))
     
     
     async def send_code(self, phone_number:str, pass_key:str | None = None) -> dict:
@@ -377,8 +412,10 @@ class Client:
     # Message methods
     
     
-    async def send_text(self, object_guid:str, text:str, message_id:str | None = None) -> dict:
-        return await self.methods.sendText(objectGuid=object_guid, text=text, messageId=message_id)
+    async def send_text(self, object_guid: str, text: str, message_id: str | None = None, auto_delete: int | None = None) -> dict:
+        result = await self.methods.sendText(objectGuid=object_guid, text=text, messageId=message_id)
+        self._schedule_auto_delete(result, object_guid, auto_delete)
+        return result
     
     
     async def send_message(
@@ -409,9 +446,10 @@ class Client:
         first_name: str | None = None,
         last_name: str | None = None,
         phone_number: str | None = None,
-        user_guid: str | None = None
+        user_guid: str | None = None,
+        auto_delete: int | None = None
     ) -> dict | None:
-        return await self.methods.sendMessage(
+        result = await self.methods.sendMessage(
             objectGuid=object_guid,
             text=text,
             mesageId=message_id,
@@ -436,38 +474,56 @@ class Client:
             phoneNumber=phone_number,
             userGuid=user_guid
         )
+        self._schedule_auto_delete(result, object_guid, auto_delete)
+        return result
     
     
-    async def send_file(self, object_guid:str, file:str, message_id:str | None = None, text:str | None = None, file_name:str | None = None) -> dict | None:
-        return await self.methods.sendFile(objectGuid=object_guid, file=file, text=text, messageId=message_id, fileName=file_name)
+    async def send_file(self, object_guid: str, file: str, message_id: str | None = None, text: str | None = None, file_name: str | None = None, auto_delete: int | None = None) -> dict | None:
+        result = await self.methods.sendFile(objectGuid=object_guid, file=file, text=text, messageId=message_id, fileName=file_name)
+        self._schedule_auto_delete(result, object_guid, auto_delete)
+        return result
     
     
-    async def send_image(self, object_guid:str, file:str, message_id:str | None = None, text:str | None = None, is_spoil:bool=False, thumbnail:str | None = None, file_name:str | None = None) -> dict | None:
-        return await self.methods.sendImage(objectGuid=object_guid, file=file, text=text, messageId=message_id, isSpoil=is_spoil, thumbInline=thumbnail, fileName=file_name)
+    async def send_image(self, object_guid: str, file: str, message_id: str | None = None, text: str | None = None, is_spoil: bool = False, thumbnail: str | None = None, file_name: str | None = None, auto_delete: int | None = None) -> dict | None:
+        result = await self.methods.sendImage(objectGuid=object_guid, file=file, text=text, messageId=message_id, isSpoil=is_spoil, thumbInline=thumbnail, fileName=file_name)
+        self._schedule_auto_delete(result, object_guid, auto_delete)
+        return result
     
     
-    async def send_video(self, object_guid:str, file:str, message_id:str | None = None, text:str | None = None, is_spoil:bool=False, thumbnail:str | None = None, file_name:str | None = None) -> dict | None:
-        return await self.methods.sendVideo(objectGuid=object_guid, file=file, text=text, messageId=message_id, isSpoil=is_spoil, thumbInline=thumbnail, fileName=file_name)
+    async def send_video(self, object_guid: str, file: str, message_id: str | None = None, text: str | None = None, is_spoil: bool = False, thumbnail: str | None = None, file_name: str | None = None, auto_delete: int | None = None) -> dict | None:
+        result = await self.methods.sendVideo(objectGuid=object_guid, file=file, text=text, messageId=message_id, isSpoil=is_spoil, thumbInline=thumbnail, fileName=file_name)
+        self._schedule_auto_delete(result, object_guid, auto_delete)
+        return result
+
+    
+    async def send_video_message(self, object_guid: str, file: str, message_id: str | None = None, text: str | None = None, thumbnail: str | None = None, file_name: str | None = None, auto_delete: int | None = None) -> dict | None:
+        result = await self.methods.sendVideoMessage(objectGuid=object_guid, file=file, text=text, messageId=message_id, thumbInline=thumbnail, fileName=file_name)
+        self._schedule_auto_delete(result, object_guid, auto_delete)
+        return result
+
+    
+    async def send_gif(self, object_guid: str, file: str, message_id: str | None = None, text: str | None = None, thumbnail: str | None = None, file_name: str | None = None, auto_delete: int | None = None) -> dict | None:
+        result = await self.methods.sendGif(objectGuid=object_guid, file=file, text=text, messageId=message_id, thumbInline=thumbnail, fileName=file_name)
+        self._schedule_auto_delete(result, object_guid, auto_delete)
+        return result
     
     
-    async def send_video_message(self, object_guid:str, file:str, message_id:str | None = None, text:str | None = None, thumbnail:str | None = None, file_name:str | None = None) -> dict | None:
-        return await self.methods.sendVideoMessage(objectGuid=object_guid, file=file, text=text, messageId=message_id, thumbInline=thumbnail, fileName=file_name)
+    async def send_music(self, object_guid: str, file: str, message_id: str | None = None, text: str | None = None, file_name: str | None = None, performer: str | None = None, auto_delete: int | None = None) -> dict | None:
+        result = await self.methods.sendMusic(objectGuid=object_guid, file=file, text=text, messageId=message_id, fileName=file_name, performer=performer)
+        self._schedule_auto_delete(result, object_guid, auto_delete)
+        return result
+
     
+    async def send_voice(self, object_guid: str, file: str, message_id: str | None = None, text: str | None = None, file_name: str | None = None, time: int = 0, auto_delete: int | None = None) -> dict | None:
+        result = await self.methods.sendVoice(objectGuid=object_guid, file=file, text=text, messageId=message_id, fileName=file_name, time=time)
+        self._schedule_auto_delete(result, object_guid, auto_delete)
+        return result
+
     
-    async def send_gif(self, object_guid:str, file:str, message_id:str | None = None, text:str | None = None, thumbnail:str | None = None, file_name:str | None = None) -> dict | None:
-        return await self.methods.sendGif(objectGuid=object_guid, file=file, text=text, messageId=message_id, thumbInline=thumbnail, fileName=file_name)
-    
-    
-    async def send_music(self, object_guid:str, file:str, message_id:str | None = None, text:str | None = None, file_name:str | None = None, performer:str | None = None) -> dict | None:
-        return await self.methods.sendMusic(objectGuid=object_guid, file=file, text=text, messageId=message_id, fileName=file_name, performer=performer)
-    
-    
-    async def send_voice(self, object_guid:str, file:str, message_id:str | None = None, text:str | None = None, file_name:str | None = None, time:int=0) -> dict | None:
-        return await self.methods.sendVoice(objectGuid=object_guid, file=file, text=text, messageId=message_id, fileName=file_name, time=time)
-    
-    
-    async def send_location(self, object_guid:str, latitude:int, longitude:int, message_id:str | None = None) -> dict:
-        return await self.methods.sendLocation(objectGuid=object_guid, latitude=latitude, longitude=longitude, messageId=message_id)
+    async def send_location(self, object_guid: str, latitude: int, longitude: int, message_id: str | None = None, auto_delete: int | None = None) -> dict:
+        result = await self.methods.sendLocation(objectGuid=object_guid, latitude=latitude, longitude=longitude, messageId=message_id)
+        self._schedule_auto_delete(result, object_guid, auto_delete)
+        return result
     
     
     async def send_message_api_call(self, objectGuid:str, text:str, message_id:str, button_id:str) -> dict:
@@ -490,8 +546,18 @@ class Client:
         return await self.methods.setPinMessage(objectGuid=object_guid, messageId=message_id, action="Unpin")
     
     
-    async def resend_message(self, object_guid:str | None = None, message_id:str | None = None, to_object_guid:str | None = None, reply_to_message_id:str | None = None, text:str | None = None, file_inline:dict | None=None) -> dict:
-        return await self.methods.resendMessage(objectGuid=object_guid, messageId=message_id, toObjectGuid=to_object_guid, replyToMessageId=reply_to_message_id, text=text, fileInline=file_inline)
+    async def resend_message(self, object_guid: str | None = None, message_id: str | None = None, to_object_guid: str | None = None, reply_to_message_id: str | None = None, text: str | None = None, file_inline: dict | None = None, auto_delete: int | None = None) -> dict:
+        result = await self.methods.resendMessage(
+            objectGuid=object_guid,
+            messageId=message_id,
+            toObjectGuid=to_object_guid,
+            replyToMessageId=reply_to_message_id,
+            text=text,
+            fileInline=file_inline
+        )
+        target_guid: str = to_object_guid or object_guid # pyright: ignore[reportAssignmentType]
+        self._schedule_auto_delete(result, target_guid, auto_delete)
+        return result
     
     
     async def forward_messages(self, object_guid:str, message_ids:list, to_object_guid:str) -> dict:
@@ -552,8 +618,10 @@ class Client:
     # Contact methods
 
     
-    async def send_contact(self, object_guid:str, first_name:str, last_name:str, phone_number:str, user_guid:str, message_id:str | None = None) -> dict:
-        return await self.methods.sendContact(objectGuid=object_guid, firstName=first_name, lastName=last_name, phoneNumber=phone_number, userGuid=user_guid, messageId=message_id)
+    async def send_contact(self, object_guid: str, first_name: str, last_name: str, phone_number: str, user_guid: str, message_id: str | None = None, auto_delete: int | None = None) -> dict:
+        result = await self.methods.sendContact(objectGuid=object_guid, firstName=first_name, lastName=last_name, phoneNumber=phone_number, userGuid=user_guid, messageId=message_id)
+        self._schedule_auto_delete(result, object_guid, auto_delete)
+        return result
     
     
     async def get_contacts(self, start_id:str | None = None) -> dict:
@@ -578,8 +646,10 @@ class Client:
     # Sticker methods
 
     
-    async def send_sticker(self, object_guid:str, emoji:str | None = None, message_id:str | None = None, sticker_data:str | None=None) -> dict:
-        return await self.methods.sendSticker(objectGuid=object_guid, emoji=emoji, messageId=message_id, stickerData=sticker_data)
+    async def send_sticker(self, object_guid: str, emoji: str | None = None, message_id: str | None = None, sticker_data: str | None = None, auto_delete: int | None = None) -> dict:
+        result = await self.methods.sendSticker(objectGuid=object_guid, emoji=emoji, messageId=message_id, stickerData=sticker_data)
+        self._schedule_auto_delete(result, object_guid, auto_delete)
+        return result
     
     
     async def get_my_sticker_sets(self) -> dict:
@@ -636,9 +706,22 @@ class Client:
         type: Literal["Quiz", "Regular"] = "Regular",
         message_id: str | None = None,
         correct_option_index: int | None = None,
-        hint: str | None = None
+        hint: str | None = None,
+        auto_delete: int | None = None
     ) -> dict:
-        return await self.methods.sendPoll(objectGuid=object_guid, question=question, options=options,allowsMultipleResponses=allows_multiple_responses,isAnonymous=is_anonymous,type=type, messageId=message_id,hint=hint,correctOptionIndex=correct_option_index)
+        result = await self.methods.sendPoll(
+            objectGuid=object_guid,
+            question=question,
+            options=options,
+            allowsMultipleResponses=allows_multiple_responses,
+            isAnonymous=is_anonymous,
+            type=type,
+            messageId=message_id,
+            hint=hint,
+            correctOptionIndex=correct_option_index
+        )
+        self._schedule_auto_delete(result, object_guid, auto_delete)
+        return result
     
     
     async def vote_poll(self, poll_id:str, selection_index:int) -> dict:
