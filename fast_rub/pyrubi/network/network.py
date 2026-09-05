@@ -12,7 +12,11 @@ from typing import Any, TYPE_CHECKING
 
 import aiofiles
 import httpx
-from tqdm import tqdm
+
+try:
+    from tqdm import tqdm
+except ImportError:
+    tqdm = None
 
 from ..exceptions import *
 from ..utils import Utils, Configs
@@ -253,15 +257,19 @@ class Network:
             "file-id": slot["id"],
         }
 
-        pbar: tqdm | None = None
+        pbar = None
         if self.showProgressBar:
-            pbar = tqdm(
-                desc=f"Uploading {fileName}",
-                total=len(file),
-                unit="B",
-                unit_scale=True,
-                unit_divisor=1024,
-            )
+            if tqdm is None:
+                print("The tqdm library is not installed! for install: 'pip install fastrub[tqdm]' or 'pip install tqdm'")
+                pbar = None
+            else:
+                pbar = tqdm(
+                    desc=f"Uploading {fileName}",
+                    total=len(file),
+                    unit="B",
+                    unit_scale=True,
+                    unit_divisor=1024,
+                )
 
         client = await self._get_client()
         upload_url = slot["upload_url"]
@@ -339,15 +347,19 @@ class Network:
             "User-Agent": "okhttp/3.12.1",
         }
 
-        pbar: tqdm | None = None
+        pbar = None
         if self.showProgressBar:
-            pbar = tqdm(
-                desc=f"Downloading {fileName}",
-                total=size,
-                unit="B",
-                unit_scale=True,
-                unit_divisor=1024,
-            )
+            if tqdm is None:
+                print("The tqdm library is not installed! for install: 'pip install fastrub[tqdm]' or 'pip install tqdm'")
+                pbar = None
+            else:
+                pbar = tqdm(
+                    desc=f"Downloading {fileName}",
+                    total=size,
+                    unit="B",
+                    unit_scale=True,
+                    unit_divisor=1024,
+                )
 
         client = await self._get_client()
         data = b""

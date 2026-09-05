@@ -2,7 +2,10 @@ from ..types.errors import ServerRubikaError
 from ..utils.utils import Utils
 from pathlib import Path
 from typing import Any, Literal, TYPE_CHECKING
-from tqdm.asyncio import tqdm
+try:
+    from tqdm.asyncio import tqdm
+except ImportError:
+    tqdm = None
 import os
 import aiofiles
 import asyncio
@@ -338,7 +341,11 @@ class Network:
                         response.raise_for_status()
                         total = int(response.headers.get("content-length", 0))
                         if show_progress and total:
-                            pbar = tqdm(total=total, unit="B", unit_scale=True, desc="Downloading")
+                            if tqdm is None:
+                                print("The tqdm library is not installed! for install: 'pip install fastrub[tqdm]' or 'pip install tqdm'")
+                                pbar = None
+                            else:
+                                pbar = tqdm(total=total, unit="B", unit_scale=True, desc="Downloading")
                         else:
                             pbar = None
                         async with aiofiles.open(path, 'wb') as file:
@@ -408,7 +415,11 @@ class Network:
                         yield header
                         
                         if show_progress:
-                            pbar = tqdm(total=total_size, unit="B", unit_scale=True, desc="Uploading")
+                            if tqdm is None:
+                                print("The tqdm library is not installed! for install: 'pip install fastrub[tqdm]' or 'pip install tqdm'")
+                                pbar = None
+                            else:
+                                pbar = tqdm(total=total_size, unit="B", unit_scale=True, desc="Uploading")
                         else:
                             pbar = None
                         
