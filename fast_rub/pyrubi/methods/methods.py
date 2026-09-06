@@ -72,14 +72,14 @@ class Methods:
         data = await self.network.request(
             method="signIn",
             input={
-                "phone_number": f"98{Utils.phone_number_parse(phoneNumber)}",
+                "phone_number": Utils.phone_number_parse(phoneNumber),
                 "phone_code_hash": phoneCodeHash,
                 "phone_code": phoneCode,
-			    "public_key": publicKey
+                "public_key": publicKey
             },
             tmpSession=True
         )
-        
+
         data["private_key"] = privateKey
 
         return data
