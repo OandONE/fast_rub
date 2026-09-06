@@ -70,7 +70,20 @@ class is_sticker(Filter):
 class is_me(Filter):
     """filter by my messages / فیلتر با پیام های من"""
     def __call__(self, message: Message) -> bool:
-        return message["chat_updates"]["chat"]["last_message"]["is_mine"]
+        chat_updates = message.get("chat_updates")
+        if isinstance(chat_updates, list):
+            if not chat_updates:
+                return False
+            chat_updates = chat_updates[0]
+        elif not isinstance(chat_updates, dict):
+            return False
+        chat = chat_updates.get("chat")
+        if not isinstance(chat, dict):
+            return False
+        last_message = chat.get("last_message")
+        if not isinstance(last_message, dict):
+            return False
+        return last_message.get("is_mine", False)
 
 class text(Filter):
     """filter text message by text /  فیلتر کردن متن پیام بر اساس متنی"""
