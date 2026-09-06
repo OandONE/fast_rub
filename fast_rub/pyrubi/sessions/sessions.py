@@ -70,7 +70,7 @@ class Sessions:
                 timeOut=self.client.timeOut,
                 showProgressBar=True
             )
-            await save.registerDevice(deviceModel=f"pyrubi-{self.client.session}")
+            await save.registerDevice(deviceModel=f"{self.client.session}")
             print(f"\nSign in as \"{self.client.session}\" was successful.")
 
             return sessionData
