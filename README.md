@@ -36,6 +36,7 @@
 - [📁 ساختار پروژه](#-ساختار-پروژه)
 - [⚠️ نکته درباره pyrubi](#️-نکته-درباره-pyrubi)
 - [📚 مستندات](#-مستندات)
+- [🗺️ رودمپ](#-رودمپ)
 - [❤️ مشارکت](#️-مشارکت)
 - [📄 لایسنس](#-لایسنس)
 
@@ -43,7 +44,7 @@
 
 ## ✨ ویژگی‌های کلیدی
 
-- ⚡ **HTTP/2 + Async-First** — سریع‌ترین فریم‌ورک روبیکا با `httpx`
+- ⚡ **HTTP/2 + Async-First** — سریع‌ترین فریم‌ورک روبیکا با `httpx & h2`
 - 🧠 **WaitManager** — مدیریت هوشمند Rate Limit (فقط به Client بدهید — بقیه خودکار)
 - 📋 **DataForm** — فرم‌های هوشمند با اعتبارسنجی، کیبورد و callbackهای شرطی
 - 💬 **Conversation** — مکالمات چندمرحله‌ای با State Machine داخلی (کلاسیک + مدرن)
@@ -59,6 +60,7 @@
 - 🛡️ **AntiSpam** — سیستم ضد اسپم پیشرفته
 - 🪶 **فوق‌العاده سبک** — تست شده روی ۲۵۶MB RAM DDR1 با Alpine Linux
 - 🔒 **امنیت** — SQL پارامتری، sanitize خودکار، middleware امنیتی
+- 👥 **یوزربات** — پشتیبانی از یوزربات با فورکی از کتابخانه معروف پایروبی
 
 ---
 
@@ -72,6 +74,12 @@ pip install fastrub
 
 ```bash
 pip install -i https://mirror-pypi.runflare.com/simple fastrub
+```
+```bash
+pip install -i https://mirror.abrha.net/repository/pypi/simple fastrub
+```
+```bash
+pip install -i https://package-mirror.liara.ir/repository/pypi/simple fastrub
 ```
 
 [⬆ بازگشت به فهرست](#-فهرست-مطالب)
@@ -492,7 +500,8 @@ fast_rub
 
 ## ⚠️ نکته درباره pyrubi
 
-بخش pyrubi فورکی از [AliGanji1/pyrubi](https://github.com/AliGanji1/pyrubi) است که برای قسمت یوزر بات استفاده شده است.
+فست روب از یوزر بات پشتیبانی میکند
+بخش/پوشه pyrubi فورکی از [AliGanji1/pyrubi](https://github.com/AliGanji1/pyrubi) است که برای قسمت یوزر بات استفاده شده است که دارای لایسنس MIT بوده.
 
 [⬆ بازگشت به فهرست](#-فهرست-مطالب)
 
@@ -503,6 +512,43 @@ fast_rub
 - [مستندات رسمی](https://fast-rub.ParsSource.ir) | [مستندات رسمی(گیتهاب)](https://oandone.github.io/fast_rub)
 - [گیت‌هاب](https://github.com/OandONE/fast_rub)
 - [PyPI](https://pypi.org/project/fastrub/)
+
+[⬆ بازگشت به فهرست](#-فهرست-مطالب)
+
+---
+
+## 🗺️ رودمپ تکمیل نشده
+
+| قابلیت / باگ |
+|---------|
+| پشتیبانی از logger در یوزربات(پایروبی) |
+| پشتیبانی از تنظیم انواع پارس مود در یوزر بات(پایروبی) |
+| max_retries در یوزر بات(پایروبی) | text |
+| آرگومان show_progress در init یوزربات(پایروبی) |
+| wait_manager & defult_wait در یوزربات(پایروبی) |
+| کش در یوزربات(پایروبی) |
+| max_retries_upload & max_retries_download در یوزربات(پایروبی) |
+| config در یوزربات(پایروبی) |
+| پلاگین پذیری در یوزربات(پایروبی) |
+| DataForm & Classic Conversion در یوزربات(پایروبی) |
+| دکوراتور های on_ready - on_start - on_close - on_error - on_live - on_log - on_run - on_shutdown - on_start(on_startup) در یوزربات(پایروبی) |
+| پشتیبانی از middleware در یوزربات(پایروبی) |
+| دکوراتور های before_send, after_send - before_run, after_run در یوزربات(پایروبی) |
+| add handler در یوزربات(پایروبی) |
+| add_background_task در یوزربات(پایروبی) |
+| hotreload در یوزربات(پایروبی) |
+| antispam در یوزربات(پایروبی) |
+| filters بیشتر در یوزربات(پایروبی) |
+| template در یوزربات(پایروبی) |
+| Plunging Hub |
+| شبیه سازی ربات ها بدون روشن کردن |
+| داکیومنت یوزربات(پایروبی) |
+| صفحه Html برای نمایش مقدار پیام های هر چت به همراه آمار|
+| پل با تلگرام - FastTel |
+| پنل ادمین |
+| افزودن دستورات CLI |
+
+> هر قابلیتی اضافه شود/مشکلی دیباگ شود از این رودمپ حذف خواهد شد.
 
 [⬆ بازگشت به فهرست](#-فهرست-مطالب)
 

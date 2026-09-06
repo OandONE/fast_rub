@@ -1,8 +1,11 @@
-from ..methods import Methods
 from typing import Literal
+
+import aiofiles
+import json
 
 from ...core.async_sync import *
 from ..filters import Filter
+from ..methods import Methods
 
 class Client:
     def __init__(
@@ -31,6 +34,18 @@ class Client:
         self.max_retries = max_retries
         if run_start:
             asyncio.run(self.start())
+
+    @classmethod
+    async def from_config(
+        cls,
+        config: str | dict[str, Any]
+    ):
+        if isinstance(config, str):
+            async with aiofiles.open(config, "r") as f:
+                content = await f.read()
+                config = json.loads(content)
+        
+        return cls(**config) # type: ignore
 
 
     # propertys
