@@ -17,6 +17,8 @@ from typing import Literal
 from ...core.async_sync import *
 from ..filters import Filter
 
+from ...utils.text_parser import TextParser
+
 class Methods:
     def __init__(
         self,
@@ -839,7 +841,7 @@ class Methods:
     # Message methods
     
     async def sendText(self, objectGuid:str, text:str, messageId:str | None) -> dict:
-        metadata = Utils.checkMetadata(text)
+        metadata = TextParser.markdown(text)
 
         input = {
             "object_guid": objectGuid,
@@ -1000,7 +1002,7 @@ class Methods:
                 if type == "Music":
                     input["file_inline"]["music_performer"] = performer or Utils.getMusicArtist(uploadData["file"])
 
-            metadata:list = list(Utils.checkMetadata(text))
+            metadata:list = list(TextParser.markdown(text))
             if metadata[1]: input["text"] = metadata[1]
             if metadata[0]: input["metadata"] = {"meta_data_parts": metadata[0]}
 
@@ -1138,7 +1140,7 @@ class Methods:
     
     
     async def editMessage(self, objectGuid, text, messageId) -> dict:
-        metadata = Utils.checkMetadata(text)
+        metadata = TextParser.markdown(text)
         data = {
             "object_guid": objectGuid,
             "text": metadata[1],
@@ -1185,7 +1187,7 @@ class Methods:
         if not text and not messageData:
             raise ValueError("You Shoud Write The 'text' or (objectGuid, messageId) Args")
         text_: str = text or messageData["messages"][0]["text"]
-        metadata = Utils.checkMetadata(text_)
+        metadata = TextParser.markdown(text_)
         input = {
             "is_mute": False,
             "object_guid": toObjectGuid,
