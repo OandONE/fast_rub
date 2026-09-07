@@ -198,36 +198,151 @@ class Message:
         return ReplyInfo.from_json(result["messages"][0])
     
     
-    async def reply(self, text:str) -> dict:
-        return await self.methods.sendText(objectGuid=self.object_guid, text=text, messageId=self.message_id)
+    async def reply(
+        self,
+        text: str,
+        parse_mode: Literal["Markdown", "HTML", None] = "Markdown"
+    ) -> dict:
+        return await self.methods.sendText(
+            objectGuid=self.object_guid,
+            text=text,
+            messageId=self.message_id,
+            parse_mode=parse_mode
+        )
 
     
-    async def reply_image(self,file:str, text:str | None, file_name:str | None = None,thumbInline: str | None = None,is_spoil: bool = False):
-        return await self.methods.sendImage(self.object_guid,file,self.message_id,text,is_spoil,thumbInline,file_name)
+    async def reply_image(
+        self,
+        file: str,
+        text: str | None,
+        file_name: str | None = None,
+        thumbInline: str | None = None,
+        is_spoil: bool = False,
+        show_progress_bar: bool = False,
+        parse_mode: Literal["Markdown", "HTML", None] = "Markdown"
+    ):
+        return await self.methods.sendImage(
+            self.object_guid,
+            file,
+            self.message_id,
+            text,
+            is_spoil,
+            thumbInline,
+            file_name,
+            show_progress_bar=show_progress_bar,
+            parse_mode=parse_mode
+        )
     
     
-    async def reply_video(self,file:str, text:str | None, file_name:str | None = None,thumbInline: str | None = None,is_spoil: bool = False):
-        return await self.methods.sendVideo(self.object_guid,file,self.message_id,text,is_spoil,thumbInline,file_name)
+    async def reply_video(
+        self,
+        file: str,
+        text: str | None,
+        file_name: str | None = None,
+        thumbInline: str | None = None,
+        is_spoil: bool = False,
+        show_progress_bar: bool = False,
+        parse_mode: Literal["Markdown", "HTML", None] = "Markdown"
+    ):
+        return await self.methods.sendVideo(
+            self.object_guid,
+            file,
+            self.message_id,
+            text,
+            is_spoil,
+            thumbInline,
+            file_name,
+            show_progress_bar=show_progress_bar,
+            parse_mode=parse_mode
+        )
 
     
-    async def reply_gif(self,file:str, text:str | None, file_name:str | None = None,thumbInline: str | None = None):
-        return await self.methods.sendGif(self.object_guid,file,self.message_id,text,thumbInline,file_name)
+    async def reply_gif(
+        self,
+        file: str,
+        text: str | None,
+        file_name: str | None = None,
+        thumbInline: str | None = None,
+        show_progress_bar: bool = False,
+        parse_mode: Literal["Markdown", "HTML", None] = "Markdown"
+    ):
+        return await self.methods.sendGif(
+            self.object_guid,
+            file,
+            self.message_id,
+            text,
+            thumbInline,
+            file_name,
+            show_progress_bar=show_progress_bar,
+            parse_mode=parse_mode
+        )
 
     
-    async def reply_music(self,file:str, text:str | None, file_name:str | None = None,performer: str | None = None):
-        return await self.methods.sendMusic(self.object_guid,file,self.message_id,text,file_name,performer)
+    async def reply_music(
+        self,
+        file: str,
+        text: str | None,
+        file_name: str | None = None,
+        performer: str | None = None,
+        show_progress_bar: bool = False,
+        parse_mode: Literal["Markdown", "HTML", None] = "Markdown"
+    ):
+        return await self.methods.sendMusic(
+            self.object_guid,
+            file,
+            self.message_id,
+            text,
+            file_name,
+            performer,
+            show_progress_bar=show_progress_bar,
+            parse_mode=parse_mode
+        )
 
     
-    async def reply_voice(self,file:str, time:int = 0, text:str | None = None, file_name:str | None = None):
-        return await self.methods.sendVoice(self.object_guid,file,time,self.message_id,text,file_name)
+    async def reply_voice(
+        self,
+        file: str,
+        time: int = 0,
+        text: str | None = None,
+        file_name: str | None = None,
+        show_progress_bar: bool = False,
+        parse_mode: Literal["Markdown", "HTML", None] = "Markdown"
+    ):
+        return await self.methods.sendVoice(
+            self.object_guid,
+            file,
+            time,
+            self.message_id,
+            text,
+            file_name,
+            show_progress_bar=show_progress_bar,
+            parse_mode=parse_mode
+        )
     
     
     async def reply_location(self,latitude:int, longitude:int):
         return await self.methods.sendLocation(self.object_guid,latitude,longitude,self.message_id)
 
     
-    async def reply_video_message(self,file:str, text:str | None, file_name:str | None,thumbInline: str | None = None):
-        return await self.methods.sendVideoMessage(self.object_guid,file,self.message_id,text,thumbInline,file_name)
+    async def reply_video_message(
+        self,
+        file: str,
+        text: str | None,
+        file_name: str | None,
+        thumbInline: str | None = None,
+        show_progress_bar: bool = False,
+        parse_mode: Literal["Markdown", "HTML", None] = "Markdown"
+    ):
+        return await self.methods.sendVideoMessage(
+            self.object_guid,
+            file,
+            self.message_id,
+            text,
+            thumbInline,
+            file_name,
+            show_progress_bar=show_progress_bar,
+            parse_mode=parse_mode
+        )
 
     
     async def reply_poll(
