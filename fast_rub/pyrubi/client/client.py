@@ -725,14 +725,25 @@ class Client:
         return await self.methods.setPinMessage(objectGuid=object_guid, messageId=message_id, action="Unpin")
     
     
-    async def resend_message(self, object_guid: str | None = None, message_id: str | None = None, to_object_guid: str | None = None, reply_to_message_id: str | None = None, text: str | None = None, file_inline: dict | None = None, auto_delete: int | None = None) -> dict:
+    async def resend_message(
+        self,
+        object_guid: str | None = None,
+        message_id: str | None = None,
+        to_object_guid: str | None = None,
+        reply_to_message_id: str | None = None,
+        text: str | None = None,
+        file_inline: dict | None = None,
+        auto_delete: int | None = None,
+        parse_mode: Literal["Markdown", "HTML", None] = "Markdown"
+    ) -> dict:
         result = await self.methods.resendMessage(
             objectGuid=object_guid,
             messageId=message_id,
             toObjectGuid=to_object_guid,
             replyToMessageId=reply_to_message_id,
             text=text,
-            fileInline=file_inline
+            fileInline=file_inline,
+            parse_mode=parse_mode
         )
         target_guid: str = to_object_guid or object_guid # pyright: ignore[reportAssignmentType]
         self._schedule_auto_delete(result, target_guid, auto_delete)
@@ -743,8 +754,19 @@ class Client:
         return await self.methods.forwardMessages(objectGuid=object_guid, messageIds=message_ids, toObjectGuid=to_object_guid)
     
     
-    async def edit_message(self, object_guid, text, message_id=None) -> dict:
-        return await self.methods.editMessage(object_guid, text=text, messageId=message_id)
+    async def edit_message(
+        self,
+        object_guid: str,
+        text: str,
+        message_id: str | None = None,
+        parse_mode: Literal["Markdown", "HTML", None] = "Markdown"
+    ) -> dict:
+        return await self.methods.editMessage(
+            object_guid,
+            text=text,
+            messageId=message_id,
+            parse_mode=parse_mode
+        )
     
     
     async def delete_messages(self, object_guid:str, message_ids:list, delete_for_all:bool=True) -> dict:

@@ -1266,15 +1266,21 @@ class Methods:
         )
     
     
-    async def editMessage(self, objectGuid, text, messageId) -> dict:
-        metadata = TextParser.markdown(text)
+    async def editMessage(
+        self,
+        objectGuid: str,
+        text: str,
+        messageId: str | None = None,
+        parse_mode: Literal["Markdown", "HTML", None] = "Markdown"
+    ) -> dict:
+        metadata, _text = await self._parse_mode_text(text, parse_mode)
         data = {
             "object_guid": objectGuid,
-            "text": metadata[1],
+            "text": _text,
             "message_id": messageId,
         }
-        if metadata[0] != []:
-            data["metadata"] = {"meta_data_parts": metadata[0]}
+        if metadata != []:
+            data["metadata"] = {"meta_data_parts": metadata}
         return await self.network.request("editMessage", data)
     
     
@@ -1303,7 +1309,16 @@ class Methods:
         )
 
     
-    async def resendMessage(self, objectGuid: str | None = None, messageId: str | None = None, toObjectGuid:str | None = None, replyToMessageId:str | None = None, text:str | None = None, fileInline: dict | None = None) -> dict:
+    async def resendMessage(
+        self,
+        objectGuid: str | None = None,
+        messageId: str | None = None,
+        toObjectGuid: str | None = None,
+        replyToMessageId: str | None = None,
+        text: str | None = None,
+        fileInline: dict | None = None,
+        parse_mode: Literal["Markdown", "HTML", None] = "Markdown"
+    ) -> dict:
         messageData = {}
         if not fileInline:
             if objectGuid:
@@ -1314,13 +1329,13 @@ class Methods:
         if not text and not messageData:
             raise ValueError("You Shoud Write The 'text' or (objectGuid, messageId) Args")
         text_: str = text or messageData["messages"][0]["text"]
-        metadata = TextParser.markdown(text_)
+        metadata, _text = await self._parse_mode_text(text_, parse_mode)
         input = {
             "is_mute": False,
             "object_guid": toObjectGuid,
             "rnd": Utils.randomRnd(),
             "reply_to_message_id": replyToMessageId,
-            "text": metadata[1]
+            "text": _text
         }
 
         fileInline_:dict = fileInline or messageData["messages"][0]["file_inline"]
@@ -1347,8 +1362,8 @@ class Methods:
             if messageData["messages"][0].get("metadata"):
                 input["metadata"] = {"meta_data_parts": messageData["messages"][0]["metadata"]}
                 
-        elif metadata[0] != []:
-            input["metadata"] = {"meta_data_parts": metadata[0]}
+        elif metadata != []:
+            input["metadata"] = {"meta_data_parts": metadata}
 
         return await self.network.request(method="sendMessage", input=input)
 
