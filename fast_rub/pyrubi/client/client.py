@@ -17,7 +17,7 @@ class Client:
         api_version: int = 6,
         proxy: str | None = None,
         time_out: int = 10,
-        show_progress_bar: bool = False,
+        show_progress_bar: bool | None = None,
         max_retries: int = 5,
         run_start: bool = True # = False Version 7
     ):
@@ -493,44 +493,118 @@ class Client:
         return result
     
     
-    async def send_file(self, object_guid: str, file: str, message_id: str | None = None, text: str | None = None, file_name: str | None = None, auto_delete: int | None = None) -> dict | None:
-        result = await self.methods.sendFile(objectGuid=object_guid, file=file, text=text, messageId=message_id, fileName=file_name)
+    async def send_file(
+        self,
+        object_guid: str,
+        file: str,
+        message_id: str | None = None,
+        text: str | None = None,
+        file_name: str | None = None,
+        auto_delete: int | None = None,
+        show_progress_bar: bool = False
+    ) -> dict | None:
+        result = await self.methods.sendFile(objectGuid=object_guid, file=file, text=text, messageId=message_id, fileName=file_name, show_progress_bar=show_progress_bar)
+        self._schedule_auto_delete(result, object_guid, auto_delete)
+        return result
+
+
+    send_document = send_file
+    
+    
+    async def send_image(
+        self,
+        object_guid: str,
+        file: str,
+        message_id: str | None = None,
+        text: str | None = None,
+        is_spoil: bool = False,
+        thumbnail: str | None = None,
+        file_name: str | None = None,
+        auto_delete: int | None = None,
+        show_progress_bar: bool = False
+    ) -> dict | None:
+        result = await self.methods.sendImage(objectGuid=object_guid, file=file, text=text, messageId=message_id, isSpoil=is_spoil, thumbInline=thumbnail, fileName=file_name, show_progress_bar=show_progress_bar)
         self._schedule_auto_delete(result, object_guid, auto_delete)
         return result
     
     
-    async def send_image(self, object_guid: str, file: str, message_id: str | None = None, text: str | None = None, is_spoil: bool = False, thumbnail: str | None = None, file_name: str | None = None, auto_delete: int | None = None) -> dict | None:
-        result = await self.methods.sendImage(objectGuid=object_guid, file=file, text=text, messageId=message_id, isSpoil=is_spoil, thumbInline=thumbnail, fileName=file_name)
-        self._schedule_auto_delete(result, object_guid, auto_delete)
-        return result
-    
-    
-    async def send_video(self, object_guid: str, file: str, message_id: str | None = None, text: str | None = None, is_spoil: bool = False, thumbnail: str | None = None, file_name: str | None = None, auto_delete: int | None = None) -> dict | None:
-        result = await self.methods.sendVideo(objectGuid=object_guid, file=file, text=text, messageId=message_id, isSpoil=is_spoil, thumbInline=thumbnail, fileName=file_name)
+    async def send_video(
+        self,
+        object_guid: str,
+        file: str,
+        message_id: str | None = None,
+        text: str | None = None,
+        is_spoil: bool = False,
+        thumbnail: str | None = None,
+        file_name: str | None = None,
+        auto_delete: int | None = None,
+        show_progress_bar: bool = False
+    ) -> dict | None:
+        result = await self.methods.sendVideo(objectGuid=object_guid, file=file, text=text, messageId=message_id, isSpoil=is_spoil, thumbInline=thumbnail, fileName=file_name, show_progress_bar=show_progress_bar)
         self._schedule_auto_delete(result, object_guid, auto_delete)
         return result
 
     
-    async def send_video_message(self, object_guid: str, file: str, message_id: str | None = None, text: str | None = None, thumbnail: str | None = None, file_name: str | None = None, auto_delete: int | None = None) -> dict | None:
-        result = await self.methods.sendVideoMessage(objectGuid=object_guid, file=file, text=text, messageId=message_id, thumbInline=thumbnail, fileName=file_name)
+    async def send_video_message(
+        self,
+        object_guid: str,
+        file: str,
+        message_id: str | None = None,
+        text: str | None = None,
+        thumbnail: str | None = None,
+        file_name: str | None = None,
+        auto_delete: int | None = None,
+        show_progress_bar: bool = False
+    ) -> dict | None:
+        result = await self.methods.sendVideoMessage(objectGuid=object_guid, file=file, text=text, messageId=message_id, thumbInline=thumbnail, fileName=file_name, show_progress_bar=show_progress_bar)
         self._schedule_auto_delete(result, object_guid, auto_delete)
         return result
 
     
-    async def send_gif(self, object_guid: str, file: str, message_id: str | None = None, text: str | None = None, thumbnail: str | None = None, file_name: str | None = None, auto_delete: int | None = None) -> dict | None:
-        result = await self.methods.sendGif(objectGuid=object_guid, file=file, text=text, messageId=message_id, thumbInline=thumbnail, fileName=file_name)
+    async def send_gif(
+        self,
+        object_guid: str,
+        file: str,
+        message_id: str | None = None,
+        text: str | None = None,
+        thumbnail: str | None = None,
+        file_name: str | None = None,
+        auto_delete: int | None = None,
+        show_progress_bar: bool = False
+    ) -> dict | None:
+        result = await self.methods.sendGif(objectGuid=object_guid, file=file, text=text, messageId=message_id, thumbInline=thumbnail, fileName=file_name, show_progress_bar=show_progress_bar)
         self._schedule_auto_delete(result, object_guid, auto_delete)
         return result
     
     
-    async def send_music(self, object_guid: str, file: str, message_id: str | None = None, text: str | None = None, file_name: str | None = None, performer: str | None = None, auto_delete: int | None = None) -> dict | None:
-        result = await self.methods.sendMusic(objectGuid=object_guid, file=file, text=text, messageId=message_id, fileName=file_name, performer=performer)
+    async def send_music(
+        self,
+        object_guid: str,
+        file: str,
+        message_id: str | None = None,
+        text: str | None = None,
+        file_name: str | None = None,
+        performer: str | None = None,
+        auto_delete: int | None = None,
+        show_progress_bar: bool = False
+    ) -> dict | None:
+        result = await self.methods.sendMusic(objectGuid=object_guid, file=file, text=text, messageId=message_id, fileName=file_name, performer=performer, show_progress_bar=show_progress_bar)
         self._schedule_auto_delete(result, object_guid, auto_delete)
         return result
 
     
-    async def send_voice(self, object_guid: str, file: str, message_id: str | None = None, text: str | None = None, file_name: str | None = None, time: int = 0, auto_delete: int | None = None) -> dict | None:
-        result = await self.methods.sendVoice(objectGuid=object_guid, file=file, text=text, messageId=message_id, fileName=file_name, time=time)
+    async def send_voice(
+        self,
+        object_guid: str,
+        file: str,
+        message_id: str | None = None,
+        text: str | None = None,
+        file_name: str | None = None,
+        time: int = 0,
+        auto_delete: int | None = None,
+        show_progress_bar: bool = False
+    ) -> dict | None:
+        result = await self.methods.sendVoice(objectGuid=object_guid, file=file, text=text, messageId=message_id, fileName=file_name, time=time, show_progress_bar=show_progress_bar)
         self._schedule_auto_delete(result, object_guid, auto_delete)
         return result
 

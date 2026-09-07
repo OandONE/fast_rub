@@ -28,7 +28,7 @@ class Methods:
         proxy: str | None = None,
         timeOut: int = 30,
         max_retries: int = 5,
-        showProgressBar: bool = True
+        showProgressBar: bool | None = None
     ) -> None:
         self.platform = platform.lower()
         if not self.platform in ["android", "web", "rubx", "rubikax", "rubino", "PWA"]:
@@ -948,9 +948,14 @@ class Methods:
         isSpoil: bool = False,
         customThumbInline: str | None = None,
         time: int | None = None,
-        performer: str | None = None
+        performer: str | None = None,
+        show_progress_bar: bool = False
     ) -> dict | None:
-        upload_data = await self.network.upload(file=file, fileName=fileName)
+        upload_data = await self.network.upload(
+            file=file,
+            fileName=fileName,
+            show_progress_bar=show_progress_bar
+        )
         if isinstance(upload_data,dict):
             uploadData:dict = dict(upload_data)
             if not uploadData:
@@ -1013,7 +1018,15 @@ class Methods:
 
     
     
-    async def sendFile(self, objectGuid:str, file:str, messageId:str | None, text:str | None, fileName:str | None = None) -> dict | None:
+    async def sendFile(
+        self,
+        objectGuid: str,
+        file: str,
+        messageId: str | None,
+        text: str | None,
+        fileName: str | None = None,
+        show_progress_bar: bool = False
+    ) -> dict | None:
         if fileName is None:
             fileName = Utils.format_file("File")
         return await self.baseSendFileInline(
@@ -1026,7 +1039,17 @@ class Methods:
         )
     
     
-    async def sendImage(self, objectGuid:str, file:str, messageId:str | None, text:str | None, isSpoil:bool, thumbInline:str | None, fileName:str | None = None) -> dict | None:
+    async def sendImage(
+        self,
+        objectGuid: str,
+        file: str,
+        messageId: str | None,
+        text: str | None,
+        isSpoil: bool,
+        thumbInline: str | None,
+        fileName: str | None = None,
+        show_progress_bar: bool = False
+    ) -> dict | None:
         if fileName is None:
             fileName = Utils.format_file("Image")
         return await self.baseSendFileInline(
@@ -1041,7 +1064,17 @@ class Methods:
         )
     
     
-    async def sendVideo(self, objectGuid:str, file:str, messageId:str | None, text:str | None, isSpoil:bool, thumbInline:str | None, fileName:str | None = None) -> dict | None:
+    async def sendVideo(
+        self,
+        objectGuid: str,
+        file: str,
+        messageId: str | None,
+        text: str | None,
+        isSpoil: bool,
+        thumbInline: str | None,
+        fileName: str | None = None,
+        show_progress_bar: bool = False
+    ) -> dict | None:
         if fileName is None:
             fileName = Utils.format_file("Video")
         return await self.baseSendFileInline(
@@ -1056,7 +1089,16 @@ class Methods:
         )
     
     
-    async def sendVideoMessage(self, objectGuid:str, file:str, messageId:str | None, text:str | None, thumbInline:str | None, fileName:str | None = None) -> dict | None:
+    async def sendVideoMessage(
+        self,
+        objectGuid: str,
+        file: str,
+        messageId: str | None,
+        text: str | None,
+        thumbInline: str | None,
+        fileName: str | None = None,
+        show_progress_bar: bool = False
+    ) -> dict | None:
         if fileName is None:
             fileName = Utils.format_file("Video")
         return await self.baseSendFileInline(
@@ -1070,7 +1112,16 @@ class Methods:
         )
     
     
-    async def sendGif(self, objectGuid:str, file:str, messageId:str | None, text:str | None, thumbInline:str | None, fileName:str | None = None) -> dict | None:
+    async def sendGif(
+        self,
+        objectGuid: str,
+        file: str,
+        messageId: str | None,
+        text: str | None,
+        thumbInline: str | None,
+        fileName: str | None = None,
+        show_progress_bar: bool = False
+    ) -> dict | None:
         if fileName is None:
             fileName = Utils.format_file("Gif")
         return await self.baseSendFileInline(
@@ -1084,7 +1135,16 @@ class Methods:
         )
     
     
-    async def sendMusic(self, objectGuid:str, file:str, messageId:str | None, text:str | None, performer:str | None, fileName:str | None = None) -> dict | None:
+    async def sendMusic(
+        self,
+        objectGuid: str,
+        file: str,
+        messageId: str | None,
+        text: str | None,
+        performer: str | None,
+        fileName: str | None = None,
+        show_progress_bar: bool = False
+    ) -> dict | None:
         if fileName is None:
             fileName = Utils.format_file("Music")
         return await self.baseSendFileInline(
@@ -1098,7 +1158,16 @@ class Methods:
         )
     
     
-    async def sendVoice(self, objectGuid:str, file:str, time:int, messageId:str | None = None, text:str | None = None, fileName:str | None = None) -> dict | None:
+    async def sendVoice(
+        self,
+        objectGuid: str,
+        file: str,
+        time: int,
+        messageId: str | None = None,
+        text: str | None = None,
+        fileName: str | None = None,
+        show_progress_bar: bool = False
+    ) -> dict | None:
         if fileName is None:
             fileName = Utils.format_file("Voice")
         return await self.baseSendFileInline(

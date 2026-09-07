@@ -220,6 +220,7 @@ class Network:
         file: str | bytes,
         fileName: str | None = None,
         chunkSize: int = 131_072,
+        show_progress_bar: bool = False
     ) -> dict[str, Any] | None:
         """
         Upload a file to the Rubika CDN.  Replaces the old aiohttp‑based upload.
@@ -258,7 +259,9 @@ class Network:
         }
 
         pbar = None
-        if self.showProgressBar:
+        if not self.showProgressBar is None:
+            show_progress_bar = self.showProgressBar
+        if show_progress_bar:
             if tqdm is None:
                 print("The tqdm library is not installed! for install: 'pip install fastrub[tqdm]' or 'pip install tqdm'")
                 pbar = None
@@ -327,6 +330,7 @@ class Network:
         chunkSize: int = 262_143,
         attempt: int = 0,
         maxAttempts: int = 2,
+        show_progress_bar: bool = False
     ) -> bytes | None:
         """
         Download a file from the Rubika CDN.  Replaces the old aiohttp‑based download.
@@ -348,7 +352,9 @@ class Network:
         }
 
         pbar = None
-        if self.showProgressBar:
+        if not self.showProgressBar is None:
+            show_progress_bar = self.showProgressBar
+        if show_progress_bar:
             if tqdm is None:
                 print("The tqdm library is not installed! for install: 'pip install fastrub[tqdm]' or 'pip install tqdm'")
                 pbar = None
