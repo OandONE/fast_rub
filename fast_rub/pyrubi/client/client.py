@@ -6,6 +6,7 @@ import json
 from ...core.async_sync import *
 from ..filters import Filter
 from ..methods import Methods
+from ...utils.text_parser import TextParser
 
 class Client:
     def __init__(
@@ -19,7 +20,8 @@ class Client:
         time_out: int = 10,
         show_progress_bar: bool | None = None,
         max_retries: int = 5,
-        run_start: bool = True # = False Version 7
+        run_start: bool = True, # = False Version 7
+        main_parse_mode: Literal['Markdown', 'HTML', "Null", None] = "Null",
     ):
         
         self.session = session
@@ -32,6 +34,7 @@ class Client:
         self.show_progress_bar = show_progress_bar
         self._is_started = False
         self.max_retries = max_retries
+        self.main_parse_mode: Literal['Markdown', 'HTML', 'Null', None] = main_parse_mode
         if run_start:
             asyncio.run(self.start())
 
@@ -427,8 +430,20 @@ class Client:
     # Message methods
     
     
-    async def send_text(self, object_guid: str, text: str, message_id: str | None = None, auto_delete: int | None = None) -> dict:
-        result = await self.methods.sendText(objectGuid=object_guid, text=text, messageId=message_id)
+    async def send_text(
+        self,
+        object_guid: str,
+        text: str,
+        message_id: str | None = None,
+        auto_delete: int | None = None,
+        parse_mode: Literal["Markdown", "HTML", None] = "Markdown"
+    ) -> dict:
+        result = await self.methods.sendText(
+            objectGuid=object_guid,
+            text=text,
+            messageId=message_id,
+            parse_mode=parse_mode
+        )
         self._schedule_auto_delete(result, object_guid, auto_delete)
         return result
     
@@ -438,6 +453,7 @@ class Client:
         object_guid: str,
         text: str | None = None,
         message_id: str | None = None,
+        parse_mode: Literal["Markdown", "HTML", None] = "Markdown",
         # file
         file: str | None = None,
         file_name: str | None = None,
@@ -487,7 +503,8 @@ class Client:
             firstName=first_name,
             lastName=last_name,
             phoneNumber=phone_number,
-            userGuid=user_guid
+            userGuid=user_guid,
+            parse_mode=parse_mode
         )
         self._schedule_auto_delete(result, object_guid, auto_delete)
         return result
@@ -501,9 +518,18 @@ class Client:
         text: str | None = None,
         file_name: str | None = None,
         auto_delete: int | None = None,
-        show_progress_bar: bool = False
+        show_progress_bar: bool = False,
+        parse_mode: Literal["Markdown", "HTML", None] = "Markdown"
     ) -> dict | None:
-        result = await self.methods.sendFile(objectGuid=object_guid, file=file, text=text, messageId=message_id, fileName=file_name, show_progress_bar=show_progress_bar)
+        result = await self.methods.sendFile(
+            objectGuid=object_guid,
+            file=file,
+            text=text,
+            messageId=message_id,
+            fileName=file_name,
+            show_progress_bar=show_progress_bar,
+            parse_mode=parse_mode
+        )
         self._schedule_auto_delete(result, object_guid, auto_delete)
         return result
 
@@ -521,9 +547,20 @@ class Client:
         thumbnail: str | None = None,
         file_name: str | None = None,
         auto_delete: int | None = None,
-        show_progress_bar: bool = False
+        show_progress_bar: bool = False,
+        parse_mode: Literal["Markdown", "HTML", None] = "Markdown"
     ) -> dict | None:
-        result = await self.methods.sendImage(objectGuid=object_guid, file=file, text=text, messageId=message_id, isSpoil=is_spoil, thumbInline=thumbnail, fileName=file_name, show_progress_bar=show_progress_bar)
+        result = await self.methods.sendImage(
+            objectGuid=object_guid,
+            file=file,
+            text=text,
+            messageId=message_id,
+            isSpoil=is_spoil, 
+            thumbInline=thumbnail, 
+            fileName=file_name, 
+            show_progress_bar=show_progress_bar,
+            parse_mode=parse_mode
+        )
         self._schedule_auto_delete(result, object_guid, auto_delete)
         return result
     
@@ -538,9 +575,20 @@ class Client:
         thumbnail: str | None = None,
         file_name: str | None = None,
         auto_delete: int | None = None,
-        show_progress_bar: bool = False
+        show_progress_bar: bool = False,
+        parse_mode: Literal["Markdown", "HTML", None] = "Markdown"
     ) -> dict | None:
-        result = await self.methods.sendVideo(objectGuid=object_guid, file=file, text=text, messageId=message_id, isSpoil=is_spoil, thumbInline=thumbnail, fileName=file_name, show_progress_bar=show_progress_bar)
+        result = await self.methods.sendVideo(
+            objectGuid=object_guid,
+            file=file,
+            text=text,
+            messageId=message_id,
+            isSpoil=is_spoil, 
+            thumbInline=thumbnail, 
+            fileName=file_name, 
+            show_progress_bar=show_progress_bar,
+            parse_mode=parse_mode
+        )
         self._schedule_auto_delete(result, object_guid, auto_delete)
         return result
 
@@ -554,9 +602,19 @@ class Client:
         thumbnail: str | None = None,
         file_name: str | None = None,
         auto_delete: int | None = None,
-        show_progress_bar: bool = False
+        show_progress_bar: bool = False,
+        parse_mode: Literal["Markdown", "HTML", None] = "Markdown"
     ) -> dict | None:
-        result = await self.methods.sendVideoMessage(objectGuid=object_guid, file=file, text=text, messageId=message_id, thumbInline=thumbnail, fileName=file_name, show_progress_bar=show_progress_bar)
+        result = await self.methods.sendVideoMessage(
+            objectGuid=object_guid,
+            file=file,
+            text=text,
+            messageId=message_id,
+            thumbInline=thumbnail,
+            fileName=file_name,
+            show_progress_bar=show_progress_bar,
+            parse_mode=parse_mode
+        )
         self._schedule_auto_delete(result, object_guid, auto_delete)
         return result
 
@@ -570,8 +628,19 @@ class Client:
         thumbnail: str | None = None,
         file_name: str | None = None,
         auto_delete: int | None = None,
-        show_progress_bar: bool = False
+        show_progress_bar: bool = False,
+        parse_mode: Literal["Markdown", "HTML", None] = "Markdown"
     ) -> dict | None:
+        result = await self.methods.sendGif(
+            objectGuid=object_guid,
+            file=file,
+            text=text,
+            messageId=message_id,
+            thumbInline=thumbnail, 
+            fileName=file_name, 
+            show_progress_bar=show_progress_bar,
+            parse_mode=parse_mode
+        )
         result = await self.methods.sendGif(objectGuid=object_guid, file=file, text=text, messageId=message_id, thumbInline=thumbnail, fileName=file_name, show_progress_bar=show_progress_bar)
         self._schedule_auto_delete(result, object_guid, auto_delete)
         return result
@@ -586,9 +655,19 @@ class Client:
         file_name: str | None = None,
         performer: str | None = None,
         auto_delete: int | None = None,
-        show_progress_bar: bool = False
+        show_progress_bar: bool = False,
+        parse_mode: Literal["Markdown", "HTML", None] = "Markdown"
     ) -> dict | None:
-        result = await self.methods.sendMusic(objectGuid=object_guid, file=file, text=text, messageId=message_id, fileName=file_name, performer=performer, show_progress_bar=show_progress_bar)
+        result = await self.methods.sendMusic(
+            objectGuid=object_guid,
+            file=file,
+            text=text,
+            messageId=message_id,
+            fileName=file_name,
+            performer=performer,
+            show_progress_bar=show_progress_bar,
+            parse_mode=parse_mode
+        )
         self._schedule_auto_delete(result, object_guid, auto_delete)
         return result
 
@@ -602,8 +681,19 @@ class Client:
         file_name: str | None = None,
         time: int = 0,
         auto_delete: int | None = None,
-        show_progress_bar: bool = False
+        show_progress_bar: bool = False,
+        parse_mode: Literal["Markdown", "HTML", None] = "Markdown"
     ) -> dict | None:
+        result = await self.methods.sendVoice(
+            objectGuid=object_guid,
+            file=file,
+            text=text,
+            time=time,
+            messageId=message_id,
+            fileName=file_name,
+            show_progress_bar=show_progress_bar,
+            parse_mode=parse_mode
+        )
         result = await self.methods.sendVoice(objectGuid=object_guid, file=file, text=text, messageId=message_id, fileName=file_name, time=time, show_progress_bar=show_progress_bar)
         self._schedule_auto_delete(result, object_guid, auto_delete)
         return result
