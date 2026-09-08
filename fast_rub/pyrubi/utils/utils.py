@@ -75,7 +75,13 @@ class Utils:
 
     @staticmethod
     def getChatTypeByGuid(objectGuid: str) -> str:
-        for chatType in [("u0", "User"), ("g0", "Group"), ("c0", "Channel"), ("s0", "Service"), ("b0", "Bot")]:
+        for chatType in [
+            ("u0", "User"),
+            ("g0", "Group"),
+            ("c0", "Channel"),
+            ("s0", "Service"),
+            ("b0", "Bot")
+        ]:
             if objectGuid.startswith(chatType[0]):
                 return chatType[1]
         return "Unknown"

@@ -4,6 +4,7 @@ import aiofiles
 import json
 
 from ...core.async_sync import *
+from ...utils.cache import Cache
 from ..filters import Filter
 from ..methods import Methods
 from collections.abc import Callable
@@ -22,6 +23,7 @@ class Client:
         max_retries: int = 5,
         run_start: bool = True, # = False Version 7
         main_parse_mode: Literal['Markdown', 'HTML', "Null", None] = "Null",
+        cache: Cache | None = None
     ):
         
         self.session = session
@@ -35,6 +37,7 @@ class Client:
         self._is_started = False
         self.max_retries = max_retries
         self.main_parse_mode: Literal['Markdown', 'HTML', 'Null', None] = main_parse_mode
+        self.cache = cache
         if run_start:
             asyncio.run(self.start())
 
@@ -103,7 +106,8 @@ class Client:
             apiVersion=self.apiVersion,
             proxy=self.proxy,
             timeOut=self.timeOut,
-            showProgressBar=self.show_progress_bar
+            showProgressBar=self.show_progress_bar,
+            cache=self.cache
         )
 
     def _extract_message_id(self, result: dict) -> str | None:

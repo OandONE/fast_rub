@@ -17,6 +17,7 @@ from typing import Literal
 
 from ...core.async_sync import *
 from ...core.background import BackgroundManager
+from ...utils.cache import Cache
 from ..filters import Filter
 
 from ...utils.text_parser import TextParser
@@ -32,6 +33,7 @@ class Methods:
         max_retries: int = 5,
         showProgressBar: bool | None = None,
         main_parse_mode: Literal['Markdown', 'HTML', "Null", None] = "Null",
+        cache: Cache | None = None
     ) -> None:
         self.platform = platform.lower()
         if not self.platform in ["android", "web", "rubx", "rubikax", "rubino", "PWA"]:
@@ -43,6 +45,7 @@ class Methods:
         self.sessionData = sessionData
         self.main_parse_mode: Literal['Markdown', 'HTML', 'Null', None] = main_parse_mode
         self._background = BackgroundManager()
+        self.cache = cache
         self.crypto = Cryption(
             auth=sessionData["auth"],
             private_key=sessionData["private_key"]
@@ -153,11 +156,26 @@ class Methods:
     
     
     async def getObjectByUsername(self, username: str) -> dict:
-        return await self.network.request(method="getObjectByUsername",input={'username': username.replace("@","")})
+        username = username.replace("@", "")
+        if self.cache:
+            cached = await self.cache.get(f"username:{username}")
+            if cached:
+                return cached
+        result = await self.network.request(method="getObjectByUsername",input={'username': username})
+        if self.cache:
+            await self.cache.set(f"username:{username}", result)
+        return result
     
     
     async def getTopChatUsers(self) -> dict:
-        return await self.network.request(method="getTopChatUsers")
+        if self.cache:
+            cached = await self.cache.get("getTopChatUsers")
+            if cached:
+                return cached
+        result = await self.network.request(method="getTopChatUsers")
+        if self.cache:
+            await self.cache.set("getTopChatUsers", result)
+        return result
     
     
     async def removeFromTopChatUsers(self, objectGuid:str) -> dict:
@@ -165,7 +183,14 @@ class Methods:
     
     
     async def getChatAds(self) -> dict:
-        return await self.network.request(method="getChatAds", input={"state": Utils.getState()})
+        if self.cache:
+            cached = await self.cache.get("getChatAds")
+            if cached:
+                return cached
+        result = await self.network.request(method="getChatAds", input={"state": Utils.getState()})
+        if self.cache:
+            await self.cache.set("getChatAds", result)
+        return result
 
     
     async def getChatsUpdates(self) -> dict:
@@ -201,16 +226,23 @@ class Methods:
 
     
     async def getJoinRequests(self, objectGuid: str):
-        return await self.network.request(
+        if self.cache:
+            cached = await self.cache.get(f"getJoinRequests:{objectGuid}")
+            if cached:
+                return cached
+        result = await self.network.request(
             method="getJoinRequests",
             input={
                 "object_guid": objectGuid
             }
         )
+        if self.cache:
+            await self.cache.set(f"getJoinRequests:{objectGuid}", result)
+        return result
     
     
     async def leaveChat(self, objectGuid:str) -> dict:
-        input:dict = {f"{Utils.getChatTypeByGuid(objectGuid=objectGuid).lower()}_guid": objectGuid}
+        input: dict = {f"{Utils.getChatTypeByGuid(objectGuid=objectGuid).lower()}_guid": objectGuid}
 
         if Utils.getChatTypeByGuid(objectGuid=objectGuid) == "Group": method:str = "leaveGroup"
         else:
@@ -224,7 +256,7 @@ class Methods:
     
     
     async def removeChat(self, objectGuid:str) -> dict:
-        chatType:str = Utils.getChatTypeByGuid(objectGuid=objectGuid)
+        chatType = Utils.getChatTypeByGuid(objectGuid=objectGuid)
 
         return await self.network.request(
             method=f"remove{chatType}",
@@ -233,29 +265,57 @@ class Methods:
     
     
     async def getChatInfo(self, objectGuid:str) -> dict:
-        chatType:str = Utils.getChatTypeByGuid(objectGuid=objectGuid)
+        if self.cache:
+            cached = await self.cache.get(f"getChatInfo:{objectGuid}")
+            if cached:
+                return cached
+        chatType = Utils.getChatTypeByGuid(objectGuid=objectGuid)
 
-        return await self.network.request(
+        result = await self.network.request(
             method=f"get{chatType}Info",
             input={f"{chatType.lower()}_guid": objectGuid}
         )
+        if self.cache:
+            await self.cache.set(f"getChatInfo:{objectGuid}", result)
+        return result
     
     
-    async def getChatInfoByUsername(self, username:str) -> dict:
-        return await self.network.request(method="getObjectInfoByUsername", input={"username": username.replace("@", "")})
+    async def getChatInfoByUsername(
+        self,
+        username: str
+    ) -> dict:
+        username = username.replace("@", "")
+        if self.cache:
+            cached = await self.cache.get(f"getChatInfoByUsername:{username}")
+            if cached:
+                return cached
+        result = await self.network.request(method="getObjectInfoByUsername", input={"username": username})
+        if self.cache:
+            await self.cache.set(f"getChatInfoByUsername:{username}", result)
+        return result
     
     
     async def getChatLink(self, objectGuid:str) -> dict:
-        chatType:str = Utils.getChatTypeByGuid(objectGuid=objectGuid)
+        if self.cache:
+            cached = await self.cache.get(f"getChatLink:{objectGuid}")
+            if cached:
+                return cached
+        chatType = Utils.getChatTypeByGuid(objectGuid=objectGuid)
 
-        return await self.network.request(
+        result = await self.network.request(
             method=f"get{chatType}Link",
             input={f"{chatType.lower()}_guid": objectGuid}
         )
+        if self.cache:
+            await self.cache.set(f"getChatLink:{objectGuid}", result)
+        return result
     
     
-    async def setChatLink(self, objectGuid:str) -> dict:
-        chatType:str = Utils.getChatTypeByGuid(objectGuid=objectGuid)
+    async def setChatLink(
+        self,
+        objectGuid: str
+    ) -> dict:
+        chatType = Utils.getChatTypeByGuid(objectGuid=objectGuid)
 
         return await self.network.request(
             method=f"set{chatType}Link",
@@ -264,7 +324,7 @@ class Methods:
     
     
     async def setChatAdmin(self, objectGuid:str, memberGuid:str, accessList:list | None, customTitle:str | None, action:str) -> dict:
-        chatType:str = Utils.getChatTypeByGuid(objectGuid=objectGuid)
+        chatType = Utils.getChatTypeByGuid(objectGuid=objectGuid)
 
         input:dict = {
             f"{chatType.lower()}_guid": objectGuid,
@@ -282,7 +342,7 @@ class Methods:
     
     
     async def addChatMember(self, objectGuid:str, memberGuids:list) -> dict:
-        chatType:str = Utils.getChatTypeByGuid(objectGuid=objectGuid)
+        chatType = Utils.getChatTypeByGuid(objectGuid=objectGuid)
 
         return await self.network.request(
             method=f"add{chatType}Members",
@@ -294,7 +354,7 @@ class Methods:
     
     
     async def banChatMember(self, objectGuid:str, memberGuid:str, action:str) -> dict:
-        chatType:str = Utils.getChatTypeByGuid(objectGuid=objectGuid)
+        chatType = Utils.getChatTypeByGuid(objectGuid=objectGuid)
 
         return await self.network.request(
             method=f"ban{chatType}Member",
@@ -306,20 +366,41 @@ class Methods:
         )
     
     
-    async def getBannedChatMembers(self, objectGuid:str, startId:str | None) -> dict:
-        chatType:str = Utils.getChatTypeByGuid(objectGuid=objectGuid)
+    async def getBannedChatMembers(
+        self,
+        objectGuid: str,
+        startId: str | None
+    ) -> dict:
+        if self.cache:
+            cached = await self.cache.get(f"getBannedChatMembers:{objectGuid}:{startId}")
+            if cached:
+                return cached
+        chatType = Utils.getChatTypeByGuid(objectGuid=objectGuid)
 
-        return await self.network.request(
+        result = await self.network.request(
             method=f"getBanned{chatType}Members",
             input={
                 f"{chatType.lower()}_guid": objectGuid,
                 "start_id": startId
             }
         )
+        if self.cache:
+            await self.cache.set(f"getBannedChatMembers:{objectGuid}:{startId}", result)
+        return result
     
     
-    async def getChatAllMembers(self, objectGuid:str, searchText:str | None, startId:str | None, justGetGuids:bool=False) -> dict |list:
-        chatType:str = Utils.getChatTypeByGuid(objectGuid=objectGuid)
+    async def getChatAllMembers(
+        self,
+        objectGuid: str,
+        searchText: str | None,
+        startId: str | None,
+        justGetGuids: bool = False
+    ) -> dict |list:
+        if self.cache:
+            cached = await self.cache.get(f"getChatAllMembers:{objectGuid}:{searchText}:{startId}")
+            if cached:
+                return cached
+        chatType = Utils.getChatTypeByGuid(objectGuid=objectGuid)
 
         data = await self.network.request(
             method=f"get{chatType}AllMembers",
@@ -332,11 +413,23 @@ class Methods:
 
         if justGetGuids: return [i["member_guid"] for i in data["in_chat_members"]]
 
+        if self.cache:
+            await self.cache.set(f"getChatAllMembers:{objectGuid}:{searchText}:{startId}", data)
+
         return data
     
     
-    async def getChatAdminMembers(self, objectGuid:str, startId:str | None, justGetGuids: bool = False) -> dict |list:
-        chatType:str = Utils.getChatTypeByGuid(objectGuid=objectGuid)
+    async def getChatAdminMembers(
+        self,
+        objectGuid: str,
+        startId: str | None,
+        justGetGuids: bool = False
+    ) -> dict |list:
+        if self.cache:
+            cached = await self.cache.get(f"getChatAdminMembers:{objectGuid}:{startId}")
+            if cached:
+                return cached
+        chatType = Utils.getChatTypeByGuid(objectGuid=objectGuid)
 
         data = await self.network.request(
             method=f"get{chatType}AdminMembers",
@@ -348,44 +441,84 @@ class Methods:
     
         if justGetGuids: return [i["member_guid"] for i in data["in_chat_members"]]
 
+        if self.cache:
+            await self.cache.set(f"getChatAdminMembers:{objectGuid}:{startId}", data)
+
         return data
 
     
-    async def userIsAdmin(self, objectGuid: str, userGuid: str):
-        nextStartId = None
-        hasContinue = True
-        while hasContinue:
-            result = await self.getChatAdminMembers(objectGuid, nextStartId)
-            if type(result) is dict: # for typing error
-                hasContinue = result["has_continue"]
-                nextStartId = result["next_start_id"]
-                for user in result["in_chat_members"]:
-                    if userGuid == user.member_guid:
-                        return True
-        return False
-    
-    
-    async def getChatAdminAccessList(self, objectGuid:str, memberGuid:str) -> dict:
-        chatType:str = Utils.getChatTypeByGuid(objectGuid=objectGuid)
+    async def userIsAdmin(
+        self,
+        objectGuid: str,
+        userGuid: str
+    ):
+        if self.cache:
+            cached = await self.cache.get(f"getChatAdminMembers:{objectGuid}:{userGuid}")
+            if cached:
+                return cached
+        async def is_admin():
+            nextStartId = None
+            hasContinue = True
+            while hasContinue:
+                result = await self.getChatAdminMembers(objectGuid, nextStartId)
+                if type(result) is dict: # for typing error
+                    hasContinue = result["has_continue"]
+                    nextStartId = result["next_start_id"]
+                    for user in result["in_chat_members"]:
+                        if userGuid == user.member_guid:
+                            return True
+            return False
 
-        return await self.network.request(
+        result = await is_admin()
+        if self.cache:
+            await self.cache.set(f"getChatAdminMembers:{objectGuid}:{userGuid}", result)
+
+        return result
+    
+    
+    async def getChatAdminAccessList(
+        self,
+        objectGuid: str,
+        memberGuid: str
+    ) -> dict:
+        if self.cache:
+            cached = await self.cache.get(f"getChatAdminAccessList:{objectGuid}:{memberGuid}")
+            if cached:
+                return cached
+        chatType = Utils.getChatTypeByGuid(objectGuid=objectGuid)
+
+        result = await self.network.request(
             method=f"get{chatType}AdminAccessList",
             input={
                 f"{chatType.lower()}_guid": objectGuid,
                 "member_guid": memberGuid
             }
         )
+
+        if self.cache:
+            await self.cache.set(f"getChatAdminAccessList:{objectGuid}:{memberGuid}", result)
+        return result
     
     
-    async def chatPreviewByJoinLink(self, link:str) -> dict:
-        return await self.network.request(
+    async def chatPreviewByJoinLink(
+        self,
+        link: str
+    ) -> dict:
+        if self.cache:
+            cached = await self.cache.get(f"chatPreviewByJoinLink:{link}")
+            if cached:
+                return cached
+        result = await self.network.request(
             method="groupPreviewByJoinLink" if "joing" in link else "channelPreviewByJoinLink",
             input={"hash_link": link.split("/")[-1]}
         )
+        if self.cache:
+            await self.cache.set(f"chatPreviewByJoinLink:{link}", result)
+        return result
     
     
     async def createChatVoiceChat(self, objectGuid:str) -> dict:
-        chatType:str = Utils.getChatTypeByGuid(objectGuid=objectGuid)
+        chatType = Utils.getChatTypeByGuid(objectGuid=objectGuid)
 
         return await self.network.request(
             method=f"create{chatType}VoiceChat",
@@ -406,9 +539,9 @@ class Methods:
 
     
     async def setChatVoiceChatSetting(self, objectGuid:str, voideChatId:str, title:str | None, joinMuted:bool | None) -> dict:
-        chatType:str = Utils.getChatTypeByGuid(objectGuid=objectGuid)
+        chatType = Utils.getChatTypeByGuid(objectGuid=objectGuid)
 
-        input:dict = {
+        input = {
             f"{chatType.lower()}_guid": objectGuid,
             "voice_chat_id": voideChatId,
             "updated_parameters": []
@@ -429,7 +562,7 @@ class Methods:
     
     
     async def getChatVoiceChatUpdates(self, objectGuid:str, voideChatId:str) -> dict:
-        chatType:str = Utils.getChatTypeByGuid(objectGuid=objectGuid)
+        chatType = Utils.getChatTypeByGuid(objectGuid=objectGuid)
 
         return await self.network.request(
             method=f"get{chatType}VoiceChatUpdates",
@@ -442,7 +575,7 @@ class Methods:
     
     
     async def getChatVoiceChatParticipants(self, objectGuid:str, voideChatId:str) -> dict:
-        chatType:str = Utils.getChatTypeByGuid(objectGuid=objectGuid)
+        chatType = Utils.getChatTypeByGuid(objectGuid=objectGuid)
 
         return await self.network.request(
             method=f"get{chatType}VoiceChatParticipants",
@@ -454,7 +587,7 @@ class Methods:
     
     
     async def setChatVoiceChatState(self, objectGuid:str, voideChatId:str, activity:str, participantObjectGuid:str) -> dict:
-        chatType:str = Utils.getChatTypeByGuid(objectGuid=objectGuid)
+        chatType = Utils.getChatTypeByGuid(objectGuid=objectGuid)
 
         return await self.network.request(
             method=f"set{chatType}VoiceChatState",
@@ -468,7 +601,7 @@ class Methods:
     
     
     async def sendChatVoiceChatActivity(self, objectGuid:str, voideChatId:str, activity:str, participantObjectGuid:str) -> dict:
-        chatType:str = Utils.getChatTypeByGuid(objectGuid=objectGuid)
+        chatType = Utils.getChatTypeByGuid(objectGuid=objectGuid)
 
         return await self.network.request(
             method=f"send{chatType}VoiceChatActivity",
@@ -482,7 +615,7 @@ class Methods:
     
     
     async def leaveChatVoiceChat(self, objectGuid:str, voideChatId:str) -> dict:
-        chatType:str = Utils.getChatTypeByGuid(objectGuid=objectGuid)
+        chatType = Utils.getChatTypeByGuid(objectGuid=objectGuid)
 
         return await self.network.request(
             method=f"leave{chatType}VoiceChat",
@@ -494,7 +627,7 @@ class Methods:
     
     
     async def discardChatVoiceChat(self, objectGuid:str, voideChatId:str) -> dict:
-        chatType:str = Utils.getChatTypeByGuid(objectGuid=objectGuid)
+        chatType = Utils.getChatTypeByGuid(objectGuid=objectGuid)
 
         return await self.network.request(
             method=f"discard{chatType}VoiceChat",
@@ -520,7 +653,7 @@ class Methods:
     
     
     async def seenChatMessages(self, objectGuid:str, minId:str, maxId:str) -> dict:
-        chatType:str = Utils.getChatTypeByGuid(objectGuid=objectGuid)
+        chatType = Utils.getChatTypeByGuid(objectGuid=objectGuid)
 
         return await self.network.request(
             method=f"seen{chatType}Messages",
@@ -542,8 +675,16 @@ class Methods:
         )
     
     
-    async def searchChatMessages(self, objectGuid:str, searchText:str) -> dict:
-        return await self.network.request(
+    async def searchChatMessages(
+        self,
+        objectGuid: str,
+        searchText: str
+    ) -> dict:
+        if self.cache:
+            cached = await self.cache.get(f"searchChatMessages:{objectGuid}:{searchText}")
+            if cached:
+                return cached
+        result = await self.network.request(
             method="searchChatMessages",
             input={
                 "object_guid": objectGuid,
@@ -551,9 +692,17 @@ class Methods:
                 "type": "Hashtag" if searchText.startswith("#") else "Text"
             }
         )
+        if self.cache:
+            await self.cache.set(f"searchChatMessages:{objectGuid}:{searchText}", result)
+        return result
     
     
-    async def uploadAvatar(self, objectGuid:str, mainFile:str, thumbnailFile:str | None) -> dict | None:
+    async def uploadAvatar(
+        self,
+        objectGuid: str,
+        mainFile: str,
+        thumbnailFile: str | None
+    ) -> dict | None:
         uploadMainFileData = await self.network.upload(file=mainFile)
 
         if uploadMainFileData is not None and thumbnailFile is not None:
@@ -571,7 +720,14 @@ class Methods:
     
     
     async def getAvatars(self, objectGuid:str) -> dict:
-        return await self.network.request(method="getAvatars", input={"object_guid": objectGuid})
+        if self.cache:
+            cached = await self.cache.get(f"getAvatars:{objectGuid}")
+            if cached:
+                return cached
+        result = await self.network.request(method="getAvatars", input={"object_guid": objectGuid})
+        if self.cache:
+            await self.cache.set(f"getAvatars:{objectGuid}", result)
+        return result
     
     
     async def deleteAvatar(self, objectGuid:str, avatarId:str) -> dict:
@@ -604,11 +760,30 @@ class Methods:
         )
     
     
-    async def getPendingObjectOwner(self, objectGuid:str) -> dict:
-        return await self.network.request(method="getPendingObjectOwner", input={"object_guid": objectGuid})
+    async def getPendingObjectOwner(
+        self,
+        objectGuid: str
+    ) -> dict:
+        if self.cache:
+            cached = await self.cache.get(f"getPendingObjectOwner:{objectGuid}")
+            if cached:
+                return cached
+        result = await self.network.request(
+            method="getPendingObjectOwner",
+            input={
+                "object_guid": objectGuid
+            }
+        )
+        if self.cache:
+            await self.cache.set(f"getPendingObjectOwner:{objectGuid}", result)
+        return result
     
     
-    async def requestChangeObjectOwner(self, objectGuid:str, memberGuid:str) -> dict:
+    async def requestChangeObjectOwner(
+        self,
+        objectGuid: str,
+        memberGuid: str
+    ) -> dict:
         return await self.network.request(
             method="requestChangeObjectOwner",
             input={
@@ -633,7 +808,11 @@ class Methods:
     
     
     async def getChatReaction(self, objectGuid:str, minId:str, maxId:str) -> dict:
-        return await self.network.request(
+        if self.cache:
+            cached = await self.cache.get(f"getChatReaction:{objectGuid}:{minId}:{maxId}")
+            if cached:
+                return cached
+        result = await self.network.request(
             method="getChatReaction",
             input={
                 f"object_guid": objectGuid,
@@ -641,6 +820,9 @@ class Methods:
                 "max_id": maxId
             }
         )
+        if self.cache:
+            await self.cache.set(f"getChatReaction:{objectGuid}:{minId}:{maxId}", result)
+        return result
     
     
     async def reportObject(self, objectGuid:str, description:str) -> dict:
@@ -698,18 +880,32 @@ class Methods:
         )
     
     
-    async def getGroupDefaultAccess(self, objectGuid:str) -> dict:
-        return await self.network.request(
+    async def getGroupDefaultAccess(
+        self,
+        objectGuid: str
+    ) -> dict:
+        if self.cache:
+            cached = await self.cache.get(f"getGroupDefaultAccess:{objectGuid}")
+            if cached:
+                return cached
+        result = await self.network.request(
             method=f"getGroupDefaultAccess",
             input={"group_guid": objectGuid}
         )
+        if self.cache:
+            await self.cache.set(f"getGroupDefaultAccess:{objectGuid}", result)
+        return result
     
     
-    async def setChatDefaultAccess(self, objectGuid:str, accessList:list) -> dict:
-        chatType:str = Utils.getChatTypeByGuid(objectGuid=objectGuid)
+    async def setChatDefaultAccess(
+        self,
+        objectGuid: str,
+        accessList: list
+    ) -> dict:
+        chatType = Utils.getChatTypeByGuid(objectGuid=objectGuid)
 
         return await self.network.request(
-            method=f"setGroupDefaultAccess",
+            method=f"set{chatType}DefaultAccess",
             input={
                 f"group_guid": objectGuid,
                 "access_list": accessList
@@ -717,29 +913,41 @@ class Methods:
         )
     
     
-    async def getGroupMentionList(self, objectGuid:str, searchMention:str) -> dict:
-        return await self.network.request(
+    async def getGroupMentionList(
+        self,
+        objectGuid: str,
+        searchMention: str
+    ) -> dict:
+        if self.cache:
+            cached = await self.cache.get(f"getGroupMentionList:{objectGuid}:{searchMention}")
+            if cached:
+                return cached
+            
+        result = await self.network.request(
             method="getGroupMentionList",
             input={
                 "group_guid": objectGuid,
                 "search_mention": searchMention
             }
         )
+        if self.cache:
+            await self.cache.set(f"getGroupMentionList:{objectGuid}:{searchMention}", result)
+        return result
     
     
     async def editGroupInfo(
-            self,
-            objectGuid:str,
-            title:str | None,
-            description:str | None,
-            slowMode:int | None,
-            eventMessages:bool | None,
-            chatHistoryForNewMembers:bool | None,
-            reactionType:str | None, #Selected Disabled All
-            selectedReactions:list[str] | None
-        ) -> dict:
+        self,
+        objectGuid:str,
+        title:str | None,
+        description:str | None,
+        slowMode:int | None,
+        eventMessages:bool | None,
+        chatHistoryForNewMembers:bool | None,
+        reactionType:str | None, #Selected Disabled All
+        selectedReactions:list[str] | None
+    ) -> dict:
 
-        input:dict = {
+        input = {
             "group_guid": objectGuid,
             "updated_parameters": []
         }
@@ -781,7 +989,7 @@ class Methods:
 
     
     async def addChannel(self, title:str, description:str | None, memberGuids:list | None, private:bool) -> dict:
-        input:dict = {
+        input = {
             "title": title,
             "description": description,
             "member_guids": memberGuids or [],
@@ -795,16 +1003,16 @@ class Methods:
     
     
     async def editChannelInfo(
-            self,
-            objectGuid:str,
-            title:str | None,
-            description:str | None,
-            username:str | None,
-            private:bool | None,
-            signMessages:bool | None,
-            reactionType:str | None, #Selected Disabled All
-            selectedReactions:list | None
-        ) -> dict:
+        self,
+        objectGuid:str,
+        title:str | None,
+        description:str | None,
+        username:str | None,
+        private:bool | None,
+        signMessages:bool | None,
+        reactionType:str | None, #Selected Disabled All
+        selectedReactions:list | None
+    ) -> dict:
 
         input:dict = {
             "channel_guid": objectGuid,
@@ -867,8 +1075,17 @@ class Methods:
         )
     
     
-    async def getChannelSeenCount(self, objectGuid:str, minId:str, maxId:str) -> dict:
-        return await self.network.request(
+    async def getChannelSeenCount(
+        self,
+        objectGuid: str,
+        minId: str,
+        maxId: str
+    ) -> dict:
+        if self.cache:
+            cached = await self.cache.get(f"getChannelSeenCount:{objectGuid}:{minId}:{maxId}")
+            if cached:
+                return cached
+        result = await self.network.request(
             method="getChannelSeenCount",
             input={
                 "channel_guid": objectGuid,
@@ -876,6 +1093,9 @@ class Methods:
                 "max_id": maxId
             }
         )
+        if self.cache:
+            await self.cache.set(f"getChannelSeenCount:{objectGuid}:{minId}:{maxId}", result)
+        return result
     
     # Message methods
     
@@ -1415,18 +1635,39 @@ class Methods:
         )
     
     
-    async def getMessagesInterval(self, objectGuid:str, middleMessageId:str) -> dict:
-        return await self.network.request(
+    async def getMessagesInterval(
+        self,
+        objectGuid: str,
+        middleMessageId: str
+    ) -> dict:
+        if self.cache:
+            cached = await self.cache.get(f"getMessagesInterval:{objectGuid}:{middleMessageId}")
+            if cached:
+                return cached
+        result = await self.network.request(
             method="getMessagesInterval",
             input={
                 "object_guid": objectGuid,
                 "middle_message_id": middleMessageId
             }
         )
+        if self.cache:
+            await self.cache.set(f"getMessagesInterval:{objectGuid}:{middleMessageId}", result)
+        return result
     
     
-    async def getMessages(self, objectGuid:str, maxId:str | None, filterType:str | None, limit:int) -> dict:
-        input:dict = {
+    async def getMessages(
+        self,
+        objectGuid: str,
+        maxId: str | None,
+        filterType: str | None,
+        limit: int
+    ) -> dict:
+        if self.cache:
+            cached = await self.cache.get(f"getMessages:{objectGuid}:{maxId}:{filterType}:{limit}")
+            if cached:
+                return cached
+        input = {
             "object_guid": objectGuid,
             "sort": "FromMax",
             "max_id": maxId,
@@ -1435,42 +1676,77 @@ class Methods:
         
         if filterType: input["filter_type"] = filterType
 
-        return await self.network.request(
+        result = await self.network.request(
             method="getMessages",
             input=input
         )
+        if self.cache:
+            await self.cache.set(f"getMessages:{objectGuid}:{maxId}:{filterType}:{limit}", result)
+        return result
     
     
-    async def getMessagesUpdates(self, objectGuid:str) -> dict:
-        return await self.network.request(
+    async def getMessagesUpdates(
+        self,
+        objectGuid: str
+    ) -> dict:
+        if self.cache:
+            cached = await self.cache.get(f"getMessagesUpdates:{objectGuid}")
+            if cached:
+                return cached
+        result = await self.network.request(
             method="getMessagesUpdates",
             input={
                 "object_guid": objectGuid,
                 "state": Utils.getState(),
             }
         )
+        if self.cache:
+            await self.cache.set(f"getMessagesUpdates:{objectGuid}", result)
+        return result
     
     
-    async def getMessagesById(self, objectGuid: str, messageIds: list | str) -> dict:
+    async def getMessagesById(
+        self,
+        objectGuid: str,
+        messageIds: list | str
+    ) -> dict:
+        if self.cache:
+            cached = await self.cache.get(f"getMessagesById:{objectGuid}:{messageIds}")
+            if cached:
+                return cached
         if type(messageIds) is str:
             messageIds = [messageIds]
-        return await self.network.request(
+        result = await self.network.request(
             method="getMessagesByID",
             input={
                 "object_guid": objectGuid,
                 "message_ids": messageIds,
             }
         )
+        if self.cache:
+            await self.cache.set(f"getMessagesById:{objectGuid}:{messageIds}", result)
+        return result
     
     
-    async def getMessageShareUrl(self, objectGuid:str, messageId:str) -> dict:
-        return await self.network.request(
+    async def getMessageShareUrl(
+        self,
+        objectGuid: str,
+        messageId: str
+    ) -> dict:
+        if self.cache:
+            cached = await self.cache.get(f"getMessageShareUrl:{objectGuid}:{messageId}")
+            if cached:
+                return cached
+        result = await self.network.request(
             method="getMessageShareUrl",
             input={
                 "object_guid": objectGuid,
                 "message_id": messageId,
             }
         )
+        if self.cache:
+            await self.cache.set(f"getMessageShareUrl:{objectGuid}:{messageId}", result)
+        return result
     
     
     async def clickMessageUrl(self, objectGuid:str, messageId:str, linkUrl:str) -> dict:
@@ -1484,14 +1760,24 @@ class Methods:
         )
     
     
-    async def searchGlobalMessages(self, searchText:str) -> dict:
-        return await self.network.request(
+    async def searchGlobalMessages(
+        self,
+        searchText: str
+    ) -> dict:
+        if self.cache:
+            cached = await self.cache.get(f"getMessageShareUrl:{searchText}")
+            if cached:
+                return cached
+        result = await self.network.request(
             method="search_text",
             input={
                 "search_text": searchText,
                 "type": "Text",
             }
         )
+        if self.cache:
+            await self.cache.set(f"getMessageShareUrl:{searchText}", result)
+        return result
     
     
     async def requestSendFile(self, fileName:str, mime:str, size:int) -> dict:
@@ -1524,12 +1810,37 @@ class Methods:
         )
 
     
-    async def getContacts(self, startId:str | None) -> dict:
-        return await self.network.request(method="getContacts", input={"start_id": startId})
+    async def getContacts(
+        self,
+        startId: str | None
+    ) -> dict:
+        if self.cache:
+            cached = await self.cache.get(f"getContacts:{startId}")
+            if cached:
+                return cached
+        result = await self.network.request(method="getContacts", input={"start_id": startId})
+        if self.cache:
+            await self.cache.set(f"getContacts:{startId}", result)
+        return result
     
     
-    async def getContactsLastOnline(self, userGuids:list) -> dict:
-        return await self.network.request(method="getContactsLastOnline", input={"user_guids": userGuids})
+    async def getContactsLastOnline(
+        self,
+        userGuids: list
+    ) -> dict:
+        if self.cache:
+            cached = await self.cache.get(f"getContactsLastOnline:{userGuids}")
+            if cached:
+                return cached
+        result = await self.network.request(
+            method="getContactsLastOnline",
+            input={
+                "user_guids": userGuids
+            }
+        )
+        if self.cache:
+            await self.cache.set(f"getContactsLastOnline:{userGuids}", result)
+        return result
 
     
     async def addAddressBook(self, phone:str, firstName:str, lastName:str) -> dict:
@@ -1548,7 +1859,19 @@ class Methods:
     
     
     async def getContactsUpdates(self) -> dict:
-        return await self.network.request(method="getContactsUpdates", input={"state": Utils.getState()})
+        if self.cache:
+            cached = await self.cache.get("getContactsUpdates")
+            if cached:
+                return cached
+        result = await self.network.request(
+            method="getContactsUpdates",
+            input={
+                "state": Utils.getState()
+            }
+        )
+        if self.cache:
+            await self.cache.set("getContactsUpdates", result)
+        return result
     
     # Sticker methods
 
@@ -1565,21 +1888,49 @@ class Methods:
 
     
     async def getMyStickerSets(self) -> dict:
-        return await self.network.request(method="getMyStickerSets")
+        if self.cache:
+            cached = await self.cache.get("getMyStickerSets")
+            if cached:
+                return cached
+        result = await self.network.request(method="getMyStickerSets")
+        if self.cache:
+            await self.cache.set("getMyStickerSets", result)
+        return result
     
     
-    async def getTrendStickerSets(self, startId:str | None) -> dict:
-        return await self.network.request(method="getTrendStickerSets", input={"start_id": startId})
+    async def getTrendStickerSets(
+        self,
+        startId: str | None
+    ) -> dict:
+        if self.cache:
+            cached = await self.cache.get(f"getTrendStickerSets:{startId}")
+            if cached:
+                return cached
+        result = await self.network.request(method="getTrendStickerSets", input={"start_id": startId})
+        if self.cache:
+            await self.cache.set(f"getTrendStickerSets:{startId}", result)
+        return result
     
     
-    async def searchStickers(self, searchText:str, startId:str | None) -> dict:
-        return await self.network.request(
+    async def searchStickers(
+        self,
+        searchText: str,
+        startId: str | None
+    ) -> dict:
+        if self.cache:
+            cached = await self.cache.get(f"searchStickers:{searchText}:{startId}")
+            if cached:
+                return cached
+        result = await self.network.request(
             method="searchStickers",
             input={
                 "search_text": searchText,
                 "start_id": startId
             }
         )
+        if self.cache:
+            await self.cache.set(f"searchStickers:{searchText}:{startId}", result)
+        return result
     
     
     async def actionOnStickerSet(self, stickerSetId:str, action:str) -> dict:
@@ -1592,24 +1943,56 @@ class Methods:
         )
     
     
-    async def getStickersByEmoji(self, emoji:str) -> dict:
-        return await self.network.request(
+    async def getStickersByEmoji(
+        self,
+        emoji: str
+    ) -> dict:
+        if self.cache:
+            cached = await self.cache.get(f"getStickersByEmoji:{emoji}")
+            if cached:
+                return cached
+        result = await self.network.request(
             method="getStickersByEmoji",
             input={
                 "emoji_character": emoji,
                 "suggest_by": "All"
             }
         )
+        if self.cache:
+            await self.cache.set(f"getStickersByEmoji:{emoji}", result)
+        return result
     
     
-    async def getStickersBySetIDs(self, stickerSetIds:list) -> dict:
-        return await self.network.request(method="getStickersBySetIDs", input={"sticker_set_ids": stickerSetIds})
+    async def getStickersBySetIDs(
+        self,
+        stickerSetIds: list
+    ) -> dict:
+        if self.cache:
+            cached = await self.cache.get(f"getStickersBySetIDs:{stickerSetIds}")
+            if cached:
+                return cached
+        result = await self.network.request(
+            method="getStickersBySetIDs",
+            input={
+                "sticker_set_ids": stickerSetIds
+            }
+        )
+        if self.cache:
+            await self.cache.set(f"getStickersBySetIDs:{stickerSetIds}", result)
+        return result
     
     # Gif methods
 
     
     async def getMyGifSet(self) -> dict:
-        return await self.network.request(method="getMyGifSet")
+        if self.cache:
+            cached = await self.cache.get("getMyGifSet")
+            if cached:
+                return cached
+        result = await self.network.request(method="getMyGifSet")
+        if self.cache:
+            await self.cache.set("getMyGifSet", result)
+        return result
 
     
     async def addToMyGifSet(self, objectGuid:str, messageId:str) -> dict:
@@ -1673,12 +2056,31 @@ class Methods:
         )
     
     
-    async def getPollStatus(self, pollId:str) -> dict:
-        return await self.network.request(method="getPollStatus", input={"poll_id": pollId})
+    async def getPollStatus(
+        self,
+        pollId: str
+    ) -> dict:
+        if self.cache:
+            cached = await self.cache.get(f"getPollStatus:{pollId}")
+            if cached:
+                return cached
+        result = await self.network.request(method="getPollStatus", input={"poll_id": pollId})
+        if self.cache:
+            await self.cache.set(f"getPollStatus:{pollId}", result)
+        return result
     
     
-    async def getPollOptionVoters(self, pollId:str, selectionIndex:int, startId:str | None = None) -> dict:
-        return await self.network.request(
+    async def getPollOptionVoters(
+        self,
+        pollId: str,
+        selectionIndex: int,
+        startId: str | None = None
+    ) -> dict:
+        if self.cache:
+            cached = await self.cache.get(f"getPollOptionVoters:{pollId}:{selectionIndex}:{startId}")
+            if cached:
+                return cached
+        result = await self.network.request(
             method="getPollOptionVoters",
             input={
                 "poll_id": pollId,
@@ -1686,6 +2088,9 @@ class Methods:
                 "start_id": startId
             }
         )
+        if self.cache:
+            await self.cache.set(f"getPollOptionVoters:{pollId}:{selectionIndex}:{startId}", result)
+        return result
     
     # Live methods
 
@@ -1736,24 +2141,46 @@ class Methods:
         )
     
     
-    async def getLiveComments(self, accessToken:str, liveId:str) -> dict:
-        return await self.network.request(
+    async def getLiveComments(
+        self,
+        accessToken: str,
+        liveId: str
+    ) -> dict:
+        if self.cache:
+            cached = await self.cache.get(f"getLiveComments:{accessToken}:{liveId}")
+            if cached:
+                return cached
+        result = await self.network.request(
             method="getLiveComments",
             input={
                 "access_token": accessToken,
                 "live_id": liveId,
             }
         )
+        if self.cache:
+            await self.cache.set(f"getLiveComments:{accessToken}:{liveId}", result)
+        return result
     
     
-    async def getLivePlayUrl(self, accessToken:str, liveId:str) -> dict:
-        return await self.network.request(
+    async def getLivePlayUrl(
+        self,
+        accessToken: str,
+        liveId: str
+    ) -> dict:
+        if self.cache:
+            cached = await self.cache.get(f"getLivePlayUrl:{accessToken}:{liveId}")
+            if cached:
+                return cached
+        result = await self.network.request(
             method="getLivePlayUrl",
             input={
                 "access_token": accessToken,
                 "live_id": liveId
             }
         )
+        if self.cache:
+            await self.cache.set(f"getLivePlayUrl:{accessToken}:{liveId}", result)
+        return result
     
     # Call methods
 
@@ -1787,13 +2214,13 @@ class Methods:
 
     
     async def setSetting(
-            self,
-            showMyLastOnline:bool | None,
-            showMyPhoneNumber:bool | None,
-            showMyProfilePhoto:bool | None,
-            linkForwardMessage:bool | None,
-            canJoinChatBy:bool | None
-        ) -> dict:
+        self,
+        showMyLastOnline:bool | None,
+        showMyPhoneNumber:bool | None,
+        showMyProfilePhoto:bool | None,
+        linkForwardMessage:bool | None,
+        canJoinChatBy:bool | None
+    ) -> dict:
 
         input:dict = {
             "settings": {},
@@ -1827,14 +2254,14 @@ class Methods:
     
     
     async def addFolder(
-            self,
-            folderName:str,
-            folderId:str,
-            excludeChatIds:list,
-            excludeChatTypes:list,
-            includeChatIds:list,
-            includeChatTypes:list
-        ) -> dict:
+        self,
+        folderName:str,
+        folderId:str,
+        excludeChatIds:list,
+        excludeChatTypes:list,
+        includeChatIds:list,
+        includeChatTypes:list
+    ) -> dict:
 
         return await self.network.request(
             method="addFolder",
@@ -1850,11 +2277,21 @@ class Methods:
         )
     
     
-    async def getFolders(self, lastState:str | None) -> dict:
-        return await self.network.request(method="getFolders", input={"last_state": lastState})
+    async def getFolders(
+        self,
+        lastState: str | None
+    ) -> dict:
+        if self.cache:
+            cached = await self.cache.get(f"getFolders:{lastState}")
+            if cached:
+                return cached
+        result = await self.network.request(method="getFolders", input={"last_state": lastState})
+        if self.cache:
+            await self.cache.set(f"getFolders:{lastState}", result)
+        return result
     
     
-    async def getSuggestedFolders(self) -> dict:
+    async def getSuggestedFolders(self) -> dict: # TODO بقیه متود های بعدی نیاز به کش باید اضافه بشن
         return await self.network.request(method="getSuggestedFolders")
     
     
