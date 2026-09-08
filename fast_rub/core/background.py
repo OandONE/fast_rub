@@ -8,7 +8,10 @@ from collections.abc import Callable, Coroutine
 class BackgroundManager:
     """مدیریت تسک‌های بک‌گراند"""
     
-    def __init__(self, logger: logging.Logger | None = None):
+    def __init__(
+        self,
+        logger: logging.Logger | None = None
+    ):
         self._tasks: list[asyncio.Task] = []
         self._logger = logger or logging.getLogger("fast_rub.background")
     

@@ -6,6 +6,7 @@ from ..network import (
 from ..crypto import Cryption
 from ..utils import Utils
 from random import choice
+from collections.abc import Callable
 from time import sleep
 from ..exceptions import (
     InvalidAuth,
@@ -15,6 +16,7 @@ import asyncio
 from typing import Literal
 
 from ...core.async_sync import *
+from ...core.background import BackgroundManager
 from ..filters import Filter
 
 from ...utils.text_parser import TextParser
@@ -40,6 +42,7 @@ class Methods:
         self.showProgressBar = showProgressBar
         self.sessionData = sessionData
         self.main_parse_mode: Literal['Markdown', 'HTML', 'Null', None] = main_parse_mode
+        self._background = BackgroundManager()
         self.crypto = Cryption(
             auth=sessionData["auth"],
             private_key=sessionData["private_key"]
@@ -75,7 +78,19 @@ class Methods:
         """setting parse mode main / تنظیم کردن مقدار اصلی پارس مود"""
         self.main_parse_mode = parse_mode
 
-    
+
+    def add_background_task(
+        self,
+        coro: Callable,
+        *args,
+        delay: float = 0.0,
+        **kwargs
+    ) -> asyncio.Task:
+        """add background task / اضافه کردن تسک بک‌گراند"""
+        return self._background.add(coro, *args, delay=delay, **kwargs)
+
+
+
     async def sendCode(self, phoneNumber: str, passKey: str | None = None, sendInternal: bool = False) -> dict:
         input:dict = {
             "phone_number": f"{Utils.phone_number_parse(phoneNumber)}",

@@ -6,7 +6,7 @@ import json
 from ...core.async_sync import *
 from ..filters import Filter
 from ..methods import Methods
-from ...utils.text_parser import TextParser
+from collections.abc import Callable
 
 class Client:
     def __init__(
@@ -62,6 +62,21 @@ class Client:
         return self.private
 
     # Authentication methods
+
+    def add_background_task(
+        self,
+        coro: Callable,
+        *args,
+        delay: float = 0.0,
+        **kwargs
+    ) -> asyncio.Task:
+        """add background task / اضافه کردن تسک بک‌گراند"""
+        return self.methods.add_background_task(
+            coro=coro,
+            *args,
+            delay=delay,
+            **kwargs
+        )
 
     
     async def start(self):
