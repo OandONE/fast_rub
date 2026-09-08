@@ -22,6 +22,73 @@ from ..filters import Filter
 
 from ...utils.text_parser import TextParser
 
+from typing import (
+    Any,
+    Awaitable,
+    Callable,
+    Optional,
+    ParamSpec,
+    TypeVar,
+    Concatenate,
+    overload,
+    Union,
+)
+import functools
+
+P = ParamSpec("P")
+R = TypeVar("R")
+
+@overload
+def cached(
+    func: Callable[Concatenate[Any, P], Awaitable[R]],
+) -> Callable[Concatenate[Any, P], Awaitable[R]]: ...
+
+@overload
+def cached(
+    *,
+    cache_key_func: Optional[Callable[Concatenate[Any, P], str]] = None,
+) -> Callable[
+    [Callable[Concatenate[Any, P], Awaitable[R]]],
+    Callable[Concatenate[Any, P], Awaitable[R]],
+]: ...
+
+def cached( # pyright: ignore[reportInconsistentOverload]
+    func: Optional[Callable[Concatenate[Any, P], Awaitable[R]]] = None,
+    *,
+    cache_key_func: Optional[Callable[Concatenate[Any, P], str]] = None,
+):
+    """
+    دکوراتور کش با پشتیبانی از دو حالت:
+    - @cached
+    - @cached(cache_key_func=...)
+    """
+    def decorator(
+        func: Callable[Concatenate[Any, P], Awaitable[R]]
+    ) -> Callable[Concatenate[Any, P], Awaitable[R]]:
+        @functools.wraps(func)
+        async def wrapper(self: Any, *args: P.args, **kwargs: P.kwargs) -> R:
+            if self.cache is None:
+                return await func(self, *args, **kwargs)
+
+            if cache_key_func is not None:
+                key = cache_key_func(self, *args, **kwargs)
+            else:
+                key = f"{func.__qualname__}:{args}:{kwargs}"
+
+            cached_value = await self.cache.get(key)
+            if cached_value is not None:
+                return cached_value
+
+            result = await func(self, *args, **kwargs)
+            await self.cache.set(key, result)
+            return result
+        return wrapper
+
+    if func is not None:
+        return decorator(func)
+    else:
+        return decorator
+
 class Methods:
     def __init__(
         self,
@@ -151,12 +218,15 @@ class Methods:
     # Chats methods
     
     
+    @cached(cache_key_func=lambda self, startId: f"getChats:{startId}")
     async def getChats(self, startId:str | None) -> dict:
         return await self.network.request(method="getChats", input={"start_id": startId})
     
     
+    @cached(cache_key_func=lambda self, username: f"username:{username.replace('@', '')}")
     async def getObjectByUsername(self, username: str) -> dict:
         username = username.replace("@", "")
+<<<<<<< HEAD
         if self.cache:
             cached = await self.cache.get(f"username:{username}")
             if cached:
@@ -165,8 +235,12 @@ class Methods:
         if self.cache:
             await self.cache.set(f"username:{username}", result)
         return result
+=======
+        return await self.network.request(method="getObjectByUsername",input={'username': username})
+>>>>>>> 850ad98 (Update: Cache system optimization in UserBot(Pyrubi))
     
     
+    @cached
     async def getTopChatUsers(self) -> dict:
         if self.cache:
             cached = await self.cache.get("getTopChatUsers")
@@ -182,6 +256,7 @@ class Methods:
         return await self.network.request(method="removeFromTopChatUsers", input={"user_guid": objectGuid})
     
     
+    @cached
     async def getChatAds(self) -> dict:
         if self.cache:
             cached = await self.cache.get("getChatAds")
@@ -225,6 +300,7 @@ class Methods:
         )
 
     
+    @cached(cache_key_func=lambda self, objectGuid: f"getJoinRequests:{objectGuid}")
     async def getJoinRequests(self, objectGuid: str):
         if self.cache:
             cached = await self.cache.get(f"getJoinRequests:{objectGuid}")
@@ -264,11 +340,15 @@ class Methods:
         )
     
     
+    @cached(cache_key_func=lambda self, objectGuid: f"getChatInfo:{objectGuid}")
     async def getChatInfo(self, objectGuid:str) -> dict:
+<<<<<<< HEAD
         if self.cache:
             cached = await self.cache.get(f"getChatInfo:{objectGuid}")
             if cached:
                 return cached
+=======
+>>>>>>> 850ad98 (Update: Cache system optimization in UserBot(Pyrubi))
         chatType = Utils.getChatTypeByGuid(objectGuid=objectGuid)
 
         result = await self.network.request(
@@ -280,11 +360,16 @@ class Methods:
         return result
     
     
+<<<<<<< HEAD
+=======
+    @cached(cache_key_func=lambda self, username: f"getChatInfoByUsername:{username.replace('@', '')}")
+>>>>>>> 850ad98 (Update: Cache system optimization in UserBot(Pyrubi))
     async def getChatInfoByUsername(
         self,
         username: str
     ) -> dict:
         username = username.replace("@", "")
+<<<<<<< HEAD
         if self.cache:
             cached = await self.cache.get(f"getChatInfoByUsername:{username}")
             if cached:
@@ -293,13 +378,20 @@ class Methods:
         if self.cache:
             await self.cache.set(f"getChatInfoByUsername:{username}", result)
         return result
+=======
+        return await self.network.request(method="getObjectInfoByUsername", input={"username": username})
+>>>>>>> 850ad98 (Update: Cache system optimization in UserBot(Pyrubi))
     
     
+    @cached(cache_key_func=lambda self, objectGuid: f"getChatLink:{objectGuid}")
     async def getChatLink(self, objectGuid:str) -> dict:
+<<<<<<< HEAD
         if self.cache:
             cached = await self.cache.get(f"getChatLink:{objectGuid}")
             if cached:
                 return cached
+=======
+>>>>>>> 850ad98 (Update: Cache system optimization in UserBot(Pyrubi))
         chatType = Utils.getChatTypeByGuid(objectGuid=objectGuid)
 
         result = await self.network.request(
@@ -366,15 +458,22 @@ class Methods:
         )
     
     
+<<<<<<< HEAD
+=======
+    @cached(cache_key_func=lambda self, objectGuid, startId: f"getBannedChatMembers:{objectGuid}:{startId}")
+>>>>>>> 850ad98 (Update: Cache system optimization in UserBot(Pyrubi))
     async def getBannedChatMembers(
         self,
         objectGuid: str,
         startId: str | None
     ) -> dict:
+<<<<<<< HEAD
         if self.cache:
             cached = await self.cache.get(f"getBannedChatMembers:{objectGuid}:{startId}")
             if cached:
                 return cached
+=======
+>>>>>>> 850ad98 (Update: Cache system optimization in UserBot(Pyrubi))
         chatType = Utils.getChatTypeByGuid(objectGuid=objectGuid)
 
         result = await self.network.request(
@@ -389,6 +488,7 @@ class Methods:
         return result
     
     
+<<<<<<< HEAD
     async def getChatAllMembers(
         self,
         objectGuid: str,
@@ -400,9 +500,13 @@ class Methods:
             cached = await self.cache.get(f"getChatAllMembers:{objectGuid}:{searchText}:{startId}")
             if cached:
                 return cached
+=======
+    @cached(cache_key_func=lambda self, objectGuid, searchText, startId: f"getChatAllMembers:{objectGuid}:{searchText}:{startId}")
+    async def _getChatAllMembersData(self, objectGuid: str, searchText: str | None, startId: str | None) -> dict:
+>>>>>>> 850ad98 (Update: Cache system optimization in UserBot(Pyrubi))
         chatType = Utils.getChatTypeByGuid(objectGuid=objectGuid)
 
-        data = await self.network.request(
+        return await self.network.request(
             method=f"get{chatType}AllMembers",
             input={
                 f"{chatType.lower()}_guid": objectGuid,
@@ -411,6 +515,7 @@ class Methods:
             }
         )
 
+<<<<<<< HEAD
         if justGetGuids: return [i["member_guid"] for i in data["in_chat_members"]]
 
         if self.cache:
@@ -429,29 +534,61 @@ class Methods:
             cached = await self.cache.get(f"getChatAdminMembers:{objectGuid}:{startId}")
             if cached:
                 return cached
+=======
+    async def getChatAllMembers(
+        self,
+        objectGuid: str,
+        searchText: str | None,
+        startId: str | None,
+        justGetGuids: bool = False
+    ) -> dict |list:
+        data = await self._getChatAllMembersData(objectGuid, searchText, startId)
+        if justGetGuids:
+            return [i["member_guid"] for i in data["in_chat_members"]]
+        return data
+    
+    
+    @cached(cache_key_func=lambda self, objectGuid, startId: f"getChatAdminMembers:{objectGuid}:{startId}")
+    async def _getChatAdminMembersData(self, objectGuid: str, startId: str | None) -> dict:
+>>>>>>> 850ad98 (Update: Cache system optimization in UserBot(Pyrubi))
         chatType = Utils.getChatTypeByGuid(objectGuid=objectGuid)
 
-        data = await self.network.request(
+        return await self.network.request(
             method=f"get{chatType}AdminMembers",
             input={
                 f"{chatType.lower()}_guid": objectGuid,
                 "start_id": startId
             }
         )
-    
-        if justGetGuids: return [i["member_guid"] for i in data["in_chat_members"]]
 
+<<<<<<< HEAD
         if self.cache:
             await self.cache.set(f"getChatAdminMembers:{objectGuid}:{startId}", data)
 
         return data
 
     
+=======
+    async def getChatAdminMembers(
+        self,
+        objectGuid: str,
+        startId: str | None,
+        justGetGuids: bool = False
+    ) -> dict |list:
+        data = await self._getChatAdminMembersData(objectGuid, startId)
+        if justGetGuids:
+            return [i["member_guid"] for i in data["in_chat_members"]]
+        return data
+
+    
+    @cached(cache_key_func=lambda self, objectGuid, userGuid: f"userIsAdmin:{objectGuid}:{userGuid}")
+>>>>>>> 850ad98 (Update: Cache system optimization in UserBot(Pyrubi))
     async def userIsAdmin(
         self,
         objectGuid: str,
         userGuid: str
     ):
+<<<<<<< HEAD
         if self.cache:
             cached = await self.cache.get(f"getChatAdminMembers:{objectGuid}:{userGuid}")
             if cached:
@@ -468,6 +605,28 @@ class Methods:
                         if userGuid == user.member_guid:
                             return True
             return False
+=======
+        nextStartId = None
+        hasContinue = True
+        while hasContinue:
+            result = await self.getChatAdminMembers(objectGuid, nextStartId)
+            if type(result) is dict: # for typing error
+                hasContinue = result["has_continue"]
+                nextStartId = result["next_start_id"]
+                for user in result["in_chat_members"]:
+                    if userGuid == user.member_guid:
+                        return True
+        return False
+    
+    
+    @cached(cache_key_func=lambda self, objectGuid, memberGuid: f"getChatAdminAccessList:{objectGuid}:{memberGuid}")
+    async def getChatAdminAccessList(
+        self,
+        objectGuid: str,
+        memberGuid: str
+    ) -> dict:
+        chatType = Utils.getChatTypeByGuid(objectGuid=objectGuid)
+>>>>>>> 850ad98 (Update: Cache system optimization in UserBot(Pyrubi))
 
         result = await is_admin()
         if self.cache:
@@ -500,15 +659,23 @@ class Methods:
         return result
     
     
+<<<<<<< HEAD
+=======
+    @cached(cache_key_func=lambda self, link: f"chatPreviewByJoinLink:{link}")
+>>>>>>> 850ad98 (Update: Cache system optimization in UserBot(Pyrubi))
     async def chatPreviewByJoinLink(
         self,
         link: str
     ) -> dict:
+<<<<<<< HEAD
         if self.cache:
             cached = await self.cache.get(f"chatPreviewByJoinLink:{link}")
             if cached:
                 return cached
         result = await self.network.request(
+=======
+        return await self.network.request(
+>>>>>>> 850ad98 (Update: Cache system optimization in UserBot(Pyrubi))
             method="groupPreviewByJoinLink" if "joing" in link else "channelPreviewByJoinLink",
             input={"hash_link": link.split("/")[-1]}
         )
@@ -675,16 +842,24 @@ class Methods:
         )
     
     
+<<<<<<< HEAD
+=======
+    @cached(cache_key_func=lambda self, objectGuid, searchText: f"searchChatMessages:{objectGuid}:{searchText}")
+>>>>>>> 850ad98 (Update: Cache system optimization in UserBot(Pyrubi))
     async def searchChatMessages(
         self,
         objectGuid: str,
         searchText: str
     ) -> dict:
+<<<<<<< HEAD
         if self.cache:
             cached = await self.cache.get(f"searchChatMessages:{objectGuid}:{searchText}")
             if cached:
                 return cached
         result = await self.network.request(
+=======
+        return await self.network.request(
+>>>>>>> 850ad98 (Update: Cache system optimization in UserBot(Pyrubi))
             method="searchChatMessages",
             input={
                 "object_guid": objectGuid,
@@ -719,6 +894,7 @@ class Methods:
         raise ValueError("Error ! Value invalid")
     
     
+    @cached(cache_key_func=lambda self, objectGuid: f"getAvatars:{objectGuid}")
     async def getAvatars(self, objectGuid:str) -> dict:
         if self.cache:
             cached = await self.cache.get(f"getAvatars:{objectGuid}")
@@ -760,23 +936,34 @@ class Methods:
         )
     
     
+<<<<<<< HEAD
+=======
+    @cached(cache_key_func=lambda self, objectGuid: f"getPendingObjectOwner:{objectGuid}")
+>>>>>>> 850ad98 (Update: Cache system optimization in UserBot(Pyrubi))
     async def getPendingObjectOwner(
         self,
         objectGuid: str
     ) -> dict:
+<<<<<<< HEAD
         if self.cache:
             cached = await self.cache.get(f"getPendingObjectOwner:{objectGuid}")
             if cached:
                 return cached
         result = await self.network.request(
+=======
+        return await self.network.request(
+>>>>>>> 850ad98 (Update: Cache system optimization in UserBot(Pyrubi))
             method="getPendingObjectOwner",
             input={
                 "object_guid": objectGuid
             }
         )
+<<<<<<< HEAD
         if self.cache:
             await self.cache.set(f"getPendingObjectOwner:{objectGuid}", result)
         return result
+=======
+>>>>>>> 850ad98 (Update: Cache system optimization in UserBot(Pyrubi))
     
     
     async def requestChangeObjectOwner(
@@ -807,6 +994,7 @@ class Methods:
         return await self.network.request(method="cancelChangeObjectOwner", input={"object_guid": objectGuid})
     
     
+    @cached(cache_key_func=lambda self, objectGuid, minId, maxId: f"getChatReaction:{objectGuid}:{minId}:{maxId}")
     async def getChatReaction(self, objectGuid:str, minId:str, maxId:str) -> dict:
         if self.cache:
             cached = await self.cache.get(f"getChatReaction:{objectGuid}:{minId}:{maxId}")
@@ -880,15 +1068,23 @@ class Methods:
         )
     
     
+<<<<<<< HEAD
+=======
+    @cached(cache_key_func=lambda self, objectGuid: f"getGroupDefaultAccess:{objectGuid}")
+>>>>>>> 850ad98 (Update: Cache system optimization in UserBot(Pyrubi))
     async def getGroupDefaultAccess(
         self,
         objectGuid: str
     ) -> dict:
+<<<<<<< HEAD
         if self.cache:
             cached = await self.cache.get(f"getGroupDefaultAccess:{objectGuid}")
             if cached:
                 return cached
         result = await self.network.request(
+=======
+        return await self.network.request(
+>>>>>>> 850ad98 (Update: Cache system optimization in UserBot(Pyrubi))
             method=f"getGroupDefaultAccess",
             input={"group_guid": objectGuid}
         )
@@ -913,17 +1109,25 @@ class Methods:
         )
     
     
+<<<<<<< HEAD
+=======
+    @cached(cache_key_func=lambda self, objectGuid, searchMention: f"getGroupMentionList:{objectGuid}:{searchMention}")
+>>>>>>> 850ad98 (Update: Cache system optimization in UserBot(Pyrubi))
     async def getGroupMentionList(
         self,
         objectGuid: str,
         searchMention: str
     ) -> dict:
+<<<<<<< HEAD
         if self.cache:
             cached = await self.cache.get(f"getGroupMentionList:{objectGuid}:{searchMention}")
             if cached:
                 return cached
             
         result = await self.network.request(
+=======
+        return await self.network.request(
+>>>>>>> 850ad98 (Update: Cache system optimization in UserBot(Pyrubi))
             method="getGroupMentionList",
             input={
                 "group_guid": objectGuid,
@@ -1075,17 +1279,25 @@ class Methods:
         )
     
     
+<<<<<<< HEAD
+=======
+    @cached(cache_key_func=lambda self, objectGuid, minId, maxId: f"getChannelSeenCount:{objectGuid}:{minId}:{maxId}")
+>>>>>>> 850ad98 (Update: Cache system optimization in UserBot(Pyrubi))
     async def getChannelSeenCount(
         self,
         objectGuid: str,
         minId: str,
         maxId: str
     ) -> dict:
+<<<<<<< HEAD
         if self.cache:
             cached = await self.cache.get(f"getChannelSeenCount:{objectGuid}:{minId}:{maxId}")
             if cached:
                 return cached
         result = await self.network.request(
+=======
+        return await self.network.request(
+>>>>>>> 850ad98 (Update: Cache system optimization in UserBot(Pyrubi))
             method="getChannelSeenCount",
             input={
                 "channel_guid": objectGuid,
@@ -1557,7 +1769,7 @@ class Methods:
         messageData = {}
         if not fileInline:
             if objectGuid:
-                messageData:dict = await self.getMessagesById(objectGuid=objectGuid, messageIds=[messageId])
+                messageData: dict = await self.getMessagesById(objectGuid=objectGuid, messageIds=[messageId])
             else:
                 raise ValueError("You Shoud Write The 'fileInline' or (objectGuid, messageId) Args")
         
@@ -1635,16 +1847,24 @@ class Methods:
         )
     
     
+<<<<<<< HEAD
+=======
+    @cached(cache_key_func=lambda self, objectGuid, middleMessageId: f"getMessagesInterval:{objectGuid}:{middleMessageId}")
+>>>>>>> 850ad98 (Update: Cache system optimization in UserBot(Pyrubi))
     async def getMessagesInterval(
         self,
         objectGuid: str,
         middleMessageId: str
     ) -> dict:
+<<<<<<< HEAD
         if self.cache:
             cached = await self.cache.get(f"getMessagesInterval:{objectGuid}:{middleMessageId}")
             if cached:
                 return cached
         result = await self.network.request(
+=======
+        return await self.network.request(
+>>>>>>> 850ad98 (Update: Cache system optimization in UserBot(Pyrubi))
             method="getMessagesInterval",
             input={
                 "object_guid": objectGuid,
@@ -1656,6 +1876,10 @@ class Methods:
         return result
     
     
+<<<<<<< HEAD
+=======
+    @cached(cache_key_func=lambda self, objectGuid, maxId, filterType, limit: f"getMessages:{objectGuid}:{maxId}:{filterType}:{limit}")
+>>>>>>> 850ad98 (Update: Cache system optimization in UserBot(Pyrubi))
     async def getMessages(
         self,
         objectGuid: str,
@@ -1663,10 +1887,13 @@ class Methods:
         filterType: str | None,
         limit: int
     ) -> dict:
+<<<<<<< HEAD
         if self.cache:
             cached = await self.cache.get(f"getMessages:{objectGuid}:{maxId}:{filterType}:{limit}")
             if cached:
                 return cached
+=======
+>>>>>>> 850ad98 (Update: Cache system optimization in UserBot(Pyrubi))
         input = {
             "object_guid": objectGuid,
             "sort": "FromMax",
@@ -1685,15 +1912,23 @@ class Methods:
         return result
     
     
+<<<<<<< HEAD
+=======
+    @cached(cache_key_func=lambda self, objectGuid: f"getMessagesUpdates:{objectGuid}")
+>>>>>>> 850ad98 (Update: Cache system optimization in UserBot(Pyrubi))
     async def getMessagesUpdates(
         self,
         objectGuid: str
     ) -> dict:
+<<<<<<< HEAD
         if self.cache:
             cached = await self.cache.get(f"getMessagesUpdates:{objectGuid}")
             if cached:
                 return cached
         result = await self.network.request(
+=======
+        return await self.network.request(
+>>>>>>> 850ad98 (Update: Cache system optimization in UserBot(Pyrubi))
             method="getMessagesUpdates",
             input={
                 "object_guid": objectGuid,
@@ -1705,15 +1940,22 @@ class Methods:
         return result
     
     
+<<<<<<< HEAD
+=======
+    @cached(cache_key_func=lambda self, objectGuid, messageIds: f"getMessagesById:{objectGuid}:{messageIds}")
+>>>>>>> 850ad98 (Update: Cache system optimization in UserBot(Pyrubi))
     async def getMessagesById(
         self,
         objectGuid: str,
         messageIds: list | str
     ) -> dict:
+<<<<<<< HEAD
         if self.cache:
             cached = await self.cache.get(f"getMessagesById:{objectGuid}:{messageIds}")
             if cached:
                 return cached
+=======
+>>>>>>> 850ad98 (Update: Cache system optimization in UserBot(Pyrubi))
         if type(messageIds) is str:
             messageIds = [messageIds]
         result = await self.network.request(
@@ -1728,16 +1970,24 @@ class Methods:
         return result
     
     
+<<<<<<< HEAD
+=======
+    @cached(cache_key_func=lambda self, objectGuid, messageId: f"getMessageShareUrl:{objectGuid}:{messageId}")
+>>>>>>> 850ad98 (Update: Cache system optimization in UserBot(Pyrubi))
     async def getMessageShareUrl(
         self,
         objectGuid: str,
         messageId: str
     ) -> dict:
+<<<<<<< HEAD
         if self.cache:
             cached = await self.cache.get(f"getMessageShareUrl:{objectGuid}:{messageId}")
             if cached:
                 return cached
         result = await self.network.request(
+=======
+        return await self.network.request(
+>>>>>>> 850ad98 (Update: Cache system optimization in UserBot(Pyrubi))
             method="getMessageShareUrl",
             input={
                 "object_guid": objectGuid,
@@ -1760,15 +2010,23 @@ class Methods:
         )
     
     
+<<<<<<< HEAD
+=======
+    @cached(cache_key_func=lambda self, searchText: f"searchGlobalMessages:{searchText}")
+>>>>>>> 850ad98 (Update: Cache system optimization in UserBot(Pyrubi))
     async def searchGlobalMessages(
         self,
         searchText: str
     ) -> dict:
+<<<<<<< HEAD
         if self.cache:
             cached = await self.cache.get(f"getMessageShareUrl:{searchText}")
             if cached:
                 return cached
         result = await self.network.request(
+=======
+        return await self.network.request(
+>>>>>>> 850ad98 (Update: Cache system optimization in UserBot(Pyrubi))
             method="search_text",
             input={
                 "search_text": searchText,
@@ -1810,10 +2068,15 @@ class Methods:
         )
 
     
+<<<<<<< HEAD
+=======
+    @cached(cache_key_func=lambda self, startId: f"getContacts:{startId}")
+>>>>>>> 850ad98 (Update: Cache system optimization in UserBot(Pyrubi))
     async def getContacts(
         self,
         startId: str | None
     ) -> dict:
+<<<<<<< HEAD
         if self.cache:
             cached = await self.cache.get(f"getContacts:{startId}")
             if cached:
@@ -1824,23 +2087,36 @@ class Methods:
         return result
     
     
+=======
+        return await self.network.request(method="getContacts", input={"start_id": startId})
+    
+    
+    @cached(cache_key_func=lambda self, userGuids: f"getContactsLastOnline:{userGuids}")
+>>>>>>> 850ad98 (Update: Cache system optimization in UserBot(Pyrubi))
     async def getContactsLastOnline(
         self,
         userGuids: list
     ) -> dict:
+<<<<<<< HEAD
         if self.cache:
             cached = await self.cache.get(f"getContactsLastOnline:{userGuids}")
             if cached:
                 return cached
         result = await self.network.request(
+=======
+        return await self.network.request(
+>>>>>>> 850ad98 (Update: Cache system optimization in UserBot(Pyrubi))
             method="getContactsLastOnline",
             input={
                 "user_guids": userGuids
             }
         )
+<<<<<<< HEAD
         if self.cache:
             await self.cache.set(f"getContactsLastOnline:{userGuids}", result)
         return result
+=======
+>>>>>>> 850ad98 (Update: Cache system optimization in UserBot(Pyrubi))
 
     
     async def addAddressBook(self, phone:str, firstName:str, lastName:str) -> dict:
@@ -1858,20 +2134,28 @@ class Methods:
         return await self.network.request(method="deleteContact", input={"user_guid": objectGuid})
     
     
+    @cached
     async def getContactsUpdates(self) -> dict:
+<<<<<<< HEAD
         if self.cache:
             cached = await self.cache.get("getContactsUpdates")
             if cached:
                 return cached
         result = await self.network.request(
+=======
+        return await self.network.request(
+>>>>>>> 850ad98 (Update: Cache system optimization in UserBot(Pyrubi))
             method="getContactsUpdates",
             input={
                 "state": Utils.getState()
             }
         )
+<<<<<<< HEAD
         if self.cache:
             await self.cache.set("getContactsUpdates", result)
         return result
+=======
+>>>>>>> 850ad98 (Update: Cache system optimization in UserBot(Pyrubi))
     
     # Sticker methods
 
@@ -1887,6 +2171,7 @@ class Methods:
         return await self.network.request("sendMessage", data)
 
     
+    @cached
     async def getMyStickerSets(self) -> dict:
         if self.cache:
             cached = await self.cache.get("getMyStickerSets")
@@ -1898,10 +2183,15 @@ class Methods:
         return result
     
     
+<<<<<<< HEAD
+=======
+    @cached(cache_key_func=lambda self, startId: f"getTrendStickerSets:{startId}")
+>>>>>>> 850ad98 (Update: Cache system optimization in UserBot(Pyrubi))
     async def getTrendStickerSets(
         self,
         startId: str | None
     ) -> dict:
+<<<<<<< HEAD
         if self.cache:
             cached = await self.cache.get(f"getTrendStickerSets:{startId}")
             if cached:
@@ -1912,16 +2202,26 @@ class Methods:
         return result
     
     
+=======
+        return await self.network.request(method="getTrendStickerSets", input={"start_id": startId})
+    
+    
+    @cached(cache_key_func=lambda self, searchText, startId: f"searchStickers:{searchText}:{startId}")
+>>>>>>> 850ad98 (Update: Cache system optimization in UserBot(Pyrubi))
     async def searchStickers(
         self,
         searchText: str,
         startId: str | None
     ) -> dict:
+<<<<<<< HEAD
         if self.cache:
             cached = await self.cache.get(f"searchStickers:{searchText}:{startId}")
             if cached:
                 return cached
         result = await self.network.request(
+=======
+        return await self.network.request(
+>>>>>>> 850ad98 (Update: Cache system optimization in UserBot(Pyrubi))
             method="searchStickers",
             input={
                 "search_text": searchText,
@@ -1943,15 +2243,23 @@ class Methods:
         )
     
     
+<<<<<<< HEAD
+=======
+    @cached(cache_key_func=lambda self, emoji: f"getStickersByEmoji:{emoji}")
+>>>>>>> 850ad98 (Update: Cache system optimization in UserBot(Pyrubi))
     async def getStickersByEmoji(
         self,
         emoji: str
     ) -> dict:
+<<<<<<< HEAD
         if self.cache:
             cached = await self.cache.get(f"getStickersByEmoji:{emoji}")
             if cached:
                 return cached
         result = await self.network.request(
+=======
+        return await self.network.request(
+>>>>>>> 850ad98 (Update: Cache system optimization in UserBot(Pyrubi))
             method="getStickersByEmoji",
             input={
                 "emoji_character": emoji,
@@ -1963,27 +2271,39 @@ class Methods:
         return result
     
     
+<<<<<<< HEAD
+=======
+    @cached(cache_key_func=lambda self, stickerSetIds: f"getStickersBySetIDs:{stickerSetIds}")
+>>>>>>> 850ad98 (Update: Cache system optimization in UserBot(Pyrubi))
     async def getStickersBySetIDs(
         self,
         stickerSetIds: list
     ) -> dict:
+<<<<<<< HEAD
         if self.cache:
             cached = await self.cache.get(f"getStickersBySetIDs:{stickerSetIds}")
             if cached:
                 return cached
         result = await self.network.request(
+=======
+        return await self.network.request(
+>>>>>>> 850ad98 (Update: Cache system optimization in UserBot(Pyrubi))
             method="getStickersBySetIDs",
             input={
                 "sticker_set_ids": stickerSetIds
             }
         )
+<<<<<<< HEAD
         if self.cache:
             await self.cache.set(f"getStickersBySetIDs:{stickerSetIds}", result)
         return result
+=======
+>>>>>>> 850ad98 (Update: Cache system optimization in UserBot(Pyrubi))
     
     # Gif methods
 
     
+    @cached
     async def getMyGifSet(self) -> dict:
         if self.cache:
             cached = await self.cache.get("getMyGifSet")
@@ -2056,10 +2376,15 @@ class Methods:
         )
     
     
+<<<<<<< HEAD
+=======
+    @cached(cache_key_func=lambda self, pollId: f"getPollStatus:{pollId}")
+>>>>>>> 850ad98 (Update: Cache system optimization in UserBot(Pyrubi))
     async def getPollStatus(
         self,
         pollId: str
     ) -> dict:
+<<<<<<< HEAD
         if self.cache:
             cached = await self.cache.get(f"getPollStatus:{pollId}")
             if cached:
@@ -2070,17 +2395,27 @@ class Methods:
         return result
     
     
+=======
+        return await self.network.request(method="getPollStatus", input={"poll_id": pollId})
+    
+    
+    @cached(cache_key_func=lambda self, pollId, selectionIndex, startId: f"getPollOptionVoters:{pollId}:{selectionIndex}:{startId}")
+>>>>>>> 850ad98 (Update: Cache system optimization in UserBot(Pyrubi))
     async def getPollOptionVoters(
         self,
         pollId: str,
         selectionIndex: int,
         startId: str | None = None
     ) -> dict:
+<<<<<<< HEAD
         if self.cache:
             cached = await self.cache.get(f"getPollOptionVoters:{pollId}:{selectionIndex}:{startId}")
             if cached:
                 return cached
         result = await self.network.request(
+=======
+        return await self.network.request(
+>>>>>>> 850ad98 (Update: Cache system optimization in UserBot(Pyrubi))
             method="getPollOptionVoters",
             input={
                 "poll_id": pollId,
@@ -2141,16 +2476,24 @@ class Methods:
         )
     
     
+<<<<<<< HEAD
+=======
+    @cached(cache_key_func=lambda self, accessToken, liveId: f"getLiveComments:{accessToken}:{liveId}")
+>>>>>>> 850ad98 (Update: Cache system optimization in UserBot(Pyrubi))
     async def getLiveComments(
         self,
         accessToken: str,
         liveId: str
     ) -> dict:
+<<<<<<< HEAD
         if self.cache:
             cached = await self.cache.get(f"getLiveComments:{accessToken}:{liveId}")
             if cached:
                 return cached
         result = await self.network.request(
+=======
+        return await self.network.request(
+>>>>>>> 850ad98 (Update: Cache system optimization in UserBot(Pyrubi))
             method="getLiveComments",
             input={
                 "access_token": accessToken,
@@ -2162,16 +2505,24 @@ class Methods:
         return result
     
     
+<<<<<<< HEAD
+=======
+    @cached(cache_key_func=lambda self, accessToken, liveId: f"getLivePlayUrl:{accessToken}:{liveId}")
+>>>>>>> 850ad98 (Update: Cache system optimization in UserBot(Pyrubi))
     async def getLivePlayUrl(
         self,
         accessToken: str,
         liveId: str
     ) -> dict:
+<<<<<<< HEAD
         if self.cache:
             cached = await self.cache.get(f"getLivePlayUrl:{accessToken}:{liveId}")
             if cached:
                 return cached
         result = await self.network.request(
+=======
+        return await self.network.request(
+>>>>>>> 850ad98 (Update: Cache system optimization in UserBot(Pyrubi))
             method="getLivePlayUrl",
             input={
                 "access_token": accessToken,
@@ -2277,10 +2628,15 @@ class Methods:
         )
     
     
+<<<<<<< HEAD
+=======
+    @cached(cache_key_func=lambda self, lastState: f"getFolders:{lastState}")
+>>>>>>> 850ad98 (Update: Cache system optimization in UserBot(Pyrubi))
     async def getFolders(
         self,
         lastState: str | None
     ) -> dict:
+<<<<<<< HEAD
         if self.cache:
             cached = await self.cache.get(f"getFolders:{lastState}")
             if cached:
@@ -2292,6 +2648,13 @@ class Methods:
     
     
     async def getSuggestedFolders(self) -> dict: # TODO بقیه متود های بعدی نیاز به کش باید اضافه بشن
+=======
+        return await self.network.request(method="getFolders", input={"last_state": lastState})
+    
+
+    @cached
+    async def getSuggestedFolders(self) -> dict:
+>>>>>>> 850ad98 (Update: Cache system optimization in UserBot(Pyrubi))
         return await self.network.request(method="getSuggestedFolders")
     
     
@@ -2321,7 +2684,8 @@ class Methods:
             input=input
         )
     
-    
+
+    @cached
     async def getMySessions(self) -> dict:
         return await self.network.request(method="getMySessions")
     
@@ -2383,23 +2747,27 @@ class Methods:
             }
         )
     
-    
+
+    @cached
     async def getTwoPasscodeStatus(self) -> dict:
         return await self.network.request(method="getTwoPasscodeStatus")
     
-    
+
+    @cached
     async def getPrivacySetting(self) -> dict:
         return await self.network.request(method="getPrivacySetting")
     
-    
+
+    @cached(cache_key_func=lambda self, startId: f"getBlockedUsers:{startId}")
     async def getBlockedUsers(self, startId:str | None) -> dict:
         return await self.network.request(method="getBlockedUsers", input={"start_id": startId})
     
     # Other methods
 
-    
+
+    @cached    
     async def getMe(self) -> dict:
-        data:dict = await self.network.request(method="getUserInfo")
+        data = await self.network.request(method="getUserInfo")
         data.update(self.sessionData)
         return data
     
@@ -2435,26 +2803,39 @@ class Methods:
     async def resetContacts(self) -> dict:
         return await self.network.request("resetContacts")
     
-    
+
+    @cached
     async def getTime(self) -> dict:
         return await self.network.request("getTime")
 
-    
+
+    @cached(cache_key_func=lambda self, objectGuids: f"getAbsObjects:{objectGuids}")
     async def getAbsObjects(self, objectGuids:list) -> dict:
         return await self.network.request(method="getAbsObjects", input={"object_guids": objectGuids})
     
-    
-    async def getLinkFromAppUrl(self, url:str) -> dict:
+
+    @cached(cache_key_func=lambda self, url: f"getLinkFromAppUrl:{url}")
+    async def getLinkFromAppUrl(
+        self,
+        url: str
+    ) -> dict:
         return await self.network.request(method="getLinkFromAppUrl", input={"app_url": url})
     
-    
-    async def searchGlobalObjects(self, searchText:str, filters:list | None) -> dict:
-        input:dict = {"search_text": searchText}
-        if filters: input["filter_types"] = filters
+
+    @cached(cache_key_func=lambda self, searchText, filters: f"searchGlobalObjects:{searchText}:{filters}")
+    async def searchGlobalObjects(
+        self,
+        searchText: str,
+        filters: list | None
+    ) -> dict:
+        input: dict= {"search_text": searchText}
+        if filters:
+            input["filter_types"] = filters
 
         return await self.network.request(method="searchGlobalObjects", input=input)
     
-    
+
+    @cached(cache_key_func=lambda self, objectGuid, userGuid: f"checkJoin:{objectGuid}:{userGuid}")
     async def checkJoin(self, objectGuid:str, userGuid:str) -> bool | None:
         userUsername: str = (await self.getChatInfo(userGuid))["user"].get("username")
 
@@ -2466,12 +2847,19 @@ class Methods:
         
         return None
     
-    
+
+    @cached(cache_key_func=lambda self, objectGuid: f"getProfileLinkItems:{objectGuid}")
     async def getProfileLinkItems(self, objectGuid:str) -> dict:
         return await self.network.request(method="getProfileLinkItems", input={"object_guid": objectGuid})
     
-    
-    async def getDownloadLink(self, objectGuid: str, messageId:str | None, fileInline:dict | None) -> str | None:
+
+    @cached(cache_key_func=lambda self, objectGuid, messageId, fileInline: f"getDownloadLink:{objectGuid}:{messageId}:{fileInline}")
+    async def getDownloadLink(
+        self,
+        objectGuid: str,
+        messageId: str | None,
+        fileInline: dict | None
+    ) -> str | None:
         if not fileInline:
             msg = await self.getMessagesById(objectGuid=objectGuid, messageIds=[messageId])
             fileInline = msg["messages"][0]["file_inline"]
