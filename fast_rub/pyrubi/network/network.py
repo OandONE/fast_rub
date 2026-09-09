@@ -39,6 +39,8 @@ class Network:
         max_retries: int = 5,
         rate_limit: int = 20,
         logger: logging.Logger | None = None,
+        max_retries_upload: int | None = None,
+        max_retries_download: int | None = None,
     ) -> None:
         #  pyrubi-specific state 
         self.methods = methods
@@ -48,6 +50,8 @@ class Network:
         self.apiVersion = methods.apiVersion
         self.timeOut = methods.timeOut
         self.showProgressBar = methods.showProgressBar
+        self.max_retries_upload = max_retries_upload or max_retries
+        self.max_retries_download = max_retries_download or max_retries
 
         #  proxy support 
         self.proxy: str | None = None
@@ -220,12 +224,13 @@ class Network:
         file: str | bytes,
         fileName: str | None = None,
         chunkSize: int = 131_072,
-        show_progress_bar: bool = False
+        show_progress_bar: bool = False,
+        maxAttempts: int | None = None
     ) -> dict[str, Any] | None:
         """
-        Upload a file to the Rubika CDN.  Replaces the old aiohttp‑based upload.
+        Upload a file to the Rubika CDN. Replaces the old aiohttp-based upload.
         """
-        #  Normalise file 
+        # Normalise file
         if isinstance(file, str):
             if Utils.checkLink(url=file):
                 client = await self._get_client()
@@ -246,75 +251,92 @@ class Network:
         else:
             raise FileNotFoundError("Enter a valid path, url, or bytes.")
 
-        #  Request upload slot 
-        slot = await self.methods.requestSendFile(
-            fileName=fileName, mime=mime, size=len(file)
-        )
+        maxAttempts = maxAttempts or self.max_retries_upload
 
-        total_parts = (len(file) + chunkSize - 1) // chunkSize
-        base_headers = {
-            "auth": self.sessionData["auth"],
-            "access-hash-send": slot["access_hash_send"],
-            "file-id": slot["id"],
-        }
-
-        pbar = None
-        if not self.showProgressBar is None:
-            show_progress_bar = self.showProgressBar
-        if show_progress_bar:
-            if tqdm is None:
-                print("The tqdm library is not installed! for install: 'pip install fastrub[tqdm]' or 'pip install tqdm'")
-                pbar = None
-            else:
-                pbar = tqdm(
-                    desc=f"Uploading {fileName}",
-                    total=len(file),
-                    unit="B",
-                    unit_scale=True,
-                    unit_divisor=1024,
+        for attempt in range(maxAttempts):
+            try:
+                # Request upload slot
+                slot = await self.methods.requestSendFile(
+                    fileName=fileName, mime=mime, size=len(file)
                 )
 
-        client = await self._get_client()
-        upload_url = slot["upload_url"]
+                total_parts = (len(file) + chunkSize - 1) // chunkSize
+                base_headers = {
+                    "auth": self.sessionData["auth"],
+                    "access-hash-send": slot["access_hash_send"],
+                    "file-id": slot["id"],
+                }
 
-        for part_number in range(1, total_parts + 1):
-            start = (part_number - 1) * chunkSize
-            end = min(start + chunkSize, len(file))
-            chunk = file[start:end]
+                pbar = None
+                if not self.showProgressBar is None:
+                    show_progress_bar = self.showProgressBar
+                if show_progress_bar and attempt == maxAttempts - 1:  # Show progress bar only on last attempt
+                    if tqdm is None:
+                        print("The tqdm library is not installed! for install: 'pip install fastrub[tqdm]' or 'pip install tqdm'")
+                        pbar = None
+                    else:
+                        pbar = tqdm(
+                            desc=f"Uploading {fileName}",
+                            total=len(file),
+                            unit="B",
+                            unit_scale=True,
+                            unit_divisor=1024,
+                        )
 
-            headers = base_headers.copy()
-            headers["chunk-size"] = str(end - start)
-            headers["part-number"] = str(part_number)
-            headers["total-part"] = str(total_parts)
+                client = await self._get_client()
+                upload_url = slot["upload_url"]
 
-            resp = await client.post(upload_url, content=chunk, headers=headers)
+                for part_number in range(1, total_parts + 1):
+                    start = (part_number - 1) * chunkSize
+                    end = min(start + chunkSize, len(file))
+                    chunk = file[start:end]
 
-            if pbar:
-                pbar.update(len(chunk))
+                    headers = base_headers.copy()
+                    headers["chunk-size"] = str(end - start)
+                    headers["part-number"] = str(part_number)
+                    headers["total-part"] = str(total_parts)
 
-            if resp.status_code != 200:
+                    resp = await client.post(upload_url, content=chunk, headers=headers)
+
+                    if pbar:
+                        pbar.update(len(chunk))
+
+                    if resp.status_code != 200:
+                        if pbar:
+                            pbar.close()
+                        raise Exception(f"Upload failed with status code {resp.status_code}")
+
+                    if part_number == total_parts:
+                        result = resp.json()
+                        if pbar:
+                            pbar.close()
+
+                        if not result.get("data"):
+                            raise Exception("Upload response missing data")
+
+                        return {
+                            "file": file,
+                            "access_hash_rec": result["data"]["access_hash_rec"],
+                            "file_name": fileName,
+                            "mime": mime,
+                            "size": len(file),
+                        }
+
                 if pbar:
                     pbar.close()
                 return None
 
-            if part_number == total_parts:
-                result = resp.json()
-                if pbar:
-                    pbar.close()
+            except Exception as exc:
+                self.logger.warning(
+                    "Upload attempt %d/%d failed: %s", 
+                    attempt + 1, 
+                    maxAttempts, 
+                    exc
+                )
+                if attempt >= maxAttempts - 1:
+                    raise TimeoutError(f"Failed to upload the file after {maxAttempts} attempts!")
+                await asyncio.sleep(1.0)  # Wait before retrying
 
-                if not result.get("data"):
-                    return None
-
-                return {
-                    "file": file,
-                    "access_hash_rec": result["data"]["access_hash_rec"],
-                    "file_name": fileName,
-                    "mime": mime,
-                    "size": len(file),
-                }
-
-        if pbar:
-            pbar.close()
         return None
 
     # 
@@ -328,8 +350,7 @@ class Network:
         size: int,
         fileName: str,
         chunkSize: int = 262_143,
-        attempt: int = 0,
-        maxAttempts: int = 2,
+        maxAttempts: int | None = None,
         show_progress_bar: bool = False
     ) -> bytes | None:
         """
@@ -370,6 +391,8 @@ class Network:
         client = await self._get_client()
         data = b""
 
+        maxAttempts = maxAttempts or self.max_retries_download
+
         for retry in range(maxAttempts):
             try:
                 async with client.stream("POST", url, headers=headers) as resp:
@@ -401,6 +424,4 @@ class Network:
         if pbar:
             pbar.close()
         return None
-    
-    
 

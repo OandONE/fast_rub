@@ -524,8 +524,6 @@ fast_rub
 |---------|
 | پشتیبانی از logger در یوزربات(پایروبی) |
 | wait_manager & defult_wait در یوزربات(پایروبی) |
-| کش در یوزربات(پایروبی) |
-| max_retries_upload & max_retries_download در یوزربات(پایروبی) |
 | config در یوزربات(پایروبی) |
 | پلاگین پذیری در یوزربات(پایروبی) |
 | DataForm & Classic Conversion در یوزربات(پایروبی) |

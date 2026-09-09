@@ -167,6 +167,9 @@ class Client:
     
     max_retries_download: int | None
         حداکثر تلاش برای دانلود فایل
+    
+    config: BotConfig | None
+        کانفیگ تنظیمات اختصاصی ربات
     """
     # ═══════════════════════════════════
     # region 🚀 Start & Stop | شروع و توقف
@@ -2970,24 +2973,6 @@ class Client:
     
     update_end_point = set_endpoint
     update_endpoint = set_endpoint
-
-    
-    # async def set_token_fast_rub(
-    #     self,
-    #     list_getted: list[Literal["ReceiveUpdate", "ReceiveInlineMessage"]] = ["ReceiveUpdate", "ReceiveInlineMessage"]
-    # ) -> bool:
-    #     """seting token in fast_rub for getting click glass messages and updata messges / تنظیم توکن در فست روب برای گرفتن کلیک های روی پیام شیشه ای و آپدیت پیام ها"""
-    #     self.logger.info("استفاده از متود set_token_fast_rub")
-    #     try:
-    #         await self.network.request(f"https://fast-rub.ParsSource.ir/api/set_token?token={self.token}")
-    #         for get in list_getted:
-    #             url = f"https://fast-rub.ParsSource.ir/api/geting_button_updates/{self.token}/{get}"
-    #             await self.set_endpoint(url, get)
-    #         self.logger.info("توکن با موفقیت در پیامگیر ثبت شد")
-    #         return True
-    #     except Exception as e:
-    #         self.logger.warning(f"خطا در ثبت توکن در پیامگیر فست روب : {e}")
-    #         return False
 
     async def setup_webhooks(self):
         """خودکار Endpointها رو به روبیکا معرفی می‌کنه (فراخوانی توسط کاربر)"""

@@ -100,7 +100,9 @@ class Methods:
         max_retries: int = 5,
         showProgressBar: bool | None = None,
         main_parse_mode: Literal['Markdown', 'HTML', "Null", None] = "Null",
-        cache: Cache | None = None
+        cache: Cache | None = None,
+        max_retries_upload: int | None = None,
+        max_retries_download: int | None = None,
     ) -> None:
         self.platform = platform.lower()
         if not self.platform in ["android", "web", "rubx", "rubikax", "rubino", "PWA"]:
@@ -113,13 +115,17 @@ class Methods:
         self.main_parse_mode: Literal['Markdown', 'HTML', 'Null', None] = main_parse_mode
         self._background = BackgroundManager()
         self.cache = cache
+        self.max_retries_upload = max_retries_upload
+        self.max_retries_download = max_retries_download
         self.crypto = Cryption(
             auth=sessionData["auth"],
             private_key=sessionData["private_key"]
         ) if sessionData else Cryption(auth=Utils.randomTmpSession())
         self.network = Network(
             methods=self,
-            max_retries=max_retries
+            max_retries=max_retries,
+            max_retries_upload=max_retries_upload,
+            max_retries_download=max_retries_download
         )
         self.socket = Socket(methods=self)
 

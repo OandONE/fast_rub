@@ -23,7 +23,9 @@ class Client:
         max_retries: int = 5,
         run_start: bool = True, # = False Version 7
         main_parse_mode: Literal['Markdown', 'HTML', "Null", None] = "Null",
-        cache: Cache | None = None
+        cache: Cache | None = None,
+        max_retries_upload: int | None = None,
+        max_retries_download: int | None = None,
     ):
         
         self.session = session
@@ -38,6 +40,8 @@ class Client:
         self.max_retries = max_retries
         self.main_parse_mode: Literal['Markdown', 'HTML', 'Null', None] = main_parse_mode
         self.cache = cache
+        self.max_retries_upload = max_retries_upload
+        self.max_retries_download = max_retries_download
         if run_start:
             asyncio.run(self.start())
 
@@ -107,7 +111,9 @@ class Client:
             proxy=self.proxy,
             timeOut=self.timeOut,
             showProgressBar=self.show_progress_bar,
-            cache=self.cache
+            cache=self.cache,
+            max_retries_upload=self.max_retries_upload,
+            max_retries_download=self.max_retries_upload
         )
 
     def _extract_message_id(self, result: dict) -> str | None:
