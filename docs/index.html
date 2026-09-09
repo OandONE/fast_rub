@@ -1,73 +1,133 @@
-<!DOCTYPE html>
-<html lang="fa" dir="rtl">
-<head>
+<html lang="fa" dir="rtl" data-theme="dark"><head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" href="icon.jpg">
-    <title>Fast Rub | کتابخانه سریع برای ربات‌های روبیکا</title>
-    <meta name="description" content="Fast Rub — سریع‌ترین فریم‌ورک روبیکا با WaitManager، DataForm، Conversation و HTTP/2.">
+    <title>فست‌روب · فریم‌ورک مدرن ربات روبیکا</title>
+
+    <meta name="description" content="فست‌روب (Fast Rub) — سریع‌ترین، هوشمندترین و کامل‌ترین فریم‌ورک ربات روبیکا برای پایتون با HTTP/2، WaitManager، DataForm، Conversation، ORM داخلی و ۲۰۰+ فیلتر">
+    <meta name="keywords" content="فست روب, Fast Rub, روبیکا, فریم‌ورک روبیکا, کتابخانه روبیکا, ربات روبیکا, Rubika Bot, Python, WaitManager, DataForm, Conversation, HTTP/2, ORM">
     <meta name="author" content="Seyyed Mohamad Hosein Moosavi Raja (OandONE)">
-    <meta property="og:title" content="Fast Rub | کتابخانه سریع ربات روبیکا">
-    <meta property="og:description" content="WaitManager، DataForm، Conversation، HTTP/2.">
-    <meta property="og:image" content="icon.jpg">
+    <meta name="robots" content="index, follow">
+    <meta name="language" content="Persian">
+    <meta name="distribution" content="global">
+    <meta name="rating" content="general">
+
+    <meta property="og:title" content="فست‌روب · فریم‌ورک مدرن ربات روبیکا">
+    <meta property="og:description" content="سریع‌ترین، هوشمندترین و کامل‌ترین فریم‌ورک ربات روبیکا برای پایتون">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://fast-rub.ParsSource.ir/">
+    <meta property="og:image" content="https://fast-rub.ParsSource.ir/icon.jpg">
+    <meta property="og:locale" content="fa_IR">
+    <meta property="og:site_name" content="Fast Rub Documentation">
+
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Fast Rub | کتابخانه سریع ربات روبیکا">
-    <meta name="twitter:image" content="icon.jpg">
+    <meta name="twitter:title" content="فست‌روب · فریم‌ورک مدرن ربات روبیکا">
+    <meta name="twitter:description" content="سریع‌ترین، هوشمندترین و کامل‌ترین فریم‌ورک ربات روبیکا برای پایتون">
+
+    <link rel="canonical" href="https://fast-rub.ParsSource.ir/">
+    <link rel="icon" type="image/png" href="icon.jpg">
+    <link rel="apple-touch-icon" href="icon.jpg">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;700&amp;display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet">
+
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "Fast Rub",
+        "description": "سریع‌ترین، هوشمندترین و کامل‌ترین فریم‌ورک ربات روبیکا برای پایتون",
+        "author": {
+            "@type": "Person",
+            "name": "Seyyed Mohamad Hosein Moosavi Raja"
+        },
+        "applicationCategory": "DeveloperApplication",
+        "operatingSystem": "Cross-platform",
+        "programmingLanguage": "Python",
+        "license": "MIT",
+        "url": "https://fast-rub.ParsSource.ir"
+    }
+    </script>
 
     <style>
         :root {
-            --bg: #fafbfc;
-            --bg-secondary: #f0f2f5;
+            --bg: #fafafa;
             --surface: #ffffff;
-            --surface-hover: #f5f6f8;
-            --text: #1a1a2e;
+            --text: #1e1e2f;
             --text-secondary: #5a5a7a;
             --text-muted: #8b8ba0;
-            --brand: #6c5ce7;
-            --brand-light: #8b7cf0;
-            --brand-dark: #4a3db5;
-            --brand-glow: rgba(108, 92, 231, 0.15);
-            --accent: #f59e0b;
-            --accent-light: #fbbf24;
-            --border: #e4e7ed;
-            --border-light: #eef0f5;
-            --code-bg: #1e1e2e;
-            --code-text: #e2e2f0;
-            --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
-            --shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
-            --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.08);
-            --shadow-xl: 0 20px 60px rgba(0, 0, 0, 0.1);
-            --radius-sm: 8px;
-            --radius: 14px;
-            --radius-lg: 20px;
-            --radius-xl: 24px;
-            --sidebar-width: 260px;
+            --brand: #7b1fa2;
+            --brand-dark: #4a148c;
+            --brand-light: #b39ddb;
+            --brand-glow: rgba(123, 31, 162, 0.12);
+            --accent: #ffb300;
+            --border: #e0d0ea;
+            --border-light: #f0e8f5;
+            --sidebar-bg: #f5f0fa;
+            --code-bg: #1e1e2a;
+            --code-text: #cdd6f4;
+            --table-hover: #ede7f6;
+            --shadow: rgba(0, 0, 0, 0.05);
+            --shadow-lg: rgba(0, 0, 0, 0.08);
+            --copy-btn-bg: #2d2d3f;
+            --copy-btn-text: #ffd54f;
+            --signature-bg: #f3e9fd;
+            --success-bg: #e8f5e9;
+            --warning-bg: #fff8e1;
+            --info-bg: #e3f2fd;
             --header-height: 64px;
-            --transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         [data-theme="dark"] {
-            --bg: #0a0a14;
-            --bg-secondary: #111122;
-            --surface: #161630;
-            --surface-hover: #1c1c3a;
-            --text: #e8e8f4;
-            --text-secondary: #a8a8c0;
-            --text-muted: #6e6e88;
-            --brand: #a29bfe;
-            --brand-light: #b8b3ff;
-            --brand-dark: #8b7cf0;
-            --brand-glow: rgba(162, 155, 254, 0.2);
-            --accent: #fbbf24;
-            --accent-light: #fcd34d;
-            --border: #282845;
-            --border-light: #1f1f38;
-            --code-bg: #0d0d1f;
-            --code-text: #e2e2f4;
-            --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.2);
-            --shadow: 0 2px 12px rgba(0, 0, 0, 0.25);
-            --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.35);
-            --shadow-xl: 0 20px 60px rgba(0, 0, 0, 0.45);
+            --bg: #0a0a0f;
+            --surface: #13131a;
+            --text: #cdd6f4;
+            --text-secondary: #a6adc8;
+            --text-muted: #6c7086;
+            --brand: #89b4fa;
+            --brand-dark: #b4befe;
+            --brand-light: #45475a;
+            --brand-glow: rgba(137, 180, 250, 0.1);
+            --accent: #f9e2af;
+            --border: #1e1e2a;
+            --border-light: #1a1a24;
+            --sidebar-bg: #0f0f15;
+            --code-bg: #11111b;
+            --code-text: #cdd6f4;
+            --table-hover: #1a1a24;
+            --shadow: rgba(0, 0, 0, 0.3);
+            --shadow-lg: rgba(0, 0, 0, 0.4);
+            --copy-btn-bg: #313244;
+            --copy-btn-text: #89b4fa;
+            --signature-bg: #1a1a24;
+            --success-bg: #1a2e1a;
+            --warning-bg: #2e2a1a;
+            --info-bg: #1a1a2e;
+        }
+
+        .theme-toggle {
+            position: fixed;
+            bottom: 24px;
+            left: 24px;
+            z-index: 1000;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            color: var(--text);
+            font-size: 1.2rem;
+            cursor: pointer;
+            box-shadow: 0 2px 12px var(--shadow);
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            border-color: var(--brand);
         }
 
         * {
@@ -75,24 +135,511 @@
             padding: 0;
             box-sizing: border-box;
         }
-
         html {
             scroll-behavior: smooth;
-            scroll-padding-top: 80px;
+            scroll-padding-top: 20px;
         }
-
         body {
-            font-family: 'Vazirmatn', 'Vazir', system-ui, -apple-system, sans-serif;
-            background: var(--bg);
+            font-family: 'Vazirmatn', system-ui, -apple-system, 'Segoe UI', Roboto, Tahoma, Arial, sans-serif;
+            background-color: var(--bg);
             color: var(--text);
-            line-height: 1.85;
-            direction: rtl;
-            transition: background 0.35s, color 0.35s;
+            line-height: 1.8;
+            display: flex;
+            flex-direction: column;
             min-height: 100vh;
-            overflow-x: hidden;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        a {
+            text-decoration: none;
+            color: var(--brand);
+            transition: color 0.2s;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        code {
+            font-family: 'Courier New', 'JetBrains Mono', monospace;
+            background: var(--signature-bg);
+            padding: 0.15rem 0.45rem;
+            border-radius: 5px;
+            font-size: 0.85em;
+            direction: ltr;
+            display: inline-block;
+        }
+        pre code {
+            background: transparent;
+            padding: 0;
+            border-radius: 0;
+            font-size: inherit;
+            display: block;
+            direction: ltr;
         }
 
-        /*  Scrollbar  */
+        /* ===== Wrapper ===== */
+        .wrapper {
+            display: flex;
+            flex: 1;
+            max-width: 1440px;
+            margin: 0 auto;
+            width: 100%;
+            background: var(--surface);
+            box-shadow: 0 0 30px var(--shadow);
+            transition: background-color 0.3s ease;
+            min-height: 100vh;
+        }
+
+        /* ===== Sidebar ===== */
+        .sidebar {
+            width: 280px;
+            background: var(--sidebar-bg);
+            border-left: 1px solid var(--border);
+            padding: 2rem 1.5rem;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            overflow-y: auto;
+            flex-shrink: 0;
+            transition: background-color 0.3s ease, border-color 0.3s ease;
+        }
+        .sidebar h1 {
+            font-size: 1.7rem;
+            font-weight: 700;
+            color: var(--brand-dark);
+            margin-bottom: 0.2rem;
+            line-height: 1.2;
+        }
+        .sidebar .sub {
+            color: var(--brand);
+            font-weight: 400;
+            font-size: 0.95rem;
+            margin-bottom: 2rem;
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 1rem;
+        }
+        .nav-links {
+            list-style: none;
+            margin-bottom: 2rem;
+        }
+        .nav-links li {
+            margin-bottom: 0.5rem;
+        }
+        .nav-links a {
+            display: block;
+            padding: 0.45rem 0.9rem;
+            border-radius: 30px;
+            font-weight: 500;
+            color: var(--brand-dark);
+            transition: all 0.2s;
+            font-size: 0.9rem;
+        }
+        .nav-links a:hover {
+            background: var(--table-hover);
+            text-decoration: none;
+        }
+        .nav-links .active {
+            background: var(--brand-light);
+            color: #fff;
+        }
+        .toc-title {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--brand-dark);
+            margin: 1.5rem 0 0.8rem;
+            padding-top: 1rem;
+            border-top: 2px solid var(--border);
+        }
+        .toc-list {
+            list-style: none;
+            padding-right: 0;
+        }
+        .toc-list li {
+            margin-bottom: 0.3rem;
+            font-size: 0.85rem;
+        }
+        .toc-list a {
+            color: var(--text-secondary);
+            display: inline-block;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
+        .toc-list a:hover {
+            background: var(--table-hover);
+            text-decoration: none;
+            color: var(--brand);
+        }
+
+        /* ===== Main Content ===== */
+        .main {
+            flex: 1;
+            padding: 2.5rem 3rem;
+            background: var(--surface);
+            min-width: 0;
+            transition: background-color 0.3s ease;
+        }
+
+        /* ===== Hero ===== */
+        .hero {
+            text-align: center;
+            padding: 2rem 1rem 3rem;
+            margin-bottom: 2rem;
+            position: relative;
+        }
+        .hero-logo {
+            width: 120px;
+            height: 120px;
+            border-radius: 28px;
+            margin: 0 auto 1.5rem;
+            display: block;
+            box-shadow: 0 12px 40px var(--brand-glow);
+            object-fit: cover;
+            border: 2px solid var(--border-light);
+        }
+        .hero h1 {
+            font-size: 3rem;
+            font-weight: 900;
+            letter-spacing: -1px;
+            line-height: 1.2;
+            background: linear-gradient(135deg, var(--brand) 20%, var(--accent) 80%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 1rem;
+        }
+        .hero .tagline {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            font-weight: 400;
+            max-width: 550px;
+            margin: 0 auto;
+            line-height: 1.9;
+        }
+        .hero-actions {
+            display: flex;
+            gap: 14px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 2rem;
+        }
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 26px;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            text-decoration: none !important;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            border: none;
+            font-family: inherit;
+            white-space: nowrap;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, var(--brand), var(--brand-dark));
+            color: #fff;
+            box-shadow: 0 6px 24px var(--brand-glow);
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 32px var(--brand-glow);
+        }
+        .btn-outline {
+            background: var(--surface);
+            color: var(--text);
+            border: 1.5px solid var(--border);
+        }
+        .btn-outline:hover {
+            border-color: var(--brand);
+            background: var(--table-hover);
+        }
+
+        /* ===== Section ===== */
+        .section {
+            margin-bottom: 3.5rem;
+            scroll-margin-top: 1rem;
+            background: var(--surface);
+            border: 1px solid var(--border-light);
+            border-radius: 16px;
+            padding: 2rem 2rem;
+            transition: all 0.3s ease;
+        }
+        .section:hover {
+            border-color: var(--border);
+            box-shadow: 0 4px 20px var(--shadow);
+        }
+        .section h2 {
+            font-size: 1.7rem;
+            font-weight: 700;
+            color: var(--text);
+            border-bottom: 3px solid var(--accent);
+            padding-bottom: 0.6rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .section h3 {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: var(--text);
+            margin: 1.5rem 0 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .section p {
+            color: var(--text-secondary);
+            margin-bottom: 0.8rem;
+            font-size: 0.95rem;
+        }
+        .section .desc {
+            color: var(--text-secondary);
+            margin-bottom: 1.2rem;
+            font-size: 0.95rem;
+        }
+
+        /* ===== Feature Grid ===== */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 14px;
+            margin: 1.5rem 0;
+        }
+        .feature-card {
+            background: var(--sidebar-bg);
+            border: 1px solid var(--border-light);
+            border-radius: 14px;
+            padding: 1.2rem 1.2rem;
+            transition: all 0.25s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .feature-card:hover {
+            border-color: var(--brand-light);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 24px var(--shadow);
+        }
+        .feature-card .fc-icon {
+            font-size: 1.6rem;
+            margin-bottom: 0.6rem;
+        }
+        .feature-card h4 {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 0.3rem;
+        }
+        .feature-card p {
+            font-size: 0.82rem;
+            color: var(--text-muted);
+            margin: 0;
+            line-height: 1.6;
+        }
+
+        /* ===== Code Block ===== */
+        .code-block-wrapper {
+            position: relative;
+            margin: 1.8rem 0 1.2rem;
+            direction: ltr;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 8px 20px var(--shadow);
+            border: 1px solid var(--border-light);
+        }
+        .copy-btn {
+            position: absolute;
+            right: 0.8rem; /* تغییر: از چپ به راست */
+            top: 0.8rem;
+            background: var(--copy-btn-bg);
+            color: var(--copy-btn-text);
+            border: none;
+            border-radius: 30px;
+            padding: 0.35rem 1.2rem;
+            font-size: 0.8rem;
+            font-family: 'Vazirmatn', sans-serif;
+            font-weight: 500;
+            cursor: pointer;
+            z-index: 10;
+            transition: 0.2s;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+        .copy-btn:hover {
+            background: var(--brand);
+            color: #fff;
+        }
+        .copy-btn.copied {
+            background: #2e7d32;
+            color: #fff;
+        }
+        pre[class*="language-"] {
+            margin: 0;
+            border-radius: 16px;
+            padding: 2rem 1.5rem 1.5rem;
+            background: var(--code-bg);
+            font-size: 0.85rem;
+            line-height: 1.7;
+        }
+
+        /* ===== Table ===== */
+        .table-responsive {
+            overflow-x: auto;
+            margin: 1.2rem 0;
+            border-radius: 14px;
+            border: 1px solid var(--border-light);
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+            background: var(--surface);
+            transition: background-color 0.3s ease;
+        }
+        th {
+            background: var(--brand-light);
+            color: #fff;
+            font-weight: 600;
+            padding: 0.8rem 1.1rem;
+            text-align: right;
+            white-space: nowrap;
+        }
+        td {
+            padding: 0.8rem 1.1rem;
+            border-bottom: 1px solid var(--border-light);
+            vertical-align: top;
+        }
+        tr:last-child td {
+            border-bottom: none;
+        }
+        tr:hover td {
+            background: var(--table-hover);
+        }
+        td:first-child {
+            font-family: 'Courier New', monospace;
+            direction: ltr;
+            text-align: left;
+            white-space: nowrap;
+        }
+
+        /* ===== Note Box ===== */
+        .note-box {
+            background: var(--info-bg);
+            border-right: 4px solid var(--brand);
+            padding: 0.8rem 1.2rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+            font-size: 0.9rem;
+            color: var(--text);
+        }
+        .note-box.warning {
+            background: var(--warning-bg);
+            border-right-color: var(--accent);
+        }
+        .note-box.success {
+            background: var(--success-bg);
+            border-right-color: #4caf50;
+        }
+
+        /* ===== Footer ===== */
+        .footer {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 2px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 1rem;
+            font-size: 0.9rem;
+        }
+        .footer a {
+            color: var(--brand);
+            font-weight: 600;
+        }
+
+        /* ===== Responsive ===== */
+        @media (max-width: 1024px) {
+            .main {
+                padding: 2rem 1.5rem;
+            }
+            .hero h1 {
+                font-size: 2.2rem;
+            }
+        }
+        @media (max-width: 900px) {
+            .wrapper {
+                flex-direction: column;
+            }
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+                border-left: none;
+                border-bottom: 1px solid var(--border);
+                padding: 1.5rem;
+            }
+            .sidebar .toc-list {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 6px;
+            }
+            .sidebar .toc-list li {
+                margin-bottom: 0;
+            }
+            .sidebar .toc-list a {
+                background: var(--surface);
+                border: 1px solid var(--border-light);
+                border-radius: 20px;
+                padding: 0.3rem 0.8rem;
+                font-size: 0.8rem;
+            }
+            .main {
+                padding: 1.5rem;
+            }
+            .theme-toggle {
+                bottom: 16px;
+                left: 16px;
+                width: 38px;
+                height: 38px;
+                font-size: 1rem;
+            }
+            .hero-logo {
+                width: 90px;
+                height: 90px;
+                border-radius: 20px;
+            }
+            .hero h1 {
+                font-size: 2rem;
+            }
+            .features-grid {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+                gap: 10px;
+            }
+            .section {
+                padding: 1.5rem 1.2rem;
+            }
+        }
+        @media (max-width: 480px) {
+            .hero h1 {
+                font-size: 1.6rem;
+            }
+            .hero .tagline {
+                font-size: 1rem;
+            }
+            .btn {
+                padding: 10px 18px;
+                font-size: 0.85rem;
+            }
+            .section h2 {
+                font-size: 1.3rem;
+            }
+            pre[class*="language-"] {
+                font-size: 0.75rem;
+                padding: 1.8rem 1rem 1.2rem;
+            }
+        }
+
+        /* Scrollbar */
         ::-webkit-scrollbar {
             width: 6px;
             height: 6px;
@@ -108,1048 +655,48 @@
             background: var(--text-muted);
         }
 
-        /*  Grid Background  */
-        .bg-grid {
-            position: fixed;
-            inset: 0;
-            pointer-events: none;
-            z-index: 0;
-            opacity: 0.03;
-            background-image:
-                linear-gradient(var(--border) 1px, transparent 1px),
-                linear-gradient(90deg, var(--border) 1px, transparent 1px);
-            background-size: 60px 60px;
-            mask-image: radial-gradient(ellipse 70% 70% at 50% 30%, black 30%, transparent 70%);
-            -webkit-mask-image: radial-gradient(ellipse 70% 70% at 50% 30%, black 30%, transparent 70%);
-        }
-
-        /*  Header  */
-        .header {
-            position: sticky;
-            top: 0;
-            z-index: 200;
-            height: var(--header-height);
-            background: var(--surface);
-            border-bottom: 1px solid var(--border-light);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            transition: all var(--transition);
-            box-shadow: var(--shadow-sm);
-        }
-        .header-inner {
-            max-width: 1280px;
-            margin: 0 auto;
-            padding: 0 28px;
-            height: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 20px;
-        }
-        .header-logo {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            text-decoration: none;
-            font-weight: 900;
-            font-size: 1.25rem;
-            color: var(--text);
-            white-space: nowrap;
-            transition: opacity var(--transition);
-        }
-        .header-logo:hover {
-            opacity: 0.8;
-        }
-        .header-logo .logo-icon {
-            width: 40px;
-            height: 40px;
-            border-radius: var(--radius-sm);
-            background: linear-gradient(135deg, var(--brand), var(--brand-dark));
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.4rem;
-            color: #fff;
-            flex-shrink: 0;
-            box-shadow: 0 4px 15px var(--brand-glow);
-        }
-        .header-logo .logo-text {
-            font-weight: 900;
-            font-size: 1.2rem;
-            letter-spacing: -0.3px;
-        }
-        .header-logo .logo-text span {
-            background: linear-gradient(135deg, var(--brand), var(--accent));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-        .header-nav {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            list-style: none;
-            flex-wrap: wrap;
-        }
-        .header-nav a {
-            color: var(--text-secondary);
-            text-decoration: none;
-            font-weight: 500;
-            font-size: 0.9rem;
-            padding: 8px 15px;
+        .badge {
+            display: inline-block;
+            padding: 0.2rem 0.6rem;
             border-radius: 20px;
-            transition: all var(--transition);
-            white-space: nowrap;
-        }
-        .header-nav a:hover,
-        .header-nav a.active {
-            color: var(--brand);
-            background: var(--brand-glow);
-        }
-        .header-actions {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .btn-theme {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            border: 1px solid var(--border);
-            background: var(--surface);
-            color: var(--text);
-            cursor: pointer;
-            font-size: 1.1rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all var(--transition);
-            flex-shrink: 0;
-        }
-        .btn-theme:hover {
-            border-color: var(--brand);
-            box-shadow: 0 0 0 4px var(--brand-glow);
-            transform: rotate(15deg);
-        }
-        .btn-github {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            border: 1px solid var(--border);
-            background: var(--surface);
-            color: var(--text);
-            cursor: pointer;
-            font-size: 1.2rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-decoration: none;
-            transition: all var(--transition);
-            flex-shrink: 0;
-        }
-        .btn-github:hover {
-            border-color: var(--text);
-            background: var(--surface-hover);
-        }
-        .btn-menu {
-            display: none;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            border: 1px solid var(--border);
-            background: var(--surface);
-            color: var(--text);
-            cursor: pointer;
-            font-size: 1.3rem;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-            transition: all var(--transition);
-        }
-
-        /*  Layout  */
-        .layout {
-            max-width: 1280px;
-            margin: 0 auto;
-            display: flex;
-            gap: 0;
-            position: relative;
-            z-index: 1;
-        }
-        .sidebar {
-            width: var(--sidebar-width);
-            flex-shrink: 0;
-            position: sticky;
-            top: var(--header-height);
-            height: calc(100vh - var(--header-height));
-            overflow-y: auto;
-            padding: 24px 16px 40px 8px;
-            border-left: 1px solid var(--border-light);
-            background: var(--bg);
-            transition: all var(--transition);
-            z-index: 100;
-        }
-        .sidebar::-webkit-scrollbar {
-            width: 3px;
-        }
-        .sidebar-nav {
-            list-style: none;
-            display: flex;
-            flex-direction: column;
-            gap: 2px;
-        }
-        .sidebar-nav .nav-group {
-            margin-bottom: 6px;
-        }
-        .sidebar-nav .nav-group-title {
-            font-size: 0.7rem;
-            text-transform: uppercase;
-            letter-spacing: 1.2px;
-            color: var(--text-muted);
-            padding: 10px 12px 6px;
-            font-weight: 700;
-        }
-        .sidebar-nav a {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 9px 14px;
-            border-radius: var(--radius-sm);
-            color: var(--text-secondary);
-            text-decoration: none;
-            font-size: 0.88rem;
-            font-weight: 500;
-            transition: all var(--transition);
-            border-right: 3px solid transparent;
-            margin-right: -3px;
-        }
-        .sidebar-nav a:hover {
-            color: var(--text);
-            background: var(--surface-hover);
-            border-right-color: var(--border);
-        }
-        .sidebar-nav a.active {
-            color: var(--brand);
-            background: var(--brand-glow);
-            border-right-color: var(--brand);
+            font-size: 0.75rem;
             font-weight: 600;
-        }
-        .sidebar-nav a .nav-icon {
-            width: 20px;
-            text-align: center;
-            font-size: 0.95rem;
-            flex-shrink: 0;
-        }
-        .sidebar-overlay {
-            display: none;
-            position: fixed;
-            inset: 0;
-            background: rgba(0, 0, 0, 0.5);
-            z-index: 99;
-            transition: opacity var(--transition);
-        }
-        .sidebar-overlay.show {
-            display: block;
-        }
-
-        .main-content {
-            flex: 1;
-            min-width: 0;
-            padding: 32px 36px 60px;
-        }
-
-        /*  Hero  */
-        .hero {
-            text-align: center;
-            padding: 40px 20px 20px;
-            position: relative;
-        }
-        .hero-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            background: var(--brand-glow);
-            border: 1px solid var(--brand);
-            color: var(--brand-dark);
-            padding: 6px 16px;
-            border-radius: 50px;
-            font-size: 0.82rem;
-            font-weight: 600;
-            margin-bottom: 20px;
-            animation: fadeInUp 0.6s ease;
-        }
-        [data-theme="dark"] .hero-badge {
-            color: var(--brand-light);
-        }
-        .hero-icon {
-            width: 90px;
-            height: 90px;
-            border-radius: var(--radius-lg);
-            background: linear-gradient(135deg, var(--brand), #4834d4);
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 2.8rem;
-            color: #fff;
-            box-shadow: 0 12px 40px var(--brand-glow);
-            margin-bottom: 24px;
-            animation: float 3s ease-in-out infinite;
-        }
-        @keyframes float {
-            0%,
-            100% {
-                transform: translateY(0);
-            }
-            50% {
-                transform: translateY(-10px);
-            }
-        }
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-        .hero h1 {
-            font-size: 3rem;
-            font-weight: 950;
-            letter-spacing: -1px;
-            line-height: 1.2;
-            background: linear-gradient(135deg, var(--brand) 20%, var(--accent) 80%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            margin-bottom: 12px;
-        }
-        .hero .tagline {
-            font-size: 1.2rem;
-            color: var(--text-secondary);
-            font-weight: 400;
-            max-width: 500px;
-            margin: 0 auto;
-            line-height: 1.8;
-        }
-        .hero-actions {
-            display: flex;
-            gap: 12px;
-            justify-content: center;
-            flex-wrap: wrap;
-            margin-top: 24px;
-        }
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 11px 22px;
-            border-radius: 50px;
-            font-weight: 600;
-            font-size: 0.9rem;
-            text-decoration: none;
-            cursor: pointer;
-            transition: all var(--transition);
-            border: none;
-            font-family: inherit;
-            white-space: nowrap;
-        }
-        .btn-primary {
-            background: linear-gradient(135deg, var(--brand), var(--brand-dark));
-            color: #fff;
-            box-shadow: 0 6px 24px var(--brand-glow);
-        }
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 30px var(--brand-glow);
-        }
-        .btn-outline {
-            background: var(--surface);
-            color: var(--text);
-            border: 1.5px solid var(--border);
-        }
-        .btn-outline:hover {
-            border-color: var(--brand);
-            background: var(--surface-hover);
-        }
-
-        /*  Sections  */
-        .section {
-            margin: 40px 0;
-            background: var(--surface);
-            border: 1px solid var(--border-light);
-            border-radius: var(--radius-lg);
-            padding: 32px 34px;
-            box-shadow: var(--shadow);
-            transition: all var(--transition);
-            position: relative;
-            overflow: hidden;
-        }
-        .section::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 3px;
-            background: linear-gradient(90deg, var(--brand), var(--accent), var(--brand));
-            opacity: 0;
-            transition: opacity var(--transition);
-        }
-        .section:hover::before {
-            opacity: 1;
-        }
-        .section h2 {
-            font-size: 1.55rem;
-            font-weight: 800;
-            color: var(--text);
-            margin-bottom: 18px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            letter-spacing: -0.3px;
-        }
-        .section h2 .section-icon {
-            width: 38px;
-            height: 38px;
-            border-radius: var(--radius-sm);
-            background: var(--brand-glow);
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.2rem;
-            flex-shrink: 0;
-        }
-        .section h3 {
-            font-size: 1.1rem;
-            font-weight: 700;
-            color: var(--text);
-            margin: 22px 0 10px;
-        }
-        .section p {
-            color: var(--text-secondary);
-            margin-bottom: 10px;
-            font-size: 0.95rem;
-        }
-        .section ul {
-            padding-right: 22px;
-            color: var(--text-secondary);
-            margin-bottom: 12px;
-            font-size: 0.95rem;
-        }
-        .section ul li {
-            margin-bottom: 6px;
-        }
-        .section a {
-            color: var(--brand);
-            font-weight: 600;
-            text-decoration: none;
-            transition: color var(--transition);
-        }
-        .section a:hover {
-            color: var(--brand-dark);
-            text-decoration: underline;
-            text-underline-offset: 3px;
-        }
-
-        /*  Code Block  */
-        .code-wrapper {
-            position: relative;
-            margin: 16px 0;
-            border-radius: var(--radius);
-            overflow: hidden;
-            border: 1px solid rgba(255, 255, 255, 0.06);
-            box-shadow: var(--shadow-lg);
-        }
-        .code-wrapper pre {
-            background: var(--code-bg);
-            color: var(--code-text);
-            padding: 20px 24px;
-            overflow-x: auto;
-            direction: ltr;
-            text-align: left;
-            margin: 0;
-            font-size: 0.84rem;
-            font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
-            line-height: 1.8;
-            tab-size: 4;
-            position: relative;
-        }
-        .code-wrapper pre::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 32px;
-            background: rgba(255, 255, 255, 0.03);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-            border-radius: var(--radius) var(--radius) 0 0;
-        }
-        .code-wrapper pre code {
-            background: transparent;
-            padding: 0;
-            font-size: inherit;
-            font-family: inherit;
-            display: block;
-            position: relative;
-            z-index: 1;
-            padding-top: 8px;
-        }
-        .copy-btn {
-            position: absolute;
-            top: 8px;
-            left: 10px;
-            background: rgba(255, 255, 255, 0.07);
-            color: #aaa;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 6px;
-            padding: 5px 12px;
-            font-size: 0.72rem;
-            cursor: pointer;
-            z-index: 10;
-            transition: all var(--transition);
-            font-family: inherit;
-            letter-spacing: 0.3px;
-        }
-        .copy-btn:hover {
-            background: rgba(255, 255, 255, 0.15);
-            color: #fff;
-            border-color: rgba(255, 255, 255, 0.25);
-        }
-        .copy-btn.copied {
-            background: rgba(34, 197, 94, 0.2);
-            border-color: rgba(34, 197, 94, 0.4);
-            color: #4ade80;
-        }
-        code {
-            background: var(--bg-secondary);
-            padding: 3px 8px;
-            border-radius: 5px;
-            font-size: 0.88em;
-            font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
-            border: 1px solid var(--border-light);
-        }
-        pre code {
-            background: transparent;
-            padding: 0;
-            border: none;
-            font-size: inherit;
-        }
-
-        /*  Features Grid  */
-        .features-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 14px;
-        }
-        .feature-card {
-            background: var(--bg-secondary);
-            border: 1px solid var(--border-light);
-            border-radius: var(--radius);
-            padding: 22px 20px;
-            transition: all var(--transition);
-            cursor: default;
-            position: relative;
-            overflow: hidden;
-        }
-        .feature-card::after {
-            content: '';
-            position: absolute;
-            inset: 0;
-            border-radius: var(--radius);
-            opacity: 0;
-            transition: opacity var(--transition);
-            background: linear-gradient(135deg, var(--brand-glow), transparent 60%);
-            pointer-events: none;
-        }
-        .feature-card:hover {
-            border-color: var(--brand);
-            transform: translateY(-3px);
-            box-shadow: var(--shadow-lg);
-        }
-        .feature-card:hover::after {
-            opacity: 1;
-        }
-        .feature-card .fc-icon {
-            width: 42px;
-            height: 42px;
-            border-radius: var(--radius-sm);
-            background: var(--brand-glow);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.3rem;
-            margin-bottom: 12px;
-            transition: all var(--transition);
-        }
-        .feature-card:hover .fc-icon {
-            background: var(--brand);
-            color: #fff;
-            box-shadow: 0 6px 20px var(--brand-glow);
-        }
-        .feature-card h3 {
-            margin: 0 0 5px;
-            color: var(--text);
-            font-size: 1rem;
-            font-weight: 700;
-        }
-        .feature-card p {
-            color: var(--text-muted);
-            font-size: 0.85rem;
-            margin: 0;
-            line-height: 1.6;
-        }
-
-        /*  Stats List  */
-        .stats-list {
-            list-style: none;
-            padding: 0;
-            display: flex;
-            flex-direction: column;
-            gap: 0;
-        }
-        .stats-list li {
-            padding: 16px 20px;
-            border-bottom: 1px solid var(--border-light);
-            font-size: 1rem;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            transition: background var(--transition);
-            border-radius: var(--radius-sm);
-        }
-        .stats-list li:hover {
-            background: var(--bg-secondary);
-        }
-        .stats-list li:last-child {
-            border-bottom: none;
-        }
-        .stats-list .stat-icon {
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            background: rgba(34, 197, 94, 0.1);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1rem;
-            flex-shrink: 0;
-        }
-
-        /*  Footer  */
-        .footer {
-            border-top: 1px solid var(--border-light);
-            background: var(--surface);
-            padding: 28px 0;
-            margin-top: 50px;
-            text-align: center;
-        }
-        .footer-inner {
-            max-width: 1280px;
-            margin: 0 auto;
-            padding: 0 28px;
-        }
-        .footer-links {
-            display: flex;
-            justify-content: center;
-            gap: 28px;
-            flex-wrap: wrap;
-            margin-bottom: 14px;
-        }
-        .footer-links a {
-            color: var(--text-secondary);
-            text-decoration: none;
-            font-weight: 500;
-            font-size: 0.9rem;
-            transition: color var(--transition);
-        }
-        .footer-links a:hover {
-            color: var(--brand);
-        }
-        .footer p {
-            color: var(--text-muted);
-            font-size: 0.85rem;
-            margin: 0;
-        }
-        .footer p a {
-            color: var(--brand);
-            font-weight: 600;
-            text-decoration: none;
-        }
-        .footer p a:hover {
-            text-decoration: underline;
-        }
-
-        /*  Toast  */
-        .toast {
-            position: fixed;
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%) translateY(100px);
-            background: #1e1e2e;
-            color: #fff;
-            padding: 10px 24px;
-            border-radius: 50px;
-            font-size: 0.85rem;
-            font-weight: 500;
-            z-index: 9999;
-            pointer-events: none;
-            transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
-            font-family: inherit;
-        }
-        .toast.show {
-            transform: translateX(-50%) translateY(0);
-        }
-
-        /*  Responsive  */
-        @media (max-width: 960px) {
-            .sidebar {
-                position: fixed;
-                top: var(--header-height);
-                right: 0;
-                bottom: 0;
-                z-index: 150;
-                transform: translateX(100%);
-                box-shadow: var(--shadow-xl);
-                border-left: 1px solid var(--border);
-                border-radius: 0;
-                width: 280px;
-                transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            }
-            .sidebar.open {
-                transform: translateX(0);
-            }
-            .btn-menu {
-                display: flex;
-            }
-            .main-content {
-                padding: 20px 16px 40px;
-            }
-            .hero h1 {
-                font-size: 2.2rem;
-            }
-            .section {
-                padding: 22px 18px;
-            }
-            .header-nav {
-                display: none;
-            }
-            .features-grid {
-                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-                gap: 10px;
-            }
-        }
-        @media (max-width: 480px) {
-            .hero h1 {
-                font-size: 1.7rem;
-            }
-            .hero .tagline {
-                font-size: 1rem;
-            }
-            .hero-icon {
-                width: 64px;
-                height: 64px;
-                font-size: 2rem;
-            }
-            .section h2 {
-                font-size: 1.2rem;
-            }
-            .btn {
-                padding: 9px 16px;
-                font-size: 0.8rem;
-            }
-            .code-wrapper pre {
-                padding: 14px 16px;
-                font-size: 0.72rem;
-            }
-        }
-
-        /*  Font Face  */
-        @font-face {
-            font-family: 'Vazirmatn';
-            src: url('https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/fonts/webfonts/Vazirmatn-Regular.woff2') format('woff2');
-            font-weight: 400;
-            font-display: swap;
-        }
-        @font-face {
-            font-family: 'Vazirmatn';
-            src: url('https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/fonts/webfonts/Vazirmatn-Medium.woff2') format('woff2');
-            font-weight: 500;
-            font-display: swap;
-        }
-        @font-face {
-            font-family: 'Vazirmatn';
-            src: url('https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/fonts/webfonts/Vazirmatn-Bold.woff2') format('woff2');
-            font-weight: 700;
-            font-display: swap;
-        }
-        @font-face {
-            font-family: 'Vazirmatn';
-            src: url('https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/fonts/webfonts/Vazirmatn-ExtraBold.woff2') format('woff2');
-            font-weight: 800;
-            font-display: swap;
-        }
-        @font-face {
-            font-family: 'Vazirmatn';
-            src: url('https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/fonts/webfonts/Vazirmatn-Black.woff2') format('woff2');
-            font-weight: 900;
-            font-display: swap;
-        }
-        @font-face {
-            font-family: 'JetBrains Mono';
-            src: url('https://cdn.jsdelivr.net/gh/JetBrains/JetBrainsMono@2.304/fonts/webfonts/JetBrainsMono-Regular.woff2') format('woff2');
-            font-weight: 400;
-            font-display: swap;
+            margin-left: 4px;
+        }
+        .badge-green {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+        [data-theme="dark"] .badge-green {
+            background: #1a2e1a;
+            color: #4caf50;
+        }
+        .badge-blue {
+            background: #e3f2fd;
+            color: #1565c0;
+        }
+        [data-theme="dark"] .badge-blue {
+            background: #1a1a2e;
+            color: #64b5f6;
         }
     </style>
-</head>
-<body>
 
-    <div class="bg-grid"></div>
-
-    <!--  Header  -->
-    <header class="header">
-        <div class="header-inner">
-            <a href="index.html" class="header-logo">
-                <div class="logo-icon">⚡</div>
-                <div class="logo-text"><span>Fast Rub</span></div>
-            </a>
-            <ul class="header-nav">
-                <li><a href="index.html" class="active">معرفی</a></li>
-                <li><a href="methods/index.html">متدها</a></li>
-                <li><a href="models/index.html">مدل‌ها</a></li>
-                <li><a href="features/index.html">قابلیت‌ها</a></li>
-            </ul>
-            <div class="header-actions">
-                <a href="https://github.com/OandONE" class="btn-github" title="گیت‌هاب" aria-label="گیت‌هاب">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
-                </a>
-                <button class="btn-theme" onclick="toggleTheme()" aria-label="تغییر تم" title="تغییر تم">
-                    <span id="theme-icon">🌙</span>
-                </button>
-                <button class="btn-menu" onclick="toggleSidebar()" aria-label="منو" title="منو">
-                    <span>☰</span>
-                </button>
-            </div>
-        </div>
-    </header>
-
-    <!--  Layout  -->
-    <div class="layout">
-        <!-- Sidebar -->
-        <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
-        <aside class="sidebar" id="sidebar">
-            <ul class="sidebar-nav">
-                <li class="nav-group">
-                    <div class="nav-group-title">شروع</div>
-                    <a href="#hero" class="active"><span class="nav-icon">🏠</span> معرفی</a>
-                    <a href="#quickstart"><span class="nav-icon">🚀</span> شروع سریع</a>
-                    <a href="#installation"><span class="nav-icon">📦</span> نصب</a>
-                </li>
-                <li class="nav-group">
-                    <div class="nav-group-title">درباره</div>
-                    <a href="#why"><span class="nav-icon">💎</span> چرا Fast Rub؟</a>
-                    <a href="#features"><span class="nav-icon">✨</span> ویژگی‌ها</a>
-                    <a href="#stats"><span class="nav-icon">📊</span> آمار واقعی</a>
-                </li>
-                <li class="nav-group">
-                    <div class="nav-group-title">مستندات</div>
-                    <a href="methods/index.html"><span class="nav-icon">📖</span> متدها</a>
-                    <a href="models/index.html"><span class="nav-icon">🗂️</span> مدل‌ها</a>
-                    <a href="features/index.html"><span class="nav-icon">🔧</span> قابلیت‌ها</a>
-                    <a href="pyrubi/index.html"><span class="nav-icon">🤖</span> یوزر بات</a>
-                </li>
-            </ul>
-        </aside>
-
-        <!-- Main Content -->
-        <main class="main-content">
-
-            <!-- Hero -->
-            <div class="hero" id="hero">
-                <div class="hero-badge">✨ نسخه پایدار · Production Ready</div>
-                <div class="hero-icon">⚡</div>
-                <h1>Fast Rub</h1>
-                <p class="tagline">سرعت، قدرت و بهینگی در یک کتابخانه · فریم‌ورک مدرن برای ربات‌های روبیکا</p>
-                <div class="hero-actions">
-                    <a href="#quickstart" class="btn btn-primary">🚀 شروع سریع</a>
-                    <a href="https://github.com/OandONE" class="btn btn-outline">⭐ گیت‌هاب</a>
-                </div>
-            </div>
-
-            <!-- Intro -->
-            <div class="section" id="intro">
-                <p style="font-size:1.05rem;line-height:2;">
-                    <strong>Fast Rub</strong> یک فریم‌ورک مدرن، سریع و سبک برای ساخت ربات‌های
-                    <strong>روبیکا</strong> است. با پشتیبانی کامل از <code>sync/async</code>،
-                    <strong>HTTP/2</strong>، و معماری <strong>async-native</strong>.
-                    روی سخت‌افزار ضعیف (<strong>۲۵۶ مگابایت رم DDR1</strong> با Alpine Linux) تست شده و عملکرد فوق‌العاده‌ای دارد.
-                </p>
-            </div>
-
-            <!-- Quick Start -->
-            <div class="section" id="quickstart">
-                <h2><span class="section-icon">🚀</span> مراحل استفاده</h2>
-                <ul>
-                    <li>با <a href="https://rubika.ir/BotFather" target="_blank" rel="noopener">@BotFather</a> یک بات بسازید.</li>
-                    <li>توکن ربات را کپی کنید.</li>
-                </ul>
-                <h3 id="installation">📦 نصب</h3>
-                <div class="code-wrapper">
-                    <button class="copy-btn" onclick="copyCode(this, 'pip install --upgrade fastrub')">📋 کپی</button>
-                    <pre><code>pip install --upgrade fastrub</code></pre>
-                </div>
-                <h3>📦 نصب - میرور رانفلر</h3>
-                <div class="code-wrapper">
-                    <button class="copy-btn" onclick="copyCode(this, 'pip install -i https://mirror-pypi.runflare.com/simple fastrub')">📋 کپی</button>
-                    <pre><code>pip install -i https://mirror-pypi.runflare.com/simple fastrub</code></pre>
-                </div>
-                <h3>⚡ شروع سریع</h3>
-                <div class="code-wrapper">
-                    <button class="copy-btn" onclick="copyCode(this, `from fast_rub import Client
-from fast_rub.types import Message
-import asyncio
-
-async def robot():
-    bot = Client("my_bot")
-    await bot.start()
-
-    @bot.on_message()
-    async def handler(msg: Message):
-        await msg.reply("**Hello** from Fast Rub! ⚡")
-
-    await bot.run()
-
-asyncio.run(robot())`)">📋 کپی</button>
-                    <pre><code>from fast_rub import Client
-from fast_rub.types import Message
-import asyncio
-
-async def robot():
-    bot = Client("my_bot")
-    await bot.start()
-
-    @bot.on_message()
-    async def handler(msg: Message):
-        await msg.reply("**Hello** from Fast Rub! ⚡")
-
-    await bot.run()
-
-asyncio.run(robot())</code></pre>
-                </div>
-            </div>
-
-            <!-- Why -->
-            <div class="section" id="why">
-                <h2><span class="section-icon">💎</span> چرا Fast Rub؟</h2>
-                <div class="features-grid">
-                    <div class="feature-card">
-                        <div class="fc-icon">⚡</div>
-                        <h3>سریع‌ترین</h3>
-                        <p>HTTP/2 و httpx برای ارتباط فوق سریع</p>
-                    </div>
-                    <div class="feature-card">
-                        <div class="fc-icon">🧠</div>
-                        <h3>هوشمندترین</h3>
-                        <p>WaitManager برای مدیریت هوشمند Rate Limit</p>
-                    </div>
-                    <div class="feature-card">
-                        <div class="fc-icon">🗃️</div>
-                        <h3>کم‌مصرف‌ترین</h3>
-                        <p>اجرا روی ۲۵۶MB DDR1 بدون مشکل</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Features -->
-            <div class="section" id="features">
-                <h2><span class="section-icon">✨</span> ویژگی‌های کلیدی</h2>
-                <div class="features-grid">
-                    <div class="feature-card">
-                        <div class="fc-icon">⏱️</div>
-                        <h3>WaitManager</h3>
-                        <p>مدیریت حرفه‌ای Rate Limit</p>
-                    </div>
-                    <div class="feature-card">
-                        <div class="fc-icon">📋</div>
-                        <h3>DataForm</h3>
-                        <p>فرم‌های هوشمند و پویا</p>
-                    </div>
-                    <div class="feature-card">
-                        <div class="fc-icon">💬</div>
-                        <h3>Conversation</h3>
-                        <p>State Machine برای مکالمات</p>
-                    </div>
-                    <div class="feature-card">
-                        <div class="fc-icon">🔍</div>
-                        <h3>۲۰۰+ فیلتر</h3>
-                        <p>AND/OR/NOT برای فیلترهای پیچیده</p>
-                    </div>
-                    <div class="feature-card">
-                        <div class="fc-icon">📡</div>
-                        <h3>HTTP/2</h3>
-                        <p>ارتباط سریع و بهینه</p>
-                    </div>
-                    <div class="feature-card">
-                        <div class="fc-icon">🔄</div>
-                        <h3>Async-First</h3>
-                        <p>طراحی کاملاً async از پایه</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Stats -->
-            <div class="section" id="stats">
-                <h2><span class="section-icon">📊</span> آمار واقعی</h2>
-                <ul class="stats-list">
-                    <li>
-                        <span class="stat-icon">✅</span>
-                        <span><strong>۹۵+ ربات</strong> روی یک سرور ۸GB</span>
-                    </li>
-                    <li>
-                        <span class="stat-icon">✅</span>
-                        <span>تست موفق روی <strong>۲۵۶MB DDR1</strong></span>
-                    </li>
-                    <li>
-                        <span class="stat-icon">✅</span>
-                        <span>وابستگی‌های حداقلی و بهینه‌سازی‌شده</span>
-                    </li>
-                </ul>
-            </div>
-
-        </main>
-    </div>
-
-    <!-- Footer -->
-    <footer class="footer">
-        <div class="footer-inner">
-            <div class="footer-links">
-                <a href="methods/index.html">📖 متدها</a>
-                <a href="models/index.html">🗂️ مدل‌ها</a>
-                <a href="features/index.html">🔧 قابلیت‌ها</a>
-                <a href="pyrubi/index.html">🤖 یوزر بات</a>
-            </div>
-            <p>ساخته شده با ❤️ توسط <a href="https://github.com/OandONE">OandONE</a> — © ۲۰۲۴</p>
-        </div>
-    </footer>
-
-    <!-- Toast -->
-    <div class="toast" id="toast">✅ کپی شد!</div>
+    </head><body><button class="theme-toggle" onclick="toggleTheme()" aria-label="تغییر تم" title="تغییر تم دارک/روشن">
+        <span id="theme-icon">☀️</span>
+    </button>
 
     <script>
-        //  Theme Toggle 
         (function() {
             var saved = localStorage.getItem('theme');
-            if (saved) document.documentElement.setAttribute('data-theme', saved);
+            if (saved) {
+                document.documentElement.setAttribute('data-theme', saved);
+            }
             updateIcon();
         })();
 
         function toggleTheme() {
-            var cur = document.documentElement.getAttribute('data-theme');
-            var next = cur === 'dark' ? 'light' : 'dark';
+            var current = document.documentElement.getAttribute('data-theme');
+            var next = current === 'dark' ? 'light' : 'dark';
             document.documentElement.setAttribute('data-theme', next);
             localStorage.setItem('theme', next);
             updateIcon();
@@ -1160,92 +707,770 @@ asyncio.run(robot())</code></pre>
             var theme = document.documentElement.getAttribute('data-theme');
             icon.textContent = theme === 'dark' ? '☀️' : '🌙';
         }
+    </script>
 
-        //  Sidebar Toggle 
-        function toggleSidebar() {
-            var sidebar = document.getElementById('sidebar');
-            var overlay = document.getElementById('sidebarOverlay');
-            sidebar.classList.toggle('open');
-            overlay.classList.toggle('show');
-        }
 
-        // Close sidebar when clicking a link (mobile)
-        document.querySelectorAll('.sidebar-nav a').forEach(function(link) {
-            link.addEventListener('click', function() {
-                var sidebar = document.getElementById('sidebar');
-                var overlay = document.getElementById('sidebarOverlay');
-                if (sidebar.classList.contains('open')) {
-                    sidebar.classList.remove('open');
-                    overlay.classList.remove('show');
-                }
+    <div class="wrapper">
+        <!-- ===== Sidebar ===== -->
+        <aside class="sidebar">
+            <h1>⚡ Fast Rub</h1>
+            <div class="sub">فریم‌ورک مدرن ربات روبیکا</div>
+            <ul class="nav-links">
+                <li><a href="index.html" class="active">معرفی</a></li>
+                <li><a href="methods/index.html">متدها</a></li>
+                <li><a href="models/index.html">مدل‌ها</a></li>
+                <li><a href="features/index.html">قابلیت‌ها</a></li>
+                <li><a href="pyrubi/index.html">یوزر بات</a></li>
+            </ul>
+            <div class="toc-title">📌 فهرست مطالب</div>
+            <ul class="toc-list" id="toc-list"><li><a href="#intro">💎 معرفی</a></li><li><a href="#installation">📦 نصب</a></li><li><a href="#quickstart">🚀 شروع سریع</a></li><li><a href="#waitmanager">🧠 WaitManager</a></li><li><a href="#dataform">📋 DataForm</a></li><li><a href="#conversation">💬 Conversation</a></li><li><a href="#filters">🔍 فیلترها</a></li><li><a href="#keypad">⌨️ ساختن کیبورد</a></li><li><a href="#hotreload">🔄 Hot Reload</a></li><li><a href="#scheduler">⏰ Scheduler</a></li><li><a href="#signals">📡 Signals</a></li><li><a href="#plugins">🔌 Plugins</a></li><li><a href="#orm">🗄️ ORM داخلی</a></li><li><a href="#cli">💻 CLI</a></li><li><a href="#structure">📁 ساختار پروژه</a></li><li><a href="#pyrubi-note">⚠️ نکته درباره pyrubi</a></li><li><a href="#license">📄 لایسنس</a></li></ul>
+        </aside>
+
+        <!-- ===== Main Content ===== -->
+        <main class="main">
+            <!-- Hero -->
+            <div class="hero" id="hero">
+                <img src="icon.jpg" alt="Fast Rub Logo" class="hero-logo">
+                <h1>Fast Rub</h1>
+                <p class="tagline">سریع‌ترین، هوشمندترین و کامل‌ترین فریم‌ورک ربات روبیکا برای پایتون</p>
+                <div class="hero-actions">
+                    <a href="#installation" class="btn btn-primary">📦 نصب</a>
+                    <a href="#quickstart" class="btn btn-outline">🚀 شروع سریع</a>
+                    <a href="https://github.com/OandONE/fast_rub" class="btn btn-outline" target="_blank" rel="noopener">⭐ گیت‌هاب</a>
+                </div>
+            </div>
+
+            <!-- معرفی -->
+            <div class="section" id="intro">
+                <h2>💎 معرفی</h2>
+                <p>
+                    <strong>Fast Rub</strong> یک فریم‌ورک مدرن، سریع و سبک برای ساخت ربات‌های
+                    <strong>روبیکا</strong> است. با پشتیبانی کامل از <code>sync/async</code>،
+                    <strong>HTTP/2</strong>، و معماری <strong>async-native</strong>.
+                </p>
+                <div class="note-box success">
+                    🪶 تست شده روی <strong>۲۵۶ مگابایت رم DDR1</strong> با Alpine Linux — عملکرد فوق‌العاده حتی روی سخت‌افزار ضعیف
+                </div>
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <div class="fc-icon">⚡</div>
+                        <h4>HTTP/2 + Async-First</h4>
+                        <p>سریع‌ترین فریم‌ورک روبیکا با httpx &amp; h2</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="fc-icon">🧠</div>
+                        <h4>WaitManager</h4>
+                        <p>مدیریت هوشمند Rate Limit — فقط بدهید، بقیه خودکار</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="fc-icon">📋</div>
+                        <h4>DataForm</h4>
+                        <p>فرم‌های هوشمند با اعتبارسنجی و callback شرطی</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="fc-icon">💬</div>
+                        <h4>Conversation</h4>
+                        <p>مکالمات چندمرحله‌ای با State Machine</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="fc-icon">🔍</div>
+                        <h4>۲۰۰+ فیلتر</h4>
+                        <p>AND/OR/NOT + Inline Filters + Async Filters</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="fc-icon">🔄</div>
+                        <h4>Hot Reload</h4>
+                        <p>توسعه سریع بدون توقف ربات</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="fc-icon">⏰</div>
+                        <h4>Scheduler</h4>
+                        <p>زمان‌بندی کارها (interval + daily at)</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="fc-icon">📡</div>
+                        <h4>Signals</h4>
+                        <p>سیستم Event-driven برای ارتباط ماژول‌ها</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="fc-icon">🔌</div>
+                        <h4>Plugins</h4>
+                        <p>سیستم پلاگین با لود خودکار از پوشه</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="fc-icon">🗄️</div>
+                        <h4>ORM داخلی</h4>
+                        <p>دیتابیس SQLite با API ساده و SQL پارامتری</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="fc-icon">🛡️</div>
+                        <h4>AntiSpam</h4>
+                        <p>سیستم ضد اسپم پیشرفته + امنیت XSS</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="fc-icon">👥</div>
+                        <h4>یوزربات</h4>
+                        <p>پشتیبانی از یوزربات با فورک pyrubi</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- نصب -->
+            <div class="section" id="installation">
+                <h2>📦 نصب</h2>
+                <div class="code-block-wrapper">
+                    <button class="copy-btn" onclick="copyCode(this, 'pip install fastrub')">📋 کپی</button>
+                    <pre class="language-bash" tabindex="0"><code class="language-bash">pip <span class="token function">install</span> fastrub</code></pre>
+                </div>
+                <h3>میرورهای جایگزین</h3>
+                <p>در صورت قطع شدن میرور اصلی PyPI:</p>
+                <div class="code-block-wrapper">
+                    <button class="copy-btn" onclick="copyCode(this, 'pip install -i https://mirror-pypi.runflare.com/simple fastrub')">📋 کپی</button>
+                    <pre class="language-bash" tabindex="0"><code class="language-bash">pip <span class="token function">install</span> <span class="token parameter variable">-i</span> https://mirror-pypi.runflare.com/simple fastrub</code></pre>
+                </div>
+                <div class="code-block-wrapper">
+                    <button class="copy-btn" onclick="copyCode(this, 'pip install -i https://mirror.abrha.net/repository/pypi/simple fastrub')">📋 کپی</button>
+                    <pre class="language-bash" tabindex="0"><code class="language-bash">pip <span class="token function">install</span> <span class="token parameter variable">-i</span> https://mirror.abrha.net/repository/pypi/simple fastrub</code></pre>
+                </div>
+                <div class="code-block-wrapper">
+                    <button class="copy-btn" onclick="copyCode(this, 'pip install -i https://package-mirror.liara.ir/repository/pypi/simple fastrub')">📋 کپی</button>
+                    <pre class="language-bash" tabindex="0"><code class="language-bash">pip <span class="token function">install</span> <span class="token parameter variable">-i</span> https://package-mirror.liara.ir/repository/pypi/simple fastrub</code></pre>
+                </div>
+            </div>
+
+            <!-- شروع سریع -->
+            <div class="section" id="quickstart">
+                <h2>🚀 شروع سریع</h2>
+                <p>با <a href="https://rubika.ir/BotFather" target="_blank" rel="noopener">@BotFather</a> یک بات بسازید و توکن را کپی کنید.</p>
+                <h3>دریافت پیام‌ها (Polling)</h3>
+                <div class="code-block-wrapper">
+                    <button class="copy-btn" onclick="copyCode(this, `import asyncio
+from fast_rub import Client, filters
+from fast_rub.types import Update
+
+async def main():
+    bot = Client(" my_bot")="" @bot.on_message(filters.text("سلام"))="" async="" def="" say_hello(msg:="" update):="" await="" msg.reply("**سلام**="" از="" طرف="" فست="" روب="" ⚡")="" bot.run()="" asyncio.run(main())`)"="">📋 کپی</button>
+                    <pre class="language-python" tabindex="0"><code class="language-python"><span class="token keyword">import</span> asyncio
+<span class="token keyword">from</span> fast_rub <span class="token keyword">import</span> Client<span class="token punctuation">,</span> filters
+<span class="token keyword">from</span> fast_rub<span class="token punctuation">.</span>types <span class="token keyword">import</span> Update
+
+<span class="token keyword">async</span> <span class="token keyword">def</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    bot <span class="token operator">=</span> Client<span class="token punctuation">(</span><span class="token string">"my_bot"</span><span class="token punctuation">)</span>
+
+    <span class="token decorator annotation punctuation">@bot<span class="token punctuation">.</span>on_message</span><span class="token punctuation">(</span>filters<span class="token punctuation">.</span>text<span class="token punctuation">(</span><span class="token string">"سلام"</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+    <span class="token keyword">async</span> <span class="token keyword">def</span> <span class="token function">say_hello</span><span class="token punctuation">(</span>msg<span class="token punctuation">:</span> Update<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">await</span> msg<span class="token punctuation">.</span>reply<span class="token punctuation">(</span><span class="token string">"**سلام** از طرف فست روب ⚡"</span><span class="token punctuation">)</span>
+
+    <span class="token keyword">await</span> bot<span class="token punctuation">.</span>run<span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+asyncio<span class="token punctuation">.</span>run<span class="token punctuation">(</span>main<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span></code></pre>
+                </div>
+                <h3>کلیک روی دکمه‌های Inline</h3>
+                <div class="code-block-wrapper">
+                    <button class="copy-btn" onclick="copyCode(this, `import asyncio
+from fast_rub import Client
+from fast_rub.types import UpdateButton
+
+async def main():
+    bot = Client(" my_bot")="" @bot.on_button()="" async="" def="" button_click(msg:="" updatebutton):="" await="" msg.send_text(f"دکمهٔ="" {msg.new_message.aux_data.button_id}="" فشرده="" شد")="" bot.run()="" asyncio.run(main())`)"="">📋 کپی</button>
+                    <pre class="language-python" tabindex="0"><code class="language-python"><span class="token keyword">import</span> asyncio
+<span class="token keyword">from</span> fast_rub <span class="token keyword">import</span> Client
+<span class="token keyword">from</span> fast_rub<span class="token punctuation">.</span>types <span class="token keyword">import</span> UpdateButton
+
+<span class="token keyword">async</span> <span class="token keyword">def</span> <span class="token function">main</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    bot <span class="token operator">=</span> Client<span class="token punctuation">(</span><span class="token string">"my_bot"</span><span class="token punctuation">)</span>
+
+    <span class="token decorator annotation punctuation">@bot<span class="token punctuation">.</span>on_button</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+    <span class="token keyword">async</span> <span class="token keyword">def</span> <span class="token function">button_click</span><span class="token punctuation">(</span>msg<span class="token punctuation">:</span> UpdateButton<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">await</span> msg<span class="token punctuation">.</span>send_text<span class="token punctuation">(</span><span class="token string-interpolation"><span class="token string">f"دکمهٔ </span><span class="token interpolation"><span class="token punctuation">{</span>msg<span class="token punctuation">.</span>new_message<span class="token punctuation">.</span>aux_data<span class="token punctuation">.</span>button_id<span class="token punctuation">}</span></span><span class="token string"> فشرده شد"</span></span><span class="token punctuation">)</span>
+
+    <span class="token keyword">await</span> bot<span class="token punctuation">.</span>run<span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+asyncio<span class="token punctuation">.</span>run<span class="token punctuation">(</span>main<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span></code></pre>
+                </div>
+            </div>
+
+            <!-- WaitManager -->
+            <div class="section" id="waitmanager">
+                <h2>🧠 WaitManager</h2>
+                <p>
+                    مدیریت هوشمند ترافیک — قوی‌ترین سیستم مدیریت Rate Limit در بین تمام فریم‌ورک‌های روبیکا.
+                    کافی است به Client بدهید — بقیه خودکار انجام می‌شود.
+                </p>
+                <div class="code-block-wrapper">
+                    <button class="copy-btn" onclick="copyCode(this, `from fast_rub import Client, WaitManager
+
+bot = Client(
+    " my_bot",="" wait_manager="WaitManager(" low_traffic="60," medium_traffic="100," low_wait="0.0," medium_wait="1.0," high_wait="3.0," time_window="60.0," auto_track="True," #="" همه="" چیز="" خودکار="" )="" @bot.on_message()="" async="" def="" handler(msg:="" message):="" await="" msg.reply("سلام!")="" waitmanager="" تأخیر="" را="" مدیریت="" می‌کند="" bot.run()`)"="">📋 کپی</button>
+                    <pre class="language-python" tabindex="0"><code class="language-python"><span class="token keyword">from</span> fast_rub <span class="token keyword">import</span> Client<span class="token punctuation">,</span> WaitManager
+
+bot <span class="token operator">=</span> Client<span class="token punctuation">(</span>
+    <span class="token string">"my_bot"</span><span class="token punctuation">,</span>
+    wait_manager<span class="token operator">=</span>WaitManager<span class="token punctuation">(</span>
+        low_traffic<span class="token operator">=</span><span class="token number">60</span><span class="token punctuation">,</span>
+        medium_traffic<span class="token operator">=</span><span class="token number">100</span><span class="token punctuation">,</span>
+        low_wait<span class="token operator">=</span><span class="token number">0.0</span><span class="token punctuation">,</span>
+        medium_wait<span class="token operator">=</span><span class="token number">1.0</span><span class="token punctuation">,</span>
+        high_wait<span class="token operator">=</span><span class="token number">3.0</span><span class="token punctuation">,</span>
+        time_window<span class="token operator">=</span><span class="token number">60.0</span><span class="token punctuation">,</span>
+        auto_track<span class="token operator">=</span><span class="token boolean">True</span><span class="token punctuation">,</span>  <span class="token comment"># همه چیز خودکار</span>
+    <span class="token punctuation">)</span>
+<span class="token punctuation">)</span>
+
+<span class="token decorator annotation punctuation">@bot<span class="token punctuation">.</span>on_message</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+<span class="token keyword">async</span> <span class="token keyword">def</span> <span class="token function">handler</span><span class="token punctuation">(</span>msg<span class="token punctuation">:</span> Message<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">await</span> msg<span class="token punctuation">.</span>reply<span class="token punctuation">(</span><span class="token string">"سلام!"</span><span class="token punctuation">)</span>  <span class="token comment"># WaitManager خودکار تأخیر را مدیریت می‌کند</span>
+
+<span class="token keyword">await</span> bot<span class="token punctuation">.</span>run<span class="token punctuation">(</span><span class="token punctuation">)</span></code></pre>
+                </div>
+                <h3>کانال‌های قابل ردیابی</h3>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr><th>کانال</th><th>کاربرد</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><code>sending</code></td><td>ارسال پیام</td></tr>
+                            <tr><td><code>banning</code></td><td>اخراج (بن)</td></tr>
+                            <tr><td><code>forwarding</code></td><td>بازنشر (فوروارد)</td></tr>
+                            <tr><td><code>uploading</code></td><td>آپلود فایل</td></tr>
+                            <tr><td><code>editing</code></td><td>ویرایش پیام</td></tr>
+                            <tr><td><code>deleting</code></td><td>حذف پیام</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- DataForm -->
+            <div class="section" id="dataform">
+                <h2>📋 DataForm</h2>
+                <p>فرم‌های هوشمند — فقط بگویید «چی می‌خواهید» — اعتبارسنجی، کیبورد، و حرکت بین فیلدها خودکار است.</p>
+                <p><strong>DataForm</strong> یک سیستم فرم‌ساز قدرتمند است که به شما امکان می‌دهد فرم‌های چندمرحله‌ای را به‌سادگی تعریف کنید. با استفاده از کلاس‌های <code>Text</code>، <code>Number</code> و <code>Choice</code> می‌توانید هر نوع ورودی را مدیریت کنید. این سیستم به‌صورت خودکار کیبوردهای مناسب را ساخته، اعتبارسنجی را انجام می‌دهد و با استفاده از callback های شرطی (<code>skip_if</code>، <code>cancel_if</code>، <code>back_if</code> و ...) جریان فرم را کنترل می‌کند.</p>
+                <div class="code-block-wrapper">
+                    <button class="copy-btn" onclick="copyCode(this, `from fast_rub import Client, Conversation
+from fast_rub.core.forms import Text, Number, DataForm
+
+class UserInfo(DataForm):
+    name: Text = Text(" 👤="" نام="" خود="" را="" وارد="" کنید",="" min_len="3," max_len="30)" age:="" number="Number(&quot;🎂" چند="" سالته؟",="" min="18," max="60," keypad="True)" register="Conversation(name=&quot;register&quot;)" @register.entry_form(userinfo,="" commands="[&quot;/register&quot;])" async="" def="" done(msg,="" data):="" await="" msg.reply(f"ثبت="" شد:\\n👤="" {data['name']}\\n🎂="" {data['age']}")="" bot.add_conversation(register)`)"="">📋 کپی</button>
+                    <pre class="language-python" tabindex="0"><code class="language-python"><span class="token keyword">from</span> fast_rub <span class="token keyword">import</span> Client<span class="token punctuation">,</span> Conversation
+<span class="token keyword">from</span> fast_rub<span class="token punctuation">.</span>core<span class="token punctuation">.</span>forms <span class="token keyword">import</span> Text<span class="token punctuation">,</span> Number<span class="token punctuation">,</span> DataForm
+
+<span class="token keyword">class</span> <span class="token class-name">UserInfo</span><span class="token punctuation">(</span>DataForm<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    name<span class="token punctuation">:</span> Text <span class="token operator">=</span> Text<span class="token punctuation">(</span><span class="token string">"👤 نام خود را وارد کنید"</span><span class="token punctuation">,</span> min_len<span class="token operator">=</span><span class="token number">3</span><span class="token punctuation">,</span> max_len<span class="token operator">=</span><span class="token number">30</span><span class="token punctuation">)</span>
+    age<span class="token punctuation">:</span> Number <span class="token operator">=</span> Number<span class="token punctuation">(</span><span class="token string">"🎂 چند سالته؟"</span><span class="token punctuation">,</span> <span class="token builtin">min</span><span class="token operator">=</span><span class="token number">18</span><span class="token punctuation">,</span> <span class="token builtin">max</span><span class="token operator">=</span><span class="token number">60</span><span class="token punctuation">,</span> keypad<span class="token operator">=</span><span class="token boolean">True</span><span class="token punctuation">)</span>
+
+register <span class="token operator">=</span> Conversation<span class="token punctuation">(</span>name<span class="token operator">=</span><span class="token string">"register"</span><span class="token punctuation">)</span>
+
+<span class="token decorator annotation punctuation">@register<span class="token punctuation">.</span>entry_form</span><span class="token punctuation">(</span>UserInfo<span class="token punctuation">,</span> commands<span class="token operator">=</span><span class="token punctuation">[</span><span class="token string">"/register"</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+<span class="token keyword">async</span> <span class="token keyword">def</span> <span class="token function">done</span><span class="token punctuation">(</span>msg<span class="token punctuation">,</span> data<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">await</span> msg<span class="token punctuation">.</span>reply<span class="token punctuation">(</span><span class="token string-interpolation"><span class="token string">f"ثبت شد:\n👤 </span><span class="token interpolation"><span class="token punctuation">{</span>data<span class="token punctuation">[</span><span class="token string">'name'</span><span class="token punctuation">]</span><span class="token punctuation">}</span></span><span class="token string">\n🎂 </span><span class="token interpolation"><span class="token punctuation">{</span>data<span class="token punctuation">[</span><span class="token string">'age'</span><span class="token punctuation">]</span><span class="token punctuation">}</span></span><span class="token string">"</span></span><span class="token punctuation">)</span>
+
+bot<span class="token punctuation">.</span>add_conversation<span class="token punctuation">(</span>register<span class="token punctuation">)</span></code></pre>
+                </div>
+
+                <h3>callbackهای شرطی (پیشرفته)</h3>
+                <div class="code-block-wrapper">
+                    <button class="copy-btn" onclick="copyCode(this, `class AdvancedForm(DataForm):
+    name: Text = Text(" نام؟",="" min_len="3," repeat_if="lambda" v:="" "admin"="" in="" v.lower())="" #="" دوباره="" بپرس="" age:="" number="Number(&quot;سن؟&quot;," min="18," max="60)" job:="" text="Text(&quot;شغل؟&quot;," skip_if="lambda" data:="" data.get("age",="" 0)="" <="" 18)="" زیر="" ۱۸="" سال="" نپرس="" city:="" cancel_if="lambda" v="=" "هیچی")="" فرم="" را="" کنسل="" کن`)"="">📋 کپی</button>
+                    <pre class="language-python" tabindex="0"><code class="language-python"><span class="token keyword">class</span> <span class="token class-name">AdvancedForm</span><span class="token punctuation">(</span>DataForm<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    name<span class="token punctuation">:</span> Text <span class="token operator">=</span> Text<span class="token punctuation">(</span><span class="token string">"نام؟"</span><span class="token punctuation">,</span> min_len<span class="token operator">=</span><span class="token number">3</span><span class="token punctuation">,</span> repeat_if<span class="token operator">=</span><span class="token keyword">lambda</span> v<span class="token punctuation">:</span> <span class="token string">"admin"</span> <span class="token keyword">in</span> v<span class="token punctuation">.</span>lower<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>  <span class="token comment"># دوباره بپرس</span>
+    age<span class="token punctuation">:</span> Number <span class="token operator">=</span> Number<span class="token punctuation">(</span><span class="token string">"سن؟"</span><span class="token punctuation">,</span> <span class="token builtin">min</span><span class="token operator">=</span><span class="token number">18</span><span class="token punctuation">,</span> <span class="token builtin">max</span><span class="token operator">=</span><span class="token number">60</span><span class="token punctuation">)</span>
+    job<span class="token punctuation">:</span> Text <span class="token operator">=</span> Text<span class="token punctuation">(</span><span class="token string">"شغل؟"</span><span class="token punctuation">,</span> skip_if<span class="token operator">=</span><span class="token keyword">lambda</span> data<span class="token punctuation">:</span> data<span class="token punctuation">.</span>get<span class="token punctuation">(</span><span class="token string">"age"</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token operator">&lt;</span> <span class="token number">18</span><span class="token punctuation">)</span>  <span class="token comment"># زیر ۱۸ سال نپرس</span>
+    city<span class="token punctuation">:</span> Text <span class="token operator">=</span> Text<span class="token punctuation">(</span><span class="token string">"شهر؟"</span><span class="token punctuation">,</span> cancel_if<span class="token operator">=</span><span class="token keyword">lambda</span> v<span class="token punctuation">:</span> v <span class="token operator">==</span> <span class="token string">"هیچی"</span><span class="token punctuation">)</span>  <span class="token comment"># فرم را کنسل کن</span></code></pre>
+                </div>
+
+                <h3>🔧 فیلدهای DataForm</h3>
+                <p>سه نوع فیلد اصلی: <code>Text</code>، <code>Number</code> و <code>Choice</code>. هر کدام پارامترهای متنوعی برای کنترل رفتار فرم دارند مثل transform_if, repeat_if, default_if, hide_if, back_if, cancel_if, skip_if, hide_input, default, timeout, retry, validator, transform, pre_func, dict_args_func, list_args_func, func, invalid_answer, ... در Text</p>
+
+            </div>
+
+            <!-- Conversation -->
+            <div class="section" id="conversation">
+                <h2>💬 Conversation</h2>
+                <p>مکالمات چندمرحله‌ای — روش کلاسیک (Entry + State)</p>
+                <div class="code-block-wrapper">
+                    <button class="copy-btn" onclick="copyCode(this, `register = Conversation(name=" register")="" @register.entry(commands="[&quot;/register&quot;])" async="" def="" ask_name(msg,="" data):="" await="" msg.reply("اسمت="" چیه؟")="" return="" "waiting_name"="" @register.state("waiting_name")="" get_name(msg,="" data["name"]="msg.new_message.text" msg.reply(f"سلام="" {msg.new_message.text}!")="" conversation.end="" bot.add_conversation(register)`)"="">📋 کپی</button>
+                    <pre class="language-python" tabindex="0"><code class="language-python">register <span class="token operator">=</span> Conversation<span class="token punctuation">(</span>name<span class="token operator">=</span><span class="token string">"register"</span><span class="token punctuation">)</span>
+
+<span class="token decorator annotation punctuation">@register<span class="token punctuation">.</span>entry</span><span class="token punctuation">(</span>commands<span class="token operator">=</span><span class="token punctuation">[</span><span class="token string">"/register"</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+<span class="token keyword">async</span> <span class="token keyword">def</span> <span class="token function">ask_name</span><span class="token punctuation">(</span>msg<span class="token punctuation">,</span> data<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">await</span> msg<span class="token punctuation">.</span>reply<span class="token punctuation">(</span><span class="token string">"اسمت چیه؟"</span><span class="token punctuation">)</span>
+    <span class="token keyword">return</span> <span class="token string">"waiting_name"</span>
+
+<span class="token decorator annotation punctuation">@register<span class="token punctuation">.</span>state</span><span class="token punctuation">(</span><span class="token string">"waiting_name"</span><span class="token punctuation">)</span>
+<span class="token keyword">async</span> <span class="token keyword">def</span> <span class="token function">get_name</span><span class="token punctuation">(</span>msg<span class="token punctuation">,</span> data<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    data<span class="token punctuation">[</span><span class="token string">"name"</span><span class="token punctuation">]</span> <span class="token operator">=</span> msg<span class="token punctuation">.</span>new_message<span class="token punctuation">.</span>text
+    <span class="token keyword">await</span> msg<span class="token punctuation">.</span>reply<span class="token punctuation">(</span><span class="token string-interpolation"><span class="token string">f"سلام </span><span class="token interpolation"><span class="token punctuation">{</span>msg<span class="token punctuation">.</span>new_message<span class="token punctuation">.</span>text<span class="token punctuation">}</span></span><span class="token string">!"</span></span><span class="token punctuation">)</span>
+    <span class="token keyword">return</span> Conversation<span class="token punctuation">.</span>END
+
+bot<span class="token punctuation">.</span>add_conversation<span class="token punctuation">(</span>register<span class="token punctuation">)</span></code></pre>
+                </div>
+            </div>
+
+            <!-- فیلترها -->
+            <div class="section" id="filters">
+                <h2>🔍 فیلترها</h2>
+                <p>بیش از ۲۰۰ فیلتر آماده برای محدود کردن هندلرها. ترکیب با <code>&amp;</code>، <code>|</code> و <code>~</code>.</p>
+                <div class="code-block-wrapper">
+                    <button class="copy-btn" onclick="copyCode(this, `from fast_rub import filters
+
+# فیلتر ساده
+@bot.on_message(filters.text(" start"))="" #="" ترکیب="" (and)="" @bot.on_message(filters.text("="" admin")="" &="" filters.is_user)="" (or)="" help")="" |="" filters.text("راهنما"))="" not="" @bot.on_message(~filters.is_group)="" فقط="" pv="" async="" —="" چک="" دیتابیس="" @bot.on_message(filters.db_exists("users",="" lambda="" u:="" {"chat_id":="" u.chat_id},="" db="my_db))" inline="" filters="" (دکمه‌های="" شیشه‌ای)="" @bot.on_button(filters.button_id("home")="" filters.sender_ids(["admin_id"]))`)"="">📋 کپی</button>
+                    <pre class="language-python" tabindex="0"><code class="language-python"><span class="token keyword">from</span> fast_rub <span class="token keyword">import</span> filters
+
+<span class="token comment"># فیلتر ساده</span>
+<span class="token decorator annotation punctuation">@bot<span class="token punctuation">.</span>on_message</span><span class="token punctuation">(</span>filters<span class="token punctuation">.</span>text<span class="token punctuation">(</span><span class="token string">"/start"</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+<span class="token comment"># ترکیب (AND)</span>
+<span class="token decorator annotation punctuation">@bot<span class="token punctuation">.</span>on_message</span><span class="token punctuation">(</span>filters<span class="token punctuation">.</span>text<span class="token punctuation">(</span><span class="token string">"/admin"</span><span class="token punctuation">)</span> <span class="token operator">&amp;</span> filters<span class="token punctuation">.</span>is_user<span class="token punctuation">)</span>
+
+<span class="token comment"># ترکیب (OR)</span>
+<span class="token decorator annotation punctuation">@bot<span class="token punctuation">.</span>on_message</span><span class="token punctuation">(</span>filters<span class="token punctuation">.</span>text<span class="token punctuation">(</span><span class="token string">"/help"</span><span class="token punctuation">)</span> <span class="token operator">|</span> filters<span class="token punctuation">.</span>text<span class="token punctuation">(</span><span class="token string">"راهنما"</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+<span class="token comment"># NOT</span>
+<span class="token decorator annotation punctuation">@bot<span class="token punctuation">.</span>on_message</span><span class="token punctuation">(</span><span class="token operator">~</span>filters<span class="token punctuation">.</span>is_group<span class="token punctuation">)</span>  <span class="token comment"># فقط PV</span>
+
+<span class="token comment"># Async — چک دیتابیس</span>
+<span class="token decorator annotation punctuation">@bot<span class="token punctuation">.</span>on_message</span><span class="token punctuation">(</span>filters<span class="token punctuation">.</span>db_exists<span class="token punctuation">(</span><span class="token string">"users"</span><span class="token punctuation">,</span> <span class="token keyword">lambda</span> u<span class="token punctuation">:</span> <span class="token punctuation">{</span><span class="token string">"chat_id"</span><span class="token punctuation">:</span> u<span class="token punctuation">.</span>chat_id<span class="token punctuation">}</span><span class="token punctuation">,</span> db<span class="token operator">=</span>my_db<span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+<span class="token comment"># Inline Filters (دکمه‌های شیشه‌ای)</span>
+<span class="token decorator annotation punctuation">@bot<span class="token punctuation">.</span>on_button</span><span class="token punctuation">(</span>filters<span class="token punctuation">.</span>button_id<span class="token punctuation">(</span><span class="token string">"home"</span><span class="token punctuation">)</span> <span class="token operator">&amp;</span> filters<span class="token punctuation">.</span>sender_ids<span class="token punctuation">(</span><span class="token punctuation">[</span><span class="token string">"admin_id"</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">)</span></code></pre>
+                </div>
+            </div>
+
+            <!-- KeyPad -->
+            <div class="section" id="keypad">
+                <h2>⌨️ ساختن کیبورد</h2>
+                <div class="code-block-wrapper">
+                    <button class="copy-btn" onclick="copyCode(this, `from fast_rub.button import KeyPad
+
+keypad = KeyPad()
+keypad.append(keypad.simple(" btn_1",="" "دکمه="" یک"))="" keypad.append(keypad.simple("btn_2",="" دو"),="" keypad.simple("btn_3",="" سه"))="" #="" کیبورد="" معمولی="" await="" msg.reply("انتخاب="" کنید:",="" keypad="keypad.build())" شیشه‌ای="" inline_keypad="keypad.build())`)&quot;">📋 کپی</button>
+                    <pre class="language-python" tabindex="0"><code class="language-python"><span class="token keyword">from</span> fast_rub<span class="token punctuation">.</span>button <span class="token keyword">import</span> KeyPad
+
+keypad <span class="token operator">=</span> KeyPad<span class="token punctuation">(</span><span class="token punctuation">)</span>
+keypad<span class="token punctuation">.</span>append<span class="token punctuation">(</span>keypad<span class="token punctuation">.</span>simple<span class="token punctuation">(</span><span class="token string">"btn_1"</span><span class="token punctuation">,</span> <span class="token string">"دکمه یک"</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+keypad<span class="token punctuation">.</span>append<span class="token punctuation">(</span>keypad<span class="token punctuation">.</span>simple<span class="token punctuation">(</span><span class="token string">"btn_2"</span><span class="token punctuation">,</span> <span class="token string">"دکمه دو"</span><span class="token punctuation">)</span><span class="token punctuation">,</span> keypad<span class="token punctuation">.</span>simple<span class="token punctuation">(</span><span class="token string">"btn_3"</span><span class="token punctuation">,</span> <span class="token string">"دکمه سه"</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+<span class="token comment"># کیبورد معمولی</span>
+<span class="token keyword">await</span> msg<span class="token punctuation">.</span>reply<span class="token punctuation">(</span><span class="token string">"انتخاب کنید:"</span><span class="token punctuation">,</span> keypad<span class="token operator">=</span>keypad<span class="token punctuation">.</span>build<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+<span class="token comment"># کیبورد شیشه‌ای</span>
+<span class="token keyword">await</span> msg<span class="token punctuation">.</span>reply<span class="token punctuation">(</span><span class="token string">"انتخاب کنید:"</span><span class="token punctuation">,</span> inline_keypad<span class="token operator">=</span>keypad<span class="token punctuation">.</span>build<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span></code></pre>
+                </div>
+            </div>
+
+            <!-- Hot Reload -->
+            <div class="section" id="hotreload">
+                <h2>🔄 Hot Reload</h2>
+                <p>هر بار فایلی را ذخیره کنید، ربات خودکار ری‌استارت می‌شود.</p>
+                <div class="code-block-wrapper">
+                    <button class="copy-btn" onclick="copyCode(this, `await bot.run(reload=True)
+
+# یا از CLI:
+# $ fastrub run --reload`)">📋 کپی</button>
+                    <pre class="language-python" tabindex="0"><code class="language-python"><span class="token keyword">await</span> bot<span class="token punctuation">.</span>run<span class="token punctuation">(</span><span class="token builtin">reload</span><span class="token operator">=</span><span class="token boolean">True</span><span class="token punctuation">)</span>
+
+<span class="token comment"># یا از CLI:</span>
+<span class="token comment"># $ fastrub run --reload</span></code></pre>
+                </div>
+            </div>
+
+            <!-- Scheduler -->
+            <div class="section" id="scheduler">
+                <h2>⏰ Scheduler</h2>
+                <div class="code-block-wrapper">
+                    <button class="copy-btn" onclick="copyCode(this, `from fast_rub import Scheduler
+
+scheduler = Scheduler()
+
+@scheduler.every(minutes=30)
+async def cleanup():
+    print(" 🧹="" پاک‌سازی="" خودکار")="" @scheduler.every(at="08:00" )="" async="" def="" report():="" print("📊="" گزارش="" صبحگاهی")`)"="">📋 کپی</button>
+                    <pre class="language-python" tabindex="0"><code class="language-python"><span class="token keyword">from</span> fast_rub <span class="token keyword">import</span> Scheduler
+
+scheduler <span class="token operator">=</span> Scheduler<span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+<span class="token decorator annotation punctuation">@scheduler<span class="token punctuation">.</span>every</span><span class="token punctuation">(</span>minutes<span class="token operator">=</span><span class="token number">30</span><span class="token punctuation">)</span>
+<span class="token keyword">async</span> <span class="token keyword">def</span> <span class="token function">cleanup</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">"🧹 پاک‌سازی خودکار"</span><span class="token punctuation">)</span>
+
+<span class="token decorator annotation punctuation">@scheduler<span class="token punctuation">.</span>every</span><span class="token punctuation">(</span>at<span class="token operator">=</span><span class="token string">"08:00"</span><span class="token punctuation">)</span>
+<span class="token keyword">async</span> <span class="token keyword">def</span> <span class="token function">report</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">"📊 گزارش صبحگاهی"</span><span class="token punctuation">)</span></code></pre>
+                </div>
+            </div>
+
+            <!-- Signals -->
+            <div class="section" id="signals">
+                <h2>📡 Signals</h2>
+                <div class="code-block-wrapper">
+                    <button class="copy-btn" onclick="copyCode(this, `from fast_rub import SignalManager
+
+signals = SignalManager()
+
+@signals.on(" user_registered")="" async="" def="" welcome(user_id,="" chat_id):="" print(f"👋="" کاربر="" {user_id}="" ثبت‌نام="" کرد!")="" await="" signals.emit("user_registered",="" user_id="123" ,="" chat_id="456" )`)"="">📋 کپی</button>
+                    <pre class="language-python" tabindex="0"><code class="language-python"><span class="token keyword">from</span> fast_rub <span class="token keyword">import</span> SignalManager
+
+signals <span class="token operator">=</span> SignalManager<span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+<span class="token decorator annotation punctuation">@signals<span class="token punctuation">.</span>on</span><span class="token punctuation">(</span><span class="token string">"user_registered"</span><span class="token punctuation">)</span>
+<span class="token keyword">async</span> <span class="token keyword">def</span> <span class="token function">welcome</span><span class="token punctuation">(</span>user_id<span class="token punctuation">,</span> chat_id<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string-interpolation"><span class="token string">f"👋 کاربر </span><span class="token interpolation"><span class="token punctuation">{</span>user_id<span class="token punctuation">}</span></span><span class="token string"> ثبت‌نام کرد!"</span></span><span class="token punctuation">)</span>
+
+<span class="token keyword">await</span> signals<span class="token punctuation">.</span>emit<span class="token punctuation">(</span><span class="token string">"user_registered"</span><span class="token punctuation">,</span> user_id<span class="token operator">=</span><span class="token string">"123"</span><span class="token punctuation">,</span> chat_id<span class="token operator">=</span><span class="token string">"456"</span><span class="token punctuation">)</span></code></pre>
+                </div>
+            </div>
+
+            <!-- Plugins -->
+            <div class="section" id="plugins">
+                <h2>🔌 Plugins</h2>
+                <p>فایل <code>plugins/admin.py</code>:</p>
+                <div class="code-block-wrapper">
+                    <button class="copy-btn" onclick="copyCode(this, `async def setup(client):
+    @client.on_message(filters.commands([" admin"]))="" async="" def="" panel(msg):="" await="" msg.reply("🔧="" پنل="" ادمین")="" #="" لود="" خودکار="" bot.load_plugins("plugins")`)"="">📋 کپی</button>
+                    <pre class="language-python" tabindex="0"><code class="language-python"><span class="token keyword">async</span> <span class="token keyword">def</span> <span class="token function">setup</span><span class="token punctuation">(</span>client<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token decorator annotation punctuation">@client<span class="token punctuation">.</span>on_message</span><span class="token punctuation">(</span>filters<span class="token punctuation">.</span>commands<span class="token punctuation">(</span><span class="token punctuation">[</span><span class="token string">"admin"</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+    <span class="token keyword">async</span> <span class="token keyword">def</span> <span class="token function">panel</span><span class="token punctuation">(</span>msg<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">await</span> msg<span class="token punctuation">.</span>reply<span class="token punctuation">(</span><span class="token string">"🔧 پنل ادمین"</span><span class="token punctuation">)</span>
+
+<span class="token comment"># لود خودکار</span>
+<span class="token keyword">await</span> bot<span class="token punctuation">.</span>load_plugins<span class="token punctuation">(</span><span class="token string">"plugins"</span><span class="token punctuation">)</span></code></pre>
+                </div>
+            </div>
+
+            <!-- ORM -->
+            <div class="section" id="orm">
+                <h2>🗄️ ORM داخلی</h2>
+                <div class="code-block-wrapper">
+                    <button class="copy-btn" onclick="copyCode(this, `from fast_rub.db import DataBase
+
+db = DataBase(" my_bot.db")="" await="" db.start({"users":="" {"chat_id":="" "text",="" "name":="" "text"}})="" db.write("users",="" "123",="" "علی"})="" user="await" db.find("users",="" "*",="" "123"})`)"="">📋 کپی</button>
+                    <pre class="language-python" tabindex="0"><code class="language-python"><span class="token keyword">from</span> fast_rub<span class="token punctuation">.</span>db <span class="token keyword">import</span> DataBase
+
+db <span class="token operator">=</span> DataBase<span class="token punctuation">(</span><span class="token string">"my_bot.db"</span><span class="token punctuation">)</span>
+<span class="token keyword">await</span> db<span class="token punctuation">.</span>start<span class="token punctuation">(</span><span class="token punctuation">{</span><span class="token string">"users"</span><span class="token punctuation">:</span> <span class="token punctuation">{</span><span class="token string">"chat_id"</span><span class="token punctuation">:</span> <span class="token string">"TEXT"</span><span class="token punctuation">,</span> <span class="token string">"name"</span><span class="token punctuation">:</span> <span class="token string">"TEXT"</span><span class="token punctuation">}</span><span class="token punctuation">}</span><span class="token punctuation">)</span>
+
+<span class="token keyword">await</span> db<span class="token punctuation">.</span>write<span class="token punctuation">(</span><span class="token string">"users"</span><span class="token punctuation">,</span> <span class="token punctuation">{</span><span class="token string">"chat_id"</span><span class="token punctuation">:</span> <span class="token string">"123"</span><span class="token punctuation">,</span> <span class="token string">"name"</span><span class="token punctuation">:</span> <span class="token string">"علی"</span><span class="token punctuation">}</span><span class="token punctuation">)</span>
+user <span class="token operator">=</span> <span class="token keyword">await</span> db<span class="token punctuation">.</span>find<span class="token punctuation">(</span><span class="token string">"users"</span><span class="token punctuation">,</span> <span class="token string">"*"</span><span class="token punctuation">,</span> <span class="token punctuation">{</span><span class="token string">"chat_id"</span><span class="token punctuation">:</span> <span class="token string">"123"</span><span class="token punctuation">}</span><span class="token punctuation">)</span></code></pre>
+                </div>
+            </div>
+
+            <!-- CLI -->
+            <div class="section" id="cli">
+                <h2>💻 CLI</h2>
+                <div class="code-block-wrapper">
+                    <button class="copy-btn" onclick="copyCode(this, `fastrub new my_bot      # پروژه جدید
+fastrub run             # اجرا
+fastrub run --reload    # اجرا با Hot Reload
+fastrub version         # نسخه
+fastrub docs            # مستندات`)">📋 کپی</button>
+                    <pre class="language-bash" tabindex="0"><code class="language-bash">fastrub new my_bot      <span class="token comment"># پروژه جدید</span>
+fastrub run             <span class="token comment"># اجرا</span>
+fastrub run <span class="token parameter variable">--reload</span>    <span class="token comment"># اجرا با Hot Reload</span>
+fastrub version         <span class="token comment"># نسخه</span>
+fastrub docs            <span class="token comment"># مستندات</span></code></pre>
+                </div>
+            </div>
+
+            <!-- ساختار پروژه -->
+            <div class="section" id="structure">
+                <h2>📁 ساختار پروژه</h2>
+                <div class="code-block-wrapper">
+                    <button class="copy-btn" onclick="copyCode(this, `fast_rub
+├── button # KeyPad
+│   ├── __init__.py
+│   └── key_pad.py # KeyPad | InlineKeyPad
+├── cli.py # CLI - fastrub cmd
+├── core # core fastrub
+│   ├── async_sync.py # Converter async to sync funcs
+│   ├── background.py # BackGround tasks
+│   ├── client.py # Client core fastrub
+│   ├── config.py # Config client
+│   ├── conversation.py # Conversation classic and DataForm
+│   ├── forms # Forms for DataForm conversation
+│   │   ├── config.py # Config the DataForm
+│   │   ├── data_form.py # Config the DataForm
+│   │   ├── fields.py # Fields - Number, Text, Choice
+│   │   ├── __init__.py
+│   │   └── manager.py # Manager DataForm in conversation.py
+│   ├── helpers.py # Helpers for client
+│   ├── hotreload.py # Hot reload client
+│   ├── __init__.py
+│   ├── middleware.py # Middleware client
+│   ├── plugins.py # Plugins client
+│   ├── scheduler.py # Scheduler for scheduling tasks
+│   ├── signals.py # Signals (like Django Framework)
+│   └── webhook_server.py # Web Server client for webhook local
+├── db # DataBases
+│   ├── database.py # DataBase ORM fastrub
+│   ├── __init__.py
+│   ├── message_keeper.py # DB Message Keeper for find message by message id
+│   └── session.py # DB Sessions fastrub({name}.faru)
+├── __init__.py
+├── network # Network fastrub
+│   ├── __init__.py
+│   └── network.py # Network fastrub - Httpx HTTP/2
+├── pyrightconfig.json # Config for Pyright Extension
+├── pyrubi # UserBot - Pyrubi(Forked)
+│   ├── client # core client
+│   │   ├── client.py # core client - API to fast_rub/methods
+│   │   └── __init__.py
+│   ├── crypto # Cryper
+│   │   ├── crypto.py # De/En cryper Conect UserBot rubika
+│   │   └── __init__.py
+│   ├── enums.py # Enums client
+│   ├── exceptions.py # Exceptions
+│   ├── filters.py # Filters Messages
+│   ├── __init__.py
+│   ├── methods # API Methods
+│   │   ├── __init__.py
+│   │   └── methods.py # Concter to rubika API
+│   ├── network # Network UserBot
+│   │   ├── helper.py # Helper network
+│   │   ├── __init__.py
+│   │   ├── network.py # Network API
+│   │   └── socket.py # Web Socket rubika
+│   ├── sessions # Session
+│   │   ├── __init__.py
+│   │   └── sessions.py # Session manager
+│   ├── types # Types
+│   │   ├── __init__.py
+│   │   └── socket # Types Web Socket
+│   │       ├── __init__.py
+│   │       └── message.py # Message Class
+│   └── utils # Utils UserBot
+│       ├── configs.py # Config client
+│       ├── __init__.py
+│       ├── reacrions.py # ReActions utils
+│       └── utils.py # Utils UserBot
+├── type # Conect to types folder
+│   └── __init__.py
+├── types # Types fastrub
+│   ├── errors.py # Exception fastrub
+│   ├── exceptions.py # Alias errors.py
+│   ├── forms.py # Alias fast_rub/core/forms
+│   ├── get_type.py # Utils for Update Class
+│   ├── __init__.py
+│   ├── metadata.py # Utils for Update Class - MetaData Message
+│   ├── models # Models client
+│   │   ├── base_model # Base Models for Bot &amp; Chat Classs
+│   │   ├── bot.py # Bot Model
+│   │   ├── chat.py # Chat Model
+│   │   └── __init__.py
+│   ├── props.py
+│   ├── prop_update.py
+│   ├── update_button.py # Inline Message/Update Type fastrub
+│   ├── update.py # Message/Update Type fastrub
+│   └── webhook.py # WebHook config
+└── utils # Utils fastrub
+    ├── antispam.py # Anti Spam client
+    ├── cache.py # Cache client
+    ├── colors.py # Utils for color print client(display_welcome)
+    ├── encryption.py # Crypter token bot
+    ├── filters.py # Filters for Messages
+    ├── __init__.py
+    ├── inline_filters.py # InlineFilters for Inline Messages
+    ├── logger.py # Logger client
+    ├── metadata.py # Creator text for format Markdown/HTML
+    ├── run_filter.py # Utils client run async/sync filter
+    ├── snapshot.py # SnapShot JSON client
+    ├── template.py # Anti-XSS in message text
+    ├── text_parser.py # Text Parser MetaData for text message - Markdown | HTML
+    ├── utils.py # More utils
+    ├── version.py # Version fastrub
+    └── wait_manager.py # Manager Waiting for sending request(send_message, ban, ...)`)">📋 کپی</button>
+                    <pre class="language-text" tabindex="0"><code class="language-text">fast_rub
+├── button # KeyPad
+│   ├── __init__.py
+│   └── key_pad.py # KeyPad | InlineKeyPad
+├── cli.py # CLI - fastrub cmd
+├── core # core fastrub
+│   ├── async_sync.py # Converter async to sync funcs
+│   ├── background.py # BackGround tasks
+│   ├── client.py # Client core fastrub
+│   ├── config.py # Config client
+│   ├── conversation.py # Conversation classic and DataForm
+│   ├── forms # Forms for DataForm conversation
+│   │   ├── config.py # Config the DataForm
+│   │   ├── data_form.py # Config the DataForm
+│   │   ├── fields.py # Fields - Number, Text, Choice
+│   │   ├── __init__.py
+│   │   └── manager.py # Manager DataForm in conversation.py
+│   ├── helpers.py # Helpers for client
+│   ├── hotreload.py # Hot reload client
+│   ├── __init__.py
+│   ├── middleware.py # Middleware client
+│   ├── plugins.py # Plugins client
+│   ├── scheduler.py # Scheduler for scheduling tasks
+│   ├── signals.py # Signals (like Django Framework)
+│   └── webhook_server.py # Web Server client for webhook local
+├── db # DataBases
+│   ├── database.py # DataBase ORM fastrub
+│   ├── __init__.py
+│   ├── message_keeper.py # DB Message Keeper for find message by message id
+│   └── session.py # DB Sessions fastrub({name}.faru)
+├── __init__.py
+├── network # Network fastrub
+│   ├── __init__.py
+│   └── network.py # Network fastrub - Httpx HTTP/2
+├── pyrightconfig.json # Config for Pyright Extension
+├── pyrubi # UserBot - Pyrubi(Forked)
+│   ├── client # core client
+│   │   ├── client.py # core client - API to fast_rub/methods
+│   │   └── __init__.py
+│   ├── crypto # Cryper
+│   │   ├── crypto.py # De/En cryper Conect UserBot rubika
+│   │   └── __init__.py
+│   ├── enums.py # Enums client
+│   ├── exceptions.py # Exceptions
+│   ├── filters.py # Filters Messages
+│   ├── __init__.py
+│   ├── methods # API Methods
+│   │   ├── __init__.py
+│   │   └── methods.py # Concter to rubika API
+│   ├── network # Network UserBot
+│   │   ├── helper.py # Helper network
+│   │   ├── __init__.py
+│   │   ├── network.py # Network API
+│   │   └── socket.py # Web Socket rubika
+│   ├── sessions # Session
+│   │   ├── __init__.py
+│   │   └── sessions.py # Session manager
+│   ├── types # Types
+│   │   ├── __init__.py
+│   │   └── socket # Types Web Socket
+│   │       ├── __init__.py
+│   │       └── message.py # Message Class
+│   └── utils # Utils UserBot
+│       ├── configs.py # Config client
+│       ├── __init__.py
+│       ├── reacrions.py # ReActions utils
+│       └── utils.py # Utils UserBot
+├── type # Conect to types folder
+│   └── __init__.py
+├── types # Types fastrub
+│   ├── errors.py # Exception fastrub
+│   ├── exceptions.py # Alias errors.py
+│   ├── forms.py # Alias fast_rub/core/forms
+│   ├── get_type.py # Utils for Update Class
+│   ├── __init__.py
+│   ├── metadata.py # Utils for Update Class - MetaData Message
+│   ├── models # Models client
+│   │   ├── base_model # Base Models for Bot &amp; Chat Classs
+│   │   ├── bot.py # Bot Model
+│   │   ├── chat.py # Chat Model
+│   │   └── __init__.py
+│   ├── props.py
+│   ├── prop_update.py
+│   ├── update_button.py # Inline Message/Update Type fastrub
+│   ├── update.py # Message/Update Type fastrub
+│   └── webhook.py # WebHook config
+└── utils # Utils fastrub
+    ├── antispam.py # Anti Spam client
+    ├── cache.py # Cache client
+    ├── colors.py # Utils for color print client(display_welcome)
+    ├── encryption.py # Crypter token bot
+    ├── filters.py # Filters for Messages
+    ├── __init__.py
+    ├── inline_filters.py # InlineFilters for Inline Messages
+    ├── logger.py # Logger client
+    ├── metadata.py # Creator text for format Markdown/HTML
+    ├── run_filter.py # Utils client run async/sync filter
+    ├── snapshot.py # SnapShot JSON client
+    ├── template.py # Anti-XSS in message text
+    ├── text_parser.py # Text Parser MetaData for text message - Markdown | HTML
+    ├── utils.py # More utils
+    ├── version.py # Version fastrub
+    └── wait_manager.py # Manager Waiting for sending request(send_message, ban, ...)</code></pre>
+                </div>
+            </div>
+
+            <!-- نکته درباره pyrubi -->
+            <div class="section" id="pyrubi-note">
+                <h2>⚠️ نکته درباره pyrubi</h2>
+                <div class="note-box warning">
+                    فست روب از یوزر بات پشتیبانی می‌کند.
+                    بخش/پوشه <code>pyrubi</code> فورکی از <a href="https://github.com/AliGanji1/pyrubi" target="_blank" rel="noopener">AliGanji1/pyrubi</a> است که برای قسمت یوزر بات استفاده شده و دارای لایسنس MIT می‌باشد.
+                </div>
+            </div>
+
+            <!-- لایسنس -->
+            <div class="section" id="license">
+                <h2>📄 لایسنس</h2>
+                <p>این پروژه تحت لایسنس <strong>MIT</strong> منتشر شده است.</p>
+                <div class="note-box success">
+                    ❤️ ساخته‌شده با ❤️ توسط <strong>سید محمد حسین موسوی رجا — OandONE</strong>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <footer class="footer">
+                <a href="methods/index.html">→ متدها</a>
+                <a href="models/index.html">→ مدل‌ها</a>
+                <a href="features/index.html">قابلیت‌ها ←</a>
+                <a href="pyrubi/index.html">یوزر بات ←</a>
+                <span style="color:var(--text-muted)">© ۱۴۰۵ · ساخته‌شده با ❤️ توسط OandONE</span>
+            </footer>
+        </main>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-bash.min.js"></script>
+
+    <script>
+        // Build TOC from sections
+        function buildTOC() {
+            const tocList = document.getElementById('toc-list');
+            const sections = document.querySelectorAll('.section[id]');
+            tocList.innerHTML = '';
+            sections.forEach(section => {
+                const li = document.createElement('li');
+                const a = document.createElement('a');
+                a.href = '#' + section.id;
+                a.textContent = section.querySelector('h2').textContent;
+                li.appendChild(a);
+                tocList.appendChild(li);
             });
-        });
+        }
+        document.addEventListener('DOMContentLoaded', buildTOC);
 
-        //  Copy Code 
+        // Copy code
         function copyCode(btn, code) {
             navigator.clipboard.writeText(code.trim()).then(function() {
-                btn.textContent = '✅ کپی شد';
+                btn.textContent = '✅ کپی شد!';
                 btn.classList.add('copied');
-                showToast('✅ کد با موفقیت کپی شد!');
                 setTimeout(function() {
                     btn.textContent = '📋 کپی';
                     btn.classList.remove('copied');
-                }, 1800);
-            }).catch(function() {
-                showToast('⚠️ خطا در کپی کردن');
+                }, 1500);
+            }).catch(function(err) {
+                btn.textContent = '⚠️ خطا';
+                setTimeout(function() {
+                    btn.textContent = '📋 کپی';
+                }, 1500);
             });
         }
 
-        //  Toast 
-        function showToast(message) {
-            var toast = document.getElementById('toast');
-            toast.textContent = message;
-            toast.classList.add('show');
-            clearTimeout(toast._timeout);
-            toast._timeout = setTimeout(function() {
-                toast.classList.remove('show');
-            }, 2000);
+        // Highlight all code blocks
+        if (window.Prism) {
+            Prism.highlightAll();
         }
 
-        //  Active sidebar link on scroll 
-        (function() {
-            var sections = document.querySelectorAll('.section[id], .hero[id]');
-            var navLinks = document.querySelectorAll('.sidebar-nav a[href^="#"]');
-
-            function updateActiveLink() {
-                var scrollY = window.scrollY + 100;
-                var currentId = '';
-                sections.forEach(function(section) {
-                    if (section.offsetTop <= scrollY) {
-                        currentId = section.getAttribute('id');
+        // Smooth scroll for TOC links
+        document.querySelectorAll('.toc-list a, .nav-links a').forEach(link => {
+            link.addEventListener('click', function(e) {
+                const href = this.getAttribute('href');
+                if (href.startsWith('#')) {
+                    e.preventDefault();
+                    const target = document.querySelector(href);
+                    if (target) {
+                        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
                     }
-                });
-                navLinks.forEach(function(link) {
-                    link.classList.remove('active');
-                    if (link.getAttribute('href') === '#' + currentId) {
-                        link.classList.add('active');
-                    }
-                });
-                if (!currentId && navLinks.length > 0) {
-                    navLinks[0].classList.add('active');
                 }
-            }
-
-            window.addEventListener('scroll', updateActiveLink, { passive: true });
-            updateActiveLink();
-        })();
-
-        //  Close sidebar on Escape 
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') {
-                var sidebar = document.getElementById('sidebar');
-                var overlay = document.getElementById('sidebarOverlay');
-                if (sidebar.classList.contains('open')) {
-                    sidebar.classList.remove('open');
-                    overlay.classList.remove('show');
-                }
-            }
+            });
         });
     </script>
-</body>
-</html>
+
+</body></html>
