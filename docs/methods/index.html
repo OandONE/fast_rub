@@ -265,6 +265,9 @@
       color: var(--text);
       font-weight: 500;
       margin-bottom: 1.5rem;
+      max-width: 100%;
+      overflow-wrap: anywhere;
+      word-break: break-word;
     }
     .method .desc {
       margin-bottom: 1.8rem;
@@ -319,7 +322,7 @@
     }
     .copy-btn {
       position: absolute;
-      left: 0.8rem;
+      right: 0.8rem;
       top: 0.8rem;
       background: var(--copy-btn-bg);
       color: var(--copy-btn-text);
@@ -470,6 +473,7 @@
           ["show_progress", "bool | None", "نمایش لاگ‌های پیشرفت آپلود/دانلود فایل"],
           ["keeper_messages_ram", "int = 5000", "تعداد پیام‌های ذخیره‌شده در رم برای متد get_message"],
           ["keeper_messages_db", "int = 0", "تعداد پیام‌های ذخیره‌شده در دیتابیس برای متد get_message"],
+          ["logger", "logging.Logger | None", "لاگر اختصاصی برای کتابخانه"],
           ["offset_id", "str | None", "آفست آیدی برای شروع گرفتن پیام‌ها (پولینگ)"],
           ["save_offset_id", "bool = True", "ذخیره شدن آفست آیدی در دیتابیس"],
           ["run_start", "bool = False", "اجرای خودکار متد start (توصیه: False)"],
@@ -481,10 +485,9 @@
           ["cache", "Cache | None", "کلاس کش برای مدیریت کش"],
           ["cache_max_size", "int | None", "حداکثر تعداد آیتم‌های کش"],
           ["cache_ttl", "float | None", "مدت زمان اعتبار کش (TTL)"],
-          ["logger", "logging.Logger | None", "لاگر اختصاصی برای کتابخانه"],
           ["max_retries_upload", "int | None", "حداکثر تلاش برای آپلود فایل"],
           ["max_retries_download", "int | None", "حداکثر تلاش برای دانلود فایل"],
-          ["config", "BotConfig | None", "شیء پیکربندی اضافی (BotConfig)"],
+          ["config", "<a href='../features/index.html#BotConfig'>BotConfig</a> | None", "شیء پیکربندی اضافی (BotConfig)"],
         ],
         returns: null,
         example: `from fast_rub import Client\n\nbot = Client("my_session")\n# یا با توکن\nbot = Client("my_session", token="BGDISBC...")`
@@ -601,8 +604,8 @@
           ["chat_keypad", "str | None", "کیبورد همراه با مخاطب"],
           ["chat_keypad_type", "str | None", "نوع کیبورد (مثلاً 'inline' یا 'reply')"],
           ["inline_keypad", "list[dict] | KeyPad | None", "دکمه‌های شیشه‌ای (اینلاین) — اضافه شده"],
-          ["disable_notification", "bool = False", "غیرفعال کردن اعلان"],
           ["reply_to_message_id", "str | None", "آیدی پیامی که به آن پاسخ داده می‌شود"],
+          ["disable_notification", "bool = False", "غیرفعال کردن اعلان"],
           ["auto_delete", "int | None", "حذف خودکار پیام بعد از چند ثانیه"],
           ["wait_send", "float | None", "تأخیر قبل از ارسال درخواست (ثانیه)"],
           ["return_task", "bool = False", "برگرداندن تسک به جای ارسال مستقیم"],
@@ -635,7 +638,7 @@
           signature: "@bot.on_button(filters=None)",
           desc: "وقتی کاربر روی دکمهٔ اینلاین کلیک می‌کند این هندلر فراخوانی می‌شود. می‌توانید با `filters` کلیک‌های خاص را فیلتر کنید.",
           params: [
-              ["filters", "InlineFilter | None", "فیلتر(ها) برای محدود کردن کلیک‌های دریافتی"],
+              ["filters", "<a href='../models/index.html#inline_filters'>InlineFilter</a> | None", "فیلتر(ها) برای محدود کردن کلیک‌های دریافتی"],
           ],
           returns: [
               ["UpdateButton", "<a href='../models/index.html#updatebutton'>UpdateButton</a>", "اطلاعات کلیک"],
@@ -705,7 +708,7 @@
           ["return_task", "bool = False", "برگرداندن تسک به جای ارسال مستقیم"],
         ],
         returns: [
-          ["list[msg_update]", "List[msg_update]", "لیست پیام‌های فوروارد شده"]
+          ["list[msg_update]", "List[<a href='../models/index.html#msg_update'>msg_update</a>]", "لیست پیام‌های فوروارد شده"]
         ],
         example: `msgs = await bot.forward_messages("from_id", ["id1","id2"], "to_id")`
       },
@@ -744,14 +747,16 @@
           ["wait_send", "float | None", "زمان ایستادن برای قبل از ارسال درخواست"],
           ["return_task", "bool = False", "برگرشتن تسک جدید"],
         ],
-        returns: null,
+        returns: [
+          ["dict", "dict", "نتیجه"]
+        ],
         example: `await bot.delete_message("chat_id", "msg_id")`
       },
       // ===== ۱۵. set_commands =====
       {
         id: "set_commands",
         title: "تنظیم دستورات (commands)",
-        signature: "async set_commands(commands_list=None)",
+        signature: "async set_commands(list_commands=None)",
         desc: "تنظیم، افزودن یا حذف دستورات پیشنهادی بات.",
         params: [],
         returns: null,
@@ -767,13 +772,15 @@
           ["url", "str", "آدرس جدید"],
           ["type", 'Literal["ReceiveUpdate", "GetSelectionItem", "ReceiveInlineMessage", "ReceiveQuery", "SearchSelectionItems"]', "نوع آپدیت (ReceiveUpdate, etc)"]
         ],
-        returns: null,
+        returns: [
+          ["dict", "dict", "نتیجه"]
+        ],
         example: `result = await bot.update_endpoint("https://my.site/webhook", "ReceiveUpdate")\nprint(result)`
       },
       // ===== ۱۷. ارسال فایل (گروهی) =====
       {
         id: "send_files",
-        title: "ارسال فایل / تصویر / ویدیو / صدا / گیف",
+        title: "ارسال فایل / تصویر / ویدیو / صدا / گیف / ویس",
         signature: "async send_file(chat_id, file, ...)  و  send_image, send_video, ...",
         desc: "متدهای مجزا برای هر نوع فایل. پارامترها یکسان هستند.",
         params: [
@@ -790,7 +797,7 @@
           ["keypad", "list[dict] | KeyPad | None", "دکمه‌های کیبورد"],
           ["resize_keyboard", "bool = True", "تغییر خودکار سایز کیبورد"],
           ["on_time_keyboard", "bool = False", "کیبورد یک‌بار مصرف"],
-          ["show_progress", "bool = True", "نمایش نوار پیشرفت آپلود"],
+          ["show_progress", "bool = False", "نمایش نوار پیشرفت آپلود"],
           ["chunk_size", "int = 1MB (1024*1024)", "سایز هر قطعه (chunk) برای آپلود"],
           ["wait_send", "float | None", "تأخیر قبل از ارسال درخواست (ثانیه)"],
           ["return_task", "bool = False", "برگرداندن تسک به جای ارسال مستقیم"],
@@ -802,41 +809,38 @@
         ],
         example: `await bot.send_file("chat_id", "test.json", name_file="data.json", text="caption")\nawait bot.send_image("chat_id", "photo.png")\nawait bot.send_video("chat_id", "vid.mp4")\nawait bot.send_voice("chat_id", "voice.ogg")\nawait bot.send_music("chat_id", "music.mp3")\nawait bot.send_gif("chat_id", "anim.gif")`
       },
-      // ===== ۱۸. send_voice (توضیح جداگانه برای وضوح) =====
+      // ===== base_send_file (متد پایه ارسال همه انواع فایل) =====
       {
-        id: "send_voice_detail",
-        title: "ارسال ویس (صدای ضبط شده)",
-        signature: "async send_voice(chat_id, voice, ...)",
-        desc: "ارسال فایل صوتی (ویس). مانند سایر متدهای فایل، پارامترهای کمکی نیز دارد.",
-        params: [], // جدول بالا کامل است
-        returns: [
-          ["msg_update", "<a href='../models/index.html#msg_update'>msg_update</a>", "پیام ارسال شده"]
+        id: "base_send_file",
+        title: "ارسال پایه فایل (متد مشترک همه ارسال‌های فایل)",
+        signature: "async base_send_file(chat_id, file, name_file=None, text=None, reply_to_message_id=None, type_file='File', disable_notification=False, auto_delete=None, parse_mode='Markdown', meta_data=None, inline_keypad=None, keypad=None, resize_keyboard=True, on_time_keyboard=False, show_progress=False, chunk_size=1048576, wait_send=None, return_task=False, context=None, auto_escape=True)",
+        desc: "متد پایه و مشترک برای ارسال همهٔ انواع فایل (File / Image / Voice / Music / Gif / Video). متدهای `send_file`، `send_image`، `send_video`، `send_voice`، `send_music` و `send_gif` همگی wrapper نازکی روی این متد هستند و فقط مقدار `type_file` را به آن پاس می‌دهند. همچنین `send_message` وقتی پارامتر `file` داده شود، درون خودش این متد را صدا می‌زند. اگر می‌خواهید کد کمتری بنویسید یا نوع فایل را به صورت پویا (dynamic) تعیین کنید، مستقیماً از همین متد استفاده کنید.",
+        params: [
+          ["chat_id", "str", "چت آیدی"],
+          ["file", "str | Path | bytes", "فایل ورودی (مسیر، Path یا بایت)"],
+          ["name_file", "str | None", "نام فایل. اگر None باشد، نام بر اساس نوع فایل (type_file) با Utils.format_file تعیین می‌شود (مثلاً برای Image ممکن است نام پیش‌فرض image قرار گیرد)"],
+          ["text", "str | None", "متن کپشن"],
+          ["reply_to_message_id", "str | None", "آیدی پیامی که به آن پاسخ داده می‌شود"],
+          ["type_file", "'File' | 'Image' | 'Voice' | 'Music' | 'Gif' | 'Video' = 'File'", "نوع فایل — تعیین می‌کند کدام endpoint روبیکا صدا زده شود"],
+          ["disable_notification", "bool | None = False", "غیرفعال کردن اعلان"],
+          ["auto_delete", "int | None", "حذف خودکار پیام بعد از چند ثانیه"],
+          ["parse_mode", "'Markdown' | 'HTML' | None = 'Markdown'", "پارس مود متن کپشن"],
+          ["meta_data", "list | None", "متادیتا برای پیام"],
+          ["inline_keypad", "list[dict] | KeyPad | None", "دکمه‌های شیشه‌ای (اینلاین)"],
+          ["keypad", "list[dict] | KeyPad | None", "دکمه‌های کیبورد"],
+          ["resize_keyboard", "bool = True", "تغییر خودکار سایز کیبورد"],
+          ["on_time_keyboard", "bool = False", "کیبورد یک‌بار مصرف"],
+          ["show_progress", "bool = False", "نمایش نوار پیشرفت آپلود"],
+          ["chunk_size", "int = 1MB (1024*1024)", "سایز هر قطعه (chunk) برای آپلود"],
+          ["wait_send", "float | None", "تأخیر قبل از ارسال درخواست (ثانیه)"],
+          ["return_task", "bool = False", "برگرداندن تسک به جای ارسال مستقیم"],
+          ["context", "dict | None", "متغیرهای قالب برای جایگزینی در متن (مثل `{{ name }}`)"],
+          ["auto_escape", "bool = True", "فرار خودکار کاراکترهای HTML/Markdown برای جلوگیری از XSS هنگام استفاده از context"],
         ],
-        example: `await bot.send_voice("chat_id", "voice.ogg", text="صدای من")`
-      },
-      // ===== ۱۹. send_music =====
-      {
-        id: "send_music_detail",
-        title: "ارسال موزیک",
-        signature: "async send_music(chat_id, music, ...)",
-        desc: "ارسال فایل موسیقی.",
-        params: [],
         returns: [
-          ["msg_update", "<a href='../models/index.html#msg_update'>msg_update</a>", "پیام ارسال شده"]
+          ["msg_update", "<a href='../models/index.html#msg_update'>msg_update</a>", "پیام ارسال‌شده — علاوه بر فیلدهای استاندارد msg_update، شامل کلیدهای `file_id` (شناسهٔ فایل آپلود شده)، `type_file` (نوع فایل) و `size_file` (حجم فایل به بایت) نیز می‌باشد"]
         ],
-        example: `await bot.send_music("chat_id", "song.mp3")`
-      },
-      // ===== ۲۰. send_gif =====
-      {
-        id: "send_gif_detail",
-        title: "ارسال گیف",
-        signature: "async send_gif(chat_id, gif, ...)",
-        desc: "ارسال تصویر متحرک (GIF).",
-        params: [],
-        returns: [
-          ["msg_update", "<a href='../models/index.html#msg_update'>msg_update</a>", "پیام ارسال شده"]
-        ],
-        example: `await bot.send_gif("chat_id", "animation.gif")`
+        example: `# ۱) استفاده مستقیم به عنوان متد پایه\nawait bot.base_send_file("chat_id", "photo.png", type_file="Image", text="کپشن عکس")\n\n# ۲) معادل با متدهای اختصاصی (هر دو یک کار را انجام می‌دهند)\nawait bot.send_image("chat_id", "photo.png")            # درونش base_send_file با type_file="Image" صدا زده می‌شود\nawait bot.base_send_file("chat_id", "photo.png", type_file="Image")\n\n# ۳) تعیین پویا نوع فایل بر اساس پسوند\next = "mp4"\ntype_map = {"jpg": "Image", "png": "Image", "mp4": "Video", "mp3": "Music", "ogg": "Voice", "gif": "Gif"}\nawait bot.base_send_file("chat_id", f"file.{ext}", type_file=type_map[ext])\n\n# ۴) گرفتن اطلاعات اضافی از خروجی\nsent = await bot.base_send_file("chat_id", "doc.pdf", type_file="File")\nprint(sent.file_id)     # شناسه فایل آپلود شده\nprint(sent.type_file)   # "File"\nprint(sent.size_file)   # حجم فایل به بایت`
       },
       // ===== ۲۱. request_send_file =====
       {
@@ -856,13 +860,13 @@
       {
         id: "upload_file",
         title: "آپلود فایل روی سرور روبیکا",
-        signature: "async upload_file(url, file_name, file, show_progress=True, chunk_size=1MB)",
+        signature: "async upload_file(url, file_name, file, show_progress=False, chunk_size=1MB)",
         desc: "فایل را روی سرور آپلود کرده و اطلاعات آن را برمی‌گرداند.",
         params: [
           ["url", "str", "آدرس آپلود گرفته‌شده از request_send_file"],
           ["file_name", "str", "نام فایل"],
           ["file", "str | Path | bytes", "فایل (مسیر یا بایت)"],
-          ["show_progress", "bool = True", "نمایش نوار پیشرفت"],
+          ["show_progress", "bool = False", "نمایش نوار پیشرفت"],
           ["chunk_size", "int = 1048576", "سایز chunk"]
         ],
         returns: [
@@ -909,7 +913,7 @@
           ["chat_id", "str", "چت آیدی"],
           ["id_sticker", "str", "آیدی استیکر"],
           ["reply_to_message_id", "str | None", "در پاسخ به"],
-          ["disable_notification", "bool | None", "اعلان"],
+          ["disable_notification", "bool | None = None", "اعلان"],
           ["auto_delete", "int | None", "پاکسازی خودکار"],
           ["wait_send", "float | None", "زمان ایستادن برای قبل از ارسال درخواست"],
           ["return_task", "bool = False", "برگرشتن تسک جدید"],
@@ -937,12 +941,12 @@
       {
         id: "download_file",
         title: "دانلود فایل",
-        signature: "async download_file(id_file, path, show_progress=True, max_retries=None, ...)",
+        signature: "async download_file(id_file, path, show_progress=False, max_retries=None, ...)",
         desc: "فایل را با file_id دانلود و در مسیر مشخص ذخیره کنید.",
         params: [
           ["id_file", "str", "آیدی فایل"],
           ["path", "str = 'file'", "مسیر ذخیره"],
-          ["show_progress", "bool = True", "نمایش پیشرفت"],
+          ["show_progress", "bool = False", "نمایش پیشرفت"],
           ["wait_send", "float | None", "زمان ایستادن برای قبل از ارسال درخواست"],
           ["return_task", "bool = False", "برگرشتن تسک جدید"],
           ["max_retries", "int | None", "حداکثر تلاش‌های دانلود"],
@@ -954,12 +958,12 @@
       {
         id: "download_by_url",
         title: "دانلود مستقیم از یک URL",
-        signature: "async download_by_url(url, path='file', show_progress=True, max_retries=None)",
+        signature: "async download_by_url(url, path='file', show_progress=False, max_retries=None)",
         desc: "فایل را از یک URL مستقیم دانلود و ذخیره می‌کند (نیاز به file_id ندارد).",
         params: [
           ["url", "str", "لینک دانلود مستقیم"],
           ["path", "str = 'file'", "مسیر ذخیره"],
-          ["show_progress", "bool = True", "نمایش پیشرفت"],
+          ["show_progress", "bool = False", "نمایش پیشرفت"],
           ["max_retries", "int | None", "حداکثر تلاش‌های دانلود"],
         ],
         returns: null,
@@ -985,11 +989,11 @@
       {
         id: "download_me_profile",
         title: "دانلود پروفایل ربات",
-        signature: "async download_me_profile(name_file='bot_avatar.jpg', show_progress=True, wait_send=None, return_task=False, max_retries=None)",
+        signature: "async download_me_profile(name_file='bot_avatar.jpg', show_progress=False, wait_send=None, return_task=False, max_retries=None)",
         desc: "عکس پروفایل خود ربات را دانلود می‌کند.",
         params: [
           ["name_file", "str = 'bot_avatar.jpg'", "نام فایل برای ذخیره"],
-          ["show_progress", "bool = True", "نمایش نوار پیشرفت"],
+          ["show_progress", "bool = False", "نمایش نوار پیشرفت"],
           ["wait_send", "float | None", "تأخیر قبل از ارسال درخواست"],
           ["return_task", "bool = False", "برگرداندن تسک به جای ارسال مستقیم"],
           ["max_retries", "int | None", "حداکثر تلاش‌های دانلود"],
@@ -1023,7 +1027,9 @@
           ["time_sleep", "float", "زمان انتظار (ثانیه)"],
           ["separate_task", "bool = False", "اجرا در تسک جداگانه"]
         ],
-        returns: null,
+        returns: [
+          ["dict", "dict | None", "نتیجه"]
+        ],
         example: `await bot.auto_delete("b...", "msg_id", 30)`
       },
       // ===== ۳۲. auto_edit =====
@@ -1044,7 +1050,9 @@
           ["context", "dict | None", "متغیرهای قالب برای جایگزینی در متن (مثل `{{ name }}`)"],
           ["auto_escape", "bool = True", "فرار خودکار کاراکترهای HTML/Markdown برای جلوگیری از XSS"],
         ],
-        returns: null,
+        returns: [
+          ["dict", "dict | None", "نتیجه"]
+        ],
         example: `await bot.auto_edit("b...", "msg_id", "متن جدید", 20)`
       },
       // ===== ۳۳. get_message =====
@@ -1128,7 +1136,7 @@
           ["parse_mode", "'Markdown' | 'HTML' | None = 'Markdown'", "پارس مود متن"],
           ["meta_data", "list | None", "متادیتا برای پیام"],
           ["name_save_file", "str | None", "نام فایل برای ذخیره (در صورت دانلود)"],
-          ["show_progress", "bool = True", "نمایش نوار پیشرفت دانلود"],
+          ["show_progress", "bool = False", "نمایش نوار پیشرفت دانلود"],
           ["chunk_size", "int = 1MB (1024*1024)", "سایز هر قطعه (chunk) برای دانلود"],
           ["wait_send", "float | None", "تأخیر قبل از ارسال درخواست (ثانیه)"],
           ["return_task", "bool = False", "برگرداندن تسک به جای ارسال مستقیم"],
@@ -1155,7 +1163,9 @@
           ["deleted_messages", "False | True | 'both' = False", "گرفتن پیام‌های حذف‌شده"],
           ["**values", "dict", "پارامترهای اضافی که به handler پاس داده می‌شوند (مثلاً `path_url` برای webhook_url)"],
         ],
-        returns: null,
+        returns: [
+          ["wrapped", "Callable | None", "هندلر"],
+        ],
         example: `async def my_handler(msg: Message):\n    if msg.text == "/start":\n        await msg.reply("درود خوش اومدی به ربات من")\n\nbot.add_handler(my_handler, "polling")`
       },
       // ===== ۳۹. get_updates =====
@@ -1168,7 +1178,9 @@
           ["limit", "int | None", "محدودیت تعداد پیام ها"],
           ["offset_id", "str | None", "آفست آیدی برای گرفتن پیام ها از جایی به بعد"]
         ],
-        returns: null,
+        returns: [
+          ["dict", "dict", "پیام ها"],
+        ],
         example: `first_updates = await bot.get_updates(100, "offset_id")`
       },
       // ===== ۴۰. send_message =====
@@ -1198,7 +1210,7 @@
           ["name_file", "str | None", "📎 فایل — نام فایل (پیش‌فرض: 'file')"],
           ["type_file", "'File' | 'Image' | 'Voice' | 'Music' | 'Gif' | 'Video' = 'File'", "📎 فایل — نوع فایل"],
           ["file_id", "str | None", "📎 فایل — آیدی فایل از قبل آپلود شده"],
-          ["show_progress", "bool = True", "📎 فایل — نمایش نوار پیشرفت آپلود"],
+          ["show_progress", "bool = False", "📎 فایل — نمایش نوار پیشرفت آپلود"],
           ["chunk_size", "int = 1MB (1024*1024)", "📎 فایل — سایز هر قطعه (chunk)"],
 
           ["question", "str | None", "📊 نظرسنجی — متن سوال"],
@@ -1325,16 +1337,14 @@
           params: [
               ["filters", "Filter | None", "فیلتر(ها) برای محدود کردن پیام‌هایی که از این middleware عبور می‌کنند"],
           ],
-          returns: [
-              ["bool", "bool", "True = ادامهٔ پردازش، False = توقف زنجیره"],
-          ],
+          returns: null,
           example: `@bot.middleware()\nasync def log_middleware(update, next_handler):\n    print(f"📩 پیام از {update.sender_id}")\n    return await next_handler(update)`
       },
       // ===== ۵۰. load_plugins =====
       {
           id: "load_plugins",
           title: "بارگذاری همهٔ پلاگین‌ها از پوشه",
-          signature: "async load_plugins(folder='plugins')",
+          signature: "sync load_plugins(folder='plugins')",
           desc: "همهٔ فایل‌های `.py` داخل پوشهٔ مشخص‌شده را به‌عنوان پلاگین بارگذاری می‌کند.",
           params: [
               ["folder", "str = 'plugins'", "مسیر پوشهٔ پلاگین‌ها"],
@@ -1342,13 +1352,13 @@
           returns: [
               ["count", "int", "تعداد پلاگین‌های بارگذاری‌شده"],
           ],
-          example: `count = await bot.load_plugins("my_plugins")\nprint(f"{count} پلاگین بارگذاری شد.")`
+          example: `count = bot.load_plugins("my_plugins")\nprint(f"{count} پلاگین بارگذاری شد.")`
       },
       // ===== ۵۱. load_plugin =====
       {
           id: "load_plugin",
           title: "بارگذاری یک پلاگین خاص",
-          signature: "async load_plugin(filepath)",
+          signature: "sync load_plugin(filepath)",
           desc: "یک فایل پلاگین مشخص را بارگذاری می‌کند.",
           params: [
               ["filepath", "str", "مسیر فایل پلاگین (مثلاً `plugins/admin.py`)"],
@@ -1356,7 +1366,7 @@
           returns: [
               ["success", "bool", "True اگر پلاگین با موفقیت بارگذاری شد"],
           ],
-          example: `ok = await bot.load_plugin("plugins/my_plugin.py")`
+          example: `ok = bot.load_plugin("plugins/my_plugin.py")`
       },
       // ===== ۵۲. on_shutdown =====
       {
@@ -1372,7 +1382,7 @@
       {
           id: "add_background_task",
           title: "اضافه کردن تسک پس‌زمینه",
-          signature: "add_background_task(coro, *args, delay=0.0, **kwargs)",
+          signature: "sync add_background_task(coro, *args, delay=0.0, **kwargs)",
           desc: "یک تسک (coroutine) را در پس‌زمینه اجرا می‌کند. می‌توانید با `delay` اجرای آن را به تعویق بیندازید.",
           params: [
               ["coro", "Callable", "تابع coroutine برای اجرا"],

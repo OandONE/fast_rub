@@ -450,7 +450,7 @@
         }
         .copy-btn {
             position: absolute;
-            right: 0.8rem; /* تغییر: از چپ به راست */
+            right: 0.8rem;
             top: 0.8rem;
             background: var(--copy-btn-bg);
             color: var(--copy-btn-text);
@@ -723,7 +723,7 @@
                 <li><a href="pyrubi/index.html">یوزر بات</a></li>
             </ul>
             <div class="toc-title">📌 فهرست مطالب</div>
-            <ul class="toc-list" id="toc-list"><li><a href="#intro">💎 معرفی</a></li><li><a href="#installation">📦 نصب</a></li><li><a href="#quickstart">🚀 شروع سریع</a></li><li><a href="#waitmanager">🧠 WaitManager</a></li><li><a href="#dataform">📋 DataForm</a></li><li><a href="#conversation">💬 Conversation</a></li><li><a href="#filters">🔍 فیلترها</a></li><li><a href="#keypad">⌨️ ساختن کیبورد</a></li><li><a href="#hotreload">🔄 Hot Reload</a></li><li><a href="#scheduler">⏰ Scheduler</a></li><li><a href="#signals">📡 Signals</a></li><li><a href="#plugins">🔌 Plugins</a></li><li><a href="#orm">🗄️ ORM داخلی</a></li><li><a href="#cli">💻 CLI</a></li><li><a href="#structure">📁 ساختار پروژه</a></li><li><a href="#pyrubi-note">⚠️ نکته درباره pyrubi</a></li><li><a href="#license">📄 لایسنس</a></li></ul>
+            <ul class="toc-list" id="toc-list"></ul>
         </aside>
 
         <!-- ===== Main Content ===== -->
@@ -735,7 +735,7 @@
                 <p class="tagline">سریع‌ترین، هوشمندترین و کامل‌ترین فریم‌ورک ربات روبیکا برای پایتون</p>
                 <div class="hero-actions">
                     <a href="#installation" class="btn btn-primary">📦 نصب</a>
-                    <a href="#quickstart" class="btn btn-outline">🚀 شروع سریع</a>
+                    <a href="#quickstart" class="btn btn-primary">🚀 شروع سریع</a>
                     <a href="https://github.com/OandONE/fast_rub" class="btn btn-outline" target="_blank" rel="noopener">⭐ گیت‌هاب</a>
                 </div>
             </div>
@@ -819,23 +819,31 @@
             <div class="section" id="installation">
                 <h2>📦 نصب</h2>
                 <div class="code-block-wrapper">
-                    <button class="copy-btn" onclick="copyCode(this, 'pip install fastrub')">📋 کپی</button>
+                    <button class="copy-btn" data-code-target="code-pip-1">📋 کپی</button>
                     <pre class="language-bash" tabindex="0"><code class="language-bash">pip <span class="token function">install</span> fastrub</code></pre>
                 </div>
+                <script type="text/plain" id="code-pip-1">pip install fastrub</script>
+
                 <h3>میرورهای جایگزین</h3>
                 <p>در صورت قطع شدن میرور اصلی PyPI:</p>
+
                 <div class="code-block-wrapper">
-                    <button class="copy-btn" onclick="copyCode(this, 'pip install -i https://mirror-pypi.runflare.com/simple fastrub')">📋 کپی</button>
+                    <button class="copy-btn" data-code-target="code-pip-2">📋 کپی</button>
                     <pre class="language-bash" tabindex="0"><code class="language-bash">pip <span class="token function">install</span> <span class="token parameter variable">-i</span> https://mirror-pypi.runflare.com/simple fastrub</code></pre>
                 </div>
+                <script type="text/plain" id="code-pip-2">pip install -i https://mirror-pypi.runflare.com/simple fastrub</script>
+
                 <div class="code-block-wrapper">
-                    <button class="copy-btn" onclick="copyCode(this, 'pip install -i https://mirror.abrha.net/repository/pypi/simple fastrub')">📋 کپی</button>
+                    <button class="copy-btn" data-code-target="code-pip-3">📋 کپی</button>
                     <pre class="language-bash" tabindex="0"><code class="language-bash">pip <span class="token function">install</span> <span class="token parameter variable">-i</span> https://mirror.abrha.net/repository/pypi/simple fastrub</code></pre>
                 </div>
+                <script type="text/plain" id="code-pip-3">pip install -i https://mirror.abrha.net/repository/pypi/simple fastrub</script>
+
                 <div class="code-block-wrapper">
-                    <button class="copy-btn" onclick="copyCode(this, 'pip install -i https://package-mirror.liara.ir/repository/pypi/simple fastrub')">📋 کپی</button>
+                    <button class="copy-btn" data-code-target="code-pip-4">📋 کپی</button>
                     <pre class="language-bash" tabindex="0"><code class="language-bash">pip <span class="token function">install</span> <span class="token parameter variable">-i</span> https://package-mirror.liara.ir/repository/pypi/simple fastrub</code></pre>
                 </div>
+                <script type="text/plain" id="code-pip-4">pip install -i https://package-mirror.liara.ir/repository/pypi/simple fastrub</script>
             </div>
 
             <!-- شروع سریع -->
@@ -844,12 +852,7 @@
                 <p>با <a href="https://rubika.ir/BotFather" target="_blank" rel="noopener">@BotFather</a> یک بات بسازید و توکن را کپی کنید.</p>
                 <h3>دریافت پیام‌ها (Polling)</h3>
                 <div class="code-block-wrapper">
-                    <button class="copy-btn" onclick="copyCode(this, `import asyncio
-from fast_rub import Client, filters
-from fast_rub.types import Update
-
-async def main():
-    bot = Client(" my_bot")="" @bot.on_message(filters.text("سلام"))="" async="" def="" say_hello(msg:="" update):="" await="" msg.reply("**سلام**="" از="" طرف="" فست="" روب="" ⚡")="" bot.run()="" asyncio.run(main())`)"="">📋 کپی</button>
+                    <button class="copy-btn" data-code-target="code-quickstart">📋 کپی</button>
                     <pre class="language-python" tabindex="0"><code class="language-python"><span class="token keyword">import</span> asyncio
 <span class="token keyword">from</span> fast_rub <span class="token keyword">import</span> Client<span class="token punctuation">,</span> filters
 <span class="token keyword">from</span> fast_rub<span class="token punctuation">.</span>types <span class="token keyword">import</span> Update
@@ -865,14 +868,24 @@ async def main():
 
 asyncio<span class="token punctuation">.</span>run<span class="token punctuation">(</span>main<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span></code></pre>
                 </div>
-                <h3>کلیک روی دکمه‌های Inline</h3>
-                <div class="code-block-wrapper">
-                    <button class="copy-btn" onclick="copyCode(this, `import asyncio
-from fast_rub import Client
-from fast_rub.types import UpdateButton
+                <script type="text/plain" id="code-quickstart">import asyncio
+from fast_rub import Client, filters
+from fast_rub.types import Update
 
 async def main():
-    bot = Client(" my_bot")="" @bot.on_button()="" async="" def="" button_click(msg:="" updatebutton):="" await="" msg.send_text(f"دکمهٔ="" {msg.new_message.aux_data.button_id}="" فشرده="" شد")="" bot.run()="" asyncio.run(main())`)"="">📋 کپی</button>
+    bot = Client("my_bot")
+
+    @bot.on_message(filters.text("سلام"))
+    async def say_hello(msg: Update):
+        await msg.reply("**سلام** از طرف فست روب ⚡")
+
+    await bot.run()
+
+asyncio.run(main())</script>
+
+                <h3>کلیک روی دکمه‌های Inline</h3>
+                <div class="code-block-wrapper">
+                    <button class="copy-btn" data-code-target="code-button-click">📋 کپی</button>
                     <pre class="language-python" tabindex="0"><code class="language-python"><span class="token keyword">import</span> asyncio
 <span class="token keyword">from</span> fast_rub <span class="token keyword">import</span> Client
 <span class="token keyword">from</span> fast_rub<span class="token punctuation">.</span>types <span class="token keyword">import</span> UpdateButton
@@ -888,6 +901,20 @@ async def main():
 
 asyncio<span class="token punctuation">.</span>run<span class="token punctuation">(</span>main<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span></code></pre>
                 </div>
+                <script type="text/plain" id="code-button-click">import asyncio
+from fast_rub import Client
+from fast_rub.types import UpdateButton
+
+async def main():
+    bot = Client("my_bot")
+
+    @bot.on_button()
+    async def button_click(msg: UpdateButton):
+        await msg.send_text(f"دکمهٔ {msg.new_message.aux_data.button_id} فشرده شد")
+
+    await bot.run()
+
+asyncio.run(main())</script>
             </div>
 
             <!-- WaitManager -->
@@ -898,10 +925,7 @@ asyncio<span class="token punctuation">.</span>run<span class="token punctuation
                     کافی است به Client بدهید — بقیه خودکار انجام می‌شود.
                 </p>
                 <div class="code-block-wrapper">
-                    <button class="copy-btn" onclick="copyCode(this, `from fast_rub import Client, WaitManager
-
-bot = Client(
-    " my_bot",="" wait_manager="WaitManager(" low_traffic="60," medium_traffic="100," low_wait="0.0," medium_wait="1.0," high_wait="3.0," time_window="60.0," auto_track="True," #="" همه="" چیز="" خودکار="" )="" @bot.on_message()="" async="" def="" handler(msg:="" message):="" await="" msg.reply("سلام!")="" waitmanager="" تأخیر="" را="" مدیریت="" می‌کند="" bot.run()`)"="">📋 کپی</button>
+                    <button class="copy-btn" data-code-target="code-waitmanager">📋 کپی</button>
                     <pre class="language-python" tabindex="0"><code class="language-python"><span class="token keyword">from</span> fast_rub <span class="token keyword">import</span> Client<span class="token punctuation">,</span> WaitManager
 
 bot <span class="token operator">=</span> Client<span class="token punctuation">(</span>
@@ -923,6 +947,27 @@ bot <span class="token operator">=</span> Client<span class="token punctuation">
 
 <span class="token keyword">await</span> bot<span class="token punctuation">.</span>run<span class="token punctuation">(</span><span class="token punctuation">)</span></code></pre>
                 </div>
+                <script type="text/plain" id="code-waitmanager">from fast_rub import Client, WaitManager
+
+bot = Client(
+    "my_bot",
+    wait_manager=WaitManager(
+        low_traffic=60,
+        medium_traffic=100,
+        low_wait=0.0,
+        medium_wait=1.0,
+        high_wait=3.0,
+        time_window=60.0,
+        auto_track=True,  # همه چیز خودکار
+    )
+)
+
+@bot.on_message()
+async def handler(msg: Message):
+    await msg.reply("سلام!")  # WaitManager خودکار تأخیر را مدیریت می‌کند
+
+await bot.run()</script>
+
                 <h3>کانال‌های قابل ردیابی</h3>
                 <div class="table-responsive">
                     <table>
@@ -946,12 +991,9 @@ bot <span class="token operator">=</span> Client<span class="token punctuation">
                 <h2>📋 DataForm</h2>
                 <p>فرم‌های هوشمند — فقط بگویید «چی می‌خواهید» — اعتبارسنجی، کیبورد، و حرکت بین فیلدها خودکار است.</p>
                 <p><strong>DataForm</strong> یک سیستم فرم‌ساز قدرتمند است که به شما امکان می‌دهد فرم‌های چندمرحله‌ای را به‌سادگی تعریف کنید. با استفاده از کلاس‌های <code>Text</code>، <code>Number</code> و <code>Choice</code> می‌توانید هر نوع ورودی را مدیریت کنید. این سیستم به‌صورت خودکار کیبوردهای مناسب را ساخته، اعتبارسنجی را انجام می‌دهد و با استفاده از callback های شرطی (<code>skip_if</code>، <code>cancel_if</code>، <code>back_if</code> و ...) جریان فرم را کنترل می‌کند.</p>
-                <div class="code-block-wrapper">
-                    <button class="copy-btn" onclick="copyCode(this, `from fast_rub import Client, Conversation
-from fast_rub.core.forms import Text, Number, DataForm
 
-class UserInfo(DataForm):
-    name: Text = Text(" 👤="" نام="" خود="" را="" وارد="" کنید",="" min_len="3," max_len="30)" age:="" number="Number(&quot;🎂" چند="" سالته؟",="" min="18," max="60," keypad="True)" register="Conversation(name=&quot;register&quot;)" @register.entry_form(userinfo,="" commands="[&quot;/register&quot;])" async="" def="" done(msg,="" data):="" await="" msg.reply(f"ثبت="" شد:\\n👤="" {data['name']}\\n🎂="" {data['age']}")="" bot.add_conversation(register)`)"="">📋 کپی</button>
+                <div class="code-block-wrapper">
+                    <button class="copy-btn" data-code-target="code-dataform">📋 کپی</button>
                     <pre class="language-python" tabindex="0"><code class="language-python"><span class="token keyword">from</span> fast_rub <span class="token keyword">import</span> Client<span class="token punctuation">,</span> Conversation
 <span class="token keyword">from</span> fast_rub<span class="token punctuation">.</span>core<span class="token punctuation">.</span>forms <span class="token keyword">import</span> Text<span class="token punctuation">,</span> Number<span class="token punctuation">,</span> DataForm
 
@@ -967,21 +1009,38 @@ register <span class="token operator">=</span> Conversation<span class="token pu
 
 bot<span class="token punctuation">.</span>add_conversation<span class="token punctuation">(</span>register<span class="token punctuation">)</span></code></pre>
                 </div>
+                <script type="text/plain" id="code-dataform">from fast_rub import Client, Conversation
+from fast_rub.core.forms import Text, Number, DataForm
+
+class UserInfo(DataForm):
+    name: Text = Text("👤 نام خود را وارد کنید", min_len=3, max_len=30)
+    age: Number = Number("🎂 چند سالته؟", min=18, max=60, keypad=True)
+
+register = Conversation(name="register")
+
+@register.entry_form(UserInfo, commands=["/register"])
+async def done(msg, data):
+    await msg.reply(f"ثبت شد:\n👤 {data['name']}\n🎂 {data['age']}")
+
+bot.add_conversation(register)</script>
 
                 <h3>callbackهای شرطی (پیشرفته)</h3>
                 <div class="code-block-wrapper">
-                    <button class="copy-btn" onclick="copyCode(this, `class AdvancedForm(DataForm):
-    name: Text = Text(" نام؟",="" min_len="3," repeat_if="lambda" v:="" "admin"="" in="" v.lower())="" #="" دوباره="" بپرس="" age:="" number="Number(&quot;سن؟&quot;," min="18," max="60)" job:="" text="Text(&quot;شغل؟&quot;," skip_if="lambda" data:="" data.get("age",="" 0)="" <="" 18)="" زیر="" ۱۸="" سال="" نپرس="" city:="" cancel_if="lambda" v="=" "هیچی")="" فرم="" را="" کنسل="" کن`)"="">📋 کپی</button>
+                    <button class="copy-btn" data-code-target="code-dataform-advanced">📋 کپی</button>
                     <pre class="language-python" tabindex="0"><code class="language-python"><span class="token keyword">class</span> <span class="token class-name">AdvancedForm</span><span class="token punctuation">(</span>DataForm<span class="token punctuation">)</span><span class="token punctuation">:</span>
     name<span class="token punctuation">:</span> Text <span class="token operator">=</span> Text<span class="token punctuation">(</span><span class="token string">"نام؟"</span><span class="token punctuation">,</span> min_len<span class="token operator">=</span><span class="token number">3</span><span class="token punctuation">,</span> repeat_if<span class="token operator">=</span><span class="token keyword">lambda</span> v<span class="token punctuation">:</span> <span class="token string">"admin"</span> <span class="token keyword">in</span> v<span class="token punctuation">.</span>lower<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>  <span class="token comment"># دوباره بپرس</span>
     age<span class="token punctuation">:</span> Number <span class="token operator">=</span> Number<span class="token punctuation">(</span><span class="token string">"سن؟"</span><span class="token punctuation">,</span> <span class="token builtin">min</span><span class="token operator">=</span><span class="token number">18</span><span class="token punctuation">,</span> <span class="token builtin">max</span><span class="token operator">=</span><span class="token number">60</span><span class="token punctuation">)</span>
     job<span class="token punctuation">:</span> Text <span class="token operator">=</span> Text<span class="token punctuation">(</span><span class="token string">"شغل؟"</span><span class="token punctuation">,</span> skip_if<span class="token operator">=</span><span class="token keyword">lambda</span> data<span class="token punctuation">:</span> data<span class="token punctuation">.</span>get<span class="token punctuation">(</span><span class="token string">"age"</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token operator">&lt;</span> <span class="token number">18</span><span class="token punctuation">)</span>  <span class="token comment"># زیر ۱۸ سال نپرس</span>
     city<span class="token punctuation">:</span> Text <span class="token operator">=</span> Text<span class="token punctuation">(</span><span class="token string">"شهر؟"</span><span class="token punctuation">,</span> cancel_if<span class="token operator">=</span><span class="token keyword">lambda</span> v<span class="token punctuation">:</span> v <span class="token operator">==</span> <span class="token string">"هیچی"</span><span class="token punctuation">)</span>  <span class="token comment"># فرم را کنسل کن</span></code></pre>
                 </div>
+                <script type="text/plain" id="code-dataform-advanced">class AdvancedForm(DataForm):
+    name: Text = Text("نام؟", min_len=3, repeat_if=lambda v: "admin" in v.lower())  # دوباره بپرس
+    age: Number = Number("سن؟", min=18, max=60)
+    job: Text = Text("شغل؟", skip_if=lambda data: data.get("age", 0) < 18)  # زیر ۱۸ سال نپرس
+    city: Text = Text("شهر؟", cancel_if=lambda v: v == "هیچی")  # فرم را کنسل کن</script>
 
                 <h3>🔧 فیلدهای DataForm</h3>
                 <p>سه نوع فیلد اصلی: <code>Text</code>، <code>Number</code> و <code>Choice</code>. هر کدام پارامترهای متنوعی برای کنترل رفتار فرم دارند مثل transform_if, repeat_if, default_if, hide_if, back_if, cancel_if, skip_if, hide_input, default, timeout, retry, validator, transform, pre_func, dict_args_func, list_args_func, func, invalid_answer, ... در Text</p>
-
             </div>
 
             <!-- Conversation -->
@@ -989,7 +1048,7 @@ bot<span class="token punctuation">.</span>add_conversation<span class="token pu
                 <h2>💬 Conversation</h2>
                 <p>مکالمات چندمرحله‌ای — روش کلاسیک (Entry + State)</p>
                 <div class="code-block-wrapper">
-                    <button class="copy-btn" onclick="copyCode(this, `register = Conversation(name=" register")="" @register.entry(commands="[&quot;/register&quot;])" async="" def="" ask_name(msg,="" data):="" await="" msg.reply("اسمت="" چیه؟")="" return="" "waiting_name"="" @register.state("waiting_name")="" get_name(msg,="" data["name"]="msg.new_message.text" msg.reply(f"سلام="" {msg.new_message.text}!")="" conversation.end="" bot.add_conversation(register)`)"="">📋 کپی</button>
+                    <button class="copy-btn" data-code-target="code-conversation">📋 کپی</button>
                     <pre class="language-python" tabindex="0"><code class="language-python">register <span class="token operator">=</span> Conversation<span class="token punctuation">(</span>name<span class="token operator">=</span><span class="token string">"register"</span><span class="token punctuation">)</span>
 
 <span class="token decorator annotation punctuation">@register<span class="token punctuation">.</span>entry</span><span class="token punctuation">(</span>commands<span class="token operator">=</span><span class="token punctuation">[</span><span class="token string">"/register"</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
@@ -1005,6 +1064,20 @@ bot<span class="token punctuation">.</span>add_conversation<span class="token pu
 
 bot<span class="token punctuation">.</span>add_conversation<span class="token punctuation">(</span>register<span class="token punctuation">)</span></code></pre>
                 </div>
+                <script type="text/plain" id="code-conversation">register = Conversation(name="register")
+
+@register.entry(commands=["/register"])
+async def ask_name(msg, data):
+    await msg.reply("اسمت چیه؟")
+    return "waiting_name"
+
+@register.state("waiting_name")
+async def get_name(msg, data):
+    data["name"] = msg.new_message.text
+    await msg.reply(f"سلام {msg.new_message.text}!")
+    return Conversation.END
+
+bot.add_conversation(register)</script>
             </div>
 
             <!-- فیلترها -->
@@ -1012,10 +1085,7 @@ bot<span class="token punctuation">.</span>add_conversation<span class="token pu
                 <h2>🔍 فیلترها</h2>
                 <p>بیش از ۲۰۰ فیلتر آماده برای محدود کردن هندلرها. ترکیب با <code>&amp;</code>، <code>|</code> و <code>~</code>.</p>
                 <div class="code-block-wrapper">
-                    <button class="copy-btn" onclick="copyCode(this, `from fast_rub import filters
-
-# فیلتر ساده
-@bot.on_message(filters.text(" start"))="" #="" ترکیب="" (and)="" @bot.on_message(filters.text("="" admin")="" &="" filters.is_user)="" (or)="" help")="" |="" filters.text("راهنما"))="" not="" @bot.on_message(~filters.is_group)="" فقط="" pv="" async="" —="" چک="" دیتابیس="" @bot.on_message(filters.db_exists("users",="" lambda="" u:="" {"chat_id":="" u.chat_id},="" db="my_db))" inline="" filters="" (دکمه‌های="" شیشه‌ای)="" @bot.on_button(filters.button_id("home")="" filters.sender_ids(["admin_id"]))`)"="">📋 کپی</button>
+                    <button class="copy-btn" data-code-target="code-filters">📋 کپی</button>
                     <pre class="language-python" tabindex="0"><code class="language-python"><span class="token keyword">from</span> fast_rub <span class="token keyword">import</span> filters
 
 <span class="token comment"># فیلتر ساده</span>
@@ -1036,16 +1106,32 @@ bot<span class="token punctuation">.</span>add_conversation<span class="token pu
 <span class="token comment"># Inline Filters (دکمه‌های شیشه‌ای)</span>
 <span class="token decorator annotation punctuation">@bot<span class="token punctuation">.</span>on_button</span><span class="token punctuation">(</span>filters<span class="token punctuation">.</span>button_id<span class="token punctuation">(</span><span class="token string">"home"</span><span class="token punctuation">)</span> <span class="token operator">&amp;</span> filters<span class="token punctuation">.</span>sender_ids<span class="token punctuation">(</span><span class="token punctuation">[</span><span class="token string">"admin_id"</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">)</span></code></pre>
                 </div>
+                <script type="text/plain" id="code-filters">from fast_rub import filters
+
+# فیلتر ساده
+@bot.on_message(filters.text("/start"))
+
+# ترکیب (AND)
+@bot.on_message(filters.text("/admin") & filters.is_user)
+
+# ترکیب (OR)
+@bot.on_message(filters.text("/help") | filters.text("راهنما"))
+
+# NOT
+@bot.on_message(~filters.is_group)  # فقط PV
+
+# Async — چک دیتابیس
+@bot.on_message(filters.db_exists("users", lambda u: {"chat_id": u.chat_id}, db=my_db))
+
+# Inline Filters (دکمه‌های شیشه‌ای)
+@bot.on_button(filters.button_id("home") & filters.sender_ids(["admin_id"]))</script>
             </div>
 
             <!-- KeyPad -->
             <div class="section" id="keypad">
                 <h2>⌨️ ساختن کیبورد</h2>
                 <div class="code-block-wrapper">
-                    <button class="copy-btn" onclick="copyCode(this, `from fast_rub.button import KeyPad
-
-keypad = KeyPad()
-keypad.append(keypad.simple(" btn_1",="" "دکمه="" یک"))="" keypad.append(keypad.simple("btn_2",="" دو"),="" keypad.simple("btn_3",="" سه"))="" #="" کیبورد="" معمولی="" await="" msg.reply("انتخاب="" کنید:",="" keypad="keypad.build())" شیشه‌ای="" inline_keypad="keypad.build())`)&quot;">📋 کپی</button>
+                    <button class="copy-btn" data-code-target="code-keypad">📋 کپی</button>
                     <pre class="language-python" tabindex="0"><code class="language-python"><span class="token keyword">from</span> fast_rub<span class="token punctuation">.</span>button <span class="token keyword">import</span> KeyPad
 
 keypad <span class="token operator">=</span> KeyPad<span class="token punctuation">(</span><span class="token punctuation">)</span>
@@ -1058,6 +1144,17 @@ keypad<span class="token punctuation">.</span>append<span class="token punctuati
 <span class="token comment"># کیبورد شیشه‌ای</span>
 <span class="token keyword">await</span> msg<span class="token punctuation">.</span>reply<span class="token punctuation">(</span><span class="token string">"انتخاب کنید:"</span><span class="token punctuation">,</span> inline_keypad<span class="token operator">=</span>keypad<span class="token punctuation">.</span>build<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span></code></pre>
                 </div>
+                <script type="text/plain" id="code-keypad">from fast_rub.button import KeyPad
+
+keypad = KeyPad()
+keypad.append(keypad.simple("btn_1", "دکمه یک"))
+keypad.append(keypad.simple("btn_2", "دکمه دو"), keypad.simple("btn_3", "دکمه سه"))
+
+# کیبورد معمولی
+await msg.reply("انتخاب کنید:", keypad=keypad.build())
+
+# کیبورد شیشه‌ای
+await msg.reply("انتخاب کنید:", inline_keypad=keypad.build())</script>
             </div>
 
             <!-- Hot Reload -->
@@ -1065,28 +1162,23 @@ keypad<span class="token punctuation">.</span>append<span class="token punctuati
                 <h2>🔄 Hot Reload</h2>
                 <p>هر بار فایلی را ذخیره کنید، ربات خودکار ری‌استارت می‌شود.</p>
                 <div class="code-block-wrapper">
-                    <button class="copy-btn" onclick="copyCode(this, `await bot.run(reload=True)
-
-# یا از CLI:
-# $ fastrub run --reload`)">📋 کپی</button>
+                    <button class="copy-btn" data-code-target="code-hotreload">📋 کپی</button>
                     <pre class="language-python" tabindex="0"><code class="language-python"><span class="token keyword">await</span> bot<span class="token punctuation">.</span>run<span class="token punctuation">(</span><span class="token builtin">reload</span><span class="token operator">=</span><span class="token boolean">True</span><span class="token punctuation">)</span>
 
 <span class="token comment"># یا از CLI:</span>
 <span class="token comment"># $ fastrub run --reload</span></code></pre>
                 </div>
+                <script type="text/plain" id="code-hotreload">await bot.run(reload=True)
+
+# یا از CLI:
+# $ fastrub run --reload</script>
             </div>
 
             <!-- Scheduler -->
             <div class="section" id="scheduler">
                 <h2>⏰ Scheduler</h2>
                 <div class="code-block-wrapper">
-                    <button class="copy-btn" onclick="copyCode(this, `from fast_rub import Scheduler
-
-scheduler = Scheduler()
-
-@scheduler.every(minutes=30)
-async def cleanup():
-    print(" 🧹="" پاک‌سازی="" خودکار")="" @scheduler.every(at="08:00" )="" async="" def="" report():="" print("📊="" گزارش="" صبحگاهی")`)"="">📋 کپی</button>
+                    <button class="copy-btn" data-code-target="code-scheduler">📋 کپی</button>
                     <pre class="language-python" tabindex="0"><code class="language-python"><span class="token keyword">from</span> fast_rub <span class="token keyword">import</span> Scheduler
 
 scheduler <span class="token operator">=</span> Scheduler<span class="token punctuation">(</span><span class="token punctuation">)</span>
@@ -1099,17 +1191,24 @@ scheduler <span class="token operator">=</span> Scheduler<span class="token punc
 <span class="token keyword">async</span> <span class="token keyword">def</span> <span class="token function">report</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
     <span class="token keyword">print</span><span class="token punctuation">(</span><span class="token string">"📊 گزارش صبحگاهی"</span><span class="token punctuation">)</span></code></pre>
                 </div>
+                <script type="text/plain" id="code-scheduler">from fast_rub import Scheduler
+
+scheduler = Scheduler()
+
+@scheduler.every(minutes=30)
+async def cleanup():
+    print("🧹 پاک‌سازی خودکار")
+
+@scheduler.every(at="08:00")
+async def report():
+    print("📊 گزارش صبحگاهی")</script>
             </div>
 
             <!-- Signals -->
             <div class="section" id="signals">
                 <h2>📡 Signals</h2>
                 <div class="code-block-wrapper">
-                    <button class="copy-btn" onclick="copyCode(this, `from fast_rub import SignalManager
-
-signals = SignalManager()
-
-@signals.on(" user_registered")="" async="" def="" welcome(user_id,="" chat_id):="" print(f"👋="" کاربر="" {user_id}="" ثبت‌نام="" کرد!")="" await="" signals.emit("user_registered",="" user_id="123" ,="" chat_id="456" )`)"="">📋 کپی</button>
+                    <button class="copy-btn" data-code-target="code-signals">📋 کپی</button>
                     <pre class="language-python" tabindex="0"><code class="language-python"><span class="token keyword">from</span> fast_rub <span class="token keyword">import</span> SignalManager
 
 signals <span class="token operator">=</span> SignalManager<span class="token punctuation">(</span><span class="token punctuation">)</span>
@@ -1120,6 +1219,15 @@ signals <span class="token operator">=</span> SignalManager<span class="token pu
 
 <span class="token keyword">await</span> signals<span class="token punctuation">.</span>emit<span class="token punctuation">(</span><span class="token string">"user_registered"</span><span class="token punctuation">,</span> user_id<span class="token operator">=</span><span class="token string">"123"</span><span class="token punctuation">,</span> chat_id<span class="token operator">=</span><span class="token string">"456"</span><span class="token punctuation">)</span></code></pre>
                 </div>
+                <script type="text/plain" id="code-signals">from fast_rub import SignalManager
+
+signals = SignalManager()
+
+@signals.on("user_registered")
+async def welcome(user_id, chat_id):
+    print(f"👋 کاربر {user_id} ثبت‌نام کرد!")
+
+await signals.emit("user_registered", user_id="123", chat_id="456")</script>
             </div>
 
             <!-- Plugins -->
@@ -1127,8 +1235,7 @@ signals <span class="token operator">=</span> SignalManager<span class="token pu
                 <h2>🔌 Plugins</h2>
                 <p>فایل <code>plugins/admin.py</code>:</p>
                 <div class="code-block-wrapper">
-                    <button class="copy-btn" onclick="copyCode(this, `async def setup(client):
-    @client.on_message(filters.commands([" admin"]))="" async="" def="" panel(msg):="" await="" msg.reply("🔧="" پنل="" ادمین")="" #="" لود="" خودکار="" bot.load_plugins("plugins")`)"="">📋 کپی</button>
+                    <button class="copy-btn" data-code-target="code-plugins">📋 کپی</button>
                     <pre class="language-python" tabindex="0"><code class="language-python"><span class="token keyword">async</span> <span class="token keyword">def</span> <span class="token function">setup</span><span class="token punctuation">(</span>client<span class="token punctuation">)</span><span class="token punctuation">:</span>
     <span class="token decorator annotation punctuation">@client<span class="token punctuation">.</span>on_message</span><span class="token punctuation">(</span>filters<span class="token punctuation">.</span>commands<span class="token punctuation">(</span><span class="token punctuation">[</span><span class="token string">"admin"</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
     <span class="token keyword">async</span> <span class="token keyword">def</span> <span class="token function">panel</span><span class="token punctuation">(</span>msg<span class="token punctuation">)</span><span class="token punctuation">:</span>
@@ -1137,15 +1244,20 @@ signals <span class="token operator">=</span> SignalManager<span class="token pu
 <span class="token comment"># لود خودکار</span>
 <span class="token keyword">await</span> bot<span class="token punctuation">.</span>load_plugins<span class="token punctuation">(</span><span class="token string">"plugins"</span><span class="token punctuation">)</span></code></pre>
                 </div>
+                <script type="text/plain" id="code-plugins">async def setup(client):
+    @client.on_message(filters.commands(["admin"]))
+    async def panel(msg):
+        await msg.reply("🔧 پنل ادمین")
+
+# لود خودکار
+await bot.load_plugins("plugins")</script>
             </div>
 
             <!-- ORM -->
             <div class="section" id="orm">
                 <h2>🗄️ ORM داخلی</h2>
                 <div class="code-block-wrapper">
-                    <button class="copy-btn" onclick="copyCode(this, `from fast_rub.db import DataBase
-
-db = DataBase(" my_bot.db")="" await="" db.start({"users":="" {"chat_id":="" "text",="" "name":="" "text"}})="" db.write("users",="" "123",="" "علی"})="" user="await" db.find("users",="" "*",="" "123"})`)"="">📋 کپی</button>
+                    <button class="copy-btn" data-code-target="code-orm">📋 کپی</button>
                     <pre class="language-python" tabindex="0"><code class="language-python"><span class="token keyword">from</span> fast_rub<span class="token punctuation">.</span>db <span class="token keyword">import</span> DataBase
 
 db <span class="token operator">=</span> DataBase<span class="token punctuation">(</span><span class="token string">"my_bot.db"</span><span class="token punctuation">)</span>
@@ -1154,132 +1266,38 @@ db <span class="token operator">=</span> DataBase<span class="token punctuation"
 <span class="token keyword">await</span> db<span class="token punctuation">.</span>write<span class="token punctuation">(</span><span class="token string">"users"</span><span class="token punctuation">,</span> <span class="token punctuation">{</span><span class="token string">"chat_id"</span><span class="token punctuation">:</span> <span class="token string">"123"</span><span class="token punctuation">,</span> <span class="token string">"name"</span><span class="token punctuation">:</span> <span class="token string">"علی"</span><span class="token punctuation">}</span><span class="token punctuation">)</span>
 user <span class="token operator">=</span> <span class="token keyword">await</span> db<span class="token punctuation">.</span>find<span class="token punctuation">(</span><span class="token string">"users"</span><span class="token punctuation">,</span> <span class="token string">"*"</span><span class="token punctuation">,</span> <span class="token punctuation">{</span><span class="token string">"chat_id"</span><span class="token punctuation">:</span> <span class="token string">"123"</span><span class="token punctuation">}</span><span class="token punctuation">)</span></code></pre>
                 </div>
+                <script type="text/plain" id="code-orm">from fast_rub.db import DataBase
+
+db = DataBase("my_bot.db")
+await db.start({"users": {"chat_id": "TEXT", "name": "TEXT"}})
+
+await db.write("users", {"chat_id": "123", "name": "علی"})
+user = await db.find("users", "*", {"chat_id": "123"})</script>
             </div>
 
             <!-- CLI -->
             <div class="section" id="cli">
                 <h2>💻 CLI</h2>
                 <div class="code-block-wrapper">
-                    <button class="copy-btn" onclick="copyCode(this, `fastrub new my_bot      # پروژه جدید
-fastrub run             # اجرا
-fastrub run --reload    # اجرا با Hot Reload
-fastrub version         # نسخه
-fastrub docs            # مستندات`)">📋 کپی</button>
+                    <button class="copy-btn" data-code-target="code-cli">📋 کپی</button>
                     <pre class="language-bash" tabindex="0"><code class="language-bash">fastrub new my_bot      <span class="token comment"># پروژه جدید</span>
 fastrub run             <span class="token comment"># اجرا</span>
 fastrub run <span class="token parameter variable">--reload</span>    <span class="token comment"># اجرا با Hot Reload</span>
 fastrub version         <span class="token comment"># نسخه</span>
 fastrub docs            <span class="token comment"># مستندات</span></code></pre>
                 </div>
+                <script type="text/plain" id="code-cli">fastrub new my_bot      # پروژه جدید
+fastrub run             # اجرا
+fastrub run --reload    # اجرا با Hot Reload
+fastrub version         # نسخه
+fastrub docs            # مستندات</script>
             </div>
 
             <!-- ساختار پروژه -->
             <div class="section" id="structure">
                 <h2>📁 ساختار پروژه</h2>
                 <div class="code-block-wrapper">
-                    <button class="copy-btn" onclick="copyCode(this, `fast_rub
-├── button # KeyPad
-│   ├── __init__.py
-│   └── key_pad.py # KeyPad | InlineKeyPad
-├── cli.py # CLI - fastrub cmd
-├── core # core fastrub
-│   ├── async_sync.py # Converter async to sync funcs
-│   ├── background.py # BackGround tasks
-│   ├── client.py # Client core fastrub
-│   ├── config.py # Config client
-│   ├── conversation.py # Conversation classic and DataForm
-│   ├── forms # Forms for DataForm conversation
-│   │   ├── config.py # Config the DataForm
-│   │   ├── data_form.py # Config the DataForm
-│   │   ├── fields.py # Fields - Number, Text, Choice
-│   │   ├── __init__.py
-│   │   └── manager.py # Manager DataForm in conversation.py
-│   ├── helpers.py # Helpers for client
-│   ├── hotreload.py # Hot reload client
-│   ├── __init__.py
-│   ├── middleware.py # Middleware client
-│   ├── plugins.py # Plugins client
-│   ├── scheduler.py # Scheduler for scheduling tasks
-│   ├── signals.py # Signals (like Django Framework)
-│   └── webhook_server.py # Web Server client for webhook local
-├── db # DataBases
-│   ├── database.py # DataBase ORM fastrub
-│   ├── __init__.py
-│   ├── message_keeper.py # DB Message Keeper for find message by message id
-│   └── session.py # DB Sessions fastrub({name}.faru)
-├── __init__.py
-├── network # Network fastrub
-│   ├── __init__.py
-│   └── network.py # Network fastrub - Httpx HTTP/2
-├── pyrightconfig.json # Config for Pyright Extension
-├── pyrubi # UserBot - Pyrubi(Forked)
-│   ├── client # core client
-│   │   ├── client.py # core client - API to fast_rub/methods
-│   │   └── __init__.py
-│   ├── crypto # Cryper
-│   │   ├── crypto.py # De/En cryper Conect UserBot rubika
-│   │   └── __init__.py
-│   ├── enums.py # Enums client
-│   ├── exceptions.py # Exceptions
-│   ├── filters.py # Filters Messages
-│   ├── __init__.py
-│   ├── methods # API Methods
-│   │   ├── __init__.py
-│   │   └── methods.py # Concter to rubika API
-│   ├── network # Network UserBot
-│   │   ├── helper.py # Helper network
-│   │   ├── __init__.py
-│   │   ├── network.py # Network API
-│   │   └── socket.py # Web Socket rubika
-│   ├── sessions # Session
-│   │   ├── __init__.py
-│   │   └── sessions.py # Session manager
-│   ├── types # Types
-│   │   ├── __init__.py
-│   │   └── socket # Types Web Socket
-│   │       ├── __init__.py
-│   │       └── message.py # Message Class
-│   └── utils # Utils UserBot
-│       ├── configs.py # Config client
-│       ├── __init__.py
-│       ├── reacrions.py # ReActions utils
-│       └── utils.py # Utils UserBot
-├── type # Conect to types folder
-│   └── __init__.py
-├── types # Types fastrub
-│   ├── errors.py # Exception fastrub
-│   ├── exceptions.py # Alias errors.py
-│   ├── forms.py # Alias fast_rub/core/forms
-│   ├── get_type.py # Utils for Update Class
-│   ├── __init__.py
-│   ├── metadata.py # Utils for Update Class - MetaData Message
-│   ├── models # Models client
-│   │   ├── base_model # Base Models for Bot &amp; Chat Classs
-│   │   ├── bot.py # Bot Model
-│   │   ├── chat.py # Chat Model
-│   │   └── __init__.py
-│   ├── props.py
-│   ├── prop_update.py
-│   ├── update_button.py # Inline Message/Update Type fastrub
-│   ├── update.py # Message/Update Type fastrub
-│   └── webhook.py # WebHook config
-└── utils # Utils fastrub
-    ├── antispam.py # Anti Spam client
-    ├── cache.py # Cache client
-    ├── colors.py # Utils for color print client(display_welcome)
-    ├── encryption.py # Crypter token bot
-    ├── filters.py # Filters for Messages
-    ├── __init__.py
-    ├── inline_filters.py # InlineFilters for Inline Messages
-    ├── logger.py # Logger client
-    ├── metadata.py # Creator text for format Markdown/HTML
-    ├── run_filter.py # Utils client run async/sync filter
-    ├── snapshot.py # SnapShot JSON client
-    ├── template.py # Anti-XSS in message text
-    ├── text_parser.py # Text Parser MetaData for text message - Markdown | HTML
-    ├── utils.py # More utils
-    ├── version.py # Version fastrub
-    └── wait_manager.py # Manager Waiting for sending request(send_message, ban, ...)`)">📋 کپی</button>
+                    <button class="copy-btn" data-code-target="code-structure">📋 کپی</button>
                     <pre class="language-text" tabindex="0"><code class="language-text">fast_rub
 ├── button # KeyPad
 │   ├── __init__.py
@@ -1384,6 +1402,109 @@ fastrub docs            <span class="token comment"># مستندات</span></cod
     ├── version.py # Version fastrub
     └── wait_manager.py # Manager Waiting for sending request(send_message, ban, ...)</code></pre>
                 </div>
+                <script type="text/plain" id="code-structure">fast_rub
+├── button # KeyPad
+│   ├── __init__.py
+│   └── key_pad.py # KeyPad | InlineKeyPad
+├── cli.py # CLI - fastrub cmd
+├── core # core fastrub
+│   ├── async_sync.py # Converter async to sync funcs
+│   ├── background.py # BackGround tasks
+│   ├── client.py # Client core fastrub
+│   ├── config.py # Config client
+│   ├── conversation.py # Conversation classic and DataForm
+│   ├── forms # Forms for DataForm conversation
+│   │   ├── config.py # Config the DataForm
+│   │   ├── data_form.py # Config the DataForm
+│   │   ├── fields.py # Fields - Number, Text, Choice
+│   │   ├── __init__.py
+│   │   └── manager.py # Manager DataForm in conversation.py
+│   ├── helpers.py # Helpers for client
+│   ├── hotreload.py # Hot reload client
+│   ├── __init__.py
+│   ├── middleware.py # Middleware client
+│   ├── plugins.py # Plugins client
+│   ├── scheduler.py # Scheduler for scheduling tasks
+│   ├── signals.py # Signals (like Django Framework)
+│   └── webhook_server.py # Web Server client for webhook local
+├── db # DataBases
+│   ├── database.py # DataBase ORM fastrub
+│   ├── __init__.py
+│   ├── message_keeper.py # DB Message Keeper for find message by message id
+│   └── session.py # DB Sessions fastrub({name}.faru)
+├── __init__.py
+├── network # Network fastrub
+│   ├── __init__.py
+│   └── network.py # Network fastrub - Httpx HTTP/2
+├── pyrightconfig.json # Config for Pyright Extension
+├── pyrubi # UserBot - Pyrubi(Forked)
+│   ├── client # core client
+│   │   ├── client.py # core client - API to fast_rub/methods
+│   │   └── __init__.py
+│   ├── crypto # Cryper
+│   │   ├── crypto.py # De/En cryper Conect UserBot rubika
+│   │   └── __init__.py
+│   ├── enums.py # Enums client
+│   ├── exceptions.py # Exceptions
+│   ├── filters.py # Filters Messages
+│   ├── __init__.py
+│   ├── methods # API Methods
+│   │   ├── __init__.py
+│   │   └── methods.py # Concter to rubika API
+│   ├── network # Network UserBot
+│   │   ├── helper.py # Helper network
+│   │   ├── __init__.py
+│   │   ├── network.py # Network API
+│   │   └── socket.py # Web Socket rubika
+│   ├── sessions # Session
+│   │   ├── __init__.py
+│   │   └── sessions.py # Session manager
+│   ├── types # Types
+│   │   ├── __init__.py
+│   │   └── socket # Types Web Socket
+│   │       ├── __init__.py
+│   │       └── message.py # Message Class
+│   └── utils # Utils UserBot
+│       ├── configs.py # Config client
+│       ├── __init__.py
+│       ├── reacrions.py # ReActions utils
+│       └── utils.py # Utils UserBot
+├── type # Conect to types folder
+│   └── __init__.py
+├── types # Types fastrub
+│   ├── errors.py # Exception fastrub
+│   ├── exceptions.py # Alias errors.py
+│   ├── forms.py # Alias fast_rub/core/forms
+│   ├── get_type.py # Utils for Update Class
+│   ├── __init__.py
+│   ├── metadata.py # Utils for Update Class - MetaData Message
+│   ├── models # Models client
+│   │   ├── base_model # Base Models for Bot & Chat Classs
+│   │   ├── bot.py # Bot Model
+│   │   ├── chat.py # Chat Model
+│   │   └── __init__.py
+│   ├── props.py
+│   ├── prop_update.py
+│   ├── update_button.py # Inline Message/Update Type fastrub
+│   ├── update.py # Message/Update Type fastrub
+│   └── webhook.py # WebHook config
+└── utils # Utils fastrub
+    ├── antispam.py # Anti Spam client
+    ├── cache.py # Cache client
+    ├── colors.py # Utils for color print client(display_welcome)
+    ├── encryption.py # Crypter token bot
+    ├── filters.py # Filters for Messages
+    ├── __init__.py
+    ├── inline_filters.py # InlineFilters for Inline Messages
+    ├── logger.py # Logger client
+    ├── metadata.py # Creator text for format Markdown/HTML
+    ├── run_filter.py # Utils client run async/sync filter
+    ├── snapshot.py # SnapShot JSON client
+    ├── template.py # Anti-XSS in message text
+    ├── text_parser.py # Text Parser MetaData for text message - Markdown | HTML
+    ├── utils.py # More utils
+    ├── version.py # Version fastrub
+    └── wait_manager.py # Manager Waiting for sending request(send_message, ban, ...)</script>
             </div>
 
             <!-- نکته درباره pyrubi -->
@@ -1423,35 +1544,49 @@ fastrub docs            <span class="token comment"># مستندات</span></cod
         // Build TOC from sections
         function buildTOC() {
             const tocList = document.getElementById('toc-list');
+            if (!tocList) return;
             const sections = document.querySelectorAll('.section[id]');
             tocList.innerHTML = '';
             sections.forEach(section => {
+                const h2 = section.querySelector('h2');
+                if (!h2) return;
                 const li = document.createElement('li');
                 const a = document.createElement('a');
                 a.href = '#' + section.id;
-                a.textContent = section.querySelector('h2').textContent;
+                a.textContent = h2.textContent;
                 li.appendChild(a);
                 tocList.appendChild(li);
             });
         }
         document.addEventListener('DOMContentLoaded', buildTOC);
 
-        // Copy code
-        function copyCode(btn, code) {
-            navigator.clipboard.writeText(code.trim()).then(function() {
-                btn.textContent = '✅ کپی شد!';
-                btn.classList.add('copied');
-                setTimeout(function() {
-                    btn.textContent = '📋 کپی';
-                    btn.classList.remove('copied');
-                }, 1500);
-            }).catch(function(err) {
-                btn.textContent = '⚠️ خطا';
-                setTimeout(function() {
-                    btn.textContent = '📋 کپی';
-                }, 1500);
+        // Copy code using data-code-target
+        document.addEventListener('DOMContentLoaded', function () {
+            document.querySelectorAll('.copy-btn').forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    const targetId = btn.getAttribute('data-code-target');
+                    if (!targetId) return;
+                    const codeEl = document.getElementById(targetId);
+                    if (!codeEl) return;
+
+                    const code = codeEl.textContent.trim();
+
+                    navigator.clipboard.writeText(code).then(function () {
+                        btn.textContent = '✅ کپی شد!';
+                        btn.classList.add('copied');
+                        setTimeout(function () {
+                            btn.textContent = '📋 کپی';
+                            btn.classList.remove('copied');
+                        }, 1500);
+                    }).catch(function () {
+                        btn.textContent = '⚠️ خطا';
+                        setTimeout(function () {
+                            btn.textContent = '📋 کپی';
+                        }, 1500);
+                    });
+                });
             });
-        }
+        });
 
         // Highlight all code blocks
         if (window.Prism) {
@@ -1460,7 +1595,7 @@ fastrub docs            <span class="token comment"># مستندات</span></cod
 
         // Smooth scroll for TOC links
         document.querySelectorAll('.toc-list a, .nav-links a').forEach(link => {
-            link.addEventListener('click', function(e) {
+            link.addEventListener('click', function (e) {
                 const href = this.getAttribute('href');
                 if (href.startsWith('#')) {
                     e.preventDefault();

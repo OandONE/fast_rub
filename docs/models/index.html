@@ -326,7 +326,7 @@
     }
     .copy-btn {
       position: absolute;
-      left: 0.8rem;
+      right: 0.8rem;
       top: 0.8rem;
       background: var(--copy-btn-bg);
       color: var(--copy-btn-text);
@@ -491,7 +491,7 @@
           { name: "chat_id", type: "str", description: "چت‌آیدی" },
           { name: "sender_type", type: "Literal['User','Group','Channel']", description: "نوع فرستنده" },
           { name: "removed_message_id", type: "str | None", description: "آیدی پیام حذف شده" },
-          { name: "update_time", type: "int | None", description: "زمان آپدیت (برای ویرایش)" },
+          { name: "update_time", type: "int | None", description: "زمان پاک شدن پیام" },
           { name: "new_message", type: "NewMessage", description: "آبجکت NewMessage حاوی داده‌های پیام (جزئیات در زیر)" }
         ],
         methods: [
@@ -512,6 +512,13 @@
             params: [["chat_id", "str | None", "چت‌آیدی — پیشفرض chat_id خود پیام"]],
             returns: "Chat",
             description: "گرفتن اطلاعات چت (گروه، کانال یا کاربر)"
+          },
+          // ----- is_reply -----
+          {
+            name: "is_reply",
+            params: [],
+            returns: "bool",
+            description: "پیام ریپلای شده؟"
           },
           // ----- reply -----
           {
@@ -1465,7 +1472,7 @@ async def handler(msg: Message):
               { name: "sender_id(id)", params: [["id", "str"]], description: "برابری sender_id" },
               { name: "sender_ids(ids)  /  user_ids(ids)", params: [["ids", "list"]], description: "عضویت sender_id در لیست" },
               { name: "chat_ids(ids)", params: [["ids", "list"]], description: "عضویت chat_id در لیست" },
-              { name: "is_user", params: [], description: "فرستنده کاربر (PV)" },
+              { name: "is_user(is_private)", params: [], description: "فرستنده کاربر (PV)" },
               { name: "is_group", params: [], description: "فرستنده گروه" },
               { name: "is_channel", params: [], description: "فرستنده کانال" },
             ]

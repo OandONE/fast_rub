@@ -93,12 +93,6 @@ class Client:
     display_welcome : bool = False
         نمایش پیام خوش‌آمدگویی هنگام شروع
 
-    use_to_fastrub_webhook_on_message : Union[str, bool]
-        فعال‌سازی یا تعیین آدرس webhook برای دریافت پیام‌ها
-
-    use_to_fastrub_webhook_on_button : Union[str, bool]
-        فعال‌سازی یا تعیین آدرس webhook برای دریافت دکمه‌ها
-
     save_logs : Optional[bool]
         ذخیره لاگ‌ها در فایل
 
@@ -117,17 +111,20 @@ class Client:
         ]
         لیست آدرس های اصلی برای ارسال درخواست
 
-    max_retries : int = 3
+    max_retries : int = 5
         حداکثر تعداد تلاش مجدد در خطاهای شبکه
 
     show_progress: Optional[bool]
         نمایش لاگ های ارسال انواع فایل 
     
-    keeper_messages_ram: int = 500
+    keeper_messages_ram: int = 5_000
         تعداد پیام ها برای ذخیره شدن در لیست از سمت پروسس های گرفتن پیام ها برای متود گت مسیج در رم
     
-    keeper_messages_db: int = 500
+    keeper_messages_db: int = 0
         تعداد پیام ها برای ذخیره شدن در لیست از سمت پروسس های گرفتن پیام ها برای متود گت مسیج در دیتابیس
+    
+    logger: logging.Logger | None = None
+        لاگر اختصاصی برای لاگ های فست روب
     
     offset_id: Optional[str] = None
         آفست آیدی برای گرفتن پیام های پولینگ
@@ -872,7 +869,7 @@ class Client:
         self.logger.info("استفاده از متود download_file")
         async def _active():
             if self.wait_manager and self.wait_manager.track_after_send:
-                self.wait_manager.add_traffic(channel="sending")
+                self.wait_manager.add_traffic(channel="uploading")
             wait_manager = wait_send or (await self.wait_manager.get_time("uploading") if self.wait_manager else None)
             if wait_manager:
                 await asyncio.sleep(wait_manager)
@@ -1883,8 +1880,8 @@ class Client:
         self,
         chat_id: str,
         id_sticker: str,
-        reply_to_message_id : str | None = None,
-        disable_notification : bool | None = False,
+        reply_to_message_id: str | None = None,
+        disable_notification: bool | None = None,
         auto_delete: int | None = None,
         wait_send: float | None = None,
         return_task: bool = False
@@ -2734,7 +2731,7 @@ class Client:
         """add background task / اضافه کردن تسک بک‌گراند"""
         return self._background.add(coro, *args, delay=delay, **kwargs)
     
-    async def send_requests(
+    async def send_request(
         self,
         method: str,
         data_: dict[str, Any] | None = None
@@ -2744,6 +2741,8 @@ class Client:
             method=method,
             data=data_
         )
+    
+    send_requests = send_request
 
     def render(
         self,

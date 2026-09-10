@@ -326,7 +326,7 @@
     }
     .copy-btn {
       position: absolute;
-      left: 0.8rem;
+      right: 0.8rem;
       top: 0.8rem;
       background: var(--copy-btn-bg);
       color: var(--copy-btn-text);
@@ -1046,6 +1046,48 @@ await bot.run()`
             returns: "None",
             description: "همهٔ آیتم‌های کش را پاک می‌کند.",
         },
+        {
+            name: "disable",
+            params: [],
+            returns: "None",
+            description: "غیرفعال کردن موقت کش (get همیشه None برمی‌گرداند ولی داده‌ها پاک نمی‌شوند).",
+        },
+        {
+            name: "enable",
+            params: [],
+            returns: "None",
+            description: "فعال کردن دوباره کش بعد از disable.",
+        },
+        {
+            name: "is_enabled",
+            params: [],
+            returns: "bool",
+            description: "وضعیت فعلی کش (فعال/غیرفعال).",
+        },
+        {
+            name: "refresh",
+            params: [["key", "str", "کلید مورد نظر برای حذف"]],
+            returns: "None",
+            description: "حذف یک کلید خاص از کش. (برخلاف clear که همه را پاک می‌کند.)",
+        },
+        {
+            name: "freeze",
+            params: [],
+            returns: "None",
+            description: "فریز کردن کش. تایمر TTL متوقف می‌شود و هیچ مقداری منقضی نمی‌شود تا زمانی که unfreeze صدا زده شود.",
+        },
+        {
+            name: "unfreeze",
+            params: [],
+            returns: "None",
+            description: "آنفریز کردن کش. تایمر TTL از همان‌جا که متوقف شده بود ادامه می‌یابد.",
+        },
+        {
+            name: "is_frozen",
+            params: [],
+            returns: "bool",
+            description: "وضعیت فریز کش.",
+        },
     ],
     example: `from fast_rub.utils import Cache
 
@@ -1599,7 +1641,7 @@ await bot.run()`
     class_signature: "class BotConfig",
     init_params: [
         ["validate_chat_id", "bool = True", "اعتبارسنجی chat_id پیش از هر درخواست. اگر از صحت chat_idهای ورودی اطمینان دارید، می‌توانید برای افزایش سرعت، این گزینه را غیرفعال کنید."],
-        ["optimize_text", "bool = True", "بهینه‌سازی متن پیش از ارسال. فاصله‌های تکراری (بیش از یک space) را به یک فاصله کاهش می‌دهد."],
+        ["optimize_text", "bool = False", "بهینه‌سازی متن پیش از ارسال. فاصله‌های تکراری (بیش از یک space) را به یک فاصله کاهش می‌دهد."],
         ["strip_text", "bool = True", "حذف فاصله‌های خالی (whitespace) از ابتدا و انتهای پیام."],
         ["max_text_length", "int | None = None", "حداکثر طول مجاز برای متن پیام (به کاراکتر). پیام‌های بلندتر از این مقدار بریده می‌شوند."],
         ["compress_long_text", "bool = False", "افزودن '...' به انتهای پیام‌های بلند هنگام برش. فقط زمانی اعمال می‌شود که max_text_length رد شده باشد."],
