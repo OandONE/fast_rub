@@ -681,6 +681,13 @@
     "title": "📡 سیستم سیگنال‌ها (Signals)",
     "description": "SignalManager یک سیستم رویدادمحور (Event-driven) شبیه Django Signals است. می‌توانید handlerهایی برای رویدادهای دلخواه ثبت کنید و در هر جای برنامه آن‌ها را فراخوانی (emit) کنید. مناسب برای ارتباط غیرمستقیم بین ماژول‌ها، پلاگین‌ها، و middleware.",
     "class_signature": "class SignalManager",
+    "init_params": [
+      [
+        "logger",
+        "logging.Logger | None",
+        "لاگر دلخواه (پیش‌فرض: `fast_rub.scheduler`)"
+      ]
+    ],
     "methods": [
       {
         "name": "on",

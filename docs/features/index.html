@@ -867,6 +867,23 @@ await bot.run(reload=True)
             description: "دکوراتور برای تعریف یک کار زمان‌بندی‌شده. می‌توانید بازهٔ زمانی (مثلاً هر ۳۰ دقیقه) یا ساعت مشخص (مثلاً هر روز ساعت ۸:۳۰) را تعیین کنید.",
         },
         {
+            name: "cron",
+            params: [
+                ["cron_expr", "str", "کرون"],
+            ],
+            returns: "Callable (decorator)",
+            description: "دکوراتور برای تعریف یک کار زمان‌بندی‌شده. می‌توانید بازهٔ زمانی (مثلاً هر ۳۰ دقیقه) یا ساعت مشخص (مثلاً هر روز ساعت 8 : '0 8 * * *') را تعیین کنید.",
+        },
+        {
+            name: "add_cron",
+            params: [
+                ["cron_expr", "str", "کرون"],
+                ["func", "Callable", "فانکشن اجرا"]
+            ],
+            returns: "Callable (decorator)",
+            description: "دکوراتور برای تعریف یک کار زمان‌بندی‌شده. می‌توانید بازهٔ زمانی (مثلاً هر ۳۰ دقیقه) یا ساعت مشخص (مثلاً هر روز ساعت 8 : '0 8 * * *') را تعیین کنید.",
+        },
+        {
             name: "cancel_all",
             params: [],
             returns: "None",
@@ -904,6 +921,13 @@ scheduler.cancel_all()`
     title: "📡 سیستم سیگنال‌ها (Signals)",
     description: "SignalManager یک سیستم رویدادمحور (Event-driven) شبیه Django Signals است. می‌توانید handlerهایی برای رویدادهای دلخواه ثبت کنید و در هر جای برنامه آن‌ها را فراخوانی (emit) کنید. مناسب برای ارتباط غیرمستقیم بین ماژول‌ها، پلاگین‌ها، و middleware.",
     class_signature: "class SignalManager",
+    init_params: [
+      [
+        "logger",
+        "logging.Logger | None",
+        "لاگر دلخواه (پیش‌فرض: `fast_rub.scheduler`)"
+      ]
+    ],
     methods: [
         {
             name: "on",

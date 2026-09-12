@@ -488,7 +488,6 @@ fast_rub
     ├── inline_filters.py # InlineFilters for Inline Messages
     ├── logger.py # Logger client
     ├── metadata.py # Creator text for format Markdown/HTML
-    ├── run_filter.py # Utils client run async/sync filter
     ├── snapshot.py # SnapShot JSON client
     ├── template.py # Anti-XSS in message text
     ├── text_parser.py # Text Parser MetaData for text message - Markdown | HTML
@@ -515,6 +514,11 @@ fast_rub
 - [مستندات رسمی](https://fast-rub.ParsSource.ir) | [مستندات رسمی(گیتهاب)](https://oandone.github.io/fast_rub)
 - [گیت‌هاب](https://github.com/OandONE/fast_rub)
 - [PyPI](https://pypi.org/project/fastrub/)
+
+### مستندات خام جیسون مناسب AI
+- [متود ها](/docs/methods.json)
+- [مدل ها](/docs/models.json)
+- [قابلیت های دیگر](/docs/features.json)
 
 [⬆ بازگشت به فهرست](#-فهرست-مطالب)
 
