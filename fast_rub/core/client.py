@@ -281,7 +281,9 @@ class Client:
             db_path=self.name_session,
             number_keeper=self.keeper_messages_db
         )
-        self.signals = SignalManager()
+        self.signals = SignalManager(
+            logger=self.logger
+        )
         self.scheduler = Scheduler(self.logger)
         self.snapshots = SnapshotManager(self)
         self.session = await Session.open(
