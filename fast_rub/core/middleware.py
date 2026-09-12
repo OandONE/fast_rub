@@ -1,7 +1,7 @@
 from collections.abc import Callable
 from ..utils.filters import Filter
 from ..types import Update
-from ..utils import _run_filter
+from ..utils.utils import Utils
 
 import logging
 
@@ -41,7 +41,7 @@ class MiddlewareManager:
     
     def _wrap_middleware(self, middleware: Callable, filters: Filter | None, next_handler: Callable):
         async def wrapped(update):
-            status_filter = await _run_filter(
+            status_filter = await Utils.run_filter(
                 filters,
                 update
             )

@@ -34,7 +34,9 @@ class Scheduler:
             months * 2592000
         )
         
-        def decorator(func: Callable):
+        def decorator(
+            func: Callable
+        ):
             if at:
                 task = asyncio.create_task(self._run_daily_at(func, at))
             else:
@@ -44,7 +46,11 @@ class Scheduler:
         return decorator
 
     @staticmethod
-    def _parse_cron_field(field: str, min_val: int, max_val: int) -> set[int]:
+    def _parse_cron_field(
+        field: str,
+        min_val: int,
+        max_val: int
+    ) -> set[int]:
         """پارس یک فیلد cron به مجموعه مقادیر"""
         values = set()
         for part in field.split(","):
@@ -68,7 +74,13 @@ class Scheduler:
         return values
 
     @staticmethod
-    def _next_cron_time(minutes, hours, days, months, weekdays) -> datetime | None:
+    def _next_cron_time(
+        minutes,
+        hours,
+        days,
+        months,
+        weekdays
+    ) -> datetime | None:
         """پیدا کردن زمان بعدی که با cron مچ میشه"""
         now = datetime.now().replace(second=0, microsecond=0) + timedelta(minutes=1)
         max_iter = 525600 * 5  # تا ۵ سال
@@ -84,7 +96,15 @@ class Scheduler:
             now += timedelta(minutes=1)
         return None
 
-    async def _run_cron(self, func, minutes, hours, days, months, weekdays):
+    async def _run_cron(
+        self,
+        func,
+        minutes,
+        hours,
+        days,
+        months,
+        weekdays
+    ):
         """حلقه اجرای cron"""
         while True:
             target = self._next_cron_time(minutes, hours, days, months, weekdays)
@@ -96,7 +116,11 @@ class Scheduler:
             await asyncio.sleep(wait)
             await Utils.run_handler(func)
 
-    def add_cron(self, cron_expr: str, func: Callable):
+    def add_cron(
+        self,
+        cron_expr: str,
+        func: Callable
+    ):
         """اضافه کردن یه تسک با سینتکس cron لینوکس"""
         parts = cron_expr.split()
         if len(parts) != 5:
@@ -121,19 +145,32 @@ class Scheduler:
         self._tasks.append(task)
         return func
 
-    def cron(self, cron_expr: str):
+    def cron(
+        self,
+        cron_expr: str
+    ):
         """دکوراتور برای زمان‌بندی با cron"""
-        def decorator(func: Callable):
+        def decorator(
+            func: Callable
+        ):
             return self.add_cron(cron_expr, func)
         return decorator
     
-    async def _run_interval(self, func: Callable, interval: int):
+    async def _run_interval(
+        self,
+        func: Callable,
+        interval: int
+    ):
         """اجرای تکراری با فاصله مشخص"""
         while True:
             await func()
             await asyncio.sleep(interval)
     
-    async def _run_daily_at(self, func: Callable, time_str: str):
+    async def _run_daily_at(
+        self,
+        func: Callable,
+        time_str: str
+    ):
         """اجرای هر روز در ساعت مشخص"""
         hour, minute = map(int, time_str.split(":"))
         

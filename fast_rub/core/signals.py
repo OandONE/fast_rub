@@ -2,6 +2,8 @@ from collections.abc import Callable
 from ..utils import Utils
 import logging
 
+from .async_sync import wrap_all_async_methods
+
 class SignalManager:
     """مدیریت سیگنال‌ها — مثل Django Signals"""
     
@@ -10,10 +12,7 @@ class SignalManager:
         logger: logging.Logger | None = None
     ):
         self._signals: dict[str, list[Callable]] = {}
-        if logger is None:
-            self.logger = logging.getLogger("fast_rub.signals")
-        else:
-            self.logger = logger
+        self.logger = logger or logging.getLogger("fast_rub.signals")
     
     def on(
         self,
@@ -54,3 +53,5 @@ class SignalManager:
             self._signals.pop(signal_name, None)
         else:
             self._signals.clear()
+
+wrap_all_async_methods(SignalManager)

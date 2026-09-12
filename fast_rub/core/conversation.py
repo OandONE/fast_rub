@@ -2,7 +2,7 @@ from collections.abc import Callable
 from ..types import Update
 from .client import Client
 from ..utils.filters import Filter
-from ..utils import _run_filter
+from ..utils.utils import Utils
 
 import asyncio
 
@@ -60,7 +60,7 @@ class Conversation:
         text = self._entry_filters.get("text")
         filters: Filter | None = self._entry_filters.get("filters")
 
-        run_filter = await _run_filter(filters, update)
+        run_filter = await Utils.run_filter(filters, update)
         if filters and not run_filter:
             return False
         

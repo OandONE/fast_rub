@@ -4,5 +4,4 @@ from .utils import Utils
 from .cache import Cache
 from .snapshot import SnapshotManager
 from .template import FileOpen, TemplateEngine
-from .run_filter import _run_filter
 from .metadata import ParseMode, Style, MetaData

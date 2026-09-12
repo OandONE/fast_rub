@@ -725,7 +725,7 @@ class _NotFilter(Filter):
 
 
 class and_filter(Filter):
-    def __init__(self, *filters):
+    def __init__(self, *filters: Filter):
         self.filters = filters
     
     @property
@@ -747,7 +747,7 @@ class and_filter(Filter):
 
 
 class or_filter(Filter):
-    def __init__(self, *filters):
+    def __init__(self, *filters: Filter):
         self.filters = filters
     
     @property
@@ -769,7 +769,7 @@ class or_filter(Filter):
 
 
 class not_filter(Filter):
-    def __init__(self, filter):
+    def __init__(self, filter: Filter):
         self.filter = filter
     
     @property

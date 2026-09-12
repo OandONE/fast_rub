@@ -41,7 +41,6 @@ from ..utils import WaitManager
 from ..utils import Cache
 from ..utils import SnapshotManager
 from ..utils import TemplateEngine
-from ..utils import _run_filter
 from ..db.session import Session
 from ..db.message_keeper import MessageKeeper
 from ..pyrubi import Client as PyrubiClient
@@ -2285,7 +2284,7 @@ class Client:
                     try:
                         if filters is not None:
                             try:
-                                if not await _run_filter(
+                                if not await Utils.run_filter(
                                     filters,
                                     update
                                 ):
@@ -2432,7 +2431,7 @@ class Client:
                             continue
                         filters: Filter | None = handler_info["filters"]
                         
-                        status_filter = await _run_filter(
+                        status_filter = await Utils.run_filter(
                             filters,
                             update
                         )
@@ -2478,7 +2477,7 @@ class Client:
                     continue
                 filters: Filter | None = handler_info["filters"]
                 
-                status_filter = await _run_filter(
+                status_filter = await Utils.run_filter(
                     filters,
                     update
                 )
@@ -2499,7 +2498,7 @@ class Client:
             for handler in self._button_handlers:
                 filters: InlineFilter | None = handler["filters"]
 
-                status_filter = await _run_filter(
+                status_filter = await Utils.run_filter(
                     filters,
                     update
                 )
@@ -2614,7 +2613,7 @@ class Client:
                                 continue
                             filters: Filter | None = handler_info["filters"]
 
-                            status_filter = await _run_filter(
+                            status_filter = await Utils.run_filter(
                                 filters,
                                 update
                             )
@@ -2646,7 +2645,7 @@ class Client:
                             update = UpdateButton(result, self)
                             filters: InlineFilter | None = handler_info["filters"]
                         
-                            status_filter = await _run_filter(
+                            status_filter = await Utils.run_filter(
                                 filters,
                                 update
                             )

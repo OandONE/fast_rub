@@ -1,5 +1,5 @@
 from typing import TYPE_CHECKING, Literal, Any
-from collections.abc import Callable
+from collections.abc import Callable, Awaitable
 from pathlib import Path
 import aiofiles
 import asyncio
@@ -12,6 +12,9 @@ import warnings
 
 if TYPE_CHECKING:
     from ..network.network import Network
+    from .filters import Filter
+    from .inline_filters import InlineFilter
+    from ..types import Update, UpdateButton
 
 DATA_SUFFIXS = {
     "Image": ("png", "jpg", "gif", "jpeg", "webp", "svg", "ico"),
@@ -217,8 +220,8 @@ class Utils:
 
     @staticmethod
     async def when(
-        condition: Callable[[], bool],
-        action: Callable[[], Any] | None = None,
+        condition: Callable[[], bool | Awaitable[bool]],
+        action: Callable[[], Any | Awaitable[Any]] | None = None,
         sleep: float = 1.0,
         timeout: float | None = None,
         error_message: str | None = None,
@@ -267,3 +270,20 @@ class Utils:
             DeprecationWarning,
             stacklevel=2
         )
+
+    @staticmethod
+    async def run_filter(
+        filters: "Filter | InlineFilter | None",
+        update: "Update | UpdateButton"
+    ):
+        if filters is not None:
+            try:
+                filter_class = type(filters)
+                if "__acall__" in filter_class.__dict__.keys():
+                    return await filters.__acall__(update)  # type: ignore
+                else:
+                    return filters(update)  # type: ignore
+            except Exception as e:
+                return False
+        return True
+
