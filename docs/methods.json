@@ -1,0 +1,2424 @@
+[
+  {
+    "id": "init",
+    "title": "__init__ (ورودی‌های اصلی کلاس کلاینت)",
+    "signature": "Client(name_session, token=None, ...)",
+    "desc": "ساخت نمونه اصلی بات. تمام تنظیمات اولیه در اینجا انجام می‌شود.",
+    "params": [
+      [
+        "name_session",
+        "str",
+        "اسم سشن برای ذخیره‌سازی اطلاعات و توکن"
+      ],
+      [
+        "token",
+        "str | None",
+        "توکن ربات (در صورت نبود، از فایل سشن خوانده می‌شود)"
+      ],
+      [
+        "user_agent",
+        "str | None",
+        "مقدار User-Agent برای درخواست‌های HTTP"
+      ],
+      [
+        "time_out",
+        "float = 60.0",
+        "تایم‌اوت درخواست‌ها (بر حسب ثانیه)"
+      ],
+      [
+        "display_welcome",
+        "bool = False",
+        "نمایش پیام خوش‌آمدگویی هنگام شروع"
+      ],
+      [
+        "save_logs",
+        "bool | None",
+        "ذخیره لاگ‌ها در فایل"
+      ],
+      [
+        "view_logs",
+        "bool | None",
+        "نمایش لاگ‌ها در کنسول"
+      ],
+      [
+        "proxy",
+        "str | None",
+        "پراکسی برای ارتباطات شبکه"
+      ],
+      [
+        "main_parse_mode",
+        "'Markdown' | 'HTML' | 'Null' | None",
+        "پارس مود پیش‌فرض پیام‌ها (Null = اعمال جداگانه برای هر متد)"
+      ],
+      [
+        "base_urls",
+        "list[str]",
+        "لیست آدرس‌های اصلی برای ارسال درخواست"
+      ],
+      [
+        "max_retries",
+        "int = 5",
+        "حداکثر تعداد تلاش مجدد در خطاهای شبکه"
+      ],
+      [
+        "show_progress",
+        "bool | None",
+        "نمایش لاگ‌های پیشرفت آپلود/دانلود فایل"
+      ],
+      [
+        "keeper_messages_ram",
+        "int = 5000",
+        "تعداد پیام‌های ذخیره‌شده در رم برای متد get_message"
+      ],
+      [
+        "keeper_messages_db",
+        "int = 0",
+        "تعداد پیام‌های ذخیره‌شده در دیتابیس برای متد get_message"
+      ],
+      [
+        "logger",
+        "logging.Logger | None",
+        "لاگر اختصاصی برای کتابخانه"
+      ],
+      [
+        "offset_id",
+        "str | None",
+        "آفست آیدی برای شروع گرفتن پیام‌ها (پولینگ)"
+      ],
+      [
+        "save_offset_id",
+        "bool = True",
+        "ذخیره شدن آفست آیدی در دیتابیس"
+      ],
+      [
+        "run_start",
+        "bool = False",
+        "اجرای خودکار متد start (توصیه: False)"
+      ],
+      [
+        "wait_manager",
+        "WaitManager | None",
+        "مدیریت هوشمند تأخیر بین ارسال درخواست‌ها"
+      ],
+      [
+        "defult_wait",
+        "float | None",
+        "مقدار پیش‌فرض تأخیر بین درخواست‌ها"
+      ],
+      [
+        "webhook",
+        "WebhookConfig | None",
+        "تنظیمات webhook"
+      ],
+      [
+        "poll_interval",
+        "float = 0.0",
+        "زمان توقف بین هر بار گرفتن پیام‌ها (پولینگ)"
+      ],
+      [
+        "ssl_verify",
+        "bool = True",
+        "احراز هویت SSL"
+      ],
+      [
+        "cache",
+        "Cache | None",
+        "کلاس کش برای مدیریت کش"
+      ],
+      [
+        "cache_max_size",
+        "int | None",
+        "حداکثر تعداد آیتم‌های کش"
+      ],
+      [
+        "cache_ttl",
+        "float | None",
+        "مدت زمان اعتبار کش (TTL)"
+      ],
+      [
+        "max_retries_upload",
+        "int | None",
+        "حداکثر تلاش برای آپلود فایل"
+      ],
+      [
+        "max_retries_download",
+        "int | None",
+        "حداکثر تلاش برای دانلود فایل"
+      ],
+      [
+        "config",
+        "<a href='../features/index.html#BotConfig'>BotConfig</a> | None",
+        "شیء پیکربندی اضافی (BotConfig)"
+      ]
+    ],
+    "returns": null,
+    "example": "from fast_rub import Client\n\nbot = Client(\"my_session\")\n# یا با توکن\nbot = Client(\"my_session\", token=\"BGDISBC...\")"
+  },
+  {
+    "id": "start",
+    "title": "استارت شدن بات",
+    "signature": "async start()",
+    "desc": "استارت کردن مقادیر اولیه برای شروع کار با ربات",
+    "params": [],
+    "returns": null,
+    "example": "await bot.start()"
+  },
+  {
+    "id": "get_me",
+    "title": "گرفتن اطلاعات بات",
+    "signature": "async get_me()",
+    "desc": "اطلاعات کامل بات شامل آیدی، یوزرنیم و نام را برمی‌گرداند.",
+    "params": [],
+    "returns": [
+      [
+        "get_me",
+        "<a href='../models/index.html#base_models'>Bot</a>",
+        "اطلاعات بات"
+      ]
+    ],
+    "example": "me = await bot.get_me()\nprint(me)\nprint(f\"bot username » {me.username}\")"
+  },
+  {
+    "id": "send_text",
+    "title": "ارسال پیام متنی (همراه کیبورد و اینلاین)",
+    "signature": "async send_text(text, chat_id, ...)",
+    "desc": "متن ساده، فرمت‌دار (Markdown/HTML) به همراه کیبورد شیشه‌ای یا عادی.",
+    "params": [
+      [
+        "text",
+        "str",
+        "متن پیام"
+      ],
+      [
+        "chat_id",
+        "str",
+        "چت آیدی"
+      ],
+      [
+        "inline_keypad",
+        "list[dict] | KeyPad | None",
+        "دکمه‌های شیشه‌ای (اینلاین)"
+      ],
+      [
+        "keypad",
+        "list[dict] | KeyPad | None",
+        "دکمه‌های کیبورد"
+      ],
+      [
+        "resize_keyboard",
+        "bool = True",
+        "تغییر خودکار سایز کیبورد"
+      ],
+      [
+        "on_time_keyboard",
+        "bool = False",
+        "کیبورد یک‌بار مصرف (بعد از استفاده مخفی می‌شود)"
+      ],
+      [
+        "disable_notification",
+        "bool = False",
+        "غیرفعال کردن اعلان (notification)"
+      ],
+      [
+        "reply_to_message_id",
+        "str | None",
+        "آیدی پیامی که به آن پاسخ داده می‌شود"
+      ],
+      [
+        "auto_delete",
+        "int | None",
+        "حذف خودکار پیام بعد از چند ثانیه"
+      ],
+      [
+        "parse_mode",
+        "'Markdown' | 'HTML' | None = 'Markdown'",
+        "پارس مود متن"
+      ],
+      [
+        "meta_data",
+        "list | None",
+        "لیست متادیتا برای پیام"
+      ],
+      [
+        "wait_send",
+        "float | None",
+        "تأخیر قبل از ارسال درخواست (ثانیه)"
+      ],
+      [
+        "return_task",
+        "bool = False",
+        "برگرداندن تسک به جای ارسال مستقیم"
+      ],
+      [
+        "context",
+        "dict | None",
+        "متغیرهای قالب برای جایگزینی در متن (مثل `{{ name }}`)"
+      ],
+      [
+        "auto_escape",
+        "bool = True",
+        "فرار خودکار کاراکترهای HTML/Markdown برای جلوگیری از XSS هنگام استفاده از context"
+      ]
+    ],
+    "returns": [
+      [
+        "msg_update",
+        "<a href='../models/index.html#msg_update'>msg_update</a>",
+        "اطلاعات پیام ارسال‌شده"
+      ]
+    ],
+    "example": "sending = await bot.send_text(\"سلام\", \"b123...\")\nprint(sending)\n\n# با دکمه شیشه‌ای\nfrom fast_rub import KeyPad\nbuttons = KeyPad()\nbuttons.append(\n  buttons.simple(\"id1\", \"نمایش متن\")\n)\nawait bot.send_text(\"متن\", chat_id, inline_keypad=buttons.get())"
+  },
+  {
+    "id": "send_poll",
+    "title": "ارسال نظرسنجی",
+    "signature": "async send_poll(chat_id, question, options, ...)",
+    "desc": "نظرسنجی معمولی یا مسابقه‌ای (Quiz).",
+    "params": [
+      [
+        "chat_id",
+        "str",
+        "چت آیدی"
+      ],
+      [
+        "question",
+        "str",
+        "متن سوال"
+      ],
+      [
+        "options",
+        "list",
+        "گزینه‌های نظرسنجی"
+      ],
+      [
+        "type_poll",
+        "'Regular' | 'Quiz' = 'Regular'",
+        "نوع نظرسنجی (عادی یا آزمونی)"
+      ],
+      [
+        "is_anonymous",
+        "bool = True",
+        "ناشناس بودن رأی‌ها"
+      ],
+      [
+        "correct_option_index",
+        "int | None",
+        "ایندکس گزینهٔ صحیح (فقط برای Quiz)"
+      ],
+      [
+        "allows_multiple_answers",
+        "bool = False",
+        "اجازهٔ انتخاب چند گزینه"
+      ],
+      [
+        "hint",
+        "str | None",
+        "راهنمایی برای پاسخ (فقط Quiz)"
+      ],
+      [
+        "disable_notification",
+        "bool = False",
+        "غیرفعال کردن اعلان"
+      ],
+      [
+        "reply_to_message_id",
+        "str | None",
+        "آیدی پیامی که به آن پاسخ داده می‌شود"
+      ],
+      [
+        "auto_delete",
+        "int | None",
+        "حذف خودکار پیام بعد از چند ثانیه"
+      ],
+      [
+        "wait_send",
+        "float | None",
+        "تأخیر قبل از ارسال درخواست (ثانیه)"
+      ],
+      [
+        "return_task",
+        "bool = False",
+        "برگرداندن تسک به جای ارسال مستقیم"
+      ]
+    ],
+    "returns": [
+      [
+        "msg_update",
+        "<a href='../models/index.html#msg_update'>msg_update</a>",
+        "اطلاعات پیام نظرسنجی"
+      ]
+    ],
+    "example": "options = [\"چلو قرمه سبزی\", \"زرشک پلو با مرغ\"]\npoll = await bot.send_poll(\"chat_id\", \"به چه غذایی علاقه دارید؟\", options)\nprint(poll)"
+  },
+  {
+    "id": "send_location",
+    "title": "ارسال موقعیت مکانی",
+    "signature": "async send_location(chat_id, latitude, longitude, ...)",
+    "desc": "نقطه روی نقشه با طول و عرض جغرافیایی.",
+    "params": [
+      [
+        "chat_id",
+        "str",
+        "چت آیدی"
+      ],
+      [
+        "latitude",
+        "str",
+        "عرض جغرافیایی"
+      ],
+      [
+        "longitude",
+        "str",
+        "طول جغرافیایی"
+      ],
+      [
+        "chat_keypad",
+        "str | None",
+        "کیبورد همراه با موقعیت"
+      ],
+      [
+        "disable_notification",
+        "bool = False",
+        "غیرفعال کردن اعلان"
+      ],
+      [
+        "reply_to_message_id",
+        "str | None",
+        "آیدی پیامی که به آن پاسخ داده می‌شود"
+      ],
+      [
+        "chat_keypad_type",
+        "str | None",
+        "نوع کیبورد (مثلاً 'inline' یا 'reply')"
+      ],
+      [
+        "auto_delete",
+        "int | None",
+        "حذف خودکار پیام بعد از چند ثانیه"
+      ],
+      [
+        "wait_send",
+        "float | None",
+        "تأخیر قبل از ارسال درخواست (ثانیه)"
+      ],
+      [
+        "return_task",
+        "bool = False",
+        "برگرداندن تسک به جای ارسال مستقیم"
+      ]
+    ],
+    "returns": [
+      [
+        "msg_update",
+        "<a href='../models/index.html#msg_update'>msg_update</a>",
+        "اطلاعات پیام"
+      ]
+    ],
+    "example": "loc = await bot.send_location(\"chat_id\", \"35.6892\", \"51.3890\")\nprint(loc)"
+  },
+  {
+    "id": "send_contact",
+    "title": "ارسال مخاطب",
+    "signature": "async send_contact(chat_id, first_name, last_name, phone_number, ...)",
+    "desc": "ارسال یک شخص (نام، نام خانوادگی، شماره تلفن).",
+    "params": [
+      [
+        "chat_id",
+        "str",
+        "چت آیدی"
+      ],
+      [
+        "first_name",
+        "str",
+        "نام"
+      ],
+      [
+        "last_name",
+        "str",
+        "نام خانوادگی"
+      ],
+      [
+        "phone_number",
+        "str",
+        "شماره تلفن"
+      ],
+      [
+        "chat_keypad",
+        "str | None",
+        "کیبورد همراه با مخاطب"
+      ],
+      [
+        "chat_keypad_type",
+        "str | None",
+        "نوع کیبورد (مثلاً 'inline' یا 'reply')"
+      ],
+      [
+        "inline_keypad",
+        "list[dict] | KeyPad | None",
+        "دکمه‌های شیشه‌ای (اینلاین) — اضافه شده"
+      ],
+      [
+        "reply_to_message_id",
+        "str | None",
+        "آیدی پیامی که به آن پاسخ داده می‌شود"
+      ],
+      [
+        "disable_notification",
+        "bool = False",
+        "غیرفعال کردن اعلان"
+      ],
+      [
+        "auto_delete",
+        "int | None",
+        "حذف خودکار پیام بعد از چند ثانیه"
+      ],
+      [
+        "wait_send",
+        "float | None",
+        "تأخیر قبل از ارسال درخواست (ثانیه)"
+      ],
+      [
+        "return_task",
+        "bool = False",
+        "برگرداندن تسک به جای ارسال مستقیم"
+      ]
+    ],
+    "returns": [
+      [
+        "msg_update",
+        "<a href='../models/index.html#msg_update'>msg_update</a>",
+        "اطلاعات پیام"
+      ]
+    ],
+    "example": "contact = await bot.send_contact(\"chat_id\", \"سید محمد حسین\", \"موسوی رجا\", \"+989017760881\")\nprint(contact)"
+  },
+  {
+    "id": "message_decorators",
+    "title": "دکوراتورهای دریافت پیام‌ها",
+    "signature": "@bot.on_message(filters=None, edited_messages=False, deleted_messages=False)",
+    "desc": "ثبت هندلر برای پیام‌های جدید (پولینگ). نمونه مشابه برای وبهوک: @bot.on_message_updates()",
+    "params": [
+      [
+        "filters",
+        "<a href='../models/index.html#filters'>filters</a> | None",
+        "فیلتر پیام"
+      ],
+      [
+        "edited_messages",
+        "bool | 'both' = False",
+        "دریافت ویرایش‌شده‌ها"
+      ],
+      [
+        "deleted_messages",
+        "bool | 'both' = False",
+        "دریافت حذف‌شده‌ها"
+      ]
+    ],
+    "returns": [
+      [
+        "Message",
+        "<a href='../models/index.html#update'>Message</a>",
+        "شی اطلاعات پیام"
+      ]
+    ],
+    "example": "@bot.on_message() # پولینگ - polling\nasync def handler_polling(msg: Message):\n    await msg.reply(\"پاسخ خودکار\")\n    if msg.text == \"/off\":\n        bot.stop()\n\n@bot.on_message_updates() # وبهوک - webhook\nasync def handler_webhook(msg: Message):\n    await msg.reply(\"پاسخ خودکار\")\n    if msg.text == \"/off\":\n        bot.stop()\n\n# سایر دکوراتورها:\n# @bot.on_edit() , @bot.on_delete() , @bot.on_all_message()\n# @bot.on_edit_updates() , @bot.on_delete_updates() , @bot.on_all_message_updates()"
+  },
+  {
+    "id": "on_button",
+    "title": "دکوراتور کلیک روی دکمه‌های شیشه‌ای (اینلاین)",
+    "signature": "@bot.on_button(filters=None)",
+    "desc": "وقتی کاربر روی دکمهٔ اینلاین کلیک می‌کند این هندلر فراخوانی می‌شود. می‌توانید با `filters` کلیک‌های خاص را فیلتر کنید.",
+    "params": [
+      [
+        "filters",
+        "<a href='../models/index.html#inline_filters'>InlineFilter</a> | None",
+        "فیلتر(ها) برای محدود کردن کلیک‌های دریافتی"
+      ]
+    ],
+    "returns": [
+      [
+        "UpdateButton",
+        "<a href='../models/index.html#updatebutton'>UpdateButton</a>",
+        "اطلاعات کلیک"
+      ]
+    ],
+    "example": "@bot.on_button()\nasync def button_click(upd: UpdateButton):\n    print(upd)\n    await upd.send_text(\"دکمه کلیک شد!\")"
+  },
+  {
+    "id": "run",
+    "title": "شروع گرفتن پیام ها",
+    "signature": "await bot.run(poll_interval=0.0, reload=False)",
+    "desc": "متود شروع گرفتن پیام های پولینگ/وبهوک. خروجی ندارد.",
+    "params": [
+      [
+        "poll_interval",
+        "float = 0.0",
+        "زمان اسلیپ بین گرفتن پیام ها"
+      ],
+      [
+        "reload",
+        "bool = False",
+        "<a href='../features/index.html#HotReload'>ریلود شدن ربات</a>"
+      ]
+    ],
+    "returns": null,
+    "example": "@bot.on_message()\nasync def handler(msg):\n    print(msg.text)\n\nawait bot.run()"
+  },
+  {
+    "id": "get_chat",
+    "title": "گرفتن اطلاعات چت",
+    "signature": "async get_chat(chat_id)",
+    "desc": "اطلاعات گروه، کانال یا کاربر.",
+    "params": [
+      [
+        "chat_id",
+        "str",
+        "چت آیدی"
+      ]
+    ],
+    "returns": [
+      [
+        "Chat",
+        "<a href='../models/index.html#base_models'>Chat</a>",
+        "اطلاعات چت"
+      ]
+    ],
+    "example": "chat = await bot.get_chat(\"b123...\")\nprint(chat.title)"
+  },
+  {
+    "id": "forward_message",
+    "title": "فوروارد پیام",
+    "signature": "async forward_message(from_chat_id, message_id, to_chat_id, ...)",
+    "desc": "فوروارد یک پیام به چت دیگر.",
+    "params": [
+      [
+        "from_chat_id",
+        "str",
+        "چت آیدی مبدأ"
+      ],
+      [
+        "message_id",
+        "str",
+        "شناسهٔ پیام"
+      ],
+      [
+        "to_chat_id",
+        "str",
+        "چت آیدی مقصد"
+      ],
+      [
+        "disable_notification",
+        "bool = False",
+        "غیرفعال کردن اعلان"
+      ],
+      [
+        "auto_delete",
+        "int | None",
+        "حذف خودکار پیام بعد از چند ثانیه"
+      ],
+      [
+        "wait_send",
+        "float | None",
+        "تأخیر قبل از ارسال درخواست (ثانیه)"
+      ],
+      [
+        "return_task",
+        "bool = False",
+        "برگرداندن تسک به جای ارسال مستقیم"
+      ]
+    ],
+    "returns": [
+      [
+        "msg_update",
+        "<a href='../models/index.html#msg_update'>msg_update</a>",
+        "پیام فوروارد شده"
+      ]
+    ],
+    "example": "fwd = await bot.forward_message(\"from_id\", \"msg_id\", \"to_id\")\nprint(fwd)"
+  },
+  {
+    "id": "forward_messages",
+    "title": "فوروارد چند پیام",
+    "signature": "async forward_messages(from_chat_id, message_ids, to_chat_id, ...)",
+    "desc": "چندین پیام را به صورت همزمان فوروارد می‌کند.",
+    "params": [
+      [
+        "from_chat_id",
+        "str",
+        "چت آیدی مبدأ"
+      ],
+      [
+        "message_ids",
+        "list",
+        "لیست شناسه‌های پیام‌ها"
+      ],
+      [
+        "to_chat_id",
+        "str",
+        "چت آیدی مقصد"
+      ],
+      [
+        "disable_notification",
+        "bool = False",
+        "غیرفعال کردن اعلان"
+      ],
+      [
+        "auto_delete",
+        "int | None",
+        "حذف خودکار پیام بعد از چند ثانیه"
+      ],
+      [
+        "wait_send",
+        "float | None",
+        "تأخیر قبل از ارسال درخواست (ثانیه)"
+      ],
+      [
+        "return_task",
+        "bool = False",
+        "برگرداندن تسک به جای ارسال مستقیم"
+      ]
+    ],
+    "returns": [
+      [
+        "list[msg_update]",
+        "List[<a href='../models/index.html#msg_update'>msg_update</a>]",
+        "لیست پیام‌های فوروارد شده"
+      ]
+    ],
+    "example": "msgs = await bot.forward_messages(\"from_id\", [\"id1\",\"id2\"], \"to_id\")"
+  },
+  {
+    "id": "edit_message_text",
+    "title": "ویرایش متن پیام",
+    "signature": "async edit_message_text(chat_id, message_id, text, ...)",
+    "desc": "متن و دکمه‌های یک پیام را تغییر دهید.",
+    "params": [
+      [
+        "chat_id",
+        "str",
+        "چت آیدی"
+      ],
+      [
+        "message_id",
+        "str",
+        "شناسهٔ پیام"
+      ],
+      [
+        "text",
+        "str",
+        "متن جدید"
+      ],
+      [
+        "inline_keypad",
+        "list[dict] | KeyPad | None",
+        "دکمه‌های شیشه‌ای جدید"
+      ],
+      [
+        "parse_mode",
+        "'Markdown' | 'HTML' | None = 'Markdown'",
+        "پارس مود متن"
+      ],
+      [
+        "meta_data",
+        "list | None",
+        "متادیتا برای پیام"
+      ],
+      [
+        "wait_send",
+        "float | None",
+        "تأخیر قبل از ارسال درخواست (ثانیه)"
+      ],
+      [
+        "return_task",
+        "bool = False",
+        "برگرداندن تسک به جای ارسال مستقیم"
+      ],
+      [
+        "context",
+        "dict | None",
+        "متغیرهای قالب برای جایگزینی در متن (مثل `{{ name }}`)"
+      ],
+      [
+        "auto_escape",
+        "bool = True",
+        "فرار خودکار کاراکترهای HTML/Markdown برای جلوگیری از XSS هنگام استفاده از context"
+      ]
+    ],
+    "returns": [
+      [
+        "msg_update",
+        "<a href='../models/index.html#msg_update'>msg_update</a>",
+        "پیام ویرایش شده"
+      ]
+    ],
+    "example": "edited = await bot.edit_message_text(\"chat_id\", \"msg_id\", \"متن جدید\")\nprint(edited)"
+  },
+  {
+    "id": "delete_message",
+    "title": "حذف پیام",
+    "signature": "async delete_message(chat_id, message_id, ...)",
+    "desc": "حذف یک پیام از چت.",
+    "params": [
+      [
+        "chat_id",
+        "str",
+        "چت آیدی"
+      ],
+      [
+        "message_id",
+        "str",
+        "شناسه پیام"
+      ],
+      [
+        "wait_send",
+        "float | None",
+        "زمان ایستادن برای قبل از ارسال درخواست"
+      ],
+      [
+        "return_task",
+        "bool = False",
+        "برگرشتن تسک جدید"
+      ]
+    ],
+    "returns": [
+      [
+        "dict",
+        "dict",
+        "نتیجه"
+      ]
+    ],
+    "example": "await bot.delete_message(\"chat_id\", \"msg_id\")"
+  },
+  {
+    "id": "set_commands",
+    "title": "تنظیم دستورات (commands)",
+    "signature": "async set_commands(list_commands=None)",
+    "desc": "تنظیم، افزودن یا حذف دستورات پیشنهادی بات.",
+    "params": [],
+    "returns": null,
+    "example": "await bot.add_commands(\"/help\", \"راهنمای ربات\")\nawait bot.add_commands(\"/start\", \"شروع\")\nawait bot.set_commands()  # اعمال تغییرات\n\n# یا مستقیم\ncmds = [{\"command\": \"help\", \"description\": \"راهنما\"}]\nawait bot.set_commands(cmds)\n\n# حذف همه\nawait bot.delete_commands()"
+  },
+  {
+    "id": "update_endpoint",
+    "title": "آپدیت آدرس وب‌هوک (URL Endpoint)",
+    "signature": "async update_endpoint(url, type)",
+    "desc": "تغییر آدرسی که روبیکا آپدیت‌ها را به آن ارسال می‌کند.",
+    "params": [
+      [
+        "url",
+        "str",
+        "آدرس جدید"
+      ],
+      [
+        "type",
+        "Literal[\"ReceiveUpdate\", \"GetSelectionItem\", \"ReceiveInlineMessage\", \"ReceiveQuery\", \"SearchSelectionItems\"]",
+        "نوع آپدیت (ReceiveUpdate, etc)"
+      ]
+    ],
+    "returns": [
+      [
+        "dict",
+        "dict",
+        "نتیجه"
+      ]
+    ],
+    "example": "result = await bot.update_endpoint(\"https://my.site/webhook\", \"ReceiveUpdate\")\nprint(result)"
+  },
+  {
+    "id": "send_files",
+    "title": "ارسال فایل / تصویر / ویدیو / صدا / گیف / ویس",
+    "signature": "async send_file(chat_id, file, ...)  و  send_image, send_video, ...",
+    "desc": "متدهای مجزا برای هر نوع فایل. پارامترها یکسان هستند.",
+    "params": [
+      [
+        "chat_id",
+        "str",
+        "چت آیدی"
+      ],
+      [
+        "file / image / video / voice / music / gif",
+        "str | Path | bytes",
+        "فایل ورودی (مسیر یا بایت) — نام پارامتر بسته به متد متفاوت است"
+      ],
+      [
+        "name_file",
+        "str | None",
+        "نام فایل (پیش‌فرض: 'file')"
+      ],
+      [
+        "text",
+        "str | None",
+        "متن کپشن"
+      ],
+      [
+        "reply_to_message_id",
+        "str | None",
+        "آیدی پیامی که به آن پاسخ داده می‌شود"
+      ],
+      [
+        "disable_notification",
+        "bool = False",
+        "غیرفعال کردن اعلان"
+      ],
+      [
+        "auto_delete",
+        "int | None",
+        "حذف خودکار پیام بعد از چند ثانیه"
+      ],
+      [
+        "parse_mode",
+        "'Markdown' | 'HTML' | None = 'Markdown'",
+        "پارس مود متن"
+      ],
+      [
+        "meta_data",
+        "list | None",
+        "متادیتا برای پیام"
+      ],
+      [
+        "inline_keypad",
+        "list[dict] | KeyPad | None",
+        "دکمه‌های شیشه‌ای (اینلاین)"
+      ],
+      [
+        "keypad",
+        "list[dict] | KeyPad | None",
+        "دکمه‌های کیبورد"
+      ],
+      [
+        "resize_keyboard",
+        "bool = True",
+        "تغییر خودکار سایز کیبورد"
+      ],
+      [
+        "on_time_keyboard",
+        "bool = False",
+        "کیبورد یک‌بار مصرف"
+      ],
+      [
+        "show_progress",
+        "bool = False",
+        "نمایش نوار پیشرفت آپلود"
+      ],
+      [
+        "chunk_size",
+        "int = 1MB (1024*1024)",
+        "سایز هر قطعه (chunk) برای آپلود"
+      ],
+      [
+        "wait_send",
+        "float | None",
+        "تأخیر قبل از ارسال درخواست (ثانیه)"
+      ],
+      [
+        "return_task",
+        "bool = False",
+        "برگرداندن تسک به جای ارسال مستقیم"
+      ],
+      [
+        "context",
+        "dict | None",
+        "متغیرهای قالب برای جایگزینی در متن (مثل `{{ name }}`)"
+      ],
+      [
+        "auto_escape",
+        "bool = True",
+        "فرار خودکار کاراکترهای HTML/Markdown برای جلوگیری از XSS"
+      ]
+    ],
+    "returns": [
+      [
+        "msg_update",
+        "<a href='../models/index.html#msg_update'>msg_update</a>",
+        "پیام فایل ارسال شده"
+      ]
+    ],
+    "example": "await bot.send_file(\"chat_id\", \"test.json\", name_file=\"data.json\", text=\"caption\")\nawait bot.send_image(\"chat_id\", \"photo.png\")\nawait bot.send_video(\"chat_id\", \"vid.mp4\")\nawait bot.send_voice(\"chat_id\", \"voice.ogg\")\nawait bot.send_music(\"chat_id\", \"music.mp3\")\nawait bot.send_gif(\"chat_id\", \"anim.gif\")"
+  },
+  {
+    "id": "base_send_file",
+    "title": "ارسال پایه فایل (متد مشترک همه ارسال‌های فایل)",
+    "signature": "async base_send_file(chat_id, file, name_file=None, text=None, reply_to_message_id=None, type_file='File', disable_notification=False, auto_delete=None, parse_mode='Markdown', meta_data=None, inline_keypad=None, keypad=None, resize_keyboard=True, on_time_keyboard=False, show_progress=False, chunk_size=1048576, wait_send=None, return_task=False, context=None, auto_escape=True)",
+    "desc": "متد پایه و مشترک برای ارسال همهٔ انواع فایل (File / Image / Voice / Music / Gif / Video). متدهای `send_file`، `send_image`، `send_video`، `send_voice`، `send_music` و `send_gif` همگی wrapper نازکی روی این متد هستند و فقط مقدار `type_file` را به آن پاس می‌دهند. همچنین `send_message` وقتی پارامتر `file` داده شود، درون خودش این متد را صدا می‌زند. اگر می‌خواهید کد کمتری بنویسید یا نوع فایل را به صورت پویا (dynamic) تعیین کنید، مستقیماً از همین متد استفاده کنید.",
+    "params": [
+      [
+        "chat_id",
+        "str",
+        "چت آیدی"
+      ],
+      [
+        "file",
+        "str | Path | bytes",
+        "فایل ورودی (مسیر، Path یا بایت)"
+      ],
+      [
+        "name_file",
+        "str | None",
+        "نام فایل. اگر None باشد، نام بر اساس نوع فایل (type_file) با Utils.format_file تعیین می‌شود (مثلاً برای Image ممکن است نام پیش‌فرض image قرار گیرد)"
+      ],
+      [
+        "text",
+        "str | None",
+        "متن کپشن"
+      ],
+      [
+        "reply_to_message_id",
+        "str | None",
+        "آیدی پیامی که به آن پاسخ داده می‌شود"
+      ],
+      [
+        "type_file",
+        "'File' | 'Image' | 'Voice' | 'Music' | 'Gif' | 'Video' = 'File'",
+        "نوع فایل — تعیین می‌کند کدام endpoint روبیکا صدا زده شود"
+      ],
+      [
+        "disable_notification",
+        "bool | None = False",
+        "غیرفعال کردن اعلان"
+      ],
+      [
+        "auto_delete",
+        "int | None",
+        "حذف خودکار پیام بعد از چند ثانیه"
+      ],
+      [
+        "parse_mode",
+        "'Markdown' | 'HTML' | None = 'Markdown'",
+        "پارس مود متن کپشن"
+      ],
+      [
+        "meta_data",
+        "list | None",
+        "متادیتا برای پیام"
+      ],
+      [
+        "inline_keypad",
+        "list[dict] | KeyPad | None",
+        "دکمه‌های شیشه‌ای (اینلاین)"
+      ],
+      [
+        "keypad",
+        "list[dict] | KeyPad | None",
+        "دکمه‌های کیبورد"
+      ],
+      [
+        "resize_keyboard",
+        "bool = True",
+        "تغییر خودکار سایز کیبورد"
+      ],
+      [
+        "on_time_keyboard",
+        "bool = False",
+        "کیبورد یک‌بار مصرف"
+      ],
+      [
+        "show_progress",
+        "bool = False",
+        "نمایش نوار پیشرفت آپلود"
+      ],
+      [
+        "chunk_size",
+        "int = 1MB (1024*1024)",
+        "سایز هر قطعه (chunk) برای آپلود"
+      ],
+      [
+        "wait_send",
+        "float | None",
+        "تأخیر قبل از ارسال درخواست (ثانیه)"
+      ],
+      [
+        "return_task",
+        "bool = False",
+        "برگرداندن تسک به جای ارسال مستقیم"
+      ],
+      [
+        "context",
+        "dict | None",
+        "متغیرهای قالب برای جایگزینی در متن (مثل `{{ name }}`)"
+      ],
+      [
+        "auto_escape",
+        "bool = True",
+        "فرار خودکار کاراکترهای HTML/Markdown برای جلوگیری از XSS هنگام استفاده از context"
+      ]
+    ],
+    "returns": [
+      [
+        "msg_update",
+        "<a href='../models/index.html#msg_update'>msg_update</a>",
+        "پیام ارسال‌شده — علاوه بر فیلدهای استاندارد msg_update، شامل کلیدهای `file_id` (شناسهٔ فایل آپلود شده)، `type_file` (نوع فایل) و `size_file` (حجم فایل به بایت) نیز می‌باشد"
+      ]
+    ],
+    "example": "# ۱) استفاده مستقیم به عنوان متد پایه\nawait bot.base_send_file(\"chat_id\", \"photo.png\", type_file=\"Image\", text=\"کپشن عکس\")\n\n# ۲) معادل با متدهای اختصاصی (هر دو یک کار را انجام می‌دهند)\nawait bot.send_image(\"chat_id\", \"photo.png\")            # درونش base_send_file با type_file=\"Image\" صدا زده می‌شود\nawait bot.base_send_file(\"chat_id\", \"photo.png\", type_file=\"Image\")\n\n# ۳) تعیین پویا نوع فایل بر اساس پسوند\next = \"mp4\"\ntype_map = {\"jpg\": \"Image\", \"png\": \"Image\", \"mp4\": \"Video\", \"mp3\": \"Music\", \"ogg\": \"Voice\", \"gif\": \"Gif\"}\nawait bot.base_send_file(\"chat_id\", f\"file.{ext}\", type_file=type_map[ext])\n\n# ۴) گرفتن اطلاعات اضافی از خروجی\nsent = await bot.base_send_file(\"chat_id\", \"doc.pdf\", type_file=\"File\")\nprint(sent.file_id)     # شناسه فایل آپلود شده\nprint(sent.type_file)   # \"File\"\nprint(sent.size_file)   # حجم فایل به بایت"
+  },
+  {
+    "id": "request_send_file",
+    "title": "درخواست لینک آپلود فایل",
+    "signature": "async request_send_file(type='File')",
+    "desc": "از سرور آپلود روبیکا یک لینک موقت برای آپلود دریافت کنید.",
+    "params": [
+      [
+        "type",
+        "'File' | 'Image' | 'Voice' | 'Music' | 'Gif' | 'Video' = 'File'",
+        "نوع فایل"
+      ]
+    ],
+    "returns": [
+      [
+        "upload_url",
+        "str",
+        "آدرس آپلود"
+      ]
+    ],
+    "example": "req = await bot.request_send_file(\"Image\")\nprint(req[\"upload_url\"])"
+  },
+  {
+    "id": "upload_file",
+    "title": "آپلود فایل روی سرور روبیکا",
+    "signature": "async upload_file(url, file_name, file, show_progress=False, chunk_size=1MB)",
+    "desc": "فایل را روی سرور آپلود کرده و اطلاعات آن را برمی‌گرداند.",
+    "params": [
+      [
+        "url",
+        "str",
+        "آدرس آپلود گرفته‌شده از request_send_file"
+      ],
+      [
+        "file_name",
+        "str",
+        "نام فایل"
+      ],
+      [
+        "file",
+        "str | Path | bytes",
+        "فایل (مسیر یا بایت)"
+      ],
+      [
+        "show_progress",
+        "bool = False",
+        "نمایش نوار پیشرفت"
+      ],
+      [
+        "chunk_size",
+        "int = 1048576",
+        "سایز chunk"
+      ]
+    ],
+    "returns": [
+      [
+        "result",
+        "dict",
+        "پاسخ آپلود شامل file_id و غیره"
+      ]
+    ],
+    "example": "up = await bot.upload_file(upload_url, \"photo.jpg\", open(\"pic.jpg\",\"rb\").read())"
+  },
+  {
+    "id": "send_file_by_file_id",
+    "title": "ارسال فایل با آیدی (file_id)",
+    "signature": "async send_file_by_file_id(chat_id, file_id, text=None, ...)",
+    "desc": "فایلی که قبلاً آیدی گرفته را بدون آپلود مجدد ارسال کنید.",
+    "params": [
+      [
+        "chat_id",
+        "str",
+        "چت آیدی"
+      ],
+      [
+        "file_id",
+        "str",
+        "شناسهٔ فایل (از قبل آپلود شده)"
+      ],
+      [
+        "text",
+        "str | None",
+        "متن کپشن"
+      ],
+      [
+        "reply_to_message_id",
+        "str | None",
+        "آیدی پیامی که به آن پاسخ داده می‌شود"
+      ],
+      [
+        "disable_notification",
+        "bool = False",
+        "غیرفعال کردن اعلان"
+      ],
+      [
+        "auto_delete",
+        "int | None",
+        "حذف خودکار پیام بعد از چند ثانیه"
+      ],
+      [
+        "parse_mode",
+        "'Markdown' | 'HTML' | None = 'Markdown'",
+        "پارس مود متن"
+      ],
+      [
+        "meta_data",
+        "list | None",
+        "متادیتا برای پیام"
+      ],
+      [
+        "inline_keypad",
+        "list[dict] | KeyPad | None",
+        "دکمه‌های شیشه‌ای (اینلاین)"
+      ],
+      [
+        "keypad",
+        "list[dict] | KeyPad | None",
+        "دکمه‌های کیبورد"
+      ],
+      [
+        "resize_keyboard",
+        "bool = True",
+        "تغییر خودکار سایز کیبورد"
+      ],
+      [
+        "on_time_keyboard",
+        "bool = False",
+        "کیبورد یک‌بار مصرف"
+      ],
+      [
+        "wait_send",
+        "float | None",
+        "تأخیر قبل از ارسال درخواست (ثانیه)"
+      ],
+      [
+        "return_task",
+        "bool = False",
+        "برگرداندن تسک به جای ارسال مستقیم"
+      ],
+      [
+        "context",
+        "dict | None",
+        "متغیرهای قالب برای جایگزینی در متن (مثل `{{ name }}`)"
+      ],
+      [
+        "auto_escape",
+        "bool = True",
+        "فرار خودکار کاراکترهای HTML/Markdown برای جلوگیری از XSS"
+      ]
+    ],
+    "returns": [
+      [
+        "msg_update",
+        "<a href='../models/index.html#msg_update'>msg_update</a>",
+        "پیام ارسالی"
+      ]
+    ],
+    "example": "await bot.send_file_by_file_id(\"chat_id\", \"file_id_123...\")"
+  },
+  {
+    "id": "send_sticker",
+    "title": "ارسال استیکر",
+    "signature": "async send_sticker(chat_id, id_sticker, ...)",
+    "desc": "استیکر را با آیدی آن ارسال کنید.",
+    "params": [
+      [
+        "chat_id",
+        "str",
+        "چت آیدی"
+      ],
+      [
+        "id_sticker",
+        "str",
+        "آیدی استیکر"
+      ],
+      [
+        "reply_to_message_id",
+        "str | None",
+        "در پاسخ به"
+      ],
+      [
+        "disable_notification",
+        "bool | None = None",
+        "اعلان"
+      ],
+      [
+        "auto_delete",
+        "int | None",
+        "پاکسازی خودکار"
+      ],
+      [
+        "wait_send",
+        "float | None",
+        "زمان ایستادن برای قبل از ارسال درخواست"
+      ],
+      [
+        "return_task",
+        "bool = False",
+        "برگرشتن تسک جدید"
+      ]
+    ],
+    "returns": [
+      [
+        "msg_update",
+        "<a href='../models/index.html#msg_update'>msg_update</a>",
+        "پیام استیکر"
+      ]
+    ],
+    "example": "await bot.send_sticker(\"chat_id\", \"sticker_id_001\")"
+  },
+  {
+    "id": "get_file",
+    "title": "گرفتن اطلاعات فایل",
+    "signature": "async get_file(id_file)",
+    "desc": "اطلاعات فایل (شامل download_url) را برمی‌گرداند.",
+    "params": [
+      [
+        "id_file",
+        "str",
+        "آیدی فایل"
+      ]
+    ],
+    "returns": [
+      [
+        "file_info",
+        "props",
+        "دیکشنری اطلاعات فایل (دارای download_url)"
+      ]
+    ],
+    "example": "info = await bot.get_file(\"file_id\")\nprint(info[\"download_url\"])"
+  },
+  {
+    "id": "download_file",
+    "title": "دانلود فایل",
+    "signature": "async download_file(id_file, path, show_progress=False, max_retries=None, ...)",
+    "desc": "فایل را با file_id دانلود و در مسیر مشخص ذخیره کنید.",
+    "params": [
+      [
+        "id_file",
+        "str",
+        "آیدی فایل"
+      ],
+      [
+        "path",
+        "str = 'file'",
+        "مسیر ذخیره"
+      ],
+      [
+        "show_progress",
+        "bool = False",
+        "نمایش پیشرفت"
+      ],
+      [
+        "wait_send",
+        "float | None",
+        "زمان ایستادن برای قبل از ارسال درخواست"
+      ],
+      [
+        "return_task",
+        "bool = False",
+        "برگرشتن تسک جدید"
+      ],
+      [
+        "max_retries",
+        "int | None",
+        "حداکثر تلاش‌های دانلود"
+      ]
+    ],
+    "returns": null,
+    "example": "await bot.download_file(\"file_id\", \"./downloads/test.txt\")"
+  },
+  {
+    "id": "download_by_url",
+    "title": "دانلود مستقیم از یک URL",
+    "signature": "async download_by_url(url, path='file', show_progress=False, max_retries=None)",
+    "desc": "فایل را از یک URL مستقیم دانلود و ذخیره می‌کند (نیاز به file_id ندارد).",
+    "params": [
+      [
+        "url",
+        "str",
+        "لینک دانلود مستقیم"
+      ],
+      [
+        "path",
+        "str = 'file'",
+        "مسیر ذخیره"
+      ],
+      [
+        "show_progress",
+        "bool = False",
+        "نمایش پیشرفت"
+      ],
+      [
+        "max_retries",
+        "int | None",
+        "حداکثر تلاش‌های دانلود"
+      ]
+    ],
+    "returns": null,
+    "example": "await bot.download_by_url(\"https://example.com/file.pdf\", \"myfile.pdf\")"
+  },
+  {
+    "id": "get_download_file_url",
+    "title": "گرفتن لینک دانلود مستقیم",
+    "signature": "async get_download_file_url(id_file)",
+    "desc": "لینک قابل مرورگر برای دانلود فایل.",
+    "params": [
+      [
+        "id_file",
+        "str",
+        "آیدی فایل"
+      ],
+      [
+        "wait_send",
+        "float | None",
+        "زمان ایستادن برای قبل از ارسال درخواست"
+      ],
+      [
+        "return_task",
+        "bool = False",
+        "برگرشتن تسک جدید"
+      ]
+    ],
+    "returns": [
+      [
+        "url",
+        "str",
+        "لینک دانلود"
+      ]
+    ],
+    "example": "url = await bot.get_download_file_url(\"file_id\")\nprint(url)"
+  },
+  {
+    "id": "download_me_profile",
+    "title": "دانلود پروفایل ربات",
+    "signature": "async download_me_profile(name_file='bot_avatar.jpg', show_progress=False, wait_send=None, return_task=False, max_retries=None)",
+    "desc": "عکس پروفایل خود ربات را دانلود می‌کند.",
+    "params": [
+      [
+        "name_file",
+        "str = 'bot_avatar.jpg'",
+        "نام فایل برای ذخیره"
+      ],
+      [
+        "show_progress",
+        "bool = False",
+        "نمایش نوار پیشرفت"
+      ],
+      [
+        "wait_send",
+        "float | None",
+        "تأخیر قبل از ارسال درخواست"
+      ],
+      [
+        "return_task",
+        "bool = False",
+        "برگرداندن تسک به جای ارسال مستقیم"
+      ],
+      [
+        "max_retries",
+        "int | None",
+        "حداکثر تلاش‌های دانلود"
+      ]
+    ],
+    "returns": [
+      [
+        "bool",
+        "bool",
+        "True در صورت دانلود موفق"
+      ]
+    ],
+    "example": "ok = await bot.download_me_profile(\"bot_avatar.jpg\")"
+  },
+  {
+    "id": "version_botapi",
+    "title": "نسخه BotApi",
+    "signature": "async version_botapi()",
+    "desc": "نسخه فعلی BotApi روبیکا را برگردان.",
+    "params": [],
+    "returns": [
+      [
+        "version",
+        "str",
+        "نسخه"
+      ]
+    ],
+    "example": "ver = await bot.version_botapi()\nprint(ver)"
+  },
+  {
+    "id": "auto_delete",
+    "title": "پاکسازی خودکار پیام",
+    "signature": "async auto_delete(chat_id, message_id, time_sleep, separate_task=False)",
+    "desc": "پس از تأخیر مشخص، پیام را حذف می‌کند.",
+    "params": [
+      [
+        "chat_id",
+        "str",
+        "چت آیدی"
+      ],
+      [
+        "message_id",
+        "str",
+        "شناسه پیام"
+      ],
+      [
+        "time_sleep",
+        "float",
+        "زمان انتظار (ثانیه)"
+      ],
+      [
+        "separate_task",
+        "bool = False",
+        "اجرا در تسک جداگانه"
+      ]
+    ],
+    "returns": [
+      [
+        "dict",
+        "dict | None",
+        "نتیجه"
+      ]
+    ],
+    "example": "await bot.auto_delete(\"b...\", \"msg_id\", 30)"
+  },
+  {
+    "id": "auto_edit",
+    "title": "ویرایش خودکار پیام",
+    "signature": "async auto_edit(chat_id, message_id, text, auto_edit, ...)",
+    "desc": "پس از تأخیر، متن پیام را ویرایش می‌کند.",
+    "params": [
+      [
+        "chat_id",
+        "str",
+        "چت آیدی"
+      ],
+      [
+        "message_id",
+        "str",
+        "شناسهٔ پیام"
+      ],
+      [
+        "text",
+        "str",
+        "متن جدید"
+      ],
+      [
+        "auto_edit",
+        "int",
+        "فاصلهٔ زمانی ویرایش خودکار (ثانیه) — پیام هر N ثانیه ویرایش می‌شود"
+      ],
+      [
+        "inline_keypad",
+        "list[dict] | KeyPad | None",
+        "دکمه‌های شیشه‌ای جدید"
+      ],
+      [
+        "parse_mode",
+        "'Markdown' | 'HTML' | None = 'Markdown'",
+        "پارس مود متن"
+      ],
+      [
+        "meta_data",
+        "list | None",
+        "متادیتا برای پیام"
+      ],
+      [
+        "separate_task",
+        "bool = False",
+        "اجرا در تسک جداگانه (بدون منتظر ماندن)"
+      ],
+      [
+        "context",
+        "dict | None",
+        "متغیرهای قالب برای جایگزینی در متن (مثل `{{ name }}`)"
+      ],
+      [
+        "auto_escape",
+        "bool = True",
+        "فرار خودکار کاراکترهای HTML/Markdown برای جلوگیری از XSS"
+      ]
+    ],
+    "returns": [
+      [
+        "dict",
+        "dict | None",
+        "نتیجه"
+      ]
+    ],
+    "example": "await bot.auto_edit(\"b...\", \"msg_id\", \"متن جدید\", 20)"
+  },
+  {
+    "id": "get_message",
+    "title": "گرفتن پیام با آیدی",
+    "signature": "async get_message(chat_id, message_id, limit_search=100, search_by='all')",
+    "desc": "یک پیام خاص را از تاریخچه یا حافظه کش پیدا کنید.",
+    "params": [
+      [
+        "chat_id",
+        "str | None",
+        "چت آیدی (None = جستجو در همه جا)"
+      ],
+      [
+        "message_id",
+        "str | None",
+        "شناسهٔ پیام هدف"
+      ],
+      [
+        "limit_search",
+        "int = 100",
+        "حداکثر تعداد پیام‌های جستجو"
+      ],
+      [
+        "search_by",
+        "'messages' | 'get_updates' | 'all' = 'all'",
+        "روش جستجو: messages (دریافتی)، get_updates (پولینگ)، یا all (همه)"
+      ],
+      [
+        "max_attempts",
+        "int = 10",
+        "حداکثر تعداد تلاش برای پیدا کردن پیام"
+      ]
+    ],
+    "returns": [
+      [
+        "Message",
+        "<a href='../models/index.html#update'>Message</a> | None",
+        "پیام یا None"
+      ]
+    ],
+    "example": "msg = await bot.get_message(\"b...\", \"msg_id\")\nif msg:\n    print(msg.text)"
+  },
+  {
+    "id": "get_messages",
+    "title": "گرفتن پیام‌های قبل از یک پیام",
+    "signature": "async get_messages(chat_id, message_id, limit_search=100, get_befor=10, search_by='all')",
+    "desc": "لیستی از پیام‌های قبل از message_id را برمی‌گرداند.",
+    "params": [
+      [
+        "chat_id",
+        "str",
+        "چت آیدی"
+      ],
+      [
+        "message_id",
+        "str",
+        "شناسه پیام"
+      ],
+      [
+        "limit_search",
+        "int = 100",
+        "محدودیت جستجو"
+      ],
+      [
+        "get_befor",
+        "int = 10",
+        "تعداد پیام‌های قبل"
+      ],
+      [
+        "search_by",
+        "'messages' | 'get_updates' | 'all' = 'all'",
+        "جستجو در"
+      ],
+      [
+        "max_attempts",
+        "int = 10",
+        "حداکثر تعداد تلاش برای پیدا کردن پیام"
+      ]
+    ],
+    "returns": [
+      [
+        "Messages",
+        "List[<a href='../models/index.html#update'>Message</a>] | None",
+        "لیست پیام‌ها"
+      ]
+    ],
+    "example": "msgs = await bot.get_messages(\"b...\", \"msg_id\", get_befor=5)\nfor m in msgs:\n    print(m.text)"
+  },
+  {
+    "id": "ban_chat_member",
+    "title": "مسدود کردن عضو از چت",
+    "signature": "async ban_chat_member(chat_id, user_id, ...)",
+    "desc": "کاربر را از گروه/کانال حذف و مسدود می‌کند.",
+    "params": [
+      [
+        "chat_id",
+        "str",
+        "چت آیدی"
+      ],
+      [
+        "user_id",
+        "str",
+        "آیدی کاربر"
+      ],
+      [
+        "wait_send",
+        "float | None",
+        "زمان ایستادن برای قبل از ارسال درخواست"
+      ],
+      [
+        "return_task",
+        "bool = False",
+        "برگرشتن تسک جدید"
+      ]
+    ],
+    "returns": null,
+    "example": "await bot.ban_chat_member(\"group_id\", \"user_id\")"
+  },
+  {
+    "id": "unban_chat_member",
+    "title": "رفع مسدودیت عضو",
+    "signature": "async unban_chat_member(chat_id, user_id, ...)",
+    "desc": "کاربر را از حالت مسدود خارج می‌کند.",
+    "params": [
+      [
+        "chat_id",
+        "str",
+        "چت آیدی"
+      ],
+      [
+        "user_id",
+        "str",
+        "آیدی کاربر"
+      ],
+      [
+        "wait_send",
+        "float | None",
+        "زمان ایستادن برای قبل از ارسال درخواست"
+      ],
+      [
+        "return_task",
+        "bool = False",
+        "برگرشتن تسک جدید"
+      ]
+    ],
+    "returns": null,
+    "example": "await bot.unban_chat_member(\"group_id\", \"user_id\")"
+  },
+  {
+    "id": "resend_message",
+    "title": "ارسال مجدد پیام (کپی)",
+    "signature": "async resend_message(message_id, from_chat_id, to_chat_id, ...)",
+    "desc": "پیام را از چت مبدأ دریافت و در چت مقصد دوباره ارسال می‌کند (کپی با دانلود و آپلود مجدد).",
+    "params": [
+      [
+        "message_id",
+        "str",
+        "شناسهٔ پیام"
+      ],
+      [
+        "from_chat_id",
+        "str",
+        "چت آیدی مبدأ"
+      ],
+      [
+        "to_chat_id",
+        "str",
+        "چت آیدی مقصد"
+      ],
+      [
+        "auto_delete",
+        "int | None",
+        "حذف خودکار پیام بعد از چند ثانیه"
+      ],
+      [
+        "parse_mode",
+        "'Markdown' | 'HTML' | None = 'Markdown'",
+        "پارس مود متن"
+      ],
+      [
+        "meta_data",
+        "list | None",
+        "متادیتا برای پیام"
+      ],
+      [
+        "name_save_file",
+        "str | None",
+        "نام فایل برای ذخیره (در صورت دانلود)"
+      ],
+      [
+        "show_progress",
+        "bool = False",
+        "نمایش نوار پیشرفت دانلود"
+      ],
+      [
+        "chunk_size",
+        "int = 1MB (1024*1024)",
+        "سایز هر قطعه (chunk) برای دانلود"
+      ],
+      [
+        "wait_send",
+        "float | None",
+        "تأخیر قبل از ارسال درخواست (ثانیه)"
+      ],
+      [
+        "return_task",
+        "bool = False",
+        "برگرداندن تسک به جای ارسال مستقیم"
+      ],
+      [
+        "context",
+        "dict | None",
+        "متغیرهای قالب برای جایگزینی در متن (مثل `{{ name }}`)"
+      ],
+      [
+        "auto_escape",
+        "bool = True",
+        "فرار خودکار کاراکترهای HTML/Markdown"
+      ],
+      [
+        "max_retries",
+        "int | None",
+        "حداکثر تلاش‌های دانلود"
+      ]
+    ],
+    "returns": [
+      [
+        "msg_update",
+        "<a href='../models/index.html#msg_update'>msg_update</a>",
+        "پیام کپی‌شده"
+      ]
+    ],
+    "example": "copied = await bot.resend_message(\"msg_id\", \"from_chat\", \"to_chat\")"
+  },
+  {
+    "id": "add_handler",
+    "title": "افزودن هندلر",
+    "signature": "async add_handler(handler, type_handler, filters, ...)",
+    "desc": "یک فانکشن با ورودی msg می تواند به عنوان یک هندلر ثبت شود از انواع پولینگ/وبهوک/دکمه های شیشه ای و سایر رویدادها.",
+    "params": [
+      [
+        "handler",
+        "Callable | tuple",
+        "تابع (یا tuple از `(handler, values)`) برای پردازش رویداد"
+      ],
+      [
+        "type_handler",
+        "'polling' | 'webhook' | 'button' | 'start' | 'ready' | 'run' | 'live' | 'error' | 'conversation' | 'middleware' | 'shutdown' | 'button_url' | 'webhook_url' | 'before_send' | 'after_send' | 'before_run' | 'after_run' | 'log'",
+        "نوع هندلر"
+      ],
+      [
+        "filters",
+        "Filter | InlineFilter | None",
+        "فیلتر(ها) برای محدود کردن پیام‌های دریافتی"
+      ],
+      [
+        "edited_messages",
+        "False | True | 'both' = False",
+        "گرفتن پیام‌های ویرایش‌شده"
+      ],
+      [
+        "deleted_messages",
+        "False | True | 'both' = False",
+        "گرفتن پیام‌های حذف‌شده"
+      ],
+      [
+        "**values",
+        "dict",
+        "پارامترهای اضافی که به handler پاس داده می‌شوند (مثلاً `path_url` برای webhook_url)"
+      ]
+    ],
+    "returns": [
+      [
+        "wrapped",
+        "Callable | None",
+        "هندلر"
+      ]
+    ],
+    "example": "async def my_handler(msg: Message):\n    if msg.text == \"/start\":\n        await msg.reply(\"درود خوش اومدی به ربات من\")\n\nbot.add_handler(my_handler, \"polling\")"
+  },
+  {
+    "id": "get_updates",
+    "title": "گرفتن اولین پیام ها",
+    "signature": "async get_updates(limit, offset_id)",
+    "desc": "گرفتن اولین پیام های ربات.",
+    "params": [
+      [
+        "limit",
+        "int | None",
+        "محدودیت تعداد پیام ها"
+      ],
+      [
+        "offset_id",
+        "str | None",
+        "آفست آیدی برای گرفتن پیام ها از جایی به بعد"
+      ]
+    ],
+    "returns": [
+      [
+        "dict",
+        "dict",
+        "پیام ها"
+      ]
+    ],
+    "example": "first_updates = await bot.get_updates(100, \"offset_id\")"
+  },
+  {
+    "id": "send_message",
+    "title": "ارسال انواع پیام",
+    "signature": "async send_message(chat_id, text, ...)",
+    "desc": "ارسال انواع پیام (متن، فایل، نظرسنجی، موقعیت، مخاطب) با یک متد.",
+    "params": [
+      [
+        "text",
+        "str | None",
+        "متن پیام"
+      ],
+      [
+        "chat_id",
+        "str",
+        "چت آیدی"
+      ],
+      [
+        "inline_keypad",
+        "list[dict] | KeyPad | None",
+        "دکمه‌های شیشه‌ای (اینلاین)"
+      ],
+      [
+        "keypad",
+        "list[dict] | KeyPad | None",
+        "دکمه‌های کیبورد"
+      ],
+      [
+        "resize_keyboard",
+        "bool = True",
+        "تغییر خودکار سایز کیبورد"
+      ],
+      [
+        "on_time_keyboard",
+        "bool = False",
+        "کیبورد یک‌بار مصرف"
+      ],
+      [
+        "disable_notification",
+        "bool = False",
+        "غیرفعال کردن اعلان"
+      ],
+      [
+        "reply_to_message_id",
+        "str | None",
+        "آیدی پیامی که به آن پاسخ داده می‌شود"
+      ],
+      [
+        "auto_delete",
+        "int | None",
+        "حذف خودکار پیام بعد از چند ثانیه"
+      ],
+      [
+        "parse_mode",
+        "'Markdown' | 'HTML' | None = 'Markdown'",
+        "پارس مود متن"
+      ],
+      [
+        "meta_data",
+        "list | None",
+        "متادیتا برای پیام"
+      ],
+      [
+        "wait_send",
+        "float | None",
+        "تأخیر قبل از ارسال درخواست (ثانیه)"
+      ],
+      [
+        "return_task",
+        "bool = False",
+        "برگرداندن تسک به جای ارسال مستقیم"
+      ],
+      [
+        "context",
+        "dict | None",
+        "متغیرهای قالب برای جایگزینی در متن (مثل `{{ name }}`)"
+      ],
+      [
+        "auto_escape",
+        "bool = True",
+        "فرار خودکار کاراکترهای HTML/Markdown برای جلوگیری از XSS"
+      ],
+      [
+        "file",
+        "str | Path | bytes | None",
+        "📎 فایل — مسیر یا بایت فایل"
+      ],
+      [
+        "name_file",
+        "str | None",
+        "📎 فایل — نام فایل (پیش‌فرض: 'file')"
+      ],
+      [
+        "type_file",
+        "'File' | 'Image' | 'Voice' | 'Music' | 'Gif' | 'Video' = 'File'",
+        "📎 فایل — نوع فایل"
+      ],
+      [
+        "file_id",
+        "str | None",
+        "📎 فایل — آیدی فایل از قبل آپلود شده"
+      ],
+      [
+        "show_progress",
+        "bool = False",
+        "📎 فایل — نمایش نوار پیشرفت آپلود"
+      ],
+      [
+        "chunk_size",
+        "int = 1MB (1024*1024)",
+        "📎 فایل — سایز هر قطعه (chunk)"
+      ],
+      [
+        "question",
+        "str | None",
+        "📊 نظرسنجی — متن سوال"
+      ],
+      [
+        "options",
+        "list | None",
+        "📊 نظرسنجی — گزینه‌ها"
+      ],
+      [
+        "type_poll",
+        "'Regular' | 'Quiz' = 'Regular'",
+        "📊 نظرسنجی — نوع (عادی یا آزمونی)"
+      ],
+      [
+        "is_anonymous",
+        "bool = True",
+        "📊 نظرسنجی — ناشناس بودن رأی‌ها"
+      ],
+      [
+        "correct_option_index",
+        "int | None",
+        "📊 نظرسنجی — ایندکس گزینهٔ صحیح (Quiz)"
+      ],
+      [
+        "allows_multiple_answers",
+        "bool = False",
+        "📊 نظرسنجی — امکان انتخاب چند گزینه"
+      ],
+      [
+        "hint",
+        "str | None",
+        "📊 نظرسنجی — راهنمایی پاسخ (Quiz)"
+      ],
+      [
+        "latitude",
+        "str | None",
+        "📍 موقعیت — عرض جغرافیایی"
+      ],
+      [
+        "longitude",
+        "str | None",
+        "📍 موقعیت — طول جغرافیایی"
+      ],
+      [
+        "first_name",
+        "str | None",
+        "👤 مخاطب — نام"
+      ],
+      [
+        "last_name",
+        "str | None",
+        "👤 مخاطب — نام خانوادگی"
+      ],
+      [
+        "phone_number",
+        "str | None",
+        "👤 مخاطب — شماره تلفن"
+      ]
+    ],
+    "returns": [
+      [
+        "msg_update",
+        "<a href='../models/index.html#msg_update'>msg_update</a>",
+        "اطلاعات پیام ارسال‌شده"
+      ]
+    ],
+    "example": "await bot.send_message(\"chat_id\", \"text\", file_id=\"file id\")"
+  },
+  {
+    "id": "check_join",
+    "title": "بررسی عضویت در کانال",
+    "signature": "async check_join(chat_id, guid_channel, client)",
+    "desc": "بررسی می‌کند که کاربر در کانال مورد نظر عضو هست یا نه (نیاز به کلاینت یوزر بات).",
+    "params": [
+      [
+        "chat_id",
+        "str",
+        "چت آیدی کاربر"
+      ],
+      [
+        "guid_channel",
+        "str",
+        "شناسهٔ کانال (GUID)"
+      ],
+      [
+        "client",
+        "PyrubiClient",
+        "کلاینت یوزر بات (برای بررسی عضویت)"
+      ]
+    ],
+    "returns": [
+      [
+        "is_joined",
+        "bool",
+        "True اگر کاربر عضو کانال باشد"
+      ]
+    ],
+    "example": "is_member = await bot.check_join(\"user_chat_id\", \"channel_guid\", pyrubi_client)"
+  },
+  {
+    "id": "add_conversation",
+    "title": "افزودن مکالمه (Conversation) به ربات",
+    "signature": "async add_conversation(conversation)",
+    "desc": "یک شیء Conversation را به ربات اضافه می‌کند تا مکالمات چندمرحله‌ای مدیریت شوند.",
+    "params": [
+      [
+        "conversation",
+        "Conversation",
+        "شیء Conversation ساخته‌شده (import از `fast_rub`)"
+      ]
+    ],
+    "returns": null,
+    "example": "from fast_rub import Client, Conversation\n\nbot = Client(\"my_bot\")\nregister = Conversation(name=\"register\")\n\n@register.entry(commands=[\"/register\"])\nasync def ask_name(msg, data):\n    await msg.reply(\"اسمت چیه؟\")\n    return \"waiting_name\"\n\n@register.state(\"waiting_name\")\nasync def get_name(msg, data):\n    data[\"name\"] = msg.text\n    await msg.reply(f\"سلام {msg.text}!\")\n    return Conversation.END\n\nbot.add_conversation(register)"
+  },
+  {
+    "id": "on_button_url",
+    "title": "دکوراتور کلیک دکمه‌های شیشه‌ای با Webhook اختصاصی",
+    "signature": "@bot.on_button_url(path_url, filters=None)",
+    "desc": "مانند `on_button`، اما آدرس webhook مخصوص کلیک‌ها را جداگانه تعیین می‌کند.",
+    "params": [
+      [
+        "path_url",
+        "str",
+        "مسیر webhook برای دریافت کلیک‌ها (مثلاً `/webhook/button`)"
+      ],
+      [
+        "filters",
+        "InlineFilter | None",
+        "فیلتر(ها) برای محدود کردن کلیک‌های دریافتی"
+      ]
+    ],
+    "returns": [
+      [
+        "UpdateButton",
+        "<a href='../models/index.html#updatebutton'>UpdateButton</a>",
+        "اطلاعات کلیک"
+      ]
+    ],
+    "example": "@bot.on_button_url(\"/my-button-webhook\")\nasync def button_click(upd: UpdateButton):\n    await upd.send_text(\"کلیک دریافت شد!\")"
+  },
+  {
+    "id": "on_ready",
+    "title": "دکوراتور آماده‌بودن کلاینت",
+    "signature": "@bot.on_ready()",
+    "desc": "وقتی کلاینت کاملاً آمادهٔ ارسال درخواست شد و تست ارتباط با سرور موفق بود، این هندلر فراخوانی می‌شود.",
+    "params": [],
+    "returns": null,
+    "example": "@bot.on_ready()\nasync def ready():\n    print(\"✅ ربات آماده است و تست ارتباط موفق بود!\")"
+  },
+  {
+    "id": "on_start",
+    "title": "دکوراتور شروع کلاینت (بدون تست ارتباط)",
+    "signature": "@bot.on_start()",
+    "desc": "وقتی کلاینت راه‌اندازی می‌شود (متُد `start()` صدا زده می‌شود)، این هندلر اجرا می‌شود. برخلاف `on_ready`، هیچ درخواستی به سرور ارسال نمی‌کند.",
+    "params": [],
+    "returns": null,
+    "example": "@bot.on_start()\nasync def started():\n    print(\"🚀 کلاینت راه‌اندازی شد.\")"
+  },
+  {
+    "id": "on_run",
+    "title": "دکوراتور اجرای حلقهٔ اصلی",
+    "signature": "@bot.on_run()",
+    "desc": "وقتی متُد `run()` صدا زده می‌شود و حلقهٔ اصلی دریافت آپدیت‌ها شروع می‌شود، این هندلر فراخوانی می‌شود.",
+    "params": [],
+    "returns": null,
+    "example": "@bot.on_run()\nasync def running():\n    print(\"🔄 حلقهٔ اصلی دریافت پیام‌ها شروع شد.\")"
+  },
+  {
+    "id": "on_live",
+    "title": "دکوراتور زنده شدن ربات (رسیدن به آخرین پیام)",
+    "signature": "@bot.on_live()",
+    "desc": "در حالت Polling، وقتی ربات به آخرین پیام رسید و همهٔ پیام‌های معوقه را پردازش کرد (catch up کامل شد)، این هندلر فراخوانی می‌شود.",
+    "params": [],
+    "returns": null,
+    "example": "@bot.on_live()\nasync def live():\n    print(\"🟢 ربات زنده است — همهٔ پیام‌های قبلی پردازش شدند.\")"
+  },
+  {
+    "id": "on_error",
+    "title": "دکوراتور مدیریت خطا",
+    "signature": "@bot.on_error(error_detail='message')",
+    "desc": "وقتی خطایی در هر بخش از ربات رخ دهد، این هندلر فراخوانی می‌شود.",
+    "params": [
+      [
+        "error_detail",
+        "'full' | 'message' | 'type' = 'message'",
+        "سطح جزئیات خطا: full (traceback کامل)، message (فقط پیام خطا)، type (فقط نوع خطا)"
+      ]
+    ],
+    "returns": null,
+    "example": "@bot.on_error(error_detail=\"full\")\nasync def handle_error(error, update=None):\n    print(f\"❌ خطا رخ داد:\\n{error}\")"
+  },
+  {
+    "id": "middleware",
+    "title": "دکوراتور Middleware",
+    "signature": "@bot.middleware(filters=None)",
+    "desc": "یک لایهٔ میانی (Middleware) به ربات اضافه می‌کند. قبل از رسیدن هر آپدیت به handler اصلی، از middlewareها عبور می‌کند.",
+    "params": [
+      [
+        "filters",
+        "Filter | None",
+        "فیلتر(ها) برای محدود کردن پیام‌هایی که از این middleware عبور می‌کنند"
+      ]
+    ],
+    "returns": null,
+    "example": "@bot.middleware()\nasync def log_middleware(update, next_handler):\n    print(f\"📩 پیام از {update.sender_id}\")\n    return await next_handler(update)"
+  },
+  {
+    "id": "load_plugins",
+    "title": "بارگذاری همهٔ پلاگین‌ها از پوشه",
+    "signature": "sync load_plugins(folder='plugins')",
+    "desc": "همهٔ فایل‌های `.py` داخل پوشهٔ مشخص‌شده را به‌عنوان پلاگین بارگذاری می‌کند.",
+    "params": [
+      [
+        "folder",
+        "str = 'plugins'",
+        "مسیر پوشهٔ پلاگین‌ها"
+      ]
+    ],
+    "returns": [
+      [
+        "count",
+        "int",
+        "تعداد پلاگین‌های بارگذاری‌شده"
+      ]
+    ],
+    "example": "count = bot.load_plugins(\"my_plugins\")\nprint(f\"{count} پلاگین بارگذاری شد.\")"
+  },
+  {
+    "id": "load_plugin",
+    "title": "بارگذاری یک پلاگین خاص",
+    "signature": "sync load_plugin(filepath)",
+    "desc": "یک فایل پلاگین مشخص را بارگذاری می‌کند.",
+    "params": [
+      [
+        "filepath",
+        "str",
+        "مسیر فایل پلاگین (مثلاً `plugins/admin.py`)"
+      ]
+    ],
+    "returns": [
+      [
+        "success",
+        "bool",
+        "True اگر پلاگین با موفقیت بارگذاری شد"
+      ]
+    ],
+    "example": "ok = bot.load_plugin(\"plugins/my_plugin.py\")"
+  },
+  {
+    "id": "on_shutdown",
+    "title": "دکوراتور خاموش‌شدن ربات",
+    "signature": "@bot.on_shutdown()",
+    "desc": "وقتی متُد `close()` صدا زده می‌شود و ربات در حال خاموش شدن است، این هندلر فراخوانی می‌شود.",
+    "params": [],
+    "returns": null,
+    "example": "@bot.on_shutdown()\nasync def shutdown():\n    print(\"🛑 ربات در حال خاموش شدن...\")\n    await save_data()"
+  },
+  {
+    "id": "add_background_task",
+    "title": "اضافه کردن تسک پس‌زمینه",
+    "signature": "sync add_background_task(coro, *args, delay=0.0, **kwargs)",
+    "desc": "یک تسک (coroutine) را در پس‌زمینه اجرا می‌کند. می‌توانید با `delay` اجرای آن را به تعویق بیندازید.",
+    "params": [
+      [
+        "coro",
+        "Callable",
+        "تابع coroutine برای اجرا"
+      ],
+      [
+        "*args",
+        "tuple",
+        "آرگومان‌های موقعیتی برای تابع"
+      ],
+      [
+        "delay",
+        "float = 0.0",
+        "تأخیر قبل از اجرا (ثانیه)"
+      ],
+      [
+        "**kwargs",
+        "dict",
+        "آرگومان‌های کلیدی برای تابع"
+      ]
+    ],
+    "returns": [
+      [
+        "task",
+        "asyncio.Task",
+        "تسک ساخته‌شده (می‌توانید cancel کنید)"
+      ]
+    ],
+    "example": "async def periodic_cleanup():\n    while True:\n        await clean_old_logs()\n        await asyncio.sleep(3600)\n\nbot.add_background_task(periodic_cleanup)"
+  },
+  {
+    "id": "render",
+    "title": "رندر دستی قالب پیام (با جلوگیری از XSS)",
+    "signature": "render(template, auto_escape=True, **kwargs)",
+    "desc": "یک قالب متنی را با متغیرهای داده‌شده رندر می‌کند. خروجی متن رندر‌شده و لیست متادیتای دکمه‌هاست.",
+    "params": [
+      [
+        "template",
+        "str",
+        "قالب متنی (مثلاً `سلام {{ name }}`)"
+      ],
+      [
+        "auto_escape",
+        "bool = True",
+        "فرار خودکار کاراکترهای HTML/Markdown"
+      ],
+      [
+        "**kwargs",
+        "dict",
+        "متغیرهای قالب (مثلاً `name='علی'`)"
+      ]
+    ],
+    "returns": [
+      [
+        "rendered_text",
+        "str",
+        "متن رندر‌شده"
+      ],
+      [
+        "metadata",
+        "list[dict]",
+        "متادیتای دکمه‌های استخراج‌شده از قالب"
+      ]
+    ],
+    "example": "text, meta = bot.render(\"سلام {{ name }}، خوبی؟\", name=\"علی\")\nawait bot.send_message(chat_id, text, meta_data=meta)"
+  },
+  {
+    "id": "setup_webhooks",
+    "title": "معرفی Webhook به سرورهای روبیکا",
+    "signature": "async setup_webhooks()",
+    "desc": "آدرس‌های webhook تنظیم‌شده در کلاس WebhookServer را به سرورهای روبیکا ارسال می‌کند. (خروجی ندارد.)",
+    "params": [],
+    "returns": null,
+    "example": "await bot.setup_webhooks()\nprint(\"✅ Webhookها ثبت شدند.\")"
+  },
+  {
+    "id": "set_main_parse_mode",
+    "title": "تغییر پارس مود اصلی کلاینت",
+    "signature": "async set_main_parse_mode(parse_mode)",
+    "desc": "پارس مود پیش‌فرض را برای تمام متدهای ارسال پیام تغییر می‌دهد. برای بازگشت به پیروی از ورودی متدها، مقدار `'Null'` را بدهید.",
+    "params": [
+      [
+        "parse_mode",
+        "'Markdown' | 'HTML' | 'Null' | None",
+        "پارس مود جدید (Null = اعمال جداگانه برای هر متد)"
+      ]
+    ],
+    "returns": null,
+    "example": "await bot.set_main_parse_mode(\"HTML\")"
+  },
+  {
+    "id": "send_requests",
+    "title": "ارسال درخواست خام به API",
+    "signature": "async send_requests(method, data_)",
+    "desc": "درخواست مستقیم به Bot API با retry خودکار. مناسب برای متدهایی که کتابخانه پوشش نداده.",
+    "params": [
+      [
+        "method",
+        "str",
+        "نام متد API (مثلاً 'sendMessage')"
+      ],
+      [
+        "data_",
+        "dict | None",
+        "دیکشنری پارامترها"
+      ]
+    ],
+    "returns": [
+      [
+        "response",
+        "dict",
+        "پاسخ خام سرور"
+      ]
+    ],
+    "example": "resp = await bot.send_requests(\"getMe\")\nprint(resp)"
+  },
+  {
+    "id": "from_config",
+    "title": "ساخت کلاینت از فایل کانفیگ",
+    "signature": "await Client.from_config(config)",
+    "desc": "یک کلاس‌متد (classmethod) که یک شیء Client را از مسیر فایل JSON یا دیکشنری تنظیمات می‌سازد.",
+    "params": [
+      [
+        "config",
+        "str | dict",
+        "مسیر فایل JSON یا دیکشنری شامل پارامترهای Client"
+      ]
+    ],
+    "returns": [
+      [
+        "client",
+        "Client",
+        "نمونهٔ ساخته‌شده از Client"
+      ]
+    ],
+    "example": "bot = await Client.from_config(\"config.json\")\n# یا\nbot = await Client.from_config({\"name_session\": \"bot1\", \"token\": \"...\"})"
+  },
+  {
+    "id": "extra_decorators",
+    "title": "دکوراتورهای اضافه (ویرایش، حذف، همه)",
+    "signature": "@bot.on_edit(filters=None)  @bot.on_delete(filters=None)  @bot.on_all_message(filters=None)",
+    "desc": "دکوراتورهای میانبر برای دریافت فقط ویرایش‌ها، حذف‌ها، یا همهٔ پیام‌ها (پولینگ). نسخه‌های webhook هم وجود دارند: `on_edit_updates`, `on_delete_updates`, `on_all_message_updates`.",
+    "params": [
+      [
+        "filters",
+        "Filter | None",
+        "فیلتر پیام (اختیاری)"
+      ]
+    ],
+    "returns": [
+      [
+        "Message",
+        "<a href='../models/index.html#update'>Message</a>",
+        "شی اطلاعات پیام"
+      ]
+    ],
+    "example": "@bot.on_edit()\nasync def edited(msg: Message):\n    print(\"ویرایش شد:\", msg.text)\n\n@bot.on_delete_updates()\nasync def deleted(msg: Message):\n    print(\"حذف شد:\", msg.message_id)"
+  },
+  {
+    "id": "before_after_send",
+    "title": "هندلرهای پیش/پس از ارسال",
+    "signature": "@bot.before_send()  @bot.after_send()",
+    "desc": "قبل از هر ارسال (اگر `before_send` مقدار `False` برگرداند، ارسال لغو می‌شود) و بعد از هر ارسال (با دسترسی به نتیجه) اجرا می‌شوند.",
+    "params": [],
+    "returns": null,
+    "example": "@bot.before_send()\nasync def check_spam(**kwargs):\n    if \"اسپم\" in kwargs.get(\"text\", \"\"):\n        return False\n    return True\n\n@bot.after_send()\nasync def log_send(result, **kwargs):\n    print(\"ارسال شد:\", result)"
+  },
+  {
+    "id": "before_after_run",
+    "title": "هندلرهای پیش/پس از run",
+    "signature": "@bot.before_run()  @bot.after_run()",
+    "desc": "قبل از شروع حلقهٔ اصلی (`run()`) و بعد از توقف حلقه اجرا می‌شوند.",
+    "params": [],
+    "returns": null,
+    "example": "@bot.before_run()\nasync def setup_db():\n    print(\"اتصال به دیتابیس\")\n\n@bot.after_run()\nasync def cleanup():\n    print(\"پاکسازی منابع\")"
+  },
+  {
+    "id": "on_log",
+    "title": "هندلر رویدادهای لاگ",
+    "signature": "@bot.on_log()",
+    "desc": "هر رویداد لاگ (با جزئیات) به این هندلر ارسال می‌شود.",
+    "params": [],
+    "returns": null,
+    "example": "@bot.on_log()\nasync def log_handler(log_entry):\n    print(log_entry)"
+  },
+  {
+    "id": "helpers",
+    "title": "متود های کمکی (close و stop)",
+    "signature": "close(type_stop='all') ; stop()",
+    "desc": "`stop()` فقط دریافت آپدیت‌ها را متوقف می‌کند. `close()` کل منابع را آزاد کرده و ربات را کاملاً خاموش می‌کند. می‌توانید با `type_stop='running'` فقط حلقه را متوقف کنید (مانند stop).",
+    "params": [
+      [
+        "type_stop",
+        "'all' | 'running' = 'all'",
+        "نوع توقف: all = آزادسازی کامل، running = فقط توقف حلقه"
+      ]
+    ],
+    "returns": null,
+    "example": "# توقف موقت\nawait bot.stop()\n\n# خاموشی کامل\nawait bot.close()\n\n# توقف حلقه بدون آزادسازی کامل\nawait bot.close(type_stop='running')"
+  }
+]
