@@ -2,6 +2,8 @@ import time
 import asyncio
 from typing import Any
 
+from ..core.async_sync import wrap_all_async_methods
+
 class Cache:
     """کش عمومی با TTL"""
     def __init__(
@@ -105,3 +107,5 @@ class Cache:
         else:
             now = time.time()
         return (now - timestamp) - self._frozen_duration
+
+wrap_all_async_methods(Cache)

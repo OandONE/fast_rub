@@ -3,6 +3,7 @@ from collections.abc import Callable
 import time
 
 from .utils import Utils
+from ..core.async_sync import wrap_all_async_methods
 
 class WaitManager:
     """مدیریت هوشمند wait_send با کانال‌های ترافیک جداگانه"""
@@ -141,3 +142,5 @@ class WaitManager:
         else:
             for ch in self._traffic:
                 self._traffic[ch].clear()
+
+wrap_all_async_methods(WaitManager)

@@ -4,6 +4,8 @@ import asyncio
 from collections import defaultdict, deque
 from enum import Enum
 
+from ..core.async_sync import wrap_all_async_methods
+
 
 class SpamViolation(Enum):
     """انواع تخلفات اسپم"""
@@ -236,3 +238,5 @@ class AntiSpam:
             except asyncio.CancelledError:
                 pass
             self._auto_clear_task = None
+
+wrap_all_async_methods(AntiSpam)

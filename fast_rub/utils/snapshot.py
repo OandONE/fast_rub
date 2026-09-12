@@ -4,6 +4,8 @@ import asyncio
 from datetime import datetime
 from typing import TYPE_CHECKING
 
+from ..core.async_sync import wrap_all_async_methods
+
 if TYPE_CHECKING:
     from ..core import Client
 
@@ -164,3 +166,5 @@ class SnapshotManager:
                 self.client.cache.max_size = cache_data["max_size"]
         
         return True
+
+wrap_all_async_methods(SnapshotManager)

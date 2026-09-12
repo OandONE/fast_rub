@@ -192,7 +192,7 @@ class Client:
         logger: logging.Logger | None = None,
         offset_id: str | None = None,
         save_offset_id: bool = True,
-        run_start: bool = False,
+        run_start: bool = False, # Remove in V7
         wait_manager: WaitManager | None = None,
         defult_wait: float | None = None,
         webhook: WebhookConfig | None = None,
@@ -261,7 +261,7 @@ class Client:
             self.logger = logger
         else:
             self.logger = logging.getLogger("fast_rub")
-        if run_start:
+        if run_start: # Remove in V7
             asyncio.run(self.start())
 
     async def start(self):
