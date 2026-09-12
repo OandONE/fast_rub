@@ -390,50 +390,67 @@ class Client:
     ):
         """اجرای اصلی بات - فقط اگر هندلرهای مربوطه ثبت شده باشند"""
 
+        if reload and not os.environ.get("FASTRUB_RELOAD_CHILD"):
+            script_path = str(Path(sys.argv[0]).resolve())
+            self._hotreload = HotReload(self.logger)
+            try:
+                await self._hotreload.run_async(script_path)
+            except KeyboardInterrupt:
+                self.logger.info("Hot Reload با Ctrl+C متوقف شد")
+            return
+
         try:
             if not self._is_started:
                 await self.start()
-            
-            if not (self._fetch_messages_webhook or self._fetch_buttons or self._fetch_messages_polling or self._fetch_edit):
-                raise ValueError("No update types selected. Use decorator first.")
-            
-            if (self._fetch_messages_webhook and not self._message_handlers_webhook) or (self._fetch_messages_polling and not self._message_handlers_polling):
-                raise ValueError("Message handlers registered but no message callbacks defined.")
-            
-            if self._fetch_buttons and not self._button_handlers:
-                raise ValueError("Button handlers registered but no button callbacks defined.")
 
-            if self._fetch_edit and not (self._message_handlers_polling or self._message_handlers_webhook):
-                raise ValueError("Edit handlers registered but no message callbacks defined.")
+            if not (
+                self._fetch_messages_webhook
+                or self._fetch_buttons
+                or self._fetch_messages_polling
+                or self._fetch_edit
+            ):
+                raise ValueError("No update types selected. Use decorator first.")
+
+            if (
+                self._fetch_messages_webhook and not self._message_handlers_webhook
+            ) or (
+                self._fetch_messages_polling and not self._message_handlers_polling
+            ):
+                raise ValueError(
+                    "Message handlers registered but no message callbacks defined."
+                )
+
+            if self._fetch_buttons and not self._button_handlers:
+                raise ValueError(
+                    "Button handlers registered but no button callbacks defined."
+                )
+
+            if self._fetch_edit and not (
+                self._message_handlers_polling or self._message_handlers_webhook
+            ):
+                raise ValueError(
+                    "Edit handlers registered but no message callbacks defined."
+                )
 
             if poll_interval != 0.0:
                 self.poll_interval = poll_interval
 
             self._running = True
-            
+
             await self._process_before_run()
-            
+
             self.logger.info("ربات در حال دریافت پیام ها")
             if self.display_welcome:
                 Utils.print_time("Start", color=Colors.BLUE)
-            
-            if reload and not os.environ.get("FASTRUB_RELOAD_CHILD"):
-                script_path = sys.argv[0]
-                hotreload = HotReload(self.logger)
-                import threading
-                thread = threading.Thread(target=hotreload.run_sync, args=(script_path,))
-                thread.daemon = True
-                thread.start()
-                while thread.is_alive():
-                    await asyncio.sleep(1)
-            else:
-                await self._run_all()
-                
+
+            await self._run_all()
+
         except KeyboardInterrupt:
             self.logger.info("Ctrl+C received")
         finally:
-            await self._process_after_run()
-            await self.close()
+            if self._is_started:
+                await self._process_after_run()
+                await self.close()
 
     run_sync = run
 
