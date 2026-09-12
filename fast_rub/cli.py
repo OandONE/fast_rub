@@ -14,7 +14,7 @@ import asyncio
 from fast_rub import Client
 from fast_rub.type import Message
 
-bot = Client("{bot_name}", token="YOUR_TOKEN", run_start=False)
+bot = Client("{bot_name}", token="YOUR_TOKEN")
 
 async def robot():
 
@@ -24,8 +24,7 @@ async def robot():
     async def handler(msg: Message):
         await msg.reply("سلام! ⚡")
 
-    reload = os.environ.get("FASTRUB_RELOAD") == "1"
-    await bot.run(reload=reload)
+    await bot.run()
 
 if __name__ == "__main__":
     asyncio.run(robot())
@@ -100,12 +99,12 @@ def cmd_run(args):
         print("❌ فایل main.py پیدا نشد. مطمئن شو توی پوشه پروژه هستی.")
         return
 
-    env = os.environ.copy()
+    cmd = [sys.executable, "main.py"]
     if args.reload:
-        env["FASTRUB_RELOAD"] = "1"
+        cmd.append("--reload")
 
     try:
-        subprocess.run([sys.executable, "main.py"], env=env)
+        subprocess.run(cmd)
     except KeyboardInterrupt:
         pass
 

@@ -390,6 +390,9 @@ class Client:
     ):
         """اجرای اصلی بات - فقط اگر هندلرهای مربوطه ثبت شده باشند"""
 
+        if not reload and "--reload" in sys.argv:
+            reload = True
+
         if reload and not os.environ.get("FASTRUB_RELOAD_CHILD"):
             script_path = str(Path(sys.argv[0]).resolve())
             self._hotreload = HotReload(self.logger)
@@ -451,6 +454,7 @@ class Client:
             if self._is_started:
                 await self._process_after_run()
                 await self.close()
+
 
     run_sync = run
 
