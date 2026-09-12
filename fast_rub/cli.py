@@ -3,14 +3,16 @@ import sys
 import argparse
 import webbrowser
 from pathlib import Path
+import subprocess
 
 
 TEMPLATE = '''"""
 Fast Rub Bot - {bot_name}
 """
+import os
+import asyncio
 from fast_rub import Client
 from fast_rub.type import Message
-import asyncio
 
 bot = Client("{bot_name}", token="YOUR_TOKEN", run_start=False)
 
@@ -22,7 +24,8 @@ async def robot():
     async def handler(msg: Message):
         await msg.reply("سلام! ⚡")
 
-    await bot.run()
+    reload = os.environ.get("FASTRUB_RELOAD") == "1"
+    await bot.run(reload=reload)
 
 if __name__ == "__main__":
     asyncio.run(robot())
@@ -96,13 +99,15 @@ def cmd_run(args):
     if not main_file.exists():
         print("❌ فایل main.py پیدا نشد. مطمئن شو توی پوشه پروژه هستی.")
         return
-    
-    import subprocess
-    cmd = [sys.executable, "main.py"]
+
+    env = os.environ.copy()
     if args.reload:
-        cmd.append("--reload")
-    
-    subprocess.run(cmd)
+        env["FASTRUB_RELOAD"] = "1"
+
+    try:
+        subprocess.run([sys.executable, "main.py"], env=env)
+    except KeyboardInterrupt:
+        pass
 
 def cmd_version(args):
     """نمایش نسخه"""
