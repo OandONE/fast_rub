@@ -1668,5 +1668,70 @@
       ]
     ],
     "example": "from fast_rub import Client, BotConfig\n\nconfig = BotConfig(\n    validate_chat_id=False,\n    optimize_text=True,\n    strip_text=True,\n    max_text_length=2048,\n    compress_long_text=True,\n    auto_escape=True,\n    retry_on_timeout=True,\n)\nbot = Client(\"my_bot\", config=config)\n\n@bot.on_message()\nasync def handler(msg):\n    # متن به‌طور خودکار بهینه و escape می‌شود\n    await msg.reply(\"سلام!\")\n\nawait bot.run()"
+  },
+  {
+    "id": "ContextManager",
+    "title": "🔁 استفاده از Client به‌عنوان Context Manager",
+    "description": "کلاس Client از پروتکل‌های Context Manager پایتون پشتیبانی می‌کند. می‌توانید از `async with` برای مدیریت خودکار چرخهٔ عمر ربات (شروع و بستن خودکار) استفاده کنید. هم‌چنین اگر از `with` معمولی (سینک) استفاده کنید، Fast Rub به‌طور خودکار تشخیص می‌دهد که در حالت سینک هستید و خودش رویداد‌لوپ را مدیریت می‌کند — یعنی نیازی به `await` کردن ندارید و می‌توانید مستقیم متدها را صدا بزنید.",
+    "note": "در حالت `with` (سینک)، تمام متدهای async به‌صورت خودکار در یک رویداد‌لوپ مدیریت‌شده اجرا می‌شوند و نتیجهٔ نهایی (نه یک Coroutine) برگردانده می‌شود. بنابراین نیازی به `await` نیست.",
+    "methods": [
+        {
+            "name": "__aenter__",
+            "params": [],
+            "returns": "<a href='../methods/index.html'>Client</a>",
+            "description": "نسخهٔ async context manager. قبل از ورود به بلوک، ربات را استارت می‌زند و خود Client را برمی‌گرداند تا از آن استفاده کنید."
+        },
+        {
+            "name": "__aexit__",
+            "params": [
+                [
+                    "exc_type",
+                    "type",
+                    "نوع استثنا"
+                ],
+                [
+                    "exc_val",
+                    "Exception",
+                    "شیء استثنا"
+                ],
+                [
+                    "tb",
+                    "TracebackType",
+                    "تریس‌بک"
+                ]
+            ],
+            "returns": null,
+            "description": "بعد از خروج از بلوک `async with`، ربات را به‌طور خودکار متوقف می‌کند و منابع را آزاد می‌کند."
+        },
+        {
+            "name": "__enter__",
+            "params": [],
+            "returns": "<a href='../methods/index.html'>Client</a>",
+            "description": "نسخهٔ سینک context manager. تشخیص می‌دهد که در حالت سینک هستید، رویداد‌لوپ را در یک thread جداگانه اجرا می‌کند و یک نسخهٔ Proxy از Client برمی‌گرداند که متدها را سینک اجرا می‌کند (بدون نیاز به await)."
+        },
+        {
+            "name": "__exit__",
+            "params": [
+                [
+                    "exc_type",
+                    "type",
+                    "نوع استثنا"
+                ],
+                [
+                    "exc_val",
+                    "Exception",
+                    "شیء استثنا"
+                ],
+                [
+                    "tb",
+                    "TracebackType",
+                    "تریس‌بک"
+                ]
+            ],
+            "returns": null,
+            "description": "بعد از خروج از بلوک `with`، رویداد‌لوپ thread جداگانه را می‌بندد و ربات را متوقف می‌کند."
+        }
+    ],
+    "example": "# حالت Async (توصیه‌شده)\nfrom fast_rub import Client\n\nasync with Client(\"test\") as client:\n    me = await client.get_me()\n    print(me)\n    print(me.username)\n\n# حالت Sync (بدون await)\nfrom fast_rub import Client\n\nwith Client(\"test\") as client:\n    me = client.get_me()\n    print(me)\n    print(me.username)"
   }
 ]

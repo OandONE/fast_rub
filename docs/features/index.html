@@ -1691,7 +1691,62 @@ async def handler(msg):
     await msg.reply("سلام!")
 
 await bot.run()`
-}
+},
+{
+    id: "ContextManager",
+    title: "🔁 استفاده از Client به‌عنوان Context Manager",
+    description: "کلاس Client از پروتکل‌های Context Manager پایتون پشتیبانی می‌کند. می‌توانید از `async with` برای مدیریت خودکار چرخهٔ عمر ربات (شروع و بستن خودکار) استفاده کنید. هم‌چنین اگر از `with` معمولی (سینک) استفاده کنید، Fast Rub به‌طور خودکار تشخیص می‌دهد که در حالت سینک هستید و خودش رویداد‌لوپ را مدیریت می‌کند — یعنی نیازی به `await` کردن ندارید و می‌توانید مستقیم متدها را صدا بزنید.",
+    note: "در حالت `with` (سینک)، تمام متدهای async به‌صورت خودکار در یک رویداد‌لوپ مدیریت‌شده اجرا می‌شوند و نتیجهٔ نهایی (نه یک Coroutine) برگردانده می‌شود. بنابراین نیازی به `await` نیست.",
+    methods: [
+        {
+            name: "__aenter__",
+            params: [],
+            returns: "<a href='../methods/index.html'>Client</a>",
+            description: "نسخهٔ async context manager. قبل از ورود به بلوک، ربات را استارت می‌زند و خود Client را برمی‌گرداند تا از آن استفاده کنید."
+        },
+        {
+            name: "__aexit__",
+            params: [
+                ["exc_type", "type", "نوع استثنا"],
+                ["exc_val", "Exception", "شیء استثنا"],
+                ["tb", "TracebackType", "تریس‌بک"]
+            ],
+            returns: null,
+            description: "بعد از خروج از بلوک `async with`، ربات را به‌طور خودکار متوقف می‌کند و منابع را آزاد می‌کند."
+        },
+        {
+            name: "__enter__",
+            params: [],
+            returns: "<a href='../methods/index.html'>Client</a>",
+            description: "نسخهٔ سینک context manager. تشخیص می‌دهد که در حالت سینک هستید، رویداد‌لوپ را در یک thread جداگانه اجرا می‌کند و یک نسخهٔ Proxy از Client برمی‌گرداند که متدها را سینک اجرا می‌کند (بدون نیاز به await)."
+        },
+        {
+            name: "__exit__",
+            params: [
+                ["exc_type", "type", "نوع استثنا"],
+                ["exc_val", "Exception", "شیء استثنا"],
+                ["tb", "TracebackType", "تریس‌بک"]
+            ],
+            returns: null,
+            description: "بعد از خروج از بلوک `with`، رویداد‌لوپ thread جداگانه را می‌بندد و ربات را متوقف می‌کند."
+        }
+    ],
+    example: `# حالت Async (توصیه‌شده)
+from fast_rub import Client
+
+async with Client("test") as client:
+    me = await client.get_me()
+    print(me)
+    print(me.username)
+
+# حالت Sync (بدون await)
+from fast_rub import Client
+
+with Client("test") as client:
+    me = client.get_me()
+    print(me)
+    print(me.username)`
+},
 
 ];
 
