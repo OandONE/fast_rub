@@ -242,6 +242,8 @@ class Client:
         self._on_run_handlers = []
         self._on_live_handlers = []
         self._on_shutdown_handlers = []
+        self._before_run_handlers = []
+        self._after_run_handlers = []
         self._message_handlers_polling = []
         self._button_handlers = []
         self._button_handlers_url = []
@@ -2392,9 +2394,9 @@ class Client:
             elif type_handler == "after_send":
                 self._after_send_handlers.append(handler)
             elif type_handler == "before_run":
-                self._on_run_handlers.append(handler)
-            elif type_handler == "before_send":
-                self._on_shutdown_handlers.append(handler)
+                self._before_run_handlers.append(handler)
+            elif type_handler == "after_run":
+                self._after_run_handlers.append(handler)
         else:
             if type_handler == "conversation":
                 name, conv = handler
@@ -2694,9 +2696,9 @@ class Client:
                     await res
             except Exception:
                 pass
-    
+
     async def _process_before_run(self):
-        for handler in self._on_run_handlers:
+        for handler in self._before_run_handlers:
             try:
                 result = handler()
                 if asyncio.iscoroutine(result):
@@ -2705,7 +2707,7 @@ class Client:
                 self.logger.error(f"Error in before_run handler: {e}")
 
     async def _process_after_run(self):
-        for handler in self._on_shutdown_handlers:
+        for handler in self._after_run_handlers:
             try:
                 result = handler()
                 if asyncio.iscoroutine(result):

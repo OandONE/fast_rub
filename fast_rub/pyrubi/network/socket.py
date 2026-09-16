@@ -52,6 +52,7 @@ class Socket:
         await ws.send(payload)
     
     async def keep_alive(self, ws):
+        await self.methods._process_after_run()
         while self._running:
             try:
                 await asyncio.sleep(30)

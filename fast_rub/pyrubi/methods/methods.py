@@ -125,6 +125,9 @@ class Methods:
         self._on_run_handlers = []
         self._on_error_handlers = []
         self._on_live_handlers = []
+        # self._on_shutdown_handlers = [] # When add method close
+        self._after_run_handlers = []
+        self._befor_run_handlers = []
         self.crypto = Cryption(
             auth=sessionData["auth"],
             private_key=sessionData["private_key"]
@@ -2509,6 +2512,32 @@ class Methods:
             return func
         return decorator
 
+    # def on_shutdown( # When add method close
+    #     self
+    # ):
+    #     """دکوراتور برای زمانی که ربات خاموش می‌شود (هنگام close)."""
+    #     def decorator(func: Callable):
+    #         self._on_shutdown_handlers.append(func)
+    #         return func
+    #     return decorator
+
+    # on_close = on_shutdown
+
+    def before_run(self):
+        """دکوراتور برای ثبت handler قبل از اجرای run"""
+        def decorator(func):
+            self._befor_run_handlers.append(func)
+            return func
+        return decorator
+
+    def after_run(self):
+        """دکوراتور برای ثبت handler بعد از اجرای run"""
+        def decorator(func):
+            self._after_run_handlers.append(func)
+            return func
+        return decorator
+
+
     async def _process_on_ready(self):
         if self._on_ready_handlers:
             try:
@@ -2581,6 +2610,34 @@ class Methods:
             except Exception as e:
                 # self.logger.error(f"on_live error : {e}")
                 raise e
+
+    async def _process_after_run(self):
+        for handler in self._after_run_handlers:
+            try:
+                result = handler()
+                if asyncio.iscoroutine(result):
+                    await result
+            except Exception as e:
+                # self.logger.error(f"Error in after_run handler: {e}")
+                raise e
+
+    async def _process_befor_run(self):
+        for handler in self._befor_run_handlers:
+            try:
+                result = handler()
+                if asyncio.iscoroutine(result):
+                    await result
+            except Exception as e:
+                # self.logger.error(f"Error in befor_run handler: {e}")
+                raise e
+
+    # async def _process_on_shutdown(self): # When add method close
+    #     for handler in self._on_shutdown_handlers:
+    #         try:
+    #             await handler()
+    #         except Exception as e:
+    #             # self.logger.error(f"on_shutdown error : {e}")
+    #             raise e
 
     def add_handler(self, func, filters: list[Filter] | list[str] | Filter | None = None) -> None:
         self.socket.add_handler(
