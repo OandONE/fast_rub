@@ -7,6 +7,7 @@ from ..crypto import Cryption
 from ..utils import Utils
 from random import choice
 from collections.abc import Callable
+from traceback import format_exc
 from time import sleep
 from ..exceptions import (
     InvalidAuth,
@@ -21,6 +22,7 @@ from ...utils.cache import Cache
 from ..filters import Filter
 
 from ...utils.text_parser import TextParser
+from ..types import Message
 
 from typing import (
     Any,
@@ -30,10 +32,11 @@ from typing import (
     ParamSpec,
     TypeVar,
     Concatenate,
-    overload,
-    Union,
+    overload
 )
 import functools
+
+import httpx
 
 P = ParamSpec("P")
 R = TypeVar("R")
@@ -117,6 +120,11 @@ class Methods:
         self.cache = cache
         self.max_retries_upload = max_retries_upload
         self.max_retries_download = max_retries_download
+        self._on_ready_handlers = []
+        self._on_start_handlers = []
+        self._on_run_handlers = []
+        self._on_error_handlers = []
+        self._on_live_handlers = []
         self.crypto = Cryption(
             auth=sessionData["auth"],
             private_key=sessionData["private_key"]
@@ -2457,6 +2465,122 @@ class Methods:
 
         except ImportError:
             raise ImportError("The aiortc library is not installed! for install: 'pip install aiortc' or 'pip install fastrub[pyrubi-aiortc]'")
+
+    def on_ready(self):
+        """when client read for sending requests and no has problem for sending requests / زمانی که کلاینت آماده برای ارسال درخواست ها شده و مشکلی برای ارسال درخواست ها ندارد"""
+        def decorator(func):
+            self._on_ready_handlers.append(func)
+            return func
+        return decorator
+
+    def on_start(self):
+        """when client read for sending requests / زمانی که کلاینت آماده برای ارسال درخواست ها شد"""
+        def decorator(func):
+            self._on_start_handlers.append(func)
+            return func
+        return decorator
+
+    def on_run(self):
+        """when start getting messages / زمانی که گرفتن پیام ها شروع می شود"""
+        def decorator(func):
+            self._on_run_handlers.append(func)
+            return func
+        return decorator
+
+    def on_error(
+        self,
+        error_detail: Literal["full", "message", "type"] = "message"
+    ):
+        """Manage errors in handlers / مدیریت خطا های پیش بینی نشده در هندلر ها"""
+        def decorator(func):
+            self._on_error_handlers.append(
+                {
+                    "handler": func,
+                    "error_detail": error_detail
+                }
+            )
+            return func
+        return decorator
+
+    def on_live(self):
+        """when socket , connected / زمانی که سوکت وصل شود"""
+        def decorator(func):
+            self._on_live_handlers.append(func)
+            return func
+        return decorator
+
+    async def _process_on_ready(self):
+        if self._on_ready_handlers:
+            try:
+                me = await self.getMe()
+                # self.logger.info("دکوراتور های on ready با موفقیت در حال اجرا هستند")
+                # self.logger.info(f"bot info :\n{me}")
+                is_ok = True
+            except:
+                is_ok = False
+            if is_ok:
+                for handler in self._on_ready_handlers:
+                    try:
+                        await handler()
+                    except Exception as e:
+                        # self.logger.error(f"on_ready error : {e}")
+                        raise e
+            else:
+                raise httpx.NetworkError("Can't Cannecting To Server BotAPI for GetMe !")
+
+    async def _process_on_start(self):
+        for handler in self._on_start_handlers:
+            try:
+                await handler()
+            except Exception as e:
+                # self.logger.error(f"on_start error : {e}")
+                raise e
+
+    async def _process_before_run(self):
+        for handler in self._on_run_handlers:
+            try:
+                result = handler()
+                if asyncio.iscoroutine(result):
+                    await result
+            except Exception as e:
+                # self.logger.error(f"Error in before_run handler: {e}")
+                raise e
+
+    async def _process_on_error(
+        self,
+        e: Exception,
+        update: Message | None = None
+    ):
+        if self._on_error_handlers:
+            for handler_info in self._on_error_handlers:
+                try:
+                    error_handler = handler_info["handler"]
+                    type_error = handler_info["error_detail"]
+                    if type_error == "full":
+                        error = format_exc()
+                    elif type_error == "message":
+                        error = e
+                    elif type_error == "type":
+                        error = type(e).__name__
+                    else:
+                        error = "error invalid input"
+                        # self.logger.warning(error)
+                        print(error)
+                    await error_handler(error, update)
+                except Exception as exc:
+                    # self.logger.error(f"Error in on_error handler : {exc}")
+                    print(f"Error in on_error handler : {exc}")
+        else:
+            # self.logger.error(f"Handler error : {e}", exc_info=True)
+            print(f"Handler error : {e}")
+
+    async def _process_on_live(self):
+        for handler in self._on_live_handlers:
+            try:
+                await handler()
+            except Exception as e:
+                # self.logger.error(f"on_live error : {e}")
+                raise e
 
     def add_handler(self, func, filters: list[Filter] | list[str] | Filter | None = None) -> None:
         self.socket.add_handler(

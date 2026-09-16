@@ -226,8 +226,6 @@ class Client:
         self.keeper_messages_db = keeper_messages_db
         self.wait_manager = wait_manager
         self.defult_wait = defult_wait
-        self._on_ready_handlers = []
-        self._on_start_handlers = []
         from .conversation import ConversationManager
         self._conversation_manager = ConversationManager()
         self._cache = cache

@@ -26,6 +26,7 @@ class Socket:
     
     async def connect(self):
         print("Connecting to the WebSocket...")
+        await self.methods._process_before_run()
         if websockets is None:
             raise ImportError("The websockets library is not installed! for install: 'pip install fastrub[pyrubi]'")
         self._running = True
@@ -39,6 +40,7 @@ class Socket:
     async def on_open(self, ws):
         await self.handshake(ws)
         asyncio.create_task(self.keep_alive(ws))
+        await self.methods._process_on_live()
         print("Connected.")
     
     async def handshake(self, ws, data=None):
@@ -79,14 +81,38 @@ class Socket:
         
         for handler, filters in self.handlers.items():
             msg_obj = Message(data, self.methods)
-            should_process = all(f(msg_obj) for f in filters)
             
-            if should_process:
-                if inspect.iscoroutinefunction(handler):
-                    asyncio.create_task(handler(msg_obj))
-                else:
-                    loop = asyncio.get_event_loop()
-                    await loop.run_in_executor(None, handler, msg_obj)
+            # run filter by management error
+            try:
+                should_process = all(f(msg_obj) for f in filters)
+            except Exception as e:
+                await self.methods._process_on_error(e=e, update=msg_obj)
+                continue
+            
+            if not should_process:
+                continue
+            
+            # async run handler
+            if inspect.iscoroutinefunction(handler):
+                asyncio.create_task(self._safe_run_async(handler, msg_obj))
+            # sync run handler
+            else:
+                await self._safe_run_sync(handler, msg_obj)
+
+
+    async def _safe_run_async(self, handler, msg_obj):
+        try:
+            await handler(msg_obj)
+        except Exception as e:
+            await self.methods._process_on_error(e=e, update=msg_obj)
+
+
+    async def _safe_run_sync(self, handler, msg_obj):
+        try:
+            loop = asyncio.get_event_loop()
+            await loop.run_in_executor(None, handler, msg_obj)
+        except Exception as e:
+            await self.methods._process_on_error(e=e, update=msg_obj)
     
     def add_handler(self, func, filters=None):
         if filters and isinstance(filters, list) and all(isinstance(f, str) for f in filters):

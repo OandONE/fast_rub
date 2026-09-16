@@ -115,6 +115,13 @@ class Client:
             max_retries_upload=self.max_retries_upload,
             max_retries_download=self.max_retries_upload
         )
+        self.on_ready = self.methods.on_ready
+        self.on_start = self.methods.on_start
+        self.on_run = self.methods.on_run
+        self.on_error = self.methods.on_error
+        self.on_live = self.methods.on_live
+        await self.methods._process_on_start()
+        await self.methods._process_on_ready()
 
     def _extract_message_id(self, result: dict) -> str | None:
         if not isinstance(result, dict):
