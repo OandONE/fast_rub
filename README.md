@@ -575,7 +575,6 @@ fast_rub
 | config در یوزربات(پایروبی) |
 | پلاگین پذیری در یوزربات(پایروبی) |
 | DataForm & Classic Conversion در یوزربات(پایروبی) |
-| دکوراتور های on_ready - on_start - on_close - on_error - on_live - on_log - on_run - on_shutdown - on_start(on_startup) در یوزربات(پایروبی) |
 | پشتیبانی از middleware در یوزربات(پایروبی) |
 | دکوراتور های before_send, after_send - before_run, after_run در یوزربات(پایروبی) |
 | add handler در یوزربات(پایروبی) |
@@ -600,14 +599,7 @@ fast_rub
 
 ## ❤️ مشارکت
 
-از Pull Request ها، Issue ها و پیشنهادات استقبال می‌شود.
-
-برای مشارکت:
-
-1. پروژه را Fork کنید.
-2. تغییرات خود را اعمال کنید.
-3. Commit بگیرید.
-4. Pull Request ارسال کنید.
+برای مشارکت فایل [CONTRIBUTING.md](CONTRIBUTING.md) را مطالعه کنید.
 
 [⬆ بازگشت به فهرست](#-فهرست-مطالب)
 
