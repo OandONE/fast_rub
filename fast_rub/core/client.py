@@ -2903,7 +2903,7 @@ class Client:
         chat_id: str,
         message_id: str,
         limit_search: int = 100,
-        get_befor: int = 10,
+        get_befor: int = 10, # Change to 'get_befor' to 'get_before' in V7
         search_by: Literal["messages", "get_updates", "all"] = "all",
         max_attempts: int = 10
     ) -> list[Update] | None:

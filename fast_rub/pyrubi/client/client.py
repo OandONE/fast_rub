@@ -120,6 +120,8 @@ class Client:
         self.on_run = self.methods.on_run
         self.on_error = self.methods.on_error
         self.on_live = self.methods.on_live
+        self.before_run = self.methods.before_run
+        self.after_run = self.methods.after_run
         await self.methods._process_on_start()
         await self.methods._process_on_ready()
 

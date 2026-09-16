@@ -127,7 +127,7 @@ class Methods:
         self._on_live_handlers = []
         # self._on_shutdown_handlers = [] # When add method close
         self._after_run_handlers = []
-        self._befor_run_handlers = []
+        self._before_run_handlers = []
         self.crypto = Cryption(
             auth=sessionData["auth"],
             private_key=sessionData["private_key"]
@@ -2526,7 +2526,7 @@ class Methods:
     def before_run(self):
         """دکوراتور برای ثبت handler قبل از اجرای run"""
         def decorator(func):
-            self._befor_run_handlers.append(func)
+            self._before_run_handlers.append(func)
             return func
         return decorator
 
@@ -2563,16 +2563,6 @@ class Methods:
                 await handler()
             except Exception as e:
                 # self.logger.error(f"on_start error : {e}")
-                raise e
-
-    async def _process_before_run(self):
-        for handler in self._on_run_handlers:
-            try:
-                result = handler()
-                if asyncio.iscoroutine(result):
-                    await result
-            except Exception as e:
-                # self.logger.error(f"Error in before_run handler: {e}")
                 raise e
 
     async def _process_on_error(
@@ -2621,14 +2611,14 @@ class Methods:
                 # self.logger.error(f"Error in after_run handler: {e}")
                 raise e
 
-    async def _process_befor_run(self):
-        for handler in self._befor_run_handlers:
+    async def _process_before_run(self):
+        for handler in self._before_run_handlers:
             try:
                 result = handler()
                 if asyncio.iscoroutine(result):
                     await result
             except Exception as e:
-                # self.logger.error(f"Error in befor_run handler: {e}")
+                # self.logger.error(f"Error in before_run handler: {e}")
                 raise e
 
     # async def _process_on_shutdown(self): # When add method close
