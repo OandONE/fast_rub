@@ -1822,6 +1822,234 @@ text = md_html.bold("سلام")   # <b>سلام</b>`
           { name: "link_url", params: [["index", "int", "اندیس"]], returns: "str | None", description: "لینک متادیتا (در صورت وجود)" },
         ],
       },
+      // ============ Utils — کلاس کمکی ============
+      {
+        id: "utils",
+        title: "🔧 Utils — کلاس کمکی",
+        description: "کلاس جمع‌آوری متدهای کمکی برای اعتبارسنجی، پردازش فایل، مدیریت متن و منطق شرطی. بیشتر متدها `@staticmethod` هستند و می‌توانی مستقیم از `Utils.method()` استفاده کنی. متد `when` برای ساخت سیستم‌های شرطی زمان‌بند (مثل Warn System) کاربرد دارد.",
+        note: "مسیر import: `from fast_rub.utils import Utils`",
+        class_signature: "class Utils",
+        methods: [
+          // --- فایل ---
+          {
+            name: "format_file",
+            params: [["type_file", "str | None"]],
+            returns: "str | None",
+            description: "نام پیش‌فرض فایل بر اساس نوع (File, Image, Voice, Music, Gif, Video)."
+          },
+          {
+            name: "suffix_file",
+            params: [["name_file", "str"]],
+            returns: "str",
+            description: "پسوند فایل را برمی‌گرداند."
+          },
+          {
+            name: "type_file",
+            params: [["name_file", "str"]],
+            returns: "Literal['File','Image','Voice','Music','Gif','Video']",
+            description: "نوع فایل را بر اساس پسوند تشخیص می‌دهد."
+          },
+          {
+            name: "d_file",
+            params: [
+              ["file", "str | Path | bytes"],
+              ["file_name", "str"],
+              ["network", "Network"]
+            ],
+            returns: "dict",
+            description: "فایل را از مسیر/بایت/URL آماده‌سازی می‌کند (Async)."
+          },
+          {
+            name: "calculate_upload_timeout",
+            params: [
+              ["file_size_bytes", "int"],
+              ["upload_speed_bps", "int = 300_000"]
+            ],
+            returns: "int",
+            description: "محاسبه timeout مناسب برای آپلود فایل."
+          },
+
+          // --- اعتبارسنجی ---
+          {
+            name: "check_data",
+            params: [["data", "dict"]],
+            returns: "bool",
+            description: "بررسی می‌کند status پاسخ سرور `OK` باشد."
+          },
+          {
+            name: "check_id",
+            params: [["id", "str"]],
+            returns: "bool",
+            description: "اعتبارسنجی ID (شروع با b/u/g و طول ۳۲ کاراکتر)."
+          },
+          {
+            name: "check_id_raise",
+            params: [["id", "str"]],
+            returns: "None",
+            description: "اگر ID نامعتبر باشد، `InvalidID` می‌اندازد."
+          },
+          {
+            name: "check_message_id",
+            params: [["id", "str"]],
+            returns: "bool",
+            description: "اعتبارسنجی message_id (۱۹ رقم عددی)."
+          },
+          {
+            name: "check_message_id_raise",
+            params: [["id", "str"]],
+            returns: "None",
+            description: "اگر message_id نامعتبر باشد، `InvalidID` می‌اندازد."
+          },
+          {
+            name: "get_chat_id_type",
+            params: [["chat_id", "str"]],
+            returns: "Literal['User','Group','Channel']",
+            description: "نوع چت را از روی chat_id تشخیص می‌دهد."
+          },
+
+          // --- متن و دیتا ---
+          {
+            name: "trim_text",
+            params: [["text", "str"]],
+            returns: "str",
+            description: "حذف فاصله‌های اضافی از ابتدا/انتهای هر خط و خطوط خالی انتهایی."
+          },
+          {
+            name: "trim_trailing_newlines",
+            params: [["text", "str"]],
+            returns: "str",
+            description: "نام مستعار `trim_text`."
+          },
+          {
+            name: "clean_dict",
+            params: [["data", "dict"]],
+            returns: "dict",
+            description: "حذف کلیدهای None، لیست خالی و دیکشنری خالی از دیتا."
+          },
+          {
+            name: "prefer_first",
+            params: [
+              ["value1", "str | None = None"],
+              ["value2", "str | None = None"]
+            ],
+            returns: "str",
+            description: "اگر `value1` وجود داشته باشد آن را برمی‌گرداند، وگرنه `value2`."
+          },
+          {
+            name: "format_url",
+            params: [["urls", "list"]],
+            returns: "list",
+            description: "اسلش انتهایی به URLها اضافه می‌کند اگر نداشته باشند."
+          },
+          {
+            name: "data_format",
+            params: [
+              ["data", "dict"],
+              ["inline_keypad", "list | KeyPad | None = None"],
+              ["keypad", "list | KeyPad | None = None"],
+              ["resize_keyboard", "bool = True"],
+              ["on_time_keyboard", "bool = False"],
+              ["metadata", "list | None = None"],
+              ["meta_data", "list | None = None"]
+            ],
+            returns: "dict",
+            description: "آماده‌سازی دیکشنری دیتا با کیبورد و متادیتا."
+          },
+
+          // --- نمایش ---
+          {
+            name: "print_time",
+            params: [
+              ["text", "str"],
+              ["time_sleep", "float = 0.07"],
+              ["color", "str = Colors.WHITE"]
+            ],
+            returns: "None",
+            description: "چاپ متن با افکت تایپ‌مانند (کاراکتر به کاراکتر)."
+          },
+          {
+            name: "get_input",
+            params: [["text_output", "str"]],
+            returns: "str",
+            description: "ورودی از کاربر می‌گیرد و تا معتبر بودن (طول ۶۴) ادامه می‌دهد."
+          },
+          {
+            name: "deprecated_property",
+            params: [
+              ["old_name", "str"],
+              ["new_name", "str"]
+            ],
+            returns: "None",
+            description: "هشدار Deprecation برای پراپرتی منسوخ‌شده."
+          },
+
+          // --- منطق شرطی و اجرا ---
+          {
+            name: "when",
+            params: [
+              ["condition", "Callable[[], bool | Awaitable[bool]]"],
+              ["action", "Callable[[], Any | Awaitable[Any]] | None = None"],
+              ["sleep", "float = 1.0"],
+              ["timeout", "float | None = None"],
+              ["error_message", "str | None = None"],
+              ["raise_on_error", "bool = False"],
+              ["logger", "Any | None = None"]
+            ],
+            returns: "bool",
+            description: "منتظر می‌ماند تا یک شرط برقرار شود، سپس action را اجرا می‌کند. ابزار پایه برای ساخت سیستم‌های زمان‌بند شرطی (مثل Warn System)."
+          },
+          {
+            name: "run_handler",
+            params: [
+              ["handler", "Callable"],
+              ["*args", "Any"],
+              ["**values", "Any"]
+            ],
+            returns: "Any",
+            description: "هندلر را اجرا می‌کند، هم sync و هم async."
+          },
+          {
+            name: "run_filter",
+            params: [
+              ["filters", "Filter | InlineFilter | None"],
+              ["update", "Update | UpdateButton"]
+            ],
+            returns: "bool | Awaitable[bool]",
+            description: "اجرای یک فیلتر (sync یا async) روی آپدیت."
+          }
+        ],
+        example: `from fast_rub.utils import Utils
+
+# --- اعتبارسنجی ---
+if Utils.check_id("b1234567890123456789012345678901"):
+    print("ID معتبر است")
+
+# --- پردازش متن ---
+clean = Utils.trim_text("  سلام\\n\\n\\n  ")
+# "سلام"
+
+# --- تشخیص نوع فایل ---
+tp = Utils.type_file("photo.png")   # "Image"
+
+# --- منطق شرطی (مثال Warn System) ---
+async def has_3_warns():
+    return await db.count("warns", {"user_id": user_id}) >= 3
+
+async def ban_user():
+    await bot.ban(chat_id, user_id)
+
+await Utils.when(
+    condition=has_3_warns,
+    action=ban_user,
+    sleep=10,          # هر ۱۰ ثانیه چک کن
+    timeout=600,       # حداکثر ۱۰ دقیقه
+    error_message="کاربر به ۳ اخطار نرسید",
+    raise_on_error=True,
+)
+
+# --- اجرای sync/async با هم ---
+await Utils.run_handler(my_maybe_async_func, arg1, kwarg=value)`
+      },
     ];
 
     function renderModels() {
