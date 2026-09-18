@@ -650,8 +650,11 @@ fast_rub
 
 ### مستندات خام جیسون مناسب AI
 - [متود ها](/docs/methods.json)
+- [متود ها مینیفای](/docs/methods.min.json)
 - [مدل ها](/docs/models.json)
-- [قابلیت های دیگر](/docs/features.json)
+- [مدل ها مینیفای](/docs/models.min.json)
+- [قابلیت ها](/docs/features.json)
+- [قابلیت ها مینیفای](/docs/features.min.json)
 
 [⬆ بازگشت به فهرست](#-فهرست-مطالب)
 
