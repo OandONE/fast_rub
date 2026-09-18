@@ -33,6 +33,8 @@
 - [📡 Signals](#-signals)
 - [🔌 Plugins](#-plugins)
 - [🗄️ ORM داخلی](#️-orm-داخلی)
+- [📊 داشبورد آمار HTML](#-داشبورد-آمار-html)
+- [🧩 نصب اختیاری (Extras)](#-نصب-اختیاری-extras)
 - [💻 CLI](#-cli)
 - [📁 ساختار پروژه](#-ساختار-پروژه)
 - [⚠️ نکته درباره pyrubi](#️-نکته-درباره-pyrubi)
@@ -61,7 +63,7 @@
 - 💻 **CLI** — ابزار خط فرمان (`fastrub new`, `fastrub run --reload`)
 - 🛡️ **AntiSpam** — سیستم ضد اسپم پیشرفته
 - 🚀 **Middleware, Cache, BackGround-Task** هم ابزاری که فکر بکنید
-- 🌐 **Dashboard HTML** پنل دیدن پیام های گروه/کاربر ها به صورت HTML و JSON به همراه ریست و ترتیب و ...
+- 📊 **Dashboard HTML** — پنل وب آماده برای آمار پیام‌ها با رتبه‌بندی، جستجو، خروجی JSON و پشتیبانی FastAPI/Flask
 - 📈 **قدرت انتخاب** انتخاب با شماست هوشمند یا دستی. تنظیم poll_interval, ssl_verify, keeper_messages, ...
 - 🪶 **فوق‌العاده سبک** — تست شده روی ۲۵۶MB RAM DDR1 با Alpine Linux
 - 🔒 **امنیت** — SQL پارامتری، sanitize خودکار، middleware امنیتی و همچنین Markdown/HTML Injection Protection
@@ -398,6 +400,68 @@ user = await db.find("users", "*", {"chat_id": "123"})
 
 ---
 
+## 📊 داشبورد آمار HTML
+
+پنل وب آماده با نمایش لحظه‌ای آمار پیام‌ها — تعداد پیام‌های هر گروه/کانال/کاربر، رتبه‌بندی، جستجو و ریست. خروجی HTML زیبا + API JSON.
+
+```python
+import asyncio
+from fast_rub import Client
+from fast_rub.types import Update
+
+async def main():
+    bot = Client(
+        "my_bot",
+        enable_stats=True,                                  # ✅ فعال‌سازی آمار
+        stats_db_path="messages_state-fastrub-my_bot.db",   # اختیاری
+    )
+
+    @bot.on_message()
+    async def handler(msg: Update):
+        await msg.reply("دریافت شد ✅")
+
+    @bot.on_run()
+    async def on_run():
+        url = await bot.start_dashboard(
+            host="127.0.0.1",
+            port=8080,
+            backend="fastapi",   # یا "flask"
+        )
+        bot.logger.info(f"داشبورد: {url}")
+
+    await bot.run()
+
+asyncio.run(main())
+```
+
+سپس در مرورگر: **`http://127.0.0.1:8080/dashboard`**
+
+**ویژگی‌های داشبورد:**
+
+| ویژگی | توضیح |
+|-------|-------|
+| 📈 آمار لحظه‌ای | کل پیام‌ها، پیام‌های امروز، چت‌های فعال، زمان فعالیت |
+| 🏆 رتبه‌بندی | مرتب‌سازی بر اساس تعداد کل / امروز / نام |
+| 🔍 جستجو | جستجوی زنده در نام و آیدی چت‌ها |
+| 🗑️ ریست | پاک‌سازی کامل آمار |
+| 🌐 خروجی JSON | `/dashboard/api/stats` و `/dashboard/api/reset` |
+| 🎨 Dark/Light | طراحی مدرن و واکنش‌گرا (responsive) |
+
+**بک‌اندها:**
+
+- `backend="fastapi"` — سریع‌تر، پیشنهادی (`pip install fastrub[fastapi]`)
+- `backend="flask"` — سبک‌تر (`pip install fastrub[flask]`)
+
+**نکات امنیتی:**
+
+- پیش‌فرض روی `127.0.0.1` گوش می‌ده (فقط لوکال)
+- برای باز کردن روی شبکه، `host="0.0.0.0"` بده و **حتماً** از Basic Auth یا ریورس‌پروکسی (Nginx + auth) استفاده کن
+- پورت‌های زیر ۱۰۲۴ نیاز به `sudo` دارن
+
+[⬆ بازگشت به فهرست](#-فهرست-مطالب)
+
+---
+
 ## 💻 CLI
 
 ```bash
@@ -407,6 +471,30 @@ fastrub run --reload    # اجرا با Hot Reload
 fastrub version         # نسخه
 fastrub docs            # مستندات
 ```
+
+[⬆ بازگشت به فهرست](#-فهرست-مطالب)
+
+---
+
+## 🧩 نصب اختیاری (Extras)
+
+کتابخانه به‌صورت پیش‌فرض سبک نصب می‌شه. برای قابلیت‌های خاص، از extras زیر استفاده کن:
+
+| Extra | نصب | کاربرد |
+|-------|-----|--------|
+| `fastapi` | `pip install fastrub[fastapi]` | داشبورد آمار و وب سرور با FastAPI (پیشنهادی) |
+| `flask` | `pip install fastrub[flask]` | داشبورد آمار و وب سرور با Flask |
+| `hotreload` | `pip install fastrub[hotreload]` | Hot Reload هنگام توسعه |
+| `jalali` | `pip install fastrub[jalali]` | تبدیل تاریخ شمسی Scheduler |
+| `progress` | `pip install fastrub[progress]` | نوار پیشرفت آپلود/دانلود (tqdm) |
+| `pillow` | `pip install fastrub[pillow]` | پردازش تصویر در یوزربات |
+| `moviepy` | `pip install fastrub[moviepy]` | پردازش ویدیو در یوزربات |
+| `aiortc` | `pip install fastrub[aiortc]` | تماس صوتی/تصویری در یوزربات |
+| `userbot` | `pip install fastrub[userbot]` | یوزربات (پایروبی + WebSocket + Crypto) |
+| `userbot-full` | `pip install fastrub[userbot-full]` | یوزربات با تمام قابلیت‌ها |
+| `full` | `pip install fastrub[full]` | همه چیز یک‌جا نصب می‌شه |
+
+> 💡 **نکته:** همه extras دارای **alias** هستند — مثلاً `pyrubi`, `pyrubi-rtc`, `rtc` همه معادل `aiortc` هستن. برای دیدن لیست کامل: `pip show fastrub` یا فایل `pyproject.toml`.
 
 [⬆ بازگشت به فهرست](#-فهرست-مطالب)
 
@@ -439,6 +527,8 @@ fast_rub
 │   ├── plugins.py # Plugins client
 │   ├── scheduler.py # Scheduler for scheduling tasks
 │   ├── signals.py # Signals (like Django Framework)
+│   ├── stats.py # Stats Messages
+│   ├── dashboard.py # Dashboard for stats Messages
 │   └── webhook_server.py # Web Server client for webhook local
 ├── db # DataBases
 │   ├── database.py # DataBase ORM fastrub
