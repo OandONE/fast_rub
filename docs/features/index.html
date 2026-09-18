@@ -1882,6 +1882,127 @@ async def main():
 asyncio.run(main())`
 },
 
+{
+    id: "AdminPanel",
+    title: "🛡️ پنل ادمین",
+    description: "پنل وب مدیریت ربات با احراز هویت داخلی (بدون کتابخانهٔ جداگانه) — لاگ لحظه‌ای، تغییر زندهٔ تنظیمات، آمار پیام‌ها و ابزارهای مدیریتی. با `bot.start_admin(...)` راه می‌افتد و مثل داشبورد از هر دو بک‌اند FastAPI و Flask پشتیبانی می‌کند. بخش‌ها: نمای کلی، لاگ‌ها، تنظیمات، آمار، سیستم و ابزارها (ارسال پیام، جستجوی چت، پاک‌سازی کش).",
+    class_signature: "class AdminPanel (fast_rub.core.admin)",
+    note: "اگر password ندهید رمز قوی تصادفی ساخته و در کنسول چاپ می‌شود. رمز با hmac.compare_digest چک می‌شود، نشست با کوکی امضاشدهٔ HMAC است و بعد از ۵ تلاش ناموفق IP قفل می‌شود. همهٔ POSTها توکن CSRF دارند و توکن ربات هرگز نمایش داده نمی‌شود. پیش‌فرض فقط روی 127.0.0.1 گوش می‌دهد.",
+    init_params: [
+        ["client", "Client", "کلاینت FastRub"],
+        ["host", "str = \"127.0.0.1\"", "آدرس گوش دادن (فقط لوکال توصیه می‌شود)"],
+        ["port", "int = 8081", "پورت پنل"],
+        ["backend", "\"fastapi\" | \"flask\" = \"fastapi\"", "بک‌اند سرور"],
+        ["path_prefix", "str = \"/admin\"", "پیشوند مسیر"],
+        ["password", "str | None = None", "رمز پنل (None = ساخت رمز تصادفی)"],
+        ["session_hours", "float = 12.0", "مدت اعتبار نشست ورود"],
+        ["logger", "logging.Logger | None = None", "لاگر اختصاصی"]
+    ],
+    methods: [
+        {
+            name: "start_admin",
+            params: [
+                ["host", "str = \"127.0.0.1\""],
+                ["port", "int = 8081"],
+                ["backend", "\"fastapi\" | \"flask\" = \"fastapi\""],
+                ["path_prefix", "str = \"/admin\""],
+                ["password", "str | None = None"],
+                ["session_hours", "float = 12.0"]
+            ],
+            returns: "str (آدرس پنل)",
+            description: "متود Client — راه‌اندازی پنل ادمین. اگر password داده نشود رمز تصادفی در کنسول چاپ می‌شود"
+        },
+        {
+            name: "GET /admin/api/overview",
+            params: [],
+            returns: "JSON",
+            description: "وضعیت ربات: عنوان و یوزرنیم ربات، running، uptime، هندلرها و middlewareها، مکالمات و کاربران فعال، پلاگین‌ها"
+        },
+        {
+            name: "GET /admin/api/logs",
+            params: [
+                ["after", "int = 0"]
+            ],
+            returns: "JSON",
+            description: "لاگ‌های بعد از شناسهٔ داده‌شده — پنل هر ۲ ثانیه polling می‌کند"
+        },
+        {
+            name: "GET/POST /admin/api/settings",
+            params: [
+                ["body (POST)", "dict"]
+            ],
+            returns: "JSON",
+            description: "مشاهده و تغییر زندهٔ تنظیمات: main_parse_mode، poll_interval، time_out، BotConfig، WaitManager و Cache — مقادیر نامعتبر رد می‌شوند"
+        },
+        {
+            name: "GET /admin/api/stats",
+            params: [
+                ["sort", "\"count\" | \"today\" | \"title\" = \"count\""],
+                ["search", "str = \"\""]
+            ],
+            returns: "JSON",
+            description: "آمار پیام‌ها (خلاصه + رتبه‌بندی چت‌ها) — نیازمند enable_stats=True"
+        },
+        {
+            name: "POST /admin/api/send",
+            params: [
+                ["chat_id", "str"],
+                ["text", "str"]
+            ],
+            returns: "JSON",
+            description: "ارسال پیام متنی از پنل با ربات"
+        },
+        {
+            name: "POST /admin/api/lookup",
+            params: [
+                ["chat_id", "str"]
+            ],
+            returns: "JSON",
+            description: "جستجوی اطلاعات یک چت (نوع، نام، یوزرنیم)"
+        },
+        {
+            name: "POST /admin/api/cache/clear",
+            params: [],
+            returns: "JSON",
+            description: "پاک‌سازی کامل کش ربات (نیازمند cache فعال)"
+        },
+        {
+            name: "GET /admin/api/system",
+            params: [],
+            returns: "JSON",
+            description: "اطلاعات سیستم: پایتون، پلتفرم، PID، uptime، threadها، تسک‌های asyncio — رم/CPU در صورت نصب psutil"
+        },
+        {
+            name: "POST /admin/login , GET /admin/logout",
+            params: [
+                ["password", "str"]
+            ],
+            returns: "JSON / Redirect",
+            description: "ورود با رمز (کوکی امضاشدهٔ HMAC) و خروج — بعد از ۵ تلاش ناموفق، IP برای ۶۰ ثانیه قفل می‌شود"
+        }
+    ],
+    example: `import asyncio
+from fast_rub import Client
+
+async def main():
+    bot = Client("my_bot")
+
+    @bot.on_run()
+    async def on_run():
+        # اگر password ندهید، رمز قوی تصادفی ساخته و در کنسول چاپ می‌شود
+        url = await bot.start_admin(
+            host="127.0.0.1",
+            port=8081,
+            password="my_secret",
+            backend="fastapi",   # یا "flask"
+        )
+        bot.logger.info(f"پنل ادمین: {url}")
+
+    await bot.run()
+
+asyncio.run(main())`
+},
+
 ];
 
     function renderfeatures() {

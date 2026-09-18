@@ -1988,5 +1988,211 @@
       }
     ],
     "example": "import asyncio\nfrom fast_rub import Client, filters\n\nasync def main():\n    bot = Client(\"my_bot\", dry_run=True)  # بدون توکن و اینترنت\n\n    @bot.on_message(filters.text(\"سلام\"))\n    async def hello(msg):\n        await msg.reply(\"سلام! ⚡\")\n\n    await bot.start()\n\n    # شبیه‌سازی پیام کاربر\n    await bot.mock.receive_text(chat_id=\"b\" + \"a\" * 31, text=\"سلام\")\n\n    # بررسی ارسال‌های ربات\n    assert bot.mock.last_sent[\"data\"][\"text\"] == \"سلام! ⚡\"\n\n    # شبیه‌سازی خطا\n    bot.mock.fail_methods.add(\"getMe\")\n\n    await bot.close()\n\nasyncio.run(main())"
+  },
+  {
+    "id": "AdminPanel",
+    "title": "🛡️ پنل ادمین",
+    "description": "پنل وب مدیریت ربات با احراز هویت داخلی (بدون کتابخانهٔ جداگانه) — لاگ لحظه‌ای، تغییر زندهٔ تنظیمات، آمار پیام‌ها و ابزارهای مدیریتی. با `bot.start_admin(...)` راه می‌افتد و مثل داشبورد از هر دو بک‌اند FastAPI و Flask پشتیبانی می‌کند. بخش‌ها: نمای کلی، لاگ‌ها، تنظیمات، آمار، سیستم و ابزارها (ارسال پیام، جستجوی چت، پاک‌سازی کش).",
+    "class_signature": "class AdminPanel (fast_rub.core.admin)",
+    "note": "اگر password ندهید رمز قوی تصادفی ساخته و در کنسول چاپ می‌شود. رمز با hmac.compare_digest چک می‌شود، نشست با کوکی امضاشدهٔ HMAC است و بعد از ۵ تلاش ناموفق IP قفل می‌شود. همهٔ POSTها توکن CSRF دارند و توکن ربات هرگز نمایش داده نمی‌شود. پیش‌فرض فقط روی 127.0.0.1 گوش می‌دهد.",
+    "init_params": [
+      [
+        "client",
+        "Client",
+        "کلاینت FastRub"
+      ],
+      [
+        "host",
+        "str = \"127.0.0.1\"",
+        "آدرس گوش دادن (فقط لوکال توصیه می‌شود)"
+      ],
+      [
+        "port",
+        "int = 8081",
+        "پورت پنل"
+      ],
+      [
+        "backend",
+        "\"fastapi\" | \"flask\" = \"fastapi\"",
+        "بک‌اند سرور"
+      ],
+      [
+        "path_prefix",
+        "str = \"/admin\"",
+        "پیشوند مسیر"
+      ],
+      [
+        "password",
+        "str | None = None",
+        "رمز پنل (None = ساخت رمز تصادفی)"
+      ],
+      [
+        "session_hours",
+        "float = 12.0",
+        "مدت اعتبار نشست ورود"
+      ],
+      [
+        "logger",
+        "logging.Logger | None = None",
+        "لاگر اختصاصی"
+      ]
+    ],
+    "properties": [
+      {
+        "name": "_logs",
+        "type": "deque[dict]",
+        "description": "بافر لاگ‌های پنل (حداکثر ۱۰۰۰ رکورد آخر) با فیلتر خودکار نویزهای uvicorn/werkzeug/httpx"
+      },
+      {
+        "name": "_csrf_token",
+        "type": "str",
+        "description": "توکن CSRF — در صفحهٔ پنل جاسازی می‌شود و روی POSTها الزامی است"
+      },
+      {
+        "name": "_password",
+        "type": "str",
+        "description": "رمز پنل — هرگز از API برگردانده نمی‌شود"
+      }
+    ],
+    "methods": [
+      {
+        "name": "start_admin",
+        "signature": "await bot.start_admin(host=\"127.0.0.1\", port=8081, backend=\"fastapi\", path_prefix=\"/admin\", password=None, session_hours=12.0)",
+        "description": "راه‌اندازی پنل ادمین روی Client — آدرس پنل را برمی‌گرداند. اگر password داده نشود رمز تصادفی در کنسول چاپ می‌شود",
+        "params": [
+          [
+            "host",
+            "str = \"127.0.0.1\"",
+            "آدرس گوش دادن"
+          ],
+          [
+            "port",
+            "int = 8081",
+            "پورت"
+          ],
+          [
+            "backend",
+            "\"fastapi\" | \"flask\" = \"fastapi\"",
+            "بک‌اند سرور"
+          ],
+          [
+            "path_prefix",
+            "str = \"/admin\"",
+            "پیشوند مسیر"
+          ],
+          [
+            "password",
+            "str | None = None",
+            "رمز پنل"
+          ],
+          [
+            "session_hours",
+            "float = 12.0",
+            "اعتبار نشست (ساعت)"
+          ]
+        ]
+      },
+      {
+        "name": "GET {prefix}/api/overview",
+        "signature": "GET /admin/api/overview",
+        "description": "وضعیت ربات: عنوان و یوزرنیم ربات، running، uptime، تعداد هندلرها و middlewareها، مکالمات و کاربران فعال، پلاگین‌ها",
+        "params": []
+      },
+      {
+        "name": "GET {prefix}/api/logs",
+        "signature": "GET /admin/api/logs?after=<id>",
+        "description": "لاگ‌های بعد از شناسهٔ داده‌شده (polling هر ۲ ثانیه از سمت پنل)",
+        "params": [
+          [
+            "after",
+            "int = 0",
+            "آخرین شناسهٔ دریافت‌شده"
+          ]
+        ]
+      },
+      {
+        "name": "GET/POST {prefix}/api/settings",
+        "signature": "GET/POST /admin/api/settings",
+        "description": "مشاهده و تغییر زندهٔ تنظیمات: main_parse_mode، poll_interval، time_out، defult_wait، BotConfig (validate_chat_id، strip_text، optimize_text، max_text_length، compress_long_text، auto_escape، retry_on_timeout)، WaitManager و Cache — مقادیر نامعتبر رد می‌شوند",
+        "params": [
+          [
+            "body (POST)",
+            "dict",
+            "تنظیمات موردنظر — فقط مقادیر معتبر اعمال می‌شوند"
+          ]
+        ]
+      },
+      {
+        "name": "GET {prefix}/api/stats",
+        "signature": "GET /admin/api/stats?sort=count&search=",
+        "description": "آمار پیام‌ها (خلاصه + رتبه‌بندی چت‌ها) — نیازمند enable_stats=True",
+        "params": [
+          [
+            "sort",
+            "\"count\" | \"today\" | \"title\" = \"count\"",
+            "مرتب‌سازی"
+          ],
+          [
+            "search",
+            "str = \"\"",
+            "جستجو در نام/آیدی چت"
+          ]
+        ]
+      },
+      {
+        "name": "POST {prefix}/api/send",
+        "signature": "POST /admin/api/send {chat_id, text}",
+        "description": "ارسال پیام متنی از پنل با ربات",
+        "params": [
+          [
+            "chat_id",
+            "str",
+            "چت آیدی مقصد"
+          ],
+          [
+            "text",
+            "str",
+            "متن پیام"
+          ]
+        ]
+      },
+      {
+        "name": "POST {prefix}/api/lookup",
+        "signature": "POST /admin/api/lookup {chat_id}",
+        "description": "جستجوی اطلاعات یک چت (نوع، نام، یوزرنیم)",
+        "params": [
+          [
+            "chat_id",
+            "str",
+            "چت آیدی"
+          ]
+        ]
+      },
+      {
+        "name": "POST {prefix}/api/cache/clear",
+        "signature": "POST /admin/api/cache/clear",
+        "description": "پاک‌سازی کامل کش ربات (نیازمند cache فعال)",
+        "params": []
+      },
+      {
+        "name": "GET {prefix}/api/system",
+        "signature": "GET /admin/api/system",
+        "description": "اطلاعات سیستم: نسخهٔ پایتون، پلتفرم، PID، uptime، threadها، تسک‌های asyncio — رم/CPU پروسه در صورت نصب psutil",
+        "params": []
+      },
+      {
+        "name": "GET/POST {prefix}/login , GET {prefix}/logout",
+        "signature": "POST /admin/login {password}",
+        "description": "ورود با رمز (کوکی امضاشدهٔ HMAC ست می‌شود) و خروج. بعد از ۵ تلاش ناموفق در ۵ دقیقه، IP برای ۶۰ ثانیه قفل می‌شود",
+        "params": [
+          [
+            "password",
+            "str",
+            "رمز پنل"
+          ]
+        ]
+      }
+    ],
+    "example": "import asyncio\nfrom fast_rub import Client\n\nasync def main():\n    bot = Client(\"my_bot\")\n\n    @bot.on_run()\n    async def on_run():\n        # اگر password ندهید، رمز قوی تصادفی ساخته و در کنسول چاپ می‌شود\n        url = await bot.start_admin(\n            host=\"127.0.0.1\",\n            port=8081,\n            password=\"my_secret\",\n            backend=\"fastapi\",   # یا \"flask\"\n        )\n        bot.logger.info(f\"پنل ادمین: {url}\")\n\n    await bot.run()\n\nasyncio.run(main())"
   }
 ]

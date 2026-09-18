@@ -26,6 +26,7 @@ from .stats import StatsTracker
 from .scheduler import Scheduler
 from .config import BotConfig
 from .dashboard import Dashboard
+from .admin import AdminPanel
 from .mock import MockNetwork, MockSession
 from ..button import KeyPad
 from ..utils.filters import Filter
@@ -279,6 +280,8 @@ class Client:
         self.stats: StatsTracker | None = None
         self._dashboard: "Dashboard | None" = None
         self._dashboard_task: asyncio.Task | None = None
+        self._admin: AdminPanel | None = None
+        self._admin_task: asyncio.Task | None = None
         self.dry_run = dry_run
         if logger:
             self.logger = logger
@@ -525,6 +528,20 @@ class Client:
             self._dashboard_task = None
             if self._dashboard:
                 await self._dashboard.stop()
+
+        if self._admin_task is not None:
+            self._admin_task.cancel()
+            try:
+                await self._admin_task
+            except (asyncio.CancelledError, Exception):
+                pass
+            self._admin_task = None
+            if self._admin:
+                try:
+                    await self._admin.stop()
+                except Exception:
+                    pass
+            self._admin = None
 
         if getattr(self, "stats", None) is not None:
             try:
@@ -2921,6 +2938,43 @@ class Client:
         )
         url = f"http://{host}:{port}{path_prefix}"
         self.logger.info(f"داشبورد آمار در حال اجرا: {url}")
+        return url
+
+    async def start_admin(
+        self,
+        host: str = "127.0.0.1",
+        port: int = 8081,
+        backend: Literal["fastapi", "flask"] = "fastapi",
+        path_prefix: str = "/admin",
+        password: str | None = None,
+        session_hours: float = 12.0,
+    ) -> str:
+        """راه‌اندازی پنل ادمین — لاگ لحظه‌ای، تنظیمات زنده، آمار و ابزارها با احراز هویت داخلی
+
+پنل:
+    http://{host}:{port}/admin
+اگر password ندهید یک رمز قوی تصادفی ساخته و در کنسول چاپ می‌شود.
+پنل به تغییر تنظیمات و ارسال پیام می‌تواند دست بزند — فقط روی شبکهٔ مطمئن بازش کنید."""
+        if self._admin_task is not None:
+            self.logger.warning("پنل ادمین قبلاً اجرا شده است.")
+            return f"http://{host}:{port}{path_prefix}"
+
+        self._admin = AdminPanel(
+            client=self,
+            host=host,
+            port=port,
+            backend=backend,
+            path_prefix=path_prefix,
+            password=password,
+            session_hours=session_hours,
+            logger=self.logger,
+        )
+        self._admin_task = asyncio.create_task(
+            self._admin.start(),
+            name="fastrub_admin",
+        )
+        url = f"http://{host}:{port}{path_prefix}"
+        self.logger.info(f"پنل ادمین در حال اجرا: {url}")
         return url
     
     async def version_botapi(self) -> str:
