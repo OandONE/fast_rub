@@ -26,6 +26,7 @@ from .stats import StatsTracker
 from .scheduler import Scheduler
 from .config import BotConfig
 from .dashboard import Dashboard
+from .mock import MockNetwork, MockSession
 from ..button import KeyPad
 from ..utils.filters import Filter
 from ..utils.inline_filters import InlineFilter
@@ -174,6 +175,11 @@ class Client:
     
     stats_db_path: str | None = None
         دیتابیس آمار
+
+    dry_run: bool = False
+        حالت شبیه‌سازی (Dry Run) — ربات بدون توکن واقعی و بدون اینترنت اجرا می‌شود.
+        آپدیت‌ها را با bot.mock.receive_text(...) شبیه‌سازی کنید؛
+        همهٔ ارسال‌های ربات در bot.mock.sent و همهٔ درخواست‌ها در bot.mock.requests ثبت می‌شوند.
     """
     # ═══════════════════════════════════
     # region 🚀 Start & Stop | شروع و توقف
@@ -214,6 +220,7 @@ class Client:
         config: BotConfig | None = None,
         enable_stats: bool = False,
         stats_db_path: str | None = None,
+        dry_run: bool = False,
     ):
         """Client for login and setting robot / کلاینت برای لوگین و تنظیمات ربات"""
         self.name_session = name_session
@@ -272,10 +279,12 @@ class Client:
         self.stats: StatsTracker | None = None
         self._dashboard: "Dashboard | None" = None
         self._dashboard_task: asyncio.Task | None = None
+        self.dry_run = dry_run
         if logger:
             self.logger = logger
         else:
             self.logger = logging.getLogger("fast_rub")
+        self.mock: MockNetwork = MockNetwork(client=self, logger=self.logger)
         if run_start: # Remove in V7
             asyncio.run(self.start())
 
@@ -300,18 +309,33 @@ class Client:
         )
         self.scheduler = Scheduler(self.logger)
         self.snapshots = SnapshotManager(self)
-        self.session = await Session.open(
-            name=self.name_session,
-            token=self.token,
-            user_agent=self.user_agent,
-            time_out=self.time_out,
-            display_welcome=self.display_welcome,
-            view_logs=self.view_logs,
-            save_logs=self.save_logs,
-            offset_id=self.offset_id,
-            save_offset_id=self.save_offset_id
-        )
-        await self.session.close()
+        if self.dry_run:
+            # Try run — no session, database, valid token
+            self.token = self.token or ("0" * 64)
+            self.session = MockSession(
+                token=self.token,
+                user_agent=self.user_agent,
+                time_out=self.time_out,
+                display_welcome=self.display_welcome,
+                view_logs=self.view_logs or False,
+                save_logs=self.save_logs or False,
+                offset_id=self.offset_id,
+                save_offset_id=self.save_offset_id,
+            )
+            self.logger.info("حالت Dry Run فعال است — اتصال واقعی به سرور روبیکا وجود ندارد")
+        else:
+            self.session = await Session.open(
+                name=self.name_session,
+                token=self.token,
+                user_agent=self.user_agent,
+                time_out=self.time_out,
+                display_welcome=self.display_welcome,
+                view_logs=self.view_logs,
+                save_logs=self.save_logs,
+                offset_id=self.offset_id,
+                save_offset_id=self.save_offset_id
+            )
+            await self.session.close()
         self.token: str = self.session.token
         self.time_out = self.session.time_out
         self.user_agent = self.session.user_agent
@@ -333,18 +357,21 @@ class Client:
         self.urls = Utils.format_url(self.urls)
         self.next_offset_id = self.session.offset_id
         self.save_offset_id = self.session.save_offset_id
-        self.network = Network(
-            token=self.token,
-            client=self,
-            logger=self.logger,
-            max_retries=self.max_retries,
-            user_agent=self.user_agent,
-            proxy=self.proxy,
-            base_urls=self.urls,
-            ssl_verify=self.ssl_verify,
-            max_retries_upload=self.max_retries_upload,
-            max_retries_download=self.max_retries_download,
-        )
+        if self.dry_run:
+            self.network = self.mock
+        else:
+            self.network = Network(
+                token=self.token,
+                client=self,
+                logger=self.logger,
+                max_retries=self.max_retries,
+                user_agent=self.user_agent,
+                proxy=self.proxy,
+                base_urls=self.urls,
+                ssl_verify=self.ssl_verify,
+                max_retries_upload=self.max_retries_upload,
+                max_retries_download=self.max_retries_download,
+            )
         self._webhook_server = None
         if self.webhook:
             self._webhook_server = WebhookServer(client=self, config=self.webhook, logger=self.logger)
@@ -580,6 +607,9 @@ class Client:
             chat_id=chat_id,
             message_id=message_id
         )
+        
+        if isinstance(result, props):
+            return result
         return props(result)
     
     
@@ -2571,6 +2601,83 @@ class Client:
                     continue
                 self._schedule_handler(handler["handler"], update)
 
+    # ═══════════════════════════════════
+    # region 🧪 Dry Run | شبیه‌سازی آپدیت
+    # ═══════════════════════════════════
+
+    async def _mock_dispatch_message(self, update_data: dict) -> Update:
+        """اجرای آپدیت شبیه‌سازی‌شده در خط لولهٔ هندلرها (Dry Run) — برخلاف پولینگ، هندلرها همزمان(await) اجرا می‌شوند تا تست‌ها قطعی باشند"""
+        update = Update(update_data, self)
+        if self.wait_manager and self.wait_manager.auto_track:
+            self.wait_manager.track()
+
+        if await self._conversation_manager.handle(update, self):
+            return update
+
+        is_edited = update_data.get("type") == "UpdatedMessage"
+        is_deleted = update_data.get("type") in ("RemoveMessage", "RemovedMessage")
+
+        handlers = self._message_handlers_polling + self._message_handlers_webhook
+
+        async def _run_handler(upd: Update, _handler):
+            try:
+                await _handler(upd)
+            except Exception as e:
+                await self._process_on_error(e=e, update=upd)
+
+        for handler_info in handlers:
+            if is_edited and handler_info["edited_messages"] == False:
+                continue
+            elif (not is_edited) and handler_info["edited_messages"] == True:
+                continue
+            if is_deleted and handler_info["deleted_messages"] == False:
+                continue
+            elif (not is_deleted) and handler_info["deleted_messages"] == True:
+                continue
+
+            status_filter = await Utils.run_filter(handler_info["filters"], update)
+            if not status_filter:
+                continue
+
+            middleware = getattr(self, "_middleware_manager", None)
+            if middleware is not None and middleware.count > 0:
+                await middleware.execute(update, lambda u, _h=handler_info["handler"]: _run_handler(u, _h))
+            else:
+                await _run_handler(update, handler_info["handler"])
+
+        if not is_edited and not is_deleted:
+            if self.enable_stats and self.stats is not None:
+                await self.stats.track(update)
+            if self.keeper_messages_ram and getattr(self, "messages", None) is not None:
+                self.messages.append(update)
+            if self.keeper_messages_db and getattr(self, "messages_db", None) is not None:
+                await self.messages_db.append(update)
+        return update
+
+    async def _mock_dispatch_button(self, data: dict) -> UpdateButton:
+        """اجرای کلیک دکمهٔ شبیه‌سازی‌شده در خط لولهٔ هندلرها (Dry Run)"""
+        update = UpdateButton(data, self)
+
+        async def _run_handler(upd: UpdateButton, _handler):
+            try:
+                await _handler(upd)
+            except Exception as e:
+                await self._process_on_error(e=e, update=upd)
+
+        for handler_info in self._button_handlers:
+            status_filter = await Utils.run_filter(handler_info["filters"], update)
+            if not status_filter:
+                continue
+
+            middleware = getattr(self, "_middleware_manager", None)
+            if middleware is not None and middleware.count > 0:
+                await middleware.execute(update, lambda u, _h=handler_info["handler"]: _run_handler(u, _h))
+            else:
+                await _run_handler(update, handler_info["handler"])
+        return update
+
+    # endregion
+
     async def _process_on_start(self):
         for handler in self._on_start_handlers:
             try:
@@ -2652,7 +2759,7 @@ class Client:
                     type_send="GET"
                 )
                 result = response.json()
-                if result and result.get('status') is True and response.status_code == 200:
+                if isinstance(result, dict) and result and result.get('status') is True and response.status_code == 200:
                     results = result.get('updates', [])
                     if results:
                         for result in results:
@@ -2703,7 +2810,7 @@ class Client:
                     type_send="GET"
                 )
                 result = response.json()
-                if result and result.get('status') is True:
+                if isinstance(result, dict) and result and result.get('status') is True:
                     results = result.get('updates', [])
                     if results:
                         for result in results:

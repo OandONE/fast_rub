@@ -34,6 +34,7 @@
 - [🔌 Plugins](#-plugins)
 - [🗄️ ORM داخلی](#️-orm-داخلی)
 - [📊 داشبورد آمار HTML](#-داشبورد-آمار-html)
+- [🧪 شبیه‌سازی ربات (Dry Run)](#-شبیهسازی-ربات-dry-run)
 - [🧩 نصب اختیاری (Extras)](#-نصب-اختیاری-extras)
 - [💻 CLI](#-cli)
 - [📁 ساختار پروژه](#-ساختار-پروژه)
@@ -62,6 +63,7 @@
 - 🌐 **Webhook Server** — سرور داخلی (FastAPI/Flask)
 - 💻 **CLI** — ابزار خط فرمان (`fastrub new`, `fastrub run --reload`)
 - 🛡️ **AntiSpam** — سیستم ضد اسپم پیشرفته
+- 🧪 **Dry Run** — شبیه‌سازی و تست ربات بدون توکن و بدون اینترنت (`dry_run=True`)
 - 🚀 **Middleware, Cache, BackGround-Task** هم ابزاری که فکر بکنید
 - 📊 **Dashboard HTML** — پنل وب آماده برای آمار پیام‌ها با رتبه‌بندی، جستجو، خروجی JSON و پشتیبانی FastAPI/Flask
 - 📈 **قدرت انتخاب** انتخاب با شماست هوشمند یا دستی. تنظیم poll_interval, ssl_verify, keeper_messages, ...
@@ -462,6 +464,61 @@ asyncio.run(main())
 
 ---
 
+## 🧪 شبیه‌سازی ربات (Dry Run)
+
+ربات را **بدون توکن واقعی و بدون اینترنت** اجرا و تست کنید. یک `MockNetwork` جای شبکهٔ واقعی می‌نشیند؛ آپدیت‌ها را شما شبیه‌سازی می‌کنید، همه‌چیز (فیلترها، کانورسیشن، middleware، آمار) از خط لولهٔ واقعی رد می‌شود و ارسال‌های ربات ثبت می‌گردد — عالی برای تست و CI.
+
+```python
+import asyncio
+from fast_rub import Client, filters
+
+async def main():
+    bot = Client("my_bot", dry_run=True)  # ✅ بدون توکن و بدون اینترنت
+
+    @bot.on_message(filters.text("سلام"))
+    async def hello(msg):
+        await msg.reply("سلام! ⚡")
+
+    await bot.start()
+
+    # شبیه‌سازی پیام کاربر
+    await bot.mock.receive_text(chat_id="b" + "a" * 31, text="سلام")
+
+    # بررسی ارسال‌های ربات
+    assert bot.mock.last_sent["data"]["text"] == "سلام! ⚡"
+    print(len(bot.mock.requests), "درخواست شبیه‌سازی شد")
+
+    await bot.close()
+
+asyncio.run(main())
+```
+
+**ابزارهای `bot.mock` (MockNetwork):**
+
+| ابزار | کاربرد |
+|-------|--------|
+| `receive_text(chat_id, text, ...)` | شبیه‌سازی پیام متنی (اجرا فوری در خط لوله) |
+| `receive_button(chat_id, button_id, ...)` | شبیه‌سازی کلیک دکمهٔ شیشه‌ای |
+| `receive_edit(chat_id, message_id, new_text)` | شبیه‌سازی ویرایش پیام |
+| `receive_deleted(chat_id, message_id)` | شبیه‌سازی حذف پیام |
+| `receive_raw(update_dict)` | تزریق آپدیت خام Bot API |
+| `enqueue_text / enqueue_button / ...` | افزودن به صف — با `bot.run()` و `get_updates` دریافت می‌شود |
+| `bot.mock.sent` | لیست پیام‌های ارسال‌شدهٔ ربات (`method` + `data`) |
+| `bot.mock.requests` | لیست همهٔ درخواست‌های Bot API |
+| `bot.mock.last_sent` | آخرین ارسال |
+| `bot.mock.responses` | پاسخ دستی برای هر متود — `bot.mock.responses["getMe"] = {...}` |
+| `bot.mock.fail_methods` | متودهایی که باید عمداً خطا بدهند — تست مدیریت خطا |
+| `bot.mock.chats` / `add_chat(...)` | چت‌های شبیه‌سازی‌شده برای `get_chat` |
+| `bot.mock.clear()` | پاک‌سازی ثبت‌ها بین تست‌ها |
+
+> 💡 هندلرها در `receive_*` به‌صورت همزمان (await) اجرا می‌شوند؛ پس بلافاصله بعد از فراخوانی می‌توانید روی `bot.mock.sent` assert بگیرید.
+>
+> ⚠️ استفادهٔ سینک از `bot.mock.receive_*` فقط خارج از event loop کار می‌کند (مثل بقیهٔ متودهای کتابخانه).
+
+[⬆ بازگشت به فهرست](#-فهرست-مطالب)
+
+---
+
 ## 💻 CLI
 
 ```bash
@@ -524,6 +581,7 @@ fast_rub
 │   ├── hotreload.py # Hot reload client
 │   ├── __init__.py
 │   ├── middleware.py # Middleware client
+│   ├── mock.py # Mock Network - Dry Run (شبیه‌سازی ربات بدون اتصال واقعی)
 │   ├── plugins.py # Plugins client
 │   ├── scheduler.py # Scheduler for scheduling tasks
 │   ├── signals.py # Signals (like Django Framework)
@@ -678,7 +736,6 @@ fast_rub
 | filters بیشتر در یوزربات(پایروبی) |
 | template در یوزربات(پایروبی) |
 | Plunging Hub |
-| شبیه سازی ربات ها بدون روشن کردن |
 | داکیومنت یوزربات(پایروبی) |
 | پل با تلگرام - FastTel |
 | پنل ادمین |

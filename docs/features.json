@@ -1675,63 +1675,318 @@
     "description": "کلاس Client از پروتکل‌های Context Manager پایتون پشتیبانی می‌کند. می‌توانید از `async with` برای مدیریت خودکار چرخهٔ عمر ربات (شروع و بستن خودکار) استفاده کنید. هم‌چنین اگر از `with` معمولی (سینک) استفاده کنید، Fast Rub به‌طور خودکار تشخیص می‌دهد که در حالت سینک هستید و خودش رویداد‌لوپ را مدیریت می‌کند — یعنی نیازی به `await` کردن ندارید و می‌توانید مستقیم متدها را صدا بزنید.",
     "note": "در حالت `with` (سینک)، تمام متدهای async به‌صورت خودکار در یک رویداد‌لوپ مدیریت‌شده اجرا می‌شوند و نتیجهٔ نهایی (نه یک Coroutine) برگردانده می‌شود. بنابراین نیازی به `await` نیست.",
     "methods": [
-        {
-            "name": "__aenter__",
-            "params": [],
-            "returns": "<a href='../methods/index.html'>Client</a>",
-            "description": "نسخهٔ async context manager. قبل از ورود به بلوک، ربات را استارت می‌زند و خود Client را برمی‌گرداند تا از آن استفاده کنید."
-        },
-        {
-            "name": "__aexit__",
-            "params": [
-                [
-                    "exc_type",
-                    "type",
-                    "نوع استثنا"
-                ],
-                [
-                    "exc_val",
-                    "Exception",
-                    "شیء استثنا"
-                ],
-                [
-                    "tb",
-                    "TracebackType",
-                    "تریس‌بک"
-                ]
-            ],
-            "returns": null,
-            "description": "بعد از خروج از بلوک `async with`، ربات را به‌طور خودکار متوقف می‌کند و منابع را آزاد می‌کند."
-        },
-        {
-            "name": "__enter__",
-            "params": [],
-            "returns": "<a href='../methods/index.html'>Client</a>",
-            "description": "نسخهٔ سینک context manager. تشخیص می‌دهد که در حالت سینک هستید، رویداد‌لوپ را در یک thread جداگانه اجرا می‌کند و یک نسخهٔ Proxy از Client برمی‌گرداند که متدها را سینک اجرا می‌کند (بدون نیاز به await)."
-        },
-        {
-            "name": "__exit__",
-            "params": [
-                [
-                    "exc_type",
-                    "type",
-                    "نوع استثنا"
-                ],
-                [
-                    "exc_val",
-                    "Exception",
-                    "شیء استثنا"
-                ],
-                [
-                    "tb",
-                    "TracebackType",
-                    "تریس‌بک"
-                ]
-            ],
-            "returns": null,
-            "description": "بعد از خروج از بلوک `with`، رویداد‌لوپ thread جداگانه را می‌بندد و ربات را متوقف می‌کند."
-        }
+      {
+        "name": "__aenter__",
+        "params": [],
+        "returns": "<a href='../methods/index.html'>Client</a>",
+        "description": "نسخهٔ async context manager. قبل از ورود به بلوک، ربات را استارت می‌زند و خود Client را برمی‌گرداند تا از آن استفاده کنید."
+      },
+      {
+        "name": "__aexit__",
+        "params": [
+          [
+            "exc_type",
+            "type",
+            "نوع استثنا"
+          ],
+          [
+            "exc_val",
+            "Exception",
+            "شیء استثنا"
+          ],
+          [
+            "tb",
+            "TracebackType",
+            "تریس‌بک"
+          ]
+        ],
+        "returns": null,
+        "description": "بعد از خروج از بلوک `async with`، ربات را به‌طور خودکار متوقف می‌کند و منابع را آزاد می‌کند."
+      },
+      {
+        "name": "__enter__",
+        "params": [],
+        "returns": "<a href='../methods/index.html'>Client</a>",
+        "description": "نسخهٔ سینک context manager. تشخیص می‌دهد که در حالت سینک هستید، رویداد‌لوپ را در یک thread جداگانه اجرا می‌کند و یک نسخهٔ Proxy از Client برمی‌گرداند که متدها را سینک اجرا می‌کند (بدون نیاز به await)."
+      },
+      {
+        "name": "__exit__",
+        "params": [
+          [
+            "exc_type",
+            "type",
+            "نوع استثنا"
+          ],
+          [
+            "exc_val",
+            "Exception",
+            "شیء استثنا"
+          ],
+          [
+            "tb",
+            "TracebackType",
+            "تریس‌بک"
+          ]
+        ],
+        "returns": null,
+        "description": "بعد از خروج از بلوک `with`، رویداد‌لوپ thread جداگانه را می‌بندد و ربات را متوقف می‌کند."
+      }
     ],
     "example": "# حالت Async (توصیه‌شده)\nfrom fast_rub import Client\n\nasync with Client(\"test\") as client:\n    me = await client.get_me()\n    print(me)\n    print(me.username)\n\n# حالت Sync (بدون await)\nfrom fast_rub import Client\n\nwith Client(\"test\") as client:\n    me = client.get_me()\n    print(me)\n    print(me.username)"
+  },
+  {
+    "id": "DryRun",
+    "title": "🧪 شبیه‌سازی ربات (Dry Run)",
+    "description": "ربات را بدون توکن واقعی و بدون اینترنت اجرا و تست کنید. با `Client(name, dry_run=True)` یک MockNetwork جای Network واقعی می‌نشیند و MockSession جای Session. آپدیت‌های ورودی را با متدهای receive_* شبیه‌سازی کنید — همه‌چیز (فیلترها، کانورسیشن، middleware، آمار) از خط لولهٔ واقعی رد می‌شود. همهٔ درخواست‌های Bot API در bot.mock.requests و پیام‌های ارسال‌شده در bot.mock.sent ثبت می‌شوند تا در تست‌ها assert بگیرید.",
+    "class_signature": "class MockNetwork (fast_rub.core.mock)",
+    "note": "هندلرها در receive_* به‌صورت همزمان (await) اجرا می‌شوند پس بلافاصله می‌توان assert گرفت. استفادهٔ سینک از receive_* فقط خارج از event loop کار می‌کند.",
+    "init_params": [
+      [
+        "client",
+        "Client",
+        "شیء کلاینت (خودکار ساخته می‌شود)"
+      ],
+      [
+        "token",
+        "str = \"\"",
+        "توکن ساختگی"
+      ],
+      [
+        "base_urls",
+        "list | None = None",
+        "آدرس‌های ساختگی"
+      ],
+      [
+        "logger",
+        "logging.Logger | None = None",
+        "لاگر اختصاصی"
+      ]
+    ],
+    "properties": [
+      {
+        "name": "requests",
+        "type": "list[dict]",
+        "description": "همهٔ درخواست‌های Bot API: {method, data, time}"
+      },
+      {
+        "name": "sent",
+        "type": "list[dict]",
+        "description": "پیام‌های ارسال‌شدهٔ ربات: {method, data, time}"
+      },
+      {
+        "name": "last_sent",
+        "type": "dict | None",
+        "description": "آخرین ارسال"
+      },
+      {
+        "name": "responses",
+        "type": "dict",
+        "description": "پاسخ دستی برای هر متود — جای پاسخ پیش‌فرض برمی‌گردد"
+      },
+      {
+        "name": "fail_methods",
+        "type": "set",
+        "description": "متودهایی که باید عمداً خطا بدهند (تست مدیریت خطا)"
+      },
+      {
+        "name": "chats",
+        "type": "dict",
+        "description": "چت‌های شبیه‌سازی‌شده برای getChat"
+      }
+    ],
+    "methods": [
+      {
+        "name": "receive_text",
+        "signature": "receive_text(chat_id=None, text=\"\", sender_id=None, message_id=None, reply_to_message_id=None, aux_data=None)",
+        "description": "شبیه‌سازی پیام متنی کاربر — فوراً از فیلترها/هندلرها/کانورسیشن رد می‌شود و Update برمی‌گرداند",
+        "params": [
+          [
+            "chat_id",
+            "str | None = None",
+            "چت آیدی (None = گوید تصادفی ۳۲ کاراکتری)"
+          ],
+          [
+            "text",
+            "str = \"\"",
+            "متن پیام"
+          ],
+          [
+            "sender_id",
+            "str | None = None",
+            "شناسهٔ گوید فرستنده"
+          ],
+          [
+            "message_id",
+            "str | None = None",
+            "آیدی پیام (None = تصادفی ۱۹ رقمی)"
+          ],
+          [
+            "reply_to_message_id",
+            "str | None = None",
+            "آیدی پیام ریپلای‌شده"
+          ],
+          [
+            "aux_data",
+            "dict | None = None",
+            "داده‌های اضافهٔ دکمه"
+          ]
+        ],
+        "returns": "Update"
+      },
+      {
+        "name": "receive_button",
+        "signature": "receive_button(chat_id=None, button_id=\"btn\", sender_id=None, message_id=None, text=None, aux_data=None)",
+        "description": "شبیه‌سازی کلیک روی دکمهٔ شیشه‌ای — UpdateButton برمی‌گرداند",
+        "params": [
+          [
+            "chat_id",
+            "str | None = None",
+            "چت آیدی"
+          ],
+          [
+            "button_id",
+            "str = \"btn\"",
+            "آیدی دکمهٔ کلیک‌شده"
+          ],
+          [
+            "sender_id",
+            "str | None = None",
+            "شناسهٔ گوید کلیک‌کننده"
+          ],
+          [
+            "message_id",
+            "str | None = None",
+            "آیدی پیام دارای دکمه"
+          ],
+          [
+            "text",
+            "str | None = None",
+            "متن دکمه"
+          ],
+          [
+            "aux_data",
+            "dict | None = None",
+            "داده‌های اضافهٔ aux_data"
+          ]
+        ],
+        "returns": "UpdateButton"
+      },
+      {
+        "name": "receive_edit",
+        "signature": "receive_edit(chat_id, message_id, new_text, sender_id=None)",
+        "description": "شبیه‌سازی ویرایش پیام — هندلرهای on_edit را فعال می‌کند",
+        "params": [
+          [
+            "chat_id",
+            "str",
+            "چت آیدی"
+          ],
+          [
+            "message_id",
+            "str",
+            "آیدی پیام در حال ویرایش"
+          ],
+          [
+            "new_text",
+            "str",
+            "متن جدید"
+          ],
+          [
+            "sender_id",
+            "str | None = None",
+            "شناسهٔ گوید فرستنده"
+          ]
+        ],
+        "returns": "Update"
+      },
+      {
+        "name": "receive_deleted",
+        "signature": "receive_deleted(chat_id, message_id)",
+        "description": "شبیه‌سازی حذف پیام — هندلرهای on_delete را فعال می‌کند",
+        "params": [
+          [
+            "chat_id",
+            "str",
+            "چت آیدی"
+          ],
+          [
+            "message_id",
+            "str",
+            "آیدی پیام حذف‌شده"
+          ]
+        ],
+        "returns": "Update"
+      },
+      {
+        "name": "receive_raw",
+        "signature": "receive_raw(update_data)",
+        "description": "تزریق آپدیت خام با ساختار Bot API — نوع آن (پیام/دکمه) خودکار تشخیص داده می‌شود",
+        "params": [
+          [
+            "update_data",
+            "dict",
+            "دیکشنری خام آپدیت"
+          ]
+        ],
+        "returns": "Update | UpdateButton"
+      },
+      {
+        "name": "enqueue_text",
+        "signature": "enqueue_text(**kwargs)",
+        "description": "افزودن پیام متنی به صف — با bot.run() و get_updates دریافت می‌شود (شبیه‌سازی حلقهٔ پولینگ)",
+        "params": [
+          [
+            "kwargs",
+            "dict",
+            "همان ورودی‌های receive_text"
+          ]
+        ],
+        "returns": "dict"
+      },
+      {
+        "name": "add_chat",
+        "signature": "add_chat(chat_id=None, title=None, chat_type=None)",
+        "description": "ثبت چت شبیه‌سازی‌شده — به‌طور خودکار با هر receive_* هم انجام می‌شود؛ برای پاسخ getChat",
+        "params": [
+          [
+            "chat_id",
+            "str | None = None",
+            "چت آیدی"
+          ],
+          [
+            "title",
+            "str | None = None",
+            "نام چت"
+          ],
+          [
+            "chat_type",
+            "\"User\" | \"Group\" | \"Channel\" | None = None",
+            "نوع چت (از پیشوند گوید حدس زده می‌شود)"
+          ]
+        ],
+        "returns": "dict"
+      },
+      {
+        "name": "get_sent",
+        "signature": "get_sent(method=None)",
+        "description": "ارسال‌های ثبت‌شدهٔ ربات — قابل فیلتر با نام متود برای assert",
+        "params": [
+          [
+            "method",
+            "str | None = None",
+            "مثل \"sendMessage\""
+          ]
+        ],
+        "returns": "list[dict]"
+      },
+      {
+        "name": "clear",
+        "signature": "clear()",
+        "description": "پاک‌سازی requests و sent و صف بین تست‌ها (چت‌ها حفظ می‌شوند)",
+        "params": [],
+        "returns": "None"
+      }
+    ],
+    "example": "import asyncio\nfrom fast_rub import Client, filters\n\nasync def main():\n    bot = Client(\"my_bot\", dry_run=True)  # بدون توکن و اینترنت\n\n    @bot.on_message(filters.text(\"سلام\"))\n    async def hello(msg):\n        await msg.reply(\"سلام! ⚡\")\n\n    await bot.start()\n\n    # شبیه‌سازی پیام کاربر\n    await bot.mock.receive_text(chat_id=\"b\" + \"a\" * 31, text=\"سلام\")\n\n    # بررسی ارسال‌های ربات\n    assert bot.mock.last_sent[\"data\"][\"text\"] == \"سلام! ⚡\"\n\n    # شبیه‌سازی خطا\n    bot.mock.fail_methods.add(\"getMe\")\n\n    await bot.close()\n\nasyncio.run(main())"
   }
 ]

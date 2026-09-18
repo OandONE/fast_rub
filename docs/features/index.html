@@ -1748,6 +1748,140 @@ with Client("test") as client:
     print(me.username)`
 },
 
+{
+    id: "DryRun",
+    title: "🧪 شبیه‌سازی ربات (Dry Run)",
+    description: "ربات را بدون توکن واقعی و بدون اینترنت اجرا و تست کنید. با `Client(name, dry_run=True)` یک MockNetwork جای Network واقعی می‌نشیند و MockSession جای Session. آپدیت‌های ورودی را با متدهای receive_* شبیه‌سازی کنید — همه‌چیز (فیلترها، کانورسیشن، middleware، آمار) از خط لولهٔ واقعی رد می‌شود. همهٔ درخواست‌های Bot API در bot.mock.requests و پیام‌های ارسال‌شده در bot.mock.sent ثبت می‌شوند تا در تست‌ها assert بگیرید.",
+    class_signature: "class MockNetwork (fast_rub.core.mock)",
+    note: "هندلرها در receive_* به‌صورت همزمان (await) اجرا می‌شوند پس بلافاصله می‌توان assert گرفت. استفادهٔ سینک از receive_* فقط خارج از event loop کار می‌کند.",
+    init_params: [
+        ["client", "Client", "شیء کلاینت (خودکار ساخته می‌شود)"],
+        ["token", "str = \"\"", "توکن ساختگی"],
+        ["base_urls", "list | None = None", "آدرس‌های ساختگی"],
+        ["logger", "logging.Logger | None = None", "لاگر اختصاصی"]
+    ],
+    properties: [
+        { name: "requests", type: "list[dict]", description: "همهٔ درخواست‌های Bot API: {method, data, time}" },
+        { name: "sent", type: "list[dict]", description: "پیام‌های ارسال‌شدهٔ ربات: {method, data, time}" },
+        { name: "last_sent", type: "dict | None", description: "آخرین ارسال" },
+        { name: "responses", type: "dict", description: "پاسخ دستی برای هر متود — جای پاسخ پیش‌فرض برمی‌گردد" },
+        { name: "fail_methods", type: "set", description: "متودهایی که باید عمداً خطا بدهند (تست مدیریت خطا)" },
+        { name: "chats", type: "dict", description: "چت‌های شبیه‌سازی‌شده برای getChat" }
+    ],
+    methods: [
+        {
+            name: "receive_text",
+            params: [
+                ["chat_id", "str | None = None"],
+                ["text", "str = \"\""],
+                ["sender_id", "str | None = None"],
+                ["message_id", "str | None = None"],
+                ["reply_to_message_id", "str | None = None"],
+                ["aux_data", "dict | None = None"]
+            ],
+            returns: "Update",
+            description: "شبیه‌سازی پیام متنی کاربر — فوراً از فیلترها/هندلرها/کانورسیشن رد می‌شود و Update برمی‌گرداند"
+        },
+        {
+            name: "receive_button",
+            params: [
+                ["chat_id", "str | None = None"],
+                ["button_id", "str = \"btn\""],
+                ["sender_id", "str | None = None"],
+                ["message_id", "str | None = None"],
+                ["text", "str | None = None"],
+                ["aux_data", "dict | None = None"]
+            ],
+            returns: "UpdateButton",
+            description: "شبیه‌سازی کلیک روی دکمهٔ شیشه‌ای — UpdateButton برمی‌گرداند"
+        },
+        {
+            name: "receive_edit",
+            params: [
+                ["chat_id", "str"],
+                ["message_id", "str"],
+                ["new_text", "str"],
+                ["sender_id", "str | None = None"]
+            ],
+            returns: "Update",
+            description: "شبیه‌سازی ویرایش پیام — هندلرهای on_edit را فعال می‌کند"
+        },
+        {
+            name: "receive_deleted",
+            params: [
+                ["chat_id", "str"],
+                ["message_id", "str"]
+            ],
+            returns: "Update",
+            description: "شبیه‌سازی حذف پیام — هندلرهای on_delete را فعال می‌کند"
+        },
+        {
+            name: "receive_raw",
+            params: [
+                ["update_data", "dict"]
+            ],
+            returns: "Update | UpdateButton",
+            description: "تزریق آپدیت خام با ساختار Bot API — نوع آن (پیام/دکمه) خودکار تشخیص داده می‌شود"
+        },
+        {
+            name: "enqueue_text",
+            params: [
+                ["kwargs", "dict"]
+            ],
+            returns: "dict",
+            description: "افزودن پیام متنی به صف — با bot.run() و get_updates دریافت می‌شود (شبیه‌سازی حلقهٔ پولینگ). enqueue_button و enqueue_raw و enqueue_deleted هم دارند"
+        },
+        {
+            name: "add_chat",
+            params: [
+                ["chat_id", "str | None = None"],
+                ["title", "str | None = None"],
+                ["chat_type", "\"User\" | \"Group\" | \"Channel\" | None = None"]
+            ],
+            returns: "dict",
+            description: "ثبت چت شبیه‌سازی‌شده — به‌طور خودکار با هر receive_* هم انجام می‌شود؛ برای پاسخ getChat"
+        },
+        {
+            name: "get_sent",
+            params: [
+                ["method", "str | None = None"]
+            ],
+            returns: "list[dict]",
+            description: "ارسال‌های ثبت‌شدهٔ ربات — قابل فیلتر با نام متود برای assert"
+        },
+        {
+            name: "clear",
+            params: [],
+            returns: "None",
+            description: "پاک‌سازی requests و sent و صف بین تست‌ها (چت‌ها حفظ می‌شوند)"
+        }
+    ],
+    example: `import asyncio
+from fast_rub import Client, filters
+
+async def main():
+    bot = Client("my_bot", dry_run=True)  # بدون توکن و اینترنت
+
+    @bot.on_message(filters.text("سلام"))
+    async def hello(msg):
+        await msg.reply("سلام! ⚡")
+
+    await bot.start()
+
+    # شبیه‌سازی پیام کاربر
+    await bot.mock.receive_text(chat_id="b" + "a" * 31, text="سلام")
+
+    # بررسی ارسال‌های ربات
+    assert bot.mock.last_sent["data"]["text"] == "سلام! ⚡"
+
+    # شبیه‌سازی خطا
+    bot.mock.fail_methods.add("getMe")
+
+    await bot.close()
+
+asyncio.run(main())`
+},
+
 ];
 
     function renderfeatures() {
