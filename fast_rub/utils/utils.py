@@ -225,15 +225,41 @@ class Utils:
         sleep: float = 1.0,
         timeout: float | None = None,
         error_message: str | None = None,
+        raise_on_error: bool = False,
+        logger: Any | None = None,
     ) -> bool:
-        """منتظر می‌ماند تا یک شرط برقرار شود، سپس action را اجرا می‌کند."""
+        """
+        منتظر می‌ماند تا یک شرط برقرار شود، سپس action را اجرا می‌کند.
+        
+        Args:
+            condition: تابعی که True/False برمی‌گرداند (sync یا async)
+            action: تابعی که وقتی شرط True شد اجرا می‌شود
+            sleep: فاصله بین هر بررسی (ثانیه)
+            timeout: حداکثر زمان انتظار (ثانیه). None = بی‌نهایت
+            error_message: پیام خطا در صورت timeout
+            raise_on_error: اگر True باشد، خطای condition را raise می‌کند
+            logger: اگر داده شود، خطاها لاگ می‌شوند
+        
+        Returns:
+            True اگر شرط برقرار شد و action اجرا شد
+            False اگر timeout شد
+        """
         start = time.time()
+        last_exception: Exception | None = None
         
         while True:
-            if timeout and time.time() - start > timeout:
+            # check timeout
+            if timeout is not None and time.time() - start > timeout:
                 if error_message:
-                    print(f"⏰ Timeout: {error_message}")
+                    msg = f"⏰ Timeout: {error_message}"
+                    if logger:
+                        logger.warning(msg)
+                    else:
+                        print(msg)
+                if raise_on_error and last_exception:
+                    raise last_exception
                 return False
+            
             try:
                 result = condition()
                 if asyncio.iscoroutine(result):
@@ -245,9 +271,15 @@ class Utils:
                         if asyncio.iscoroutine(act):
                             await act
                     return True
+                    
             except Exception as e:
-                pass
-            
+                last_exception = e
+                if raise_on_error:
+                    raise
+                if logger:
+                    logger.debug(f"when(): condition raised {type(e).__name__}: {e}")
+
+                
             await asyncio.sleep(sleep)
     
     @staticmethod
