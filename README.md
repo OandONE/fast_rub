@@ -61,6 +61,7 @@
 - 💻 **CLI** — ابزار خط فرمان (`fastrub new`, `fastrub run --reload`)
 - 🛡️ **AntiSpam** — سیستم ضد اسپم پیشرفته
 - 🚀 **Middleware, Cache, BackGround-Task** هم ابزاری که فکر بکنید
+- 🌐 **Dashboard HTML** پنل دیدن پیام های گروه/کاربر ها به صورت HTML و JSON به همراه ریست و ترتیب و ...
 - 📈 **قدرت انتخاب** انتخاب با شماست هوشمند یا دستی. تنظیم poll_interval, ssl_verify, keeper_messages, ...
 - 🪶 **فوق‌العاده سبک** — تست شده روی ۲۵۶MB RAM DDR1 با Alpine Linux
 - 🔒 **امنیت** — SQL پارامتری، sanitize خودکار، middleware امنیتی و همچنین Markdown/HTML Injection Protection

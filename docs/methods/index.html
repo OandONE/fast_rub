@@ -488,6 +488,8 @@
           ["max_retries_upload", "int | None", "حداکثر تلاش برای آپلود فایل"],
           ["max_retries_download", "int | None", "حداکثر تلاش برای دانلود فایل"],
           ["config", "<a href='../features/index.html#BotConfig'>BotConfig</a> | None", "شیء پیکربندی اضافی (BotConfig)"],
+          ["enable_stats", "bool = False", "آمار در پنل HTML"],
+          ["stats_db_path", "str | None = None", "دیتابیس آمار"]
         ],
         returns: null,
         example: `from fast_rub import Client\n\nbot = Client("my_session")\n# یا با توکن\nbot = Client("my_session", token="BGDISBC...")`
@@ -1394,6 +1396,23 @@
               ["task", "asyncio.Task", "تسک ساخته‌شده (می‌توانید cancel کنید)"],
           ],
           example: `async def periodic_cleanup():\n    while True:\n        await clean_old_logs()\n        await asyncio.sleep(3600)\n\nbot.add_background_task(periodic_cleanup)`
+      },
+      // ===== ۵۳. start_dashboard =====
+      {
+        id: "start_dashboard",
+        title: "راه‌اندازی داشبورد HTML آمار پیام‌ها",
+        signature: "async start_dashboard(host='127.0.0.1', port=433, backend='fastapi', path_prefix='/dashboard')",
+        desc: "داشبورد HTML برای نمایش آمار پیام‌های دریافت‌شده از گروه‌ها و چت‌ها را روی یک سرور وب راه‌اندازی می‌کند. این داشبورد شامل خلاصه آمار (کل پیام‌ها، پیام‌های امروز، چت‌های فعال، مدت فعالیت) و جدول رتبه‌بندی چت‌ها بر اساس تعداد پیام است. برای استفاده ابتدا باید در سازندهٔ Client مقدار enable_stats=True قرار دهید.",
+        params: [
+          ["host", "str = '127.0.0.1'", "آدرس گوش دادن سرور (پیش‌فرض: 127.0.0.1)"],
+          ["port", "int = 8080", "پورت سرور (پیش‌فرض: 8080)"],
+          ["backend", "'fastapi' | 'flask' = 'fastapi'", "کتابخانهٔ وب سرور (پیش‌فرض: fastapi). برای استفاده از fastapi/uvicorn دستور `pip install fastrub[fastapi]` و برای flask دستور `pip install fastrub[flask]` را اجرا کنید"],
+          ["path_prefix", "str = '/dashboard'", "پیشوند مسیر URL داشبورد (پیش‌فرض: /dashboard)"],
+        ],
+        returns: [
+          ["url", "str", "آدرس کامل داشبورد (مثلاً `http://127.0.0.1:8080/dashboard`) — در صورت اجرای قبلی، همان URL قبلی برگردانده می‌شود"],
+        ],
+        example: `from fast_rub import Client, filters\nfrom fast_rub.types import Update\n\nasync def main():\n    bot = Client(\n        "my_bot",\n        enable_stats=True,                                 # ✅ فعال‌سازی آمار\n        stats_db_path="messages_state-fastrub-my_bot.db",  # اختیاری (پیش‌فرض: messages_state-fastrub-{name}.db),                        # گرفتن خودکار نام گروه‌ها\n    )\n\n    @bot.on_message()\n    async def handler(msg: Update):\n        await msg.reply("دریافت شد ✅")\n\n    @bot.on_run()\n    async def on_run():\n        # راه‌اندازی داشبورد (FastAPI)\n        url = await bot.start_dashboard(\n            host="127.0.0.1",\n            port=8080,\n            backend="fastapi",\n            path_prefix="/dashboard",\n        )\n        bot.logger.info(f"✅ داشبورد: {url}")\n\n    await bot.run()\n\nasyncio.run(main())\n\n# یا با Flask:\n# await bot.start_dashboard(backend="flask", port=8080)\n\n# سپس در مرورگر باز کن:\n# http://127.0.0.1:8080/dashboard`
       },
       // ===== ۵۴. render =====
       {
