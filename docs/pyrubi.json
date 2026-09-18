@@ -1021,7 +1021,7 @@
   {
     "id": "PyrubiMessages",
     "title": "✉️ ارسال و مدیریت پیام",
-    "description": "همهٔ متودهای پیام از پارس مود فست‌روب (Markdown/HTML با TextParser مشترک) پشتیبانی می‌کنند و پارامتر `auto_delete` دارند.",
+    "description": "همهٔ متودهای پیام از پارس مود فست‌روب (Markdown/HTML با TextParser مشترک) و قالب `{{ placeholder }}` (پارامترهای `context` و `auto_escape`) پشتیبانی می‌کنند و پارامتر `auto_delete` دارند.",
     "methods": [
       {
         "name": "send_text",
@@ -2014,6 +2014,62 @@
         ]
       }
     ]
+  },
+  {
+    "id": "PyrubiTemplate",
+    "title": "🧩 قالب و محافظت تزریق (Template)",
+    "description": "در همهٔ متودهای ارسال متن/کپشن یوزربات می‌توانید با `context={{\"name\": \"علی\"}}` متغیرهای `{{ name }}` را در متن جایگزین کنید. مارک‌داونِ خودِ قالب فعال می‌ماند ولی مقادیر context به‌صورت متن خام درج می‌شوند (محافظت Injection) — یعنی کاربر نمی‌تواند با فرستادن `**bold**` یا `<b>` ظاهر پیام را خراب کند. با `auto_escape=False` مقادیر آزادانه پارس می‌شوند.",
+    "class_signature": "TemplateEngine (fast_rub.utils.template)",
+    "note": "پارامترهای context و auto_escape روی send_text، send_message، همهٔ ارسال‌های رسانه‌ای (کپشن)، edit_message، resend_message و reply/reply_* روی Message در دسترس‌اند. متود bot.render هم برای رندر جداگانه وجود دارد.",
+    "methods": [
+      {
+        "name": "context (پارامتر)",
+        "signature": "send_text(..., context={{\"name\": \"علی\"}})",
+        "description": "دیکشنری مقادیر جایگزین برای `{{ placeholder }}`ها",
+        "params": [
+          [
+            "context",
+            "dict[str, Any] | None = None",
+            "مقادیر قالب"
+          ]
+        ]
+      },
+      {
+        "name": "auto_escape (پارامتر)",
+        "signature": "send_text(..., auto_escape=True)",
+        "description": "True = مقادیر خنثی می‌شوند (پیشنهادی) — False = مقادیر هم مثل متن قالب پارس می‌شوند",
+        "params": [
+          [
+            "auto_escape",
+            "bool = True",
+            "محافظت تزریق"
+          ]
+        ]
+      },
+      {
+        "name": "render",
+        "signature": "text, metadata = bot.render(\"سلام {{name}}\", name=\"علی\")",
+        "description": "رندر جداگانهٔ قالب — خروجی: (متن نهایی, متادیتا)؛ بدون نیاز به start",
+        "params": [
+          [
+            "template",
+            "str",
+            "متن قالب"
+          ],
+          [
+            "auto_escape",
+            "bool = True",
+            "محافظت تزریق"
+          ],
+          [
+            "**kwargs",
+            "Any",
+            "مقادیر placeholderها"
+          ]
+        ]
+      }
+    ],
+    "example": "from fast_rub.pyrubi import Client\n\nbot = Client(\"my_userbot\")\n\n@bot.on_message()\nasync def handler(msg):\n    # مارک‌داونِ قالب فعال می‌ماند، ولی ورودی کاربر خنثی می‌شود\n    await msg.reply(\n        \"سلام **{{name}}**! پیامت: {{text}}\",\n        context={{\"name\": msg.author_title, \"text\": msg.text}},\n    )"
   },
   {
     "id": "PyrubiMedia",

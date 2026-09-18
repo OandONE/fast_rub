@@ -791,7 +791,6 @@ fast_rub
 | hotreload در یوزربات(پایروبی) |
 | antispam در یوزربات(پایروبی) |
 | filters بیشتر در یوزربات(پایروبی) |
-| template در یوزربات(پایروبی) |
 | Plunging Hub |
 | پل با تلگرام - FastTel |
 | افزودن دستورات CLI |

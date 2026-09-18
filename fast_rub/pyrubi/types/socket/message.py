@@ -201,13 +201,17 @@ class Message:
     async def reply(
         self,
         text: str,
-        parse_mode: Literal["Markdown", "HTML", None] = "Markdown"
+        parse_mode: Literal["Markdown", "HTML", None] = "Markdown",
+        context: dict[str, Any] | None = None,
+        auto_escape: bool = True
     ) -> dict:
         return await self.methods.sendText(
             objectGuid=self.object_guid,
             text=text,
             messageId=self.message_id,
-            parse_mode=parse_mode
+            parse_mode=parse_mode,
+            context=context,
+            auto_escape=auto_escape
         )
 
     
@@ -219,7 +223,9 @@ class Message:
         thumbInline: str | None = None,
         is_spoil: bool = False,
         show_progress_bar: bool = False,
-        parse_mode: Literal["Markdown", "HTML", None] = "Markdown"
+        parse_mode: Literal["Markdown", "HTML", None] = "Markdown",
+        context: dict[str, Any] | None = None,
+        auto_escape: bool = True
     ):
         return await self.methods.sendImage(
             self.object_guid,
@@ -230,7 +236,9 @@ class Message:
             thumbInline,
             file_name,
             show_progress_bar=show_progress_bar,
-            parse_mode=parse_mode
+            parse_mode=parse_mode,
+            context=context,
+            auto_escape=auto_escape
         )
     
     
@@ -242,7 +250,9 @@ class Message:
         thumbInline: str | None = None,
         is_spoil: bool = False,
         show_progress_bar: bool = False,
-        parse_mode: Literal["Markdown", "HTML", None] = "Markdown"
+        parse_mode: Literal["Markdown", "HTML", None] = "Markdown",
+        context: dict[str, Any] | None = None,
+        auto_escape: bool = True
     ):
         return await self.methods.sendVideo(
             self.object_guid,
@@ -253,7 +263,9 @@ class Message:
             thumbInline,
             file_name,
             show_progress_bar=show_progress_bar,
-            parse_mode=parse_mode
+            parse_mode=parse_mode,
+            context=context,
+            auto_escape=auto_escape
         )
 
     
@@ -264,7 +276,9 @@ class Message:
         file_name: str | None = None,
         thumbInline: str | None = None,
         show_progress_bar: bool = False,
-        parse_mode: Literal["Markdown", "HTML", None] = "Markdown"
+        parse_mode: Literal["Markdown", "HTML", None] = "Markdown",
+        context: dict[str, Any] | None = None,
+        auto_escape: bool = True
     ):
         return await self.methods.sendGif(
             self.object_guid,
@@ -274,7 +288,9 @@ class Message:
             thumbInline,
             file_name,
             show_progress_bar=show_progress_bar,
-            parse_mode=parse_mode
+            parse_mode=parse_mode,
+            context=context,
+            auto_escape=auto_escape
         )
 
     
@@ -285,7 +301,9 @@ class Message:
         file_name: str | None = None,
         performer: str | None = None,
         show_progress_bar: bool = False,
-        parse_mode: Literal["Markdown", "HTML", None] = "Markdown"
+        parse_mode: Literal["Markdown", "HTML", None] = "Markdown",
+        context: dict[str, Any] | None = None,
+        auto_escape: bool = True
     ):
         return await self.methods.sendMusic(
             self.object_guid,
@@ -295,7 +313,9 @@ class Message:
             file_name,
             performer,
             show_progress_bar=show_progress_bar,
-            parse_mode=parse_mode
+            parse_mode=parse_mode,
+            context=context,
+            auto_escape=auto_escape
         )
 
     
@@ -306,7 +326,9 @@ class Message:
         text: str | None = None,
         file_name: str | None = None,
         show_progress_bar: bool = False,
-        parse_mode: Literal["Markdown", "HTML", None] = "Markdown"
+        parse_mode: Literal["Markdown", "HTML", None] = "Markdown",
+        context: dict[str, Any] | None = None,
+        auto_escape: bool = True
     ):
         return await self.methods.sendVoice(
             self.object_guid,
@@ -316,7 +338,9 @@ class Message:
             text,
             file_name,
             show_progress_bar=show_progress_bar,
-            parse_mode=parse_mode
+            parse_mode=parse_mode,
+            context=context,
+            auto_escape=auto_escape
         )
     
     
@@ -331,7 +355,9 @@ class Message:
         file_name: str | None,
         thumbInline: str | None = None,
         show_progress_bar: bool = False,
-        parse_mode: Literal["Markdown", "HTML", None] = "Markdown"
+        parse_mode: Literal["Markdown", "HTML", None] = "Markdown",
+        context: dict[str, Any] | None = None,
+        auto_escape: bool = True
     ):
         return await self.methods.sendVideoMessage(
             self.object_guid,
@@ -341,7 +367,9 @@ class Message:
             thumbInline,
             file_name,
             show_progress_bar=show_progress_bar,
-            parse_mode=parse_mode
+            parse_mode=parse_mode,
+            context=context,
+            auto_escape=auto_escape
         )
 
     

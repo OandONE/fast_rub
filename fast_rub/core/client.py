@@ -1022,7 +1022,7 @@ class Client:
             _parse_mode = parse_mode
 
             if context:
-                _text, extra_metadata = self.render(_text, auto_escape=auto_escape, **context)
+                _text, extra_metadata = self.render(_text, parse_mode=_parse_mode, auto_escape=auto_escape, **context)
                 _meta_data = _meta_data + extra_metadata
                 if auto_escape:
                     _parse_mode = None
@@ -1405,7 +1405,7 @@ class Client:
             _parse_mode = parse_mode
 
             if context:
-                _text, extra_metadata = self.render(_text, auto_escape=auto_escape, **context)
+                _text, extra_metadata = self.render(_text, parse_mode=_parse_mode, auto_escape=auto_escape, **context)
                 _meta_data = _meta_data + extra_metadata
                 if auto_escape:
                     _parse_mode = None
@@ -1567,7 +1567,7 @@ class Client:
             _parse_mode = parse_mode
 
             if context and _text:
-                _text, extra_metadata = self.render(_text, auto_escape=auto_escape, **context)
+                _text, extra_metadata = self.render(_text, parse_mode=_parse_mode, auto_escape=auto_escape, **context)
                 _meta_data = _meta_data + extra_metadata
                 if auto_escape:
                     _parse_mode = None
@@ -2047,7 +2047,7 @@ class Client:
                 _meta_data = meta_data if meta_data is not None else []
                 _parse_mode = parse_mode
                 if context and _text:
-                    _text, extra_metadata = self.render(_text, auto_escape=auto_escape, **context)
+                    _text, extra_metadata = self.render(_text, parse_mode=_parse_mode, auto_escape=auto_escape, **context)
                     _meta_data = _meta_data + extra_metadata
                     if auto_escape:
                         _parse_mode = None

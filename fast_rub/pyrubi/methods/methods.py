@@ -22,6 +22,7 @@ from ...utils.cache import Cache
 from ..filters import Filter
 
 from ...utils.text_parser import TextParser
+from ...utils.template import TemplateEngine
 from ..types import Message
 
 from typing import (
@@ -132,6 +133,7 @@ class Methods:
             auth=sessionData["auth"],
             private_key=sessionData["private_key"]
         ) if sessionData else Cryption(auth=Utils.randomTmpSession())
+        self.template = TemplateEngine(None)
         self.network = Network(
             methods=self,
             max_retries=max_retries,
@@ -157,6 +159,39 @@ class Methods:
             data = TextParser.html(text)
             return data
         return [], text
+
+    async def _prepare_text(
+        self,
+        text: str,
+        parse_mode: Literal["Markdown", "HTML", None] = "Markdown",
+        context: dict[str, Any] | None = None,
+        auto_escape: bool = True,
+    ) -> tuple[list[dict[str, Any]], str]:
+        """آماده‌سازی متن پیام: قالب {{ }} با محافظت تزریق + پارس مود — خروجی (metadata, text)
+
+        با context، مارک‌داونِ خودِ قالب فعال می‌ماند ولی مقادیر context خنثی می‌شوند
+        (auto_escape=True) یا آزادانه پارس می‌شوند (auto_escape=False).
+        """
+        if self.main_parse_mode != "Null":
+            parse_mode = self.main_parse_mode
+        if context:
+            clean_text, metadata = self.template.render(
+                text,
+                parse_mode=parse_mode,
+                auto_escape=auto_escape,
+                **context
+            )
+            return metadata, clean_text
+        return await self._parse_mode_text(text, parse_mode)
+
+    def render(
+        self,
+        template: str,
+        auto_escape: bool = True,
+        **kwargs: Any
+    ) -> tuple[str, list[dict[str, Any]]]:
+        """رندر قالب {{ placeholder }} — خروجی (text, metadata)"""
+        return self.template.render(template, auto_escape=auto_escape, **kwargs)
 
     async def set_main_parse_mode(
         self,
@@ -1067,9 +1102,11 @@ class Methods:
         objectGuid: str,
         text: str,
         messageId: str | None,
-        parse_mode: Literal["Markdown", "HTML", None] = "Markdown"
+        parse_mode: Literal["Markdown", "HTML", None] = "Markdown",
+        context: dict[str, Any] | None = None,
+        auto_escape: bool = True
     ) -> dict:
-        metadata, text = await self._parse_mode_text(text, parse_mode)
+        metadata, text = await self._prepare_text(text, parse_mode, context, auto_escape)
 
         input = {
             "object_guid": objectGuid,
@@ -1114,7 +1151,9 @@ class Methods:
         firstName: str | None = None,
         lastName: str | None = None,
         phoneNumber: str | None = None,
-        userGuid: str | None = None
+        userGuid: str | None = None,
+        context: dict[str, Any] | None = None,
+        auto_escape: bool = True
     ) -> dict | None:
         if file:
             return await self.baseSendFileInline(
@@ -1128,7 +1167,9 @@ class Methods:
                 customThumbInline=customThumbInline,
                 time=time,
                 performer=performer,
-                parse_mode=parse_mode
+                parse_mode=parse_mode,
+                context=context,
+                auto_escape=auto_escape
             )
         elif (not question is None) and (not options is None):
             return await self.sendPoll(
@@ -1163,7 +1204,9 @@ class Methods:
                 objectGuid=objectGuid,
                 text=text,
                 messageId=mesageId,
-                parse_mode=parse_mode
+                parse_mode=parse_mode,
+                context=context,
+                auto_escape=auto_escape
             )
         raise ValueError("Please Write The Args !")
     
@@ -1181,7 +1224,9 @@ class Methods:
         time: int | None = None,
         performer: str | None = None,
         show_progress_bar: bool = False,
-        parse_mode: Literal["Markdown", "HTML", None] = "Markdown"
+        parse_mode: Literal["Markdown", "HTML", None] = "Markdown",
+        context: dict[str, Any] | None = None,
+        auto_escape: bool = True
     ) -> dict | None:
         upload_data = await self.network.upload(
             file=file,
@@ -1241,7 +1286,7 @@ class Methods:
 
 
             if text:
-                metadata, _text = await self._parse_mode_text(text, parse_mode)
+                metadata, _text = await self._prepare_text(text, parse_mode, context, auto_escape)
                 input["text"] = _text
                 if metadata:
                     input["metadata"] = {"meta_data_parts": metadata}
@@ -1261,7 +1306,9 @@ class Methods:
         text: str | None,
         fileName: str | None = None,
         show_progress_bar: bool = False,
-        parse_mode: Literal["Markdown", "HTML", None] = "Markdown"
+        parse_mode: Literal["Markdown", "HTML", None] = "Markdown",
+        context: dict[str, Any] | None = None,
+        auto_escape: bool = True
     ) -> dict | None:
         if fileName is None:
             fileName = Utils.format_file("File")
@@ -1273,7 +1320,9 @@ class Methods:
             fileName=fileName,
             type="File",
             show_progress_bar=show_progress_bar,
-            parse_mode=parse_mode
+            parse_mode=parse_mode,
+            context=context,
+            auto_escape=auto_escape
         )
     
     
@@ -1287,7 +1336,9 @@ class Methods:
         thumbInline: str | None,
         fileName: str | None = None,
         show_progress_bar: bool = False,
-        parse_mode: Literal["Markdown", "HTML", None] = "Markdown"
+        parse_mode: Literal["Markdown", "HTML", None] = "Markdown",
+        context: dict[str, Any] | None = None,
+        auto_escape: bool = True
     ) -> dict | None:
         if fileName is None:
             fileName = Utils.format_file("Image")
@@ -1301,7 +1352,9 @@ class Methods:
             isSpoil=isSpoil,
             customThumbInline=thumbInline,
             show_progress_bar=show_progress_bar,
-            parse_mode=parse_mode
+            parse_mode=parse_mode,
+            context=context,
+            auto_escape=auto_escape
         )
     
     
@@ -1315,7 +1368,9 @@ class Methods:
         thumbInline: str | None,
         fileName: str | None = None,
         show_progress_bar: bool = False,
-        parse_mode: Literal["Markdown", "HTML", None] = "Markdown"
+        parse_mode: Literal["Markdown", "HTML", None] = "Markdown",
+        context: dict[str, Any] | None = None,
+        auto_escape: bool = True
     ) -> dict | None:
         if fileName is None:
             fileName = Utils.format_file("Video")
@@ -1329,7 +1384,9 @@ class Methods:
             isSpoil=isSpoil,
             customThumbInline=thumbInline,
             show_progress_bar=show_progress_bar,
-            parse_mode=parse_mode
+            parse_mode=parse_mode,
+            context=context,
+            auto_escape=auto_escape
         )
     
     
@@ -1342,7 +1399,9 @@ class Methods:
         thumbInline: str | None,
         fileName: str | None = None,
         show_progress_bar: bool = False,
-        parse_mode: Literal["Markdown", "HTML", None] = "Markdown"
+        parse_mode: Literal["Markdown", "HTML", None] = "Markdown",
+        context: dict[str, Any] | None = None,
+        auto_escape: bool = True
     ) -> dict | None:
         if fileName is None:
             fileName = Utils.format_file("Video")
@@ -1355,7 +1414,9 @@ class Methods:
             type="VideoMessage",
             customThumbInline=thumbInline,
             show_progress_bar=show_progress_bar,
-            parse_mode=parse_mode
+            parse_mode=parse_mode,
+            context=context,
+            auto_escape=auto_escape
         )
     
     
@@ -1368,7 +1429,9 @@ class Methods:
         thumbInline: str | None,
         fileName: str | None = None,
         show_progress_bar: bool = False,
-        parse_mode: Literal["Markdown", "HTML", None] = "Markdown"
+        parse_mode: Literal["Markdown", "HTML", None] = "Markdown",
+        context: dict[str, Any] | None = None,
+        auto_escape: bool = True
     ) -> dict | None:
         if fileName is None:
             fileName = Utils.format_file("Gif")
@@ -1381,7 +1444,9 @@ class Methods:
             type="Gif",
             customThumbInline=thumbInline,
             show_progress_bar=show_progress_bar,
-            parse_mode=parse_mode
+            parse_mode=parse_mode,
+            context=context,
+            auto_escape=auto_escape
         )
     
     
@@ -1394,7 +1459,9 @@ class Methods:
         performer: str | None,
         fileName: str | None = None,
         show_progress_bar: bool = False,
-        parse_mode: Literal["Markdown", "HTML", None] = "Markdown"
+        parse_mode: Literal["Markdown", "HTML", None] = "Markdown",
+        context: dict[str, Any] | None = None,
+        auto_escape: bool = True
     ) -> dict | None:
         if fileName is None:
             fileName = Utils.format_file("Music")
@@ -1407,7 +1474,9 @@ class Methods:
             type="Music",
             performer=performer,
             show_progress_bar=show_progress_bar,
-            parse_mode=parse_mode
+            parse_mode=parse_mode,
+            context=context,
+            auto_escape=auto_escape
         )
     
     
@@ -1420,7 +1489,9 @@ class Methods:
         text: str | None = None,
         fileName: str | None = None,
         show_progress_bar: bool = False,
-        parse_mode: Literal["Markdown", "HTML", None] = "Markdown"
+        parse_mode: Literal["Markdown", "HTML", None] = "Markdown",
+        context: dict[str, Any] | None = None,
+        auto_escape: bool = True
     ) -> dict | None:
         if fileName is None:
             fileName = Utils.format_file("Voice")
@@ -1433,7 +1504,9 @@ class Methods:
             type="Voice",
             time=time,
             show_progress_bar=show_progress_bar,
-            parse_mode=parse_mode
+            parse_mode=parse_mode,
+            context=context,
+            auto_escape=auto_escape
         )
     
     
@@ -1469,9 +1542,11 @@ class Methods:
         objectGuid: str,
         text: str,
         messageId: str | None = None,
-        parse_mode: Literal["Markdown", "HTML", None] = "Markdown"
+        parse_mode: Literal["Markdown", "HTML", None] = "Markdown",
+        context: dict[str, Any] | None = None,
+        auto_escape: bool = True
     ) -> dict:
-        metadata, _text = await self._parse_mode_text(text, parse_mode)
+        metadata, _text = await self._prepare_text(text, parse_mode, context, auto_escape)
         data = {
             "object_guid": objectGuid,
             "text": _text,
@@ -1515,7 +1590,9 @@ class Methods:
         replyToMessageId: str | None = None,
         text: str | None = None,
         fileInline: dict | None = None,
-        parse_mode: Literal["Markdown", "HTML", None] = "Markdown"
+        parse_mode: Literal["Markdown", "HTML", None] = "Markdown",
+        context: dict[str, Any] | None = None,
+        auto_escape: bool = True
     ) -> dict:
         messageData = {}
         if not fileInline:
@@ -1523,11 +1600,11 @@ class Methods:
                 messageData: dict = await self.getMessagesById(objectGuid=objectGuid, messageIds=[messageId])
             else:
                 raise ValueError("You Shoud Write The 'fileInline' or (objectGuid, messageId) Args")
-        
+
         if not text and not messageData:
             raise ValueError("You Shoud Write The 'text' or (objectGuid, messageId) Args")
         text_: str = text or messageData["messages"][0]["text"]
-        metadata, _text = await self._parse_mode_text(text_, parse_mode)
+        metadata, _text = await self._prepare_text(text_, parse_mode, context, auto_escape)
         input = {
             "is_mute": False,
             "object_guid": toObjectGuid,

@@ -1,3 +1,4 @@
+import logging
 import re
 import random
 import string
@@ -23,17 +24,18 @@ class FileOpen:
 
 class TemplateEngine:
     PLACEHOLDER_PATTERN = re.compile(r"\{\{\s*(\w+)\s*\}\}")
-    
+
     def __init__(
         self,
-        client: "Client"
+        client: "Client | None" = None
     ):
+        # client اختیاری است — یوزربات (پایروبی) بدون Client فست‌روب هم از آن استفاده می‌کند
         self.client = client
-    
+
     def render(
         self,
         template: str,
-        parse_mode: str = "Markdown",
+        parse_mode: str | None = "Markdown",
         auto_escape: bool = True,
         **kwargs: Any
     ) -> tuple[str, list[dict[str, Any]]]:
@@ -49,9 +51,13 @@ class TemplateEngine:
             metadata, clean_text = self._parse(template, parse_mode)
             return clean_text, metadata
 
+        config = getattr(self.client, "config", None) if self.client is not None else None
+        config_auto_escape = bool(getattr(config, "auto_escape", True)) if config is not None else True
+        logger = getattr(self.client, "logger", None) if self.client is not None else None
+
         # auto_escape=False
-        if not auto_escape or not self.client.config.auto_escape:
-            self.client.logger.warning(
+        if not auto_escape or not config_auto_escape:
+            (logger or logging.getLogger("fast_rub")).warning(
                 "⚠️ auto_escape=False — ورودی کاربر بدون escape رندر میشه."
             )
             result = template
@@ -128,7 +134,7 @@ class TemplateEngine:
 
         return final_text, metadata
 
-    def _parse(self, text: str, parse_mode: str) -> tuple[list[dict[str, Any]], str]:
+    def _parse(self, text: str, parse_mode: str | None) -> tuple[list[dict[str, Any]], str]:
         from .text_parser import TextParser
         if parse_mode == "HTML":
             return TextParser.html(text)
