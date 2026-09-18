@@ -965,7 +965,7 @@ class AdminPanel:
             except Exception:
                 pass
         try:
-            import psutil
+            import psutil # pyright: ignore[reportMissingModuleSource]
 
             process = psutil.Process()
             data["psutil"] = True

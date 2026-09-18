@@ -768,6 +768,8 @@ fast_rub
 - [مدل ها مینیفای](/docs/models.min.json)
 - [قابلیت ها](/docs/features.json)
 - [قابلیت ها مینیفای](/docs/features.min.json)
+- [یوزربات(پایروبی)](/docs/pyrubi.json)
+- [یوزربات(پایروبی) مینیفای](/docs/pyrubi.min.json)
 
 [⬆ بازگشت به فهرست](#-فهرست-مطالب)
 
@@ -791,7 +793,6 @@ fast_rub
 | filters بیشتر در یوزربات(پایروبی) |
 | template در یوزربات(پایروبی) |
 | Plunging Hub |
-| داکیومنت یوزربات(پایروبی) |
 | پل با تلگرام - FastTel |
 | افزودن دستورات CLI |
 

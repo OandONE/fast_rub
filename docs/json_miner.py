@@ -3,7 +3,8 @@ import json
 files = [
     "methods",
     "models",
-    "features"
+    "features",
+    "pyrubi"
 ]
 
 def create_min(name_file: str):
