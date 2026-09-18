@@ -9,6 +9,7 @@ from datetime import datetime
 from typing import TYPE_CHECKING, Any
 
 from ..db.database import DataBase
+from ..utils import Utils
 
 if TYPE_CHECKING:
     from .client import Client
@@ -54,7 +55,7 @@ class StatsTracker:
         await self._db.start(
             tables={
                 "chat_stats": {
-                    "chat_id": "TEXT PRIMARY KEY",
+                    "chat_id": "TEXT",
                     "title": "TEXT",
                     "chat_type": "TEXT DEFAULT 'unknown'",
                     "count": "INTEGER DEFAULT 0",
@@ -139,7 +140,7 @@ class StatsTracker:
                 or getattr(chat, "first_name", None)
                 or chat_id
             )
-            chat_type = getattr(chat, "type", None) or "unknown"
+            chat_type = Utils.get_chat_id_type(chat.chat_id)
             await self._db.update(
                 "chat_stats",
                 {"title": title, "chat_type": chat_type},

@@ -168,6 +168,12 @@ class Client:
     
     config: BotConfig | None
         کانفیگ تنظیمات اختصاصی ربات
+    
+    enable_stats: bool = False
+        آمار در پنل HTML
+    
+    stats_db_path: str | None = None
+        دیتابیس آمار
     """
     # ═══════════════════════════════════
     # region 🚀 Start & Stop | شروع و توقف
@@ -208,7 +214,6 @@ class Client:
         config: BotConfig | None = None,
         enable_stats: bool = False,
         stats_db_path: str | None = None,
-        stats_fetch_chat_info: bool = True,
     ):
         """Client for login and setting robot / کلاینت برای لوگین و تنظیمات ربات"""
         self.name_session = name_session
@@ -264,7 +269,6 @@ class Client:
         self.config = config or BotConfig()
         self.enable_stats = enable_stats
         self.stats_db_path = stats_db_path
-        self.stats_fetch_chat_info = stats_fetch_chat_info
         self.stats: StatsTracker | None = None
         self._dashboard: "Dashboard | None" = None
         self._dashboard_task: asyncio.Task | None = None
@@ -2775,11 +2779,17 @@ class Client:
     async def start_dashboard(
         self,
         host: str = "127.0.0.1",
-        port: int = 433,
+        port: int = 8080,
         backend: Literal["fastapi", "flask"] = "fastapi",
         path_prefix: str = "/dashboard",
     ) -> str:
-        """راه‌اندازی داشبورد HTML آمار پیام‌ها."""
+        """راه‌اندازی داشبورد HTML آمار پیام‌ها
+
+داشبورد:
+    http://{host}:{port}/dashboard
+جیسون خام:
+    http://{host}:{port}/dashboard/api/stats?sort=count
+    sort: count | today | title = count"""
         if not self.enable_stats or self.stats is None:
             raise RuntimeError(
                 "برای استفاده از داشبورد، ابتدا `enable_stats=True` را در Client قرار دهید."

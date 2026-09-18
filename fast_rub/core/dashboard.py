@@ -139,6 +139,8 @@ HTML_PAGE = r"""<!DOCTYPE html>
 
 <script>
 const $=id=>document.getElementById(id);
+const BASE = location.pathname.replace(/\/+$/, '');
+const API  = BASE + '/api';
 
 function formatNumber(n){return new Intl.NumberFormat('fa-IR').format(n)}
 function formatUptime(s){
@@ -187,7 +189,7 @@ async function loadData(){
     const sortBy=$('sortBy').value;
     const params=new URLSearchParams({sort:sortBy});
     if(search)params.set('search',search);
-    const r=await fetch('api/stats?'+params.toString());
+    const r=await fetch(API + '/stats?' + params.toString());
     if(!r.ok)throw new Error('HTTP '+r.status);
     const data=await r.json();
     $('totalMessages').textContent=formatNumber(data.summary.total_messages);
@@ -206,7 +208,7 @@ async function loadData(){
 async function resetStats(){
   if(!confirm('آیا از پاک کردن تمام آمار مطمئن هستید؟'))return;
   try{
-    await fetch('api/reset',{method:'POST'});
+    await fetch(API + '/reset',{method:'POST'});
     loadData();
   }catch(e){alert('خطا در ریست کردن آمار');}
 }
@@ -238,7 +240,7 @@ class Dashboard:
     host : str
         آدرس گوش دادن (پیش‌فرض: 127.0.0.1)
     port : int
-        پورت (پیش‌فرض: 433)
+        پورت (پیش‌فرض: 8080)
     backend : Literal["fastapi", "flask"]
         بک‌اند سرور (پیش‌فرض: fastapi)
     path_prefix : str
@@ -251,7 +253,7 @@ class Dashboard:
         self,
         client: "Client",
         host: str = "127.0.0.1",
-        port: int = 433,
+        port: int = 8080,
         backend: Literal["fastapi", "flask"] = "fastapi",
         path_prefix: str = "/dashboard",
         logger: logging.Logger | None = None,
@@ -275,9 +277,14 @@ class Dashboard:
 
     def _create_fastapi_app(self):
         """ساخت اپلیکیشن FastAPI"""
-        from fastapi import FastAPI
-        from fastapi.responses import HTMLResponse, JSONResponse
-
+        try:
+            from fastapi import FastAPI
+            from fastapi.responses import HTMLResponse, JSONResponse
+        except ImportError:
+            raise ImportError(
+                "FastAPI not installed !",
+                "install: pip install fast_rub[fastapi]"
+            )
         app = FastAPI(title="FastRub Dashboard")
 
         @app.get(self.path_prefix, response_class=HTMLResponse)
@@ -309,7 +316,13 @@ class Dashboard:
 
     def _create_flask_app(self):
         """ساخت اپلیکیشن Flask"""
-        from flask import Flask, jsonify, request
+        try:
+            from flask import Flask, jsonify, request
+        except ImportError:
+            raise ImportError(
+                "Flask not installed !",
+                "install: pip install fast_rub[flask]"
+            )
 
         app = Flask(__name__)
 
