@@ -22,8 +22,10 @@ from .background import BackgroundManager
 from .hotreload import HotReload
 from .helpers import _send_helper
 from .signals import SignalManager
+from .stats import StatsTracker
 from .scheduler import Scheduler
 from .config import BotConfig
+from .dashboard import Dashboard
 from ..button import KeyPad
 from ..utils.filters import Filter
 from ..utils.inline_filters import InlineFilter
@@ -204,6 +206,9 @@ class Client:
         max_retries_upload: int | None = None,
         max_retries_download: int | None = None,
         config: BotConfig | None = None,
+        enable_stats: bool = False,
+        stats_db_path: str | None = None,
+        stats_fetch_chat_info: bool = True,
     ):
         """Client for login and setting robot / کلاینت برای لوگین و تنظیمات ربات"""
         self.name_session = name_session
@@ -257,6 +262,12 @@ class Client:
         self._log_handlers = []
         self._is_started = False
         self.config = config or BotConfig()
+        self.enable_stats = enable_stats
+        self.stats_db_path = stats_db_path
+        self.stats_fetch_chat_info = stats_fetch_chat_info
+        self.stats: StatsTracker | None = None
+        self._dashboard: "Dashboard | None" = None
+        self._dashboard_task: asyncio.Task | None = None
         if logger:
             self.logger = logger
         else:
@@ -345,6 +356,14 @@ class Client:
         else:
             self.cache = None
         self._is_live = False
+        if self.enable_stats:
+            db_path = self.stats_db_path
+            if db_path is None:
+                db_path = f"messages_state-fastrub-{self.name_session}.db"
+            self.stats = StatsTracker(db_path=db_path, logger=self.logger)
+            self.stats.attach_client(self)
+            await self.stats.start()
+            self.logger.info(f"📊 Stats enabled (DB: {db_path})")
         def _log_callback(log_entry):
             for handler in self._log_handlers:
                 try:
@@ -465,6 +484,23 @@ class Client:
         """خاموش کردن گرفتن آپدیت ها / off the getting updates"""
         self.logger.info("ربات متوقف شد !")
         self._running = False
+        
+        if self._dashboard_task is not None:
+            self._dashboard_task.cancel()
+            try:
+                await self._dashboard_task
+            except (asyncio.CancelledError, Exception):
+                pass
+            self._dashboard_task = None
+            if self._dashboard:
+                await self._dashboard.stop()
+
+        if getattr(self, "stats", None) is not None:
+            try:
+                await self.stats.close() # pyright: ignore[reportOptionalMemberAccess]
+            except Exception:
+                pass
+            self.stats = None
         if type_stop == "all":
             await self.network.close()
             del self.network
@@ -2460,6 +2496,8 @@ class Client:
                             continue
                         self._schedule_handler(handler, update)
                     if not is_edited and not is_deleted:
+                        if self.enable_stats and self.stats:
+                            await self.stats.track(update)
                         if self.keeper_messages_ram:
                             self.messages.append(update)
                         if self.keeper_messages_db:
@@ -2506,6 +2544,8 @@ class Client:
                     continue
                 self._schedule_handler(handler, update)
             if not is_edited and not is_deleted:
+                if self.enable_stats and self.stats:
+                    await self.stats.track(update)
                 if self.keeper_messages_ram:
                     self.messages.append(update)
                 if self.keeper_messages_db:
@@ -2732,6 +2772,39 @@ class Client:
 در صورتی که میخواهید از این حالت خارج شود و از ورودی های متود ها پیروی کند مقدار آن را در متود ست مین پارس مود برابر 'Null' کنید"""
         self.main_parse_mode = parse_mode
 
+    async def start_dashboard(
+        self,
+        host: str = "127.0.0.1",
+        port: int = 433,
+        backend: Literal["fastapi", "flask"] = "fastapi",
+        path_prefix: str = "/dashboard",
+    ) -> str:
+        """راه‌اندازی داشبورد HTML آمار پیام‌ها."""
+        if not self.enable_stats or self.stats is None:
+            raise RuntimeError(
+                "برای استفاده از داشبورد، ابتدا `enable_stats=True` را در Client قرار دهید."
+            )
+        if self._dashboard_task is not None:
+            self.logger.warning("داشبورد قبلاً اجرا شده است.")
+            return f"http://{host}:{port}{path_prefix}"
+
+        from .dashboard import Dashboard
+
+        self._dashboard = Dashboard(
+            client=self,
+            host=host,
+            port=port,
+            backend=backend,
+            path_prefix=path_prefix,
+            logger=self.logger,
+        )
+        self._dashboard_task = asyncio.create_task(
+            self._dashboard.start(),
+            name="fastrub_dashboard",
+        )
+        url = f"http://{host}:{port}{path_prefix}"
+        self.logger.info(f"داشبورد آمار در حال اجرا: {url}")
+        return url
     
     async def version_botapi(self) -> str:
         """getting version botapi / گرفتن نسخه بات ای پی آی"""
