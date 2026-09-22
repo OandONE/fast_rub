@@ -69,6 +69,7 @@
 - 🚀 **Middleware, Cache, BackGround-Task** هم ابزاری که فکر بکنید
 - 📊 **Dashboard HTML** — پنل وب آماده برای آمار پیام‌ها با رتبه‌بندی، جستجو، خروجی JSON و پشتیبانی FastAPI/Flask
 - 📈 **قدرت انتخاب** انتخاب با شماست هوشمند یا دستی. تنظیم poll_interval, ssl_verify, keeper_messages, ...
+- 📌 **تایپ‌هینت کامل** — تایپ‌هینت قوی و سراسری روی تمام متودها؛ بدون حذف یا مخدوش‌کردن امضای (signature) متودهای کلاس‌هایی مثل `Message` و غیره، همراه با پشتیبانی کامل از Autocomplete در IDE
 - 🪶 **فوق‌العاده سبک** — تست شده روی ۲۵۶MB RAM DDR1 با Alpine Linux
 - 🔒 **امنیت** — SQL پارامتری، sanitize خودکار، middleware امنیتی و همچنین Markdown/HTML Injection Protection
 - ⚙️ **سادگی** — بدون نیاز به یادگیری یا درگیری با قسمت هایی از فریمورک که نیاز به استفاده از آن ندارید
