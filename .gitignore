@@ -26,3 +26,4 @@ requirements.txt
 v7.txt
 _*.jpg
 _*.png
+snapshots/

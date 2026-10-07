@@ -4,11 +4,13 @@ from ...utils.template import TemplateEngine
 
 import aiofiles
 import json
+import os
 
 from ...core.async_sync import *
 from ...utils.cache import Cache
 from ..filters import Filter
 from ..methods import Methods
+from .plugins import PluginManager
 from collections.abc import Callable
 
 class Client:
@@ -44,6 +46,7 @@ class Client:
         self.cache = cache
         self.max_retries_upload = max_retries_upload
         self.max_retries_download = max_retries_download
+        self._loaded_plugins = []
         if run_start:
             asyncio.run(self.start())
 
@@ -1190,7 +1193,27 @@ class Client:
     
     async def play_voice(self, object_guid: str, file: str) -> None:
         await self.methods.playVoice(objectGuid=object_guid, file=file)
+
+    def load_plugins(self, folder: str = "plugins") -> int:
+        """لود کردن همه پلاگین‌ها از پوشه."""
+        if os.path.exists(folder):
+            for f in os.listdir(folder):
+                if f.endswith(".py") and not f.startswith("_"):
+                    name = f[:-3]
+                    if name not in self._loaded_plugins:
+                        self._loaded_plugins.append(name)
+        return PluginManager.load(self, folder,
+            # self.logger
+        )
     
+    def load_plugin(self, filepath: str) -> bool:
+        """لود یه پلاگین خاص."""
+        if os.path.exists(filepath):
+            self._loaded_plugins.append(filepath)
+        return PluginManager.load_single(self, filepath,
+            # self.logger
+        )
+
     def render(
         self,
         template: str,

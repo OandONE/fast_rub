@@ -783,7 +783,6 @@ fast_rub
 | پشتیبانی از logger در یوزربات(پایروبی) |
 | wait_manager & defult_wait در یوزربات(پایروبی) |
 | config در یوزربات(پایروبی) |
-| پلاگین پذیری در یوزربات(پایروبی) |
 | DataForm & Classic Conversion در یوزربات(پایروبی) |
 | پشتیبانی از middleware در یوزربات(پایروبی) |
 | دکوراتور های before_send, after_send - before_run, after_run در یوزربات(پایروبی) |
