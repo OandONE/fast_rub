@@ -791,6 +791,8 @@ fast_rub
 | hotreload در یوزربات(پایروبی) |
 | antispam در یوزربات(پایروبی) |
 | filters بیشتر در یوزربات(پایروبی) |
+| ادغام client.py یوزربات و methods.py یوزربات به client.py یوزربات(پایروبی) |
+| Auto Failover گرفتن پیام ها |
 | Plunging Hub |
 | پل با تلگرام - FastTel |
 | افزودن دستورات CLI |

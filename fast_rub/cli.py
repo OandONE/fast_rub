@@ -99,12 +99,20 @@ def cmd_run(args):
         print("❌ فایل main.py پیدا نشد. مطمئن شو توی پوشه پروژه هستی.")
         return
 
+    env = os.environ.copy()
+    if args.poll_interval is not None:
+        if args.poll_interval < 0:
+            print("❌ مقدار poll_interval نمی‌تواند منفی باشد.")
+            return
+        env["FASTRUB_POLL_INTERVAL"] = str(args.poll_interval)
+        print(f"⚙️  poll_interval = {args.poll_interval} ثانیه")
+
     cmd = [sys.executable, "main.py"]
     if args.reload:
         cmd.append("--reload")
 
     try:
-        subprocess.run(cmd)
+        subprocess.run(cmd, env=env)
     except KeyboardInterrupt:
         pass
 
@@ -152,6 +160,14 @@ def main():
     # run
     parser_run = subparsers.add_parser("run", help="اجرای ربات")
     parser_run.add_argument("--reload", action="store_true", help="فعال‌سازی Hot Reload")
+    parser_run.add_argument(
+        "-poll_interval", "-pi",
+        dest="poll_interval",
+        type=float,
+        default=None,
+        metavar="SECONDS",
+        help="فاصلهٔ انتظار بین پولینگ‌ها (مثال: -pi 0.1)"
+    )
     parser_run.set_defaults(func=cmd_run)
     
     # version

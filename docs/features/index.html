@@ -1227,6 +1227,7 @@ await bot.run()`
             name: "run",
             params: [
                 ["--reload", "flag", "فعال‌سازی Hot Reload (بازنشانی خودکار با ذخیرهٔ فایل‌ها)"],
+                ["--poll_interval", "flag", "فاصلهٔ انتظار بین پولینگ‌ها (مثال: -pi 0.1)"],
             ],
             returns: "—",
             description: "ربات را از فایل `main.py` اجرا می‌کند. باید در پوشهٔ پروژه باشید.",
@@ -1264,9 +1265,12 @@ $ fastrub run
 # اجرا با Hot Reload
 $ fastrub run --reload
 
+# اجرا با poll_interval دلخواه
+$ fastrub run -poll_interval 0.1
+
 # نمایش نسخه
 $ fastrub version
-# Fast Rub v5.2.21
+# Fast Rub v6.11.2
 
 # باز کردن مستندات
 $ fastrub docs`

@@ -925,49 +925,54 @@
     "example": "from fast_rub import Client, SnapshotManager\n\nbot = Client(\"my_bot\")\nsnapshots = SnapshotManager(bot)\n\n# ذخیره\npath = await snapshots.save(\"before_update\")\nprint(f\"✅ ذخیره شد: {path}\")\n\n# لیست\nall_snaps = await snapshots.list_all()\nprint(all_snaps)  # ['before_update']\n\n# بازیابی (load فقط می‌خونه، اعمال نمی‌کنه)\ndata = await snapshots.load(\"before_update\")\nprint(data[\"client\"][\"parse_mode\"])\n\n# اعمال روی Client\nok = await snapshots.restore(\"before_update\")\nprint(f\"✅ بازیابی شد: {ok}\")\n\n# حذف\nawait snapshots.delete(\"before_update\")\n\nawait bot.run()"
   },
   {
-    "id": "CLI",
-    "title": "💻 خط فرمان (CLI)",
-    "description": "Fast Rub یک CLI داخلی دارد که کارهای رایج را سریع‌تر می‌کند: ساخت پروژهٔ جدید با ساختار آماده، اجرای ربات، فعال‌سازی Hot Reload، نمایش نسخه، و باز کردن مستندات.",
-    "class_signature": "fastrub <command> [options]",
-    "methods": [
-      {
-        "name": "new",
-        "params": [
-          [
-            "name",
-            "str",
-            "اسم پروژه"
-          ]
-        ],
-        "returns": "—",
-        "description": "یک پروژهٔ جدید با ساختار استاندارد می‌سازد. شامل `main.py`، `config.py`، پوشه‌های `plugins/`، `snapshots/`، `backups/`، `logs/`، `README.md`، `.gitignore` و یک پلاگین نمونه."
-      },
-      {
-        "name": "run",
-        "params": [
-          [
-            "--reload",
-            "flag",
-            "فعال‌سازی Hot Reload (بازنشانی خودکار با ذخیرهٔ فایل‌ها)"
-          ]
-        ],
-        "returns": "—",
-        "description": "ربات را از فایل `main.py` اجرا می‌کند. باید در پوشهٔ پروژه باشید."
-      },
-      {
-        "name": "version",
-        "params": [],
-        "returns": "—",
-        "description": "نسخهٔ نصب‌شدهٔ Fast Rub را نمایش می‌دهد."
-      },
-      {
-        "name": "docs",
-        "params": [],
-        "returns": "—",
-        "description": "مستندات آنلاین Fast Rub را در مرورگر باز می‌کند."
-      }
-    ],
-    "example": "# ساخت پروژهٔ جدید\n$ fastrub new my_bot\n# خروجی:\n# ✅ پروژه 'my_bot' با موفقیت ساخته شد!\n#    📁 /home/user/my_bot\n#    📝 /home/user/my_bot/main.py\n#    🔌 /home/user/my_bot/plugins\n#    ⚙️ /home/user/my_bot/config.py\n#\n# 🚀 برای شروع:\n#    cd my_bot\n#    fastrub run\n\n# اجرای ربات\n$ cd my_bot\n$ fastrub run\n\n# اجرا با Hot Reload\n$ fastrub run --reload\n\n# نمایش نسخه\n$ fastrub version\n# Fast Rub v5.2.21\n\n# باز کردن مستندات\n$ fastrub docs"
+      "id": "CLI",
+      "title": "💻 خط فرمان (CLI)",
+      "description": "Fast Rub یک CLI داخلی دارد که کارهای رایج را سریع‌تر می‌کند: ساخت پروژهٔ جدید با ساختار آماده، اجرای ربات، فعال‌سازی Hot Reload، نمایش نسخه، و باز کردن مستندات.",
+      "class_signature": "fastrub <command> [options]",
+      "methods": [
+          {
+              "name": "new",
+              "params": [
+                  [
+                      "name",
+                      "str",
+                      "اسم پروژه"
+                  ]
+              ],
+              "returns": "—",
+              "description": "یک پروژهٔ جدید با ساختار استاندارد می‌سازد. شامل `main.py`، `config.py`، پوشه‌های `plugins/`، `snapshots/`، `backups/`، `logs/`، `README.md`، `.gitignore` و یک پلاگین نمونه."
+          },
+          {
+              "name": "run",
+              "params": [
+                  [
+                      "--reload",
+                      "flag",
+                      "فعال‌سازی Hot Reload (بازنشانی خودکار با ذخیرهٔ فایل‌ها)"
+                  ],
+                  [
+                      "--poll_interval",
+                      "flag",
+                      "فاصلهٔ انتظار بین پولینگ‌ها (مثال: -pi 0.1)"
+                  ]
+              ],
+              "returns": "—",
+              "description": "ربات را از فایل `main.py` اجرا می‌کند. باید در پوشهٔ پروژه باشید."
+          },
+          {
+              "name": "version",
+              "params": [],
+              "returns": "—",
+              "description": "نسخهٔ نصب‌شدهٔ Fast Rub را نمایش می‌دهد."
+          },
+          {
+              "name": "docs",
+              "params": [],
+              "returns": "—",
+              "description": "مستندات آنلاین Fast Rub را در مرورگر باز می‌کند."
+          }
+      ],
+      "example": "# ساخت پروژهٔ جدید\n$ fastrub new my_bot\n# خروجی:\n# ✅ پروژه 'my_bot' با موفقیت ساخته شد!\n#    📁 /home/user/my_bot\n#    📝 /home/user/my_bot/main.py\n#    🔌 /home/user/my_bot/plugins\n#    ⚙️ /home/user/my_bot/config.py\n#\n# 🚀 برای شروع:\n#    cd my_bot\n#    fastrub run\n\n# اجرای ربات\n$ cd my_bot\n$ fastrub run\n\n# اجرا با Hot Reload\n$ fastrub run --reload\n\n# اجرا با poll_interval دلخواه\n$ fastrub run -poll_interval 0.1\n\n# نمایش نسخه\n$ fastrub version\n# Fast Rub v6.11.2\n\n# باز کردن مستندات\n$ fastrub docs"
   },
   {
     "id": "ORM",

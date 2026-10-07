@@ -490,6 +490,18 @@ class Client:
 
             if poll_interval != 0.0:
                 self.poll_interval = poll_interval
+            else:
+                env_pi = os.environ.get("FASTRUB_POLL_INTERVAL")
+                if env_pi:
+                    try:
+                        self.poll_interval = float(env_pi)
+                        self.logger.info(
+                            f"poll_interval از متغیر محیطی تنظیم شد: {self.poll_interval}"
+                        )
+                    except ValueError:
+                        self.logger.warning(
+                            f"مقدار نامعتبر FASTRUB_POLL_INTERVAL: {env_pi!r}"
+                        )
 
             self._running = True
 
