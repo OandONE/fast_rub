@@ -635,7 +635,7 @@ asyncio.create_task(reset_hourly(bot.wait_manager))`
 bot = Client("my_bot")
 await bot.start()
 
-# ── ساخت مکالمه ──
+# ساخت مکالمه
 register = Conversation(name="register")
 
 @register.entry(commands=["/register"])
@@ -898,12 +898,12 @@ await bot.run(reload=True)
 bot = Client("my_bot")
 scheduler = Scheduler()
 
-# ── هر ۳۰ دقیقه ──
+# هر ۳۰ دقیقه
 @scheduler.every(minutes=30)
 async def cleanup():
     print("🧹 پاک‌سازی خودکار انجام شد.")
 
-# ── هر روز ساعت ۸ صبح ──
+# هر روز ساعت ۸ صبح
 @scheduler.every(at="08:00")
 async def morning_report():
     print("📊 گزارش صبحگاهی ارسال شد.")
@@ -960,7 +960,7 @@ scheduler.cancel_all()`
 
 signals = SignalManager()
 
-# ── ثبت handler ──
+# ثبت handler
 @signals.on("user_registered")
 async def send_welcome(user_id, chat_id):
     print(f"👋 کاربر {user_id} ثبت‌نام کرد!")
@@ -974,7 +974,7 @@ async def ban(user_id, chat_id):
     print(f"کاربر بن شد: {user_id}")
 
 
-# ── فراخوانی سیگنال ──
+# فراخوانی سیگنال
 await signals.emit("user_registered", user_id="b...", chat_id="g...")
 
 await signals.emit("ban", user_id="b...", chat_id="g...")
@@ -1018,10 +1018,10 @@ await signals.emit("ban", user_id="b...", chat_id="g...")
 bot = Client("my_bot")
 
 # لود همه پلاگین‌ها از پوشه
-await bot.load_plugins("my_plugins")
+bot.load_plugins("my_plugins")
 
 # لود یه پلاگین خاص
-await bot.load_plugin("plugins/admin.py")
+bot.load_plugin("plugins/admin.py")
 
 # محتوای یه پلاگین نمونه (plugins/admin.py)
 async def setup(client):
@@ -1117,19 +1117,19 @@ await bot.run()`
 
 cache = Cache(ttl=60.0, max_size=50)
 
-# ── ذخیره ──
+# ذخیره
 await cache.set("b...", {"name": "علی", "age": 25})
 
-# ── بازیابی ──
+# بازیابی
 user = await cache.get("b...")
 if user:
     print(user["name"])  # "علی"
 
-# ── بعد از ۶۰ ثانیه ──
+# بعد از ۶۰ ثانیه
 await asyncio.sleep(61)
 user = await cache.get("b...")  # None
 
-# ── پاکسازی ──
+# پاکسازی
 await cache.clear()`
 },
 
@@ -1187,23 +1187,23 @@ await cache.clear()`
 bot = Client("my_bot")
 snapshots = SnapshotManager(bot)
 
-# ── ذخیره ──
+# ذخیره
 path = await snapshots.save("before_update")
 print(f"✅ ذخیره شد: {path}")
 
-# ── لیست ──
+# لیست
 all_snaps = await snapshots.list_all()
 print(all_snaps)  # ['before_update']
 
-# ── بازیابی (load فقط می‌خونه، اعمال نمی‌کنه) ──
+# بازیابی (load فقط می‌خونه، اعمال نمی‌کنه)
 data = await snapshots.load("before_update")
 print(data["client"]["parse_mode"])
 
-# ── اعمال روی Client ──
+# اعمال روی Client
 ok = await snapshots.restore("before_update")
 print(f"✅ بازیابی شد: {ok}")
 
-# ── حذف ──
+# حذف
 await snapshots.delete("before_update")
 
 await bot.run()`
@@ -1456,7 +1456,7 @@ $ fastrub docs`
 
 db = DataBase("my_bot.db")
 
-# ── شروع ──
+# شروع
 await db.start({
     "users": {
         "chat_id": "TEXT NOT NULL",
@@ -1465,29 +1465,29 @@ await db.start({
     }
 }, primary_keys={"users": ["chat_id"]})
 
-# ── نوشتن ──
+# نوشتن
 await db.write("users", {"chat_id": "b...", "name": "علی", "age": 25})
 
-# ── پیدا کردن ──
+# پیدا کردن
 user = await db.find("users", "*", {"chat_id": "b..."})
 print(user)  # ('b...', 'علی', 25)
 
-# ── بررسی وجود ──
+# بررسی وجود
 exists = await db.exists("users", {"chat_id": "b..."})  # True
 
-# ── به‌روزرسانی ──
+# به‌روزرسانی
 await db.update("users", {"age": 26}, {"chat_id": "b..."})
 
-# ── افزایش ──
+# افزایش
 await db.increment("users", "age", {"chat_id": "b..."}, 1)  # age = 27
 
-# ── تعداد ──
+# تعداد
 count = await db.len_rows("users")  # 1
 
-# ── بک‌آپ ──
+# بک‌آپ
 path = await db.backup()  # "backups/my_bot_2026-01-01_12-00-00.db"
 
-# ── بستن ──
+# بستن
 await db.close()`
 },
 

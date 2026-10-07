@@ -269,7 +269,7 @@
         ]
       }
     ],
-    "example": "from fast_rub import Client, Conversation, filters\n\nbot = Client(\"my_bot\")\nawait bot.start()\n\n# ── ساخت مکالمه ──\nregister = Conversation(name=\"register\")\n\n@register.entry(commands=[\"/register\"])\nasync def ask_name(msg, data):\n    await msg.reply(\"📝 اسمت چیه؟\")\n    return \"waiting_name\"\n\n@register.state(\"waiting_name\")\nasync def get_name(msg, data):\n    data[\"name\"] = msg.text\n    await msg.reply(f\"👋 سلام {msg.text}!\\n🎂 چند سالته؟\")\n    return \"waiting_age\"\n\n@register.state(\"waiting_age\")\nasync def get_age(msg, data):\n    if not msg.text.isdigit():\n        await msg.reply(\"❌ یه عدد وارد کن.\")\n        return \"waiting_age\"\n    \n    data[\"age\"] = int(msg.text)\n    await msg.reply(f\"✅ ثبت‌نام کامل شد!\\n👤 {data['name']}\\n🎂 {data['age']} ساله\")\n    return Conversation.END\n\nbot.add_conversation(register)\n\n@bot.on_message(filters.commands([\"/start\"]))\nasync def start(msg):\n    await msg.reply(\"برای ثبت‌نام /register رو بزن.\")\n\nawait bot.run()"
+    "example": "from fast_rub import Client, Conversation, filters\n\nbot = Client(\"my_bot\")\nawait bot.start()\n\n# ساخت مکالمه\nregister = Conversation(name=\"register\")\n\n@register.entry(commands=[\"/register\"])\nasync def ask_name(msg, data):\n    await msg.reply(\"📝 اسمت چیه؟\")\n    return \"waiting_name\"\n\n@register.state(\"waiting_name\")\nasync def get_name(msg, data):\n    data[\"name\"] = msg.text\n    await msg.reply(f\"👋 سلام {msg.text}!\\n🎂 چند سالته؟\")\n    return \"waiting_age\"\n\n@register.state(\"waiting_age\")\nasync def get_age(msg, data):\n    if not msg.text.isdigit():\n        await msg.reply(\"❌ یه عدد وارد کن.\")\n        return \"waiting_age\"\n    \n    data[\"age\"] = int(msg.text)\n    await msg.reply(f\"✅ ثبت‌نام کامل شد!\\n👤 {data['name']}\\n🎂 {data['age']} ساله\")\n    return Conversation.END\n\nbot.add_conversation(register)\n\n@bot.on_message(filters.commands([\"/start\"]))\nasync def start(msg):\n    await msg.reply(\"برای ثبت‌نام /register رو بزن.\")\n\nawait bot.run()"
   },
   {
     "id": "DataForm",
@@ -674,7 +674,7 @@
         "description": "تعداد کارهای زمان‌بندی‌شدهٔ فعال (تسک‌های اجرانشده)"
       }
     ],
-    "example": "from fast_rub import Client, Scheduler\n\nbot = Client(\"my_bot\")\nscheduler = Scheduler()\n\n# ── هر ۳۰ دقیقه ──\n@scheduler.every(minutes=30)\nasync def cleanup():\n    print(\"🧹 پاک‌سازی خودکار انجام شد.\")\n\n# ── هر روز ساعت ۸ صبح ──\n@scheduler.every(at=\"08:00\")\nasync def morning_report():\n    print(\"📊 گزارش صبحگاهی ارسال شد.\")\n\n@bot.on_message()\nasync def handler(msg):\n    await msg.reply(\"سلام!\")\n\nawait bot.run()\nscheduler.cancel_all()"
+    "example": "from fast_rub import Client, Scheduler\n\nbot = Client(\"my_bot\")\nscheduler = Scheduler()\n\n# هر ۳۰ دقیقه\n@scheduler.every(minutes=30)\nasync def cleanup():\n    print(\"🧹 پاک‌سازی خودکار انجام شد.\")\n\n# هر روز ساعت ۸ صبح\n@scheduler.every(at=\"08:00\")\nasync def morning_report():\n    print(\"📊 گزارش صبحگاهی ارسال شد.\")\n\n@bot.on_message()\nasync def handler(msg):\n    await msg.reply(\"سلام!\")\n\nawait bot.run()\nscheduler.cancel_all()"
   },
   {
     "id": "Signals",
@@ -736,7 +736,7 @@
         "description": "handlerهای یک سیگنال خاص یا همهٔ سیگنال‌ها را حذف می‌کند."
       }
     ],
-    "example": "from fast_rub import SignalManager\n\nsignals = SignalManager()\n\n# ── ثبت handler ──\n@signals.on(\"user_registered\")\nasync def send_welcome(user_id, chat_id):\n    print(f\"👋 کاربر {user_id} ثبت‌نام کرد!\")\n\n@signals.on(\"user_registered\")\nasync def log_to_db(user_id, chat_id):\n    print(f\"📝 ثبت در دیتابیس: {user_id}\")\n\n@signals.on(\"ban\")\nasync def ban(user_id, chat_id):\n    print(f\"کاربر بن شد: {user_id}\")\n\n\n# ── فراخوانی سیگنال ──\nawait signals.emit(\"user_registered\", user_id=\"b...\", chat_id=\"g...\")\n\nawait signals.emit(\"ban\", user_id=\"b...\", chat_id=\"g...\")\n\n# خروجی:\n# 👋 کاربر b... ثبت‌نام کرد!\n# 📝 ثبت در دیتابیس: b...\n# کاربر بن شد: b..."
+    "example": "from fast_rub import SignalManager\n\nsignals = SignalManager()\n\n# ثبت handler\n@signals.on(\"user_registered\")\nasync def send_welcome(user_id, chat_id):\n    print(f\"👋 کاربر {user_id} ثبت‌نام کرد!\")\n\n@signals.on(\"user_registered\")\nasync def log_to_db(user_id, chat_id):\n    print(f\"📝 ثبت در دیتابیس: {user_id}\")\n\n@signals.on(\"ban\")\nasync def ban(user_id, chat_id):\n    print(f\"کاربر بن شد: {user_id}\")\n\n\n# فراخوانی سیگنال\nawait signals.emit(\"user_registered\", user_id=\"b...\", chat_id=\"g...\")\n\nawait signals.emit(\"ban\", user_id=\"b...\", chat_id=\"g...\")\n\n# خروجی:\n# 👋 کاربر b... ثبت‌نام کرد!\n# 📝 ثبت در دیتابیس: b...\n# کاربر بن شد: b..."
   },
   {
     "id": "Plugins",
@@ -790,7 +790,7 @@
         "description": "یک فایل پلاگین مشخص را لود می‌کند. فایل باید تابع `setup(client)` داشته باشد."
       }
     ],
-    "example": "from fast_rub import Client, PluginManager\n\nbot = Client(\"my_bot\")\n\n# ── لود همه پلاگین‌ها از پوشه ──\nawait bot.load_plugins(\"my_plugins\")\n\n# ── لود یه پلاگین خاص ──\nawait bot.load_plugin(\"plugins/admin.py\")\n\n# ── محتوای یه پلاگین نمونه (plugins/admin.py) ──\nasync def setup(client):\n    @client.on_message(commands=[\"/admin\"])\n    async def admin_panel(msg):\n        await msg.reply(\"🔧 پنل ادمین\")\n\n@bot.on_message()\nasync def handler(msg):\n    await msg.reply(\"سلام!\")\n\nawait bot.run()"
+    "example": "from fast_rub import Client, filters\n\nbot = Client(\"my_bot\")\n\n# لود همه پلاگین‌ها از پوشه\nawait bot.load_plugins(\"my_plugins\")\n\n# لود یه پلاگین خاص\nawait bot.load_plugin(\"plugins/admin.py\")\n\n# محتوای یه پلاگین نمونه (plugins/admin.py)\nasync def setup(client):\n    @client.on_message(filters.commands(['/admin']))\n    async def admin_panel(msg):\n        await msg.reply(\"🔧 پنل ادمین\")\n\n@bot.on_message()\nasync def handler(msg):\n    await msg.reply(\"سلام!\")\n\nawait bot.run()"
   },
   {
     "id": "Cache",
@@ -847,7 +847,7 @@
         "description": "همهٔ آیتم‌های کش را پاک می‌کند."
       }
     ],
-    "example": "from fast_rub.utils import Cache\n\ncache = Cache(ttl=60.0, max_size=50)\n\n# ── ذخیره ──\nawait cache.set(\"b...\", {\"name\": \"علی\", \"age\": 25})\n\n# ── بازیابی ──\nuser = await cache.get(\"b...\")\nif user:\n    print(user[\"name\"])  # \"علی\"\n\n# ── بعد از ۶۰ ثانیه ──\nawait asyncio.sleep(61)\nuser = await cache.get(\"b...\")  # None\n\n# ── پاکسازی ──\nawait cache.clear()"
+    "example": "from fast_rub.utils import Cache\n\ncache = Cache(ttl=60.0, max_size=50)\n\n# ذخیره\nawait cache.set(\"b...\", {\"name\": \"علی\", \"age\": 25})\n\n# بازیابی\nuser = await cache.get(\"b...\")\nif user:\n    print(user[\"name\"])  # \"علی\"\n\n# بعد از ۶۰ ثانیه\nawait asyncio.sleep(61)\nuser = await cache.get(\"b...\")  # None\n\n# پاکسازی\nawait cache.clear()"
   },
   {
     "id": "Snapshots",
@@ -922,7 +922,7 @@
         "description": "یک اسنپ‌شات را حذف می‌کند."
       }
     ],
-    "example": "from fast_rub import Client, SnapshotManager\n\nbot = Client(\"my_bot\")\nsnapshots = SnapshotManager(bot)\n\n# ── ذخیره ──\npath = await snapshots.save(\"before_update\")\nprint(f\"✅ ذخیره شد: {path}\")\n\n# ── لیست ──\nall_snaps = await snapshots.list_all()\nprint(all_snaps)  # ['before_update']\n\n# ── بازیابی (load فقط می‌خونه، اعمال نمی‌کنه) ──\ndata = await snapshots.load(\"before_update\")\nprint(data[\"client\"][\"parse_mode\"])\n\n# ── اعمال روی Client ──\nok = await snapshots.restore(\"before_update\")\nprint(f\"✅ بازیابی شد: {ok}\")\n\n# ── حذف ──\nawait snapshots.delete(\"before_update\")\n\nawait bot.run()"
+    "example": "from fast_rub import Client, SnapshotManager\n\nbot = Client(\"my_bot\")\nsnapshots = SnapshotManager(bot)\n\n# ذخیره\npath = await snapshots.save(\"before_update\")\nprint(f\"✅ ذخیره شد: {path}\")\n\n# لیست\nall_snaps = await snapshots.list_all()\nprint(all_snaps)  # ['before_update']\n\n# بازیابی (load فقط می‌خونه، اعمال نمی‌کنه)\ndata = await snapshots.load(\"before_update\")\nprint(data[\"client\"][\"parse_mode\"])\n\n# اعمال روی Client\nok = await snapshots.restore(\"before_update\")\nprint(f\"✅ بازیابی شد: {ok}\")\n\n# حذف\nawait snapshots.delete(\"before_update\")\n\nawait bot.run()"
   },
   {
     "id": "CLI",
@@ -1357,7 +1357,7 @@
         "description": "اتصال دیتابیس را می‌بندد."
       }
     ],
-    "example": "from fast_rub.db import DataBase\n\ndb = DataBase(\"my_bot.db\")\n\n# ── شروع ──\nawait db.start({\n    \"users\": {\n        \"chat_id\": \"TEXT NOT NULL\",\n        \"name\": \"TEXT\",\n        \"age\": \"INTEGER DEFAULT 0\",\n    }\n}, primary_keys={\"users\": [\"chat_id\"]})\n\n# ── نوشتن ──\nawait db.write(\"users\", {\"chat_id\": \"b...\", \"name\": \"علی\", \"age\": 25})\n\n# ── پیدا کردن ──\nuser = await db.find(\"users\", \"*\", {\"chat_id\": \"b...\"})\nprint(user)  # ('b...', 'علی', 25)\n\n# ── بررسی وجود ──\nexists = await db.exists(\"users\", {\"chat_id\": \"b...\"})  # True\n\n# ── به‌روزرسانی ──\nawait db.update(\"users\", {\"age\": 26}, {\"chat_id\": \"b...\"})\n\n# ── افزایش ──\nawait db.increment(\"users\", \"age\", {\"chat_id\": \"b...\"}, 1)  # age = 27\n\n# ── تعداد ──\ncount = await db.len_rows(\"users\")  # 1\n\n# ── بک‌آپ ──\npath = await db.backup()  # \"backups/my_bot_2026-01-01_12-00-00.db\"\n\n# ── بستن ──\nawait db.close()"
+    "example": "from fast_rub.db import DataBase\n\ndb = DataBase(\"my_bot.db\")\n\n# شروع\nawait db.start({\n    \"users\": {\n        \"chat_id\": \"TEXT NOT NULL\",\n        \"name\": \"TEXT\",\n        \"age\": \"INTEGER DEFAULT 0\",\n    }\n}, primary_keys={\"users\": [\"chat_id\"]})\n\n# نوشتن\nawait db.write(\"users\", {\"chat_id\": \"b...\", \"name\": \"علی\", \"age\": 25})\n\n# پیدا کردن\nuser = await db.find(\"users\", \"*\", {\"chat_id\": \"b...\"})\nprint(user)  # ('b...', 'علی', 25)\n\n# بررسی وجود\nexists = await db.exists(\"users\", {\"chat_id\": \"b...\"})  # True\n\n# به‌روزرسانی\nawait db.update(\"users\", {\"age\": 26}, {\"chat_id\": \"b...\"})\n\n# افزایش\nawait db.increment(\"users\", \"age\", {\"chat_id\": \"b...\"}, 1)  # age = 27\n\n# تعداد\ncount = await db.len_rows(\"users\")  # 1\n\n# بک‌آپ\npath = await db.backup()  # \"backups/my_bot_2026-01-01_12-00-00.db\"\n\n# بستن\nawait db.close()"
   },
   {
     "id": "antispam",

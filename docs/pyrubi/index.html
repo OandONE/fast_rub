@@ -3961,10 +3961,10 @@
 bot = Client("my_bot")
 
 # لود همه پلاگین‌ها از پوشه
-await bot.load_plugins("my_plugins")
+bot.load_plugins("my_plugins")
 
 # لود یه پلاگین خاص
-await bot.load_plugin("plugins/admin.py")
+bot.load_plugin("plugins/admin.py")
 
 # محتوای یه پلاگین نمونه (plugins/admin.py)
 async def setup(client):

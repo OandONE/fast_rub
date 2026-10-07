@@ -624,14 +624,14 @@ setInterval(()=>{ if(activeTab==='system') loadSystem(); }, 10000);
 
 class AdminPanel:
     """
-    پنل ادمین — لاگ لحظه‌ای، تنظیمات زنده، آمار و ابزارهای مدیریتی.
+    پنل ادمین - لاگ لحظه‌ای، تنظیمات زنده، آمار و ابزارهای مدیریتی.
 
     Parameters
     ----------
     client : Client
         کلاینت FastRub
     host : str
-        آدرس گوش دادن (پیش‌فرض: 127.0.0.1 — فقط لوکال)
+        آدرس گوش دادن (پیش‌فرض: 127.0.0.1 - فقط لوکال)
     port : int
         پورت (پیش‌فرض: 8081)
     backend : Literal["fastapi", "flask"]
@@ -639,7 +639,7 @@ class AdminPanel:
     path_prefix : str
         پیشوند مسیر (پیش‌فرض: /admin)
     password : str | None
-        رمز پنل — اگر None باشد رمز قوی تصادفی ساخته و در کنسول چاپ می‌شود
+        رمز پنل - اگر None باشد رمز قوی تصادفی ساخته و در کنسول چاپ می‌شود
     session_hours : float
         مدت اعتبار نشست ورود (ساعت)
     logger : logging.Logger | None
@@ -683,7 +683,7 @@ class AdminPanel:
         self._app: Any = None
         self._loop: asyncio.AbstractEventLoop | None = None
 
-        # لاگ‌های ربات را در بافر پنل هم بریز — مستقل از زنجیرهٔ on_log کلاینت
+        # لاگ‌های ربات را در بافر پنل هم بریز - مستقل از زنجیرهٔ on_log کلاینت
         self._log_handler = _BufferLogHandler(self._on_log_entry)
         self._log_handler.setFormatter(
             logging.Formatter("%(name)s | %(message)s")
