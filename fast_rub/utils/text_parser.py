@@ -155,8 +155,8 @@ class TextParser:
 
         if last < len(text):
             out_parts.append(text[last:])
-        resukt_text = "".join(out_parts)
-        return metadata, resukt_text
+        result_text = "".join(out_parts)
+        return metadata, result_text
     
     checkMarkdown = markdown
 

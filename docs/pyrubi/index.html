@@ -3927,7 +3927,58 @@
         ]
       }
     ]
-  }
+  },
+  {
+    id: "Plugins",
+    title: "🔌 سیستم پلاگین (Plugins)",
+    description: "سیستم پلاگین Fast Rub به شما اجازه می‌دهد قابلیت‌های ربات را به‌صورت ماژولار و قابل اشتراک‌گذاری توسعه دهید. هر پلاگین یک فایل `.py` با تابع `setup(client)` است که به کلاینت دسترسی کامل دارد.",
+    note: "⚠️ پلاگین‌ها به کلاینت دسترسی کامل دارند. فقط از منابع معتبر استفاده کنید.",
+    class_signature: "class PluginManager",
+    methods: [
+        {
+            name: "load",
+            params: [
+                ["client", "Client", "کلاینت ربات"],
+                ["folder", "str = 'plugins'", "مسیر پوشهٔ پلاگین‌ها"],
+                ["logger", "logging.Logger | None", "لاگر دلخواه"],
+            ],
+            returns: "int — تعداد پلاگین‌های لودشده",
+            description: "همهٔ فایل‌های `.py` داخل پوشه (به جز آن‌هایی که با `_` شروع می‌شوند) را اسکن می‌کند و هر کدام که تابع `setup(client)` داشته باشند را اجرا می‌کند. پلاگین‌ها به ترتیب حروف الفبا لود می‌شوند. اگه پوشه وجود نداشته باشد، خودکار ساخته می‌شود.",
+        },
+        {
+            name: "load_single",
+            params: [
+                ["client", "Client", "کلاینت ربات"],
+                ["filepath", "str", "مسیر کامل فایل پلاگین (مثلاً `plugins/admin.py`)"],
+                ["logger", "logging.Logger | None", "لاگر دلخواه"],
+            ],
+            returns: "bool — True اگر با موفقیت لود شد",
+            description: "یک فایل پلاگین مشخص را لود می‌کند. فایل باید تابع `setup(client)` داشته باشد.",
+        },
+    ],
+    example: `from fast_rub.pyrubi import Client, filters
+
+bot = Client("my_bot")
+
+# لود همه پلاگین‌ها از پوشه
+await bot.load_plugins("my_plugins")
+
+# لود یه پلاگین خاص
+await bot.load_plugin("plugins/admin.py")
+
+# محتوای یه پلاگین نمونه (plugins/admin.py)
+async def setup(client):
+    @client.on_message(filters.text("/admin"))
+    async def admin_panel(msg):
+        await msg.reply("🔧 پنل ادمین")
+
+@bot.on_message()
+async def handler(msg):
+    await msg.reply("سلام!")
+
+await bot.run()`
+},
+
 ];
 
     function renderfeatures() {

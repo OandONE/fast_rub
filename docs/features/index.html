@@ -1013,19 +1013,19 @@ await signals.emit("ban", user_id="b...", chat_id="g...")
             description: "یک فایل پلاگین مشخص را لود می‌کند. فایل باید تابع `setup(client)` داشته باشد.",
         },
     ],
-    example: `from fast_rub import Client, PluginManager
+    example: `from fast_rub import Client, filters
 
 bot = Client("my_bot")
 
-# ── لود همه پلاگین‌ها از پوشه ──
+# لود همه پلاگین‌ها از پوشه
 await bot.load_plugins("my_plugins")
 
-# ── لود یه پلاگین خاص ──
+# لود یه پلاگین خاص
 await bot.load_plugin("plugins/admin.py")
 
-# ── محتوای یه پلاگین نمونه (plugins/admin.py) ──
+# محتوای یه پلاگین نمونه (plugins/admin.py)
 async def setup(client):
-    @client.on_message(commands=["/admin"])
+    @client.on_message(filters.commands(["/admin"]))
     async def admin_panel(msg):
         await msg.reply("🔧 پنل ادمین")
 
