@@ -5,3 +5,4 @@ from .cache import Cache
 from .snapshot import SnapshotManager
 from .template import FileOpen, TemplateEngine
 from .metadata import ParseMode, Style, MetaData
+from .fake_generator import FakeGenerator

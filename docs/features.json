@@ -2199,5 +2199,86 @@
       }
     ],
     "example": "import asyncio\nfrom fast_rub import Client\n\nasync def main():\n    bot = Client(\"my_bot\")\n\n    @bot.on_run()\n    async def on_run():\n        # اگر password ندهید، رمز قوی تصادفی ساخته و در کنسول چاپ می‌شود\n        url = await bot.start_admin(\n            host=\"127.0.0.1\",\n            port=8081,\n            password=\"my_secret\",\n            backend=\"fastapi\",   # یا \"flask\"\n        )\n        bot.logger.info(f\"پنل ادمین: {url}\")\n\n    await bot.run()\n\nasyncio.run(main())"
+  },
+  {
+    "id": "FakeGenerator",
+    "title": "🎭 ساخت شناسه‌های ساختگی (FakeGenerator)",
+    "description": "کلاس FakeGenerator برای تولید شناسه‌های تصادفی و معتبر (از نظر فرمت) روبیکا استفاده می‌شود. مناسب برای تست‌ها، حالت Dry Run، پر کردن دیتابیس نمونه، و هر جایی که به یک شناسهٔ ظاهراً واقعی نیاز دارید بدون این‌که کاربر یا چت واقعی وجود داشته باشد. تمام متدها static هستند و نیازی به ساخت نمونه ندارند.",
+    "note": "مسیر import: `from fast_rub.core.mock import FakeGenerator`",
+    "class_signature": "class FakeGenerator",
+    "methods": [
+        {
+            "name": "message_id",
+            "params": [],
+            "returns": "str",
+            "description": "یک شناسهٔ پیام تصادفی ۱۹ رقمی (فقط اعداد ۰ تا ۹) تولید می‌کند. فرمت آن با شناسه‌های واقعی پیام روبیکا سازگار است."
+        },
+        {
+            "name": "id",
+            "params": [
+                [
+                    "start",
+                    "\"b\" | \"u\" | \"g\" = \"b\"",
+                    "پیشوند شناسه: `b` برای ربات، `u` برای کاربر، `g` برای گروه"
+                ]
+            ],
+            "returns": "str",
+            "description": "یک شناسهٔ ۳۲ کاراکتری تولید می‌کند: یک حرف پیشوند + ۳۱ حرف کوچک انگلیسی تصادفی. فرمت خروجی دقیقاً مثل شناسه‌های واقعی روبیکاست."
+        },
+        {
+            "name": "chat_id",
+            "params": [
+                [
+                    "start",
+                    "\"b\" | \"u\" | \"g\" = \"b\"",
+                    "پیشوند شناسه"
+                ]
+            ],
+            "returns": "str",
+            "description": "معادل `id` — برای ساخت chat_id ساختگی. نام‌گذاری معنادارتر برای خوانایی کد."
+        },
+        {
+            "name": "sender_id",
+            "params": [
+                [
+                    "start",
+                    "\"b\" | \"u\" | \"g\" = \"b\"",
+                    "پیشوند شناسه"
+                ]
+            ],
+            "returns": "str",
+            "description": "معادل `id` — برای ساخت sender_id ساختگی. نام‌گذاری معنادارتر برای خوانایی کد."
+        },
+        {
+            "name": "guid",
+            "params": [
+                [
+                    "start",
+                    "\"b\" | \"u\" | \"g\" | \"c\" | \"s\" = \"b\"",
+                    "پیشوند guid: `b` (ربات)، `u` (کاربر)، `g` (گروه)، `c` (کانال)، `s` (سرور)"
+                ]
+            ],
+            "returns": "str",
+            "description": "یک شناسه GUID تولید میکند."
+        }
+    ],
+    "properties": [
+        {
+            "name": "message_id",
+            "type": "classmethod",
+            "description": "شناسهٔ پیام ۱۹ رقمی"
+        },
+        {
+            "name": "id / chat_id / sender_id",
+            "type": "classmethod",
+            "description": "شناسهٔ ۳۲ کاراکتری با پیشوند b/u/g"
+        },
+        {
+            "name": "guid",
+            "type": "classmethod",
+            "description": "شناسهٔ ۳۲ کاراکتری با پیشوند b/u/g/c/s"
+        }
+    ],
+    "example": "from fast_rub.utils import FakeGenerator\n\n# ساخت شناسهٔ پیام\nmsg_id = FakeGenerator.message_id()\nprint(msg_id)  # \"1834729104839201847\"\n\n# ساخت شناسهٔ کاربر\nuser_id = FakeGenerator.id(\"u\")\nprint(user_id)  # \"uabcdefghijklmnopqrstuvwxyzabcde\"\n\n# ساخت شناسهٔ گروه\ngroup_id = FakeGenerator.id(\"g\")\nprint(group_id)  # \"gzyxwvutsrqponmlkjihgfedcbazyxw\"\n\n# معادل‌های معنادار\nchat_id   = FakeGenerator.chat_id(\"g\")\nsender_id = FakeGenerator.sender_id(\"u\")\n\n# ساخت GUID کانال\nchannel_guid = FakeGenerator.guid(\"c\")\nprint(channel_guid)  # \"cabcdefghijklmnopqrstuvwxyzabcde\"\n\n# استفاده در تست‌ها با Dry Run\nfrom fast_rub import Client\nimport asyncio\n\nasync def test_bot():\n    bot = Client(\"test\", dry_run=True)\n\n    fake_user = FakeGenerator.sender_id(\"u\")\n    fake_chat = FakeGenerator.chat_id(\"g\")\n\n    await bot.mock.receive_text(\n        chat_id=fake_chat,\n        sender_id=fake_user,\n        text=\"/start\",\n    )\n\n    assert bot.mock.last_sent is not None\n    await bot.close()\n\nasyncio.run(test_bot())"
   }
 ]
