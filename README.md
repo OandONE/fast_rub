@@ -474,6 +474,7 @@ asyncio.run(main())
 ```python
 import asyncio
 from fast_rub import Client, filters
+from fast_rub.utils import FakeGenerator
 
 async def main():
     bot = Client("my_bot", dry_run=True)  # ✅ بدون توکن و بدون اینترنت
@@ -484,8 +485,10 @@ async def main():
 
     await bot.start()
 
+    fake_chat_id = FakeGenerator.chat_id("b")
+
     # شبیه‌سازی پیام کاربر
-    await bot.mock.receive_text(chat_id="b" + "a" * 31, text="سلام")
+    await bot.mock.receive_text(chat_id=fake_chat_id, text="سلام")
 
     # بررسی ارسال‌های ربات
     assert bot.mock.last_sent["data"]["text"] == "سلام! ⚡"

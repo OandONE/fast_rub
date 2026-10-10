@@ -2204,7 +2204,7 @@
     "id": "FakeGenerator",
     "title": "🎭 ساخت شناسه‌های ساختگی (FakeGenerator)",
     "description": "کلاس FakeGenerator برای تولید شناسه‌های تصادفی و معتبر (از نظر فرمت) روبیکا استفاده می‌شود. مناسب برای تست‌ها، حالت Dry Run، پر کردن دیتابیس نمونه، و هر جایی که به یک شناسهٔ ظاهراً واقعی نیاز دارید بدون این‌که کاربر یا چت واقعی وجود داشته باشد. تمام متدها static هستند و نیازی به ساخت نمونه ندارند.",
-    "note": "مسیر import: `from fast_rub.core.mock import FakeGenerator`",
+    "note": "مسیر import: `from fast_rub.utils import FakeGenerator`",
     "class_signature": "class FakeGenerator",
     "methods": [
         {
