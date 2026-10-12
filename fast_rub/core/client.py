@@ -2539,14 +2539,14 @@ class Client:
                 for message in messages:
                     if message["type"] not in ("NewMessage", "UpdatedMessage", "RemoveMessage"):
                         continue
-                    update = Update(message, self)
-                    if not update.time + 5 > now:
+                    if not message["new_message"]["time"] + 5 > now:
                         continue
                     if not self._is_live:
                         await self._process_on_live()
                         self._is_live = True
                     if self.wait_manager and self.wait_manager.auto_track:
                         self.wait_manager.track()
+                    update = Update(message, self)
                     if await self._conversation_manager.handle(update, self):
                         continue
                     is_edited = message["type"] == "UpdatedMessage"
