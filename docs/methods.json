@@ -159,6 +159,16 @@
         "stats_db_path",
         "str | None = None",
         "دیتابیس آمار"
+      ],
+      [
+        "dry_run",
+        "bool = False",
+        "حالت شبیه‌سازی (Dry Run) ربات بدون توکن و بدون اینترنت"
+      ],
+      [
+        "network_limits",
+        "httpx.Limits | None = None",
+        "لیمیت نتورک برای ارسال درخواست ها"
       ]
     ],
     "returns": null,

@@ -489,7 +489,9 @@
           ["max_retries_download", "int | None", "حداکثر تلاش برای دانلود فایل"],
           ["config", "<a href='../features/index.html#BotConfig'>BotConfig</a> | None", "شیء پیکربندی اضافی (BotConfig)"],
           ["enable_stats", "bool = False", "آمار در پنل HTML"],
-          ["stats_db_path", "str | None = None", "دیتابیس آمار"]
+          ["stats_db_path", "str | None = None", "دیتابیس آمار"],
+          ["dry_run", "bool = False", "حالت شبیه‌سازی (Dry Run) ربات بدون توکن و بدون اینترنت"],
+          ["network_limits", "httpx.Limits | None = None", "لیمیت نتورک برای ارسال درخواست ها"]
         ],
         returns: null,
         example: `from fast_rub import Client\n\nbot = Client("my_session")\n# یا با توکن\nbot = Client("my_session", token="BGDISBC...")`

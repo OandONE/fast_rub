@@ -181,6 +181,13 @@ class Client:
         حالت شبیه‌سازی (Dry Run) — ربات بدون توکن واقعی و بدون اینترنت اجرا می‌شود.
         آپدیت‌ها را با bot.mock.receive_text(...) شبیه‌سازی کنید؛
         همهٔ ارسال‌های ربات در bot.mock.sent و همهٔ درخواست‌ها در bot.mock.requests ثبت می‌شوند.
+    
+    http2: bool = True
+        فعال شدن http2 برای ارسال درخواست ها
+    
+    network_limits: httpx.Limits | None = None
+        لیمیت نتورک برای ارسال درخواست ها
+        در صورت تنظیم نشدن به صورت پیشفرض بهترین انتخاب برای ربات های بزرگ تنظیم میشود
     """
     # ═══════════════════════════════════
     # region 🚀 Start & Stop | شروع و توقف
@@ -222,6 +229,8 @@ class Client:
         enable_stats: bool = False,
         stats_db_path: str | None = None,
         dry_run: bool = False,
+        http2: bool = True,
+        network_limits: httpx.Limits | None = None
     ):
         """Client for login and setting robot / کلاینت برای لوگین و تنظیمات ربات"""
         self.name_session = name_session
@@ -283,6 +292,8 @@ class Client:
         self._admin: AdminPanel | None = None
         self._admin_task: asyncio.Task | None = None
         self.dry_run = dry_run
+        self.http2 = http2
+        self.network_limits = network_limits
         if logger:
             self.logger = logger
         else:
@@ -374,6 +385,11 @@ class Client:
                 ssl_verify=self.ssl_verify,
                 max_retries_upload=self.max_retries_upload,
                 max_retries_download=self.max_retries_download,
+                http2=self.http2,
+            )
+            await self.network.start(
+                start_worker=True,
+                limits=self.network_limits
             )
         self._webhook_server = None
         if self.webhook:
@@ -752,7 +768,7 @@ class Client:
             cached = await self.cache.get("me")
             if cached:
                 return cached
-        result = await self._send_req(method="getMe")
+        result = await self.network.send_request(method="getMe")
         bot = result["bot"]
         if self.cache:
             await self.cache.set("me", bot)
@@ -772,7 +788,7 @@ class Client:
         data = {
             "chat_id": chat_id
         }
-        result = await self._send_req(
+        result = await self.network.send_request(
             "getChat",
             data,
         )
@@ -796,7 +812,7 @@ class Client:
                 "chat_id": chat_id,
                 "user_id": user_id
             }
-            result = await self._send_req("banChatMember", data)
+            result = await self.network.send_request("banChatMember", data)
             return props(result)
         
         result = await _send_helper(
@@ -820,7 +836,7 @@ class Client:
                 "chat_id": chat_id,
                 "user_id": user_id
             }
-            result = await self._send_req("unbanChatMember", data)
+            result = await self.network.send_request("unbanChatMember", data)
             return props(result)
         
         result = await _send_helper(
@@ -874,7 +890,7 @@ class Client:
     ) -> dict:
         """set the commands for robot / تنظیم دستورات برای ربات"""
         self.logger.info("استفاده از متود set_commands")
-        result = await self._send_req(
+        result = await self.network.send_request(
             "setCommands",
             {
                 "bot_commands": list_commands if list_commands else self.list_commands
@@ -929,7 +945,7 @@ class Client:
     ) -> props:
         """getting info file / گرفتن اطلاعات فایل"""
         self.logger.info("استفاده از متود get_file")
-        result = await self._send_req("getFile", {"file_id": id_file})
+        result = await self.network.send_request("getFile", {"file_id": id_file})
         return props(result)
 
     
@@ -1047,7 +1063,7 @@ class Client:
                 "reply_to_message_id": reply_to_message_id
             }
             data = Utils.data_format(data, inline_keypad, keypad, resize_keyboard, on_time_keyboard, metadata, _meta_data)
-            result = await self._send_req("sendMessage", data)
+            result = await self.network.send_request("sendMessage", data)
             result["chat_id"] = chat_id
             await self._manage_auto_delete(result, auto_delete)
             return msg_update(result, self)
@@ -1235,7 +1251,7 @@ class Client:
                 "reply_to_message_id": reply_to_message_id,
                 "disable_notification": disable_notification
             }
-            result = await self._send_req(
+            result = await self.network.send_request(
                 "sendPoll",
                 data,
             )
@@ -1275,7 +1291,7 @@ class Client:
                 "reply_to_message_id": reply_to_message_id,
                 "chat_keypad_type": chat_keypad_type,
             }
-            result = await self._send_req(
+            result = await self.network.send_request(
                 "sendLocation",
                 data,
             )
@@ -1319,7 +1335,7 @@ class Client:
                 "inline_keypad": inline_keypad,
                 "reply_to_message_id": reply_to_message_id,
             }
-            result = await self._send_req(
+            result = await self.network.send_request(
                 "sendContact",
                 data,
             )
@@ -1352,7 +1368,7 @@ class Client:
                 "to_chat_id": to_chat_id,
                 "disable_notification": disable_notification,
             }
-            result = await self._send_req(
+            result = await self.network.send_request(
                 "forwardMessage",
                 data,
             )
@@ -1425,7 +1441,7 @@ class Client:
             metadata, _text  = await self._parse_mode_text(_text, _parse_mode)
             data = {"chat_id": chat_id, "message_id": message_id, "text": _text}
             data = Utils.data_format(data, inline_keypad, metadata=metadata, meta_data=_meta_data)
-            result = await self._send_req(
+            result = await self.network.send_request(
                 "editMessageText",
                 data,
             )
@@ -1498,7 +1514,7 @@ class Client:
                 "chat_id": chat_id,
                 "message_id": message_id
             }
-            result = await self._send_req(
+            result = await self.network.send_request(
                 "deleteMessage",
                 data,
             )
@@ -1596,7 +1612,7 @@ class Client:
                 "disable_notification": disable_notification,
             }
             data = Utils.data_format(data, inline_keypad,keypad,resize_keyboard,on_time_keyboard, metadata=metadata, meta_data=_meta_data)
-            sending = await self._send_req("sendFile", data)
+            sending = await self.network.send_request("sendFile", data)
             sending["chat_id"] = chat_id
             await self._manage_auto_delete(sending, auto_delete)
             return msg_update(sending, self)
@@ -1611,7 +1627,7 @@ class Client:
         self,
         type: Literal["File", "Image", "Voice", "Music", "Gif" , "Video"] = "File"
     ) -> dict:
-        return await self._send_req(
+        return await self.network.send_request(
             "requestSendFile",
             {
                 "type": type
@@ -2017,7 +2033,7 @@ class Client:
                 "reply_to_message_id": reply_to_message_id,
                 "disable_notification": disable_notification
             }
-            sender = await self._send_req("sendSticker", data)
+            sender = await self.network.send_request("sendSticker", data)
             sender["chat_id"] = chat_id
             await self._manage_auto_delete(sender, auto_delete)
             return msg_update(sender, self)
@@ -3015,7 +3031,7 @@ class Client:
         data_: dict[str, Any] | None = None
     ) -> dict:
         """ارسال درخواست ها / send request to methods with retry mechanism"""
-        return await self._send_req(
+        return await self.network.send_request(
             method=method,
             data=data_
         )
@@ -3065,7 +3081,7 @@ class Client:
             "offset_id": offset_id,
             "limit": limit
         }
-        result = await self._send_req(
+        result = await self.network.send_request(
             "getUpdates",
             data,
         )
@@ -3239,7 +3255,7 @@ class Client:
     ) -> props:
         """set endpoint url / تنظیم ادرس اند پوینت"""
         self.logger.info("استفاده از متود set_endpoint")
-        result = await self._send_req(
+        result = await self.network.send_request(
             "updateBotEndpoints",
             {
                 "url": url,

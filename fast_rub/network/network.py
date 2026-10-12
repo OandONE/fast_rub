@@ -35,6 +35,7 @@ class Network:
         ssl_verify: bool = True,
         max_retries_upload: int | None = None,
         max_retries_download: int | None = None,
+        http2: bool = True,
     ):
         self.logger = logger or logging.getLogger("fast_rub.network")
         self.token = token
@@ -59,10 +60,17 @@ class Network:
 
         self._core_client = client
 
+        self.http2 = http2
+
     # -------------------
     # Lifecycle: start / stop
     # -------------------
-    async def start(self, *, start_worker: bool = True):
+    async def start(
+        self,
+        *,
+        start_worker: bool = True,
+        limits: httpx.Limits | None = None
+    ):
         asyncio.get_running_loop()
 
         if self._client_lock is None:
@@ -71,6 +79,8 @@ class Network:
             self._rate_sem = asyncio.Semaphore(self._rate_limit)
         if self._queue is None:
             self._queue = asyncio.Queue()
+
+        self.limits = limits
 
         await self._create_client()
 
@@ -116,9 +126,13 @@ class Network:
     def _build_client_kwargs(self) -> dict:
         kwargs = {
             "timeout": httpx.Timeout(connect=10.0, read=30.0, write=10.0, pool=10.0),
-            "limits": httpx.Limits(max_connections=100, max_keepalive_connections=20),
+            "limits": httpx.Limits(
+                max_connections=100,
+                max_keepalive_connections=100,
+                keepalive_expiry=60.0
+            ) if not self.limits else self.limits,
             "http1": True,
-            "http2": True,
+            "http2": self.http2,
             "verify": self.ssl_verify,
             "headers": {
                 "Content-Type": "application/json"
