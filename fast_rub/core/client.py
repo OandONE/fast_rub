@@ -294,6 +294,7 @@ class Client:
         self.dry_run = dry_run
         self.http2 = http2
         self.network_limits = network_limits
+        self._pending_tasks: set[asyncio.Task] = set()
         if logger:
             self.logger = logger
         else:
@@ -577,6 +578,11 @@ class Client:
             except Exception:
                 pass
             self.stats = None
+        for task in self._pending_tasks:
+            task.cancel()
+        if self._pending_tasks:
+            await asyncio.gather(*self._pending_tasks, return_exceptions=True)
+        self._pending_tasks.clear()
         if type_stop == "all":
             await self.network.close()
             del self.network
@@ -740,7 +746,9 @@ class Client:
                 await self._middleware_manager.execute(update, _run_handler)
             else:
                 await _run_handler(update)
-        asyncio.create_task(_wrapped())
+        task = asyncio.create_task(_wrapped())
+        self._pending_tasks.add(task)
+        task.add_done_callback(self._pending_tasks.discard)
     
     # endregion
 
@@ -2526,12 +2534,13 @@ class Client:
                         await self.session.save()
                 except KeyError:
                     pass
+                now = time.time()
                 messages = messages["updates"]
                 for message in messages:
                     if message["type"] not in ("NewMessage", "UpdatedMessage", "RemoveMessage"):
                         continue
                     update = Update(message, self)
-                    if not update.time + 5 > time.time():
+                    if not update.time + 5 > now:
                         continue
                     if not self._is_live:
                         await self._process_on_live()
