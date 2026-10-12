@@ -627,17 +627,6 @@ class Client:
     # region ⚙️ Internal Utils | متدهای داخلی
     # ═══════════════════════════════════
 
-    async def _send_req(
-        self,
-        method: str,
-        data: dict[str, Any] | None = None
-    ) -> dict:
-        response = await self.network.send_request(
-            method=method,
-            data=data
-        )
-        return response
-    
     
     async def _auto_delete(
         self,
@@ -658,7 +647,7 @@ class Client:
         return props(result)
     
     
-    async def _parse_mode_text(
+    def _parse_mode_text(
         self,
         text: str,
         parse_mode: Literal["Markdown","HTML","Null",None] = "Markdown"
@@ -1055,7 +1044,7 @@ class Client:
                 if auto_escape:
                     _parse_mode = None
 
-            metadata, _text = await self._parse_mode_text(_text, _parse_mode)
+            metadata, _text = self._parse_mode_text(_text, _parse_mode)
             data = {
                 "chat_id": chat_id,
                 "text": _text,
@@ -1438,7 +1427,7 @@ class Client:
                 if auto_escape:
                     _parse_mode = None
             
-            metadata, _text  = await self._parse_mode_text(_text, _parse_mode)
+            metadata, _text  = self._parse_mode_text(_text, _parse_mode)
             data = {"chat_id": chat_id, "message_id": message_id, "text": _text}
             data = Utils.data_format(data, inline_keypad, metadata=metadata, meta_data=_meta_data)
             result = await self.network.send_request(
@@ -1603,7 +1592,7 @@ class Client:
             metadata = []
             Utils.check_id_raise(chat_id)
             if _text:
-                metadata, _text  = await self._parse_mode_text(_text, _parse_mode)
+                metadata, _text  = self._parse_mode_text(_text, _parse_mode)
             data = {
                 "chat_id": chat_id,
                 "text": _text,
@@ -2585,7 +2574,7 @@ class Client:
                 self.logger.warning(f"خطای شبکه در _process_messages_polling: {e} - انتظار 5 ثانیه...")
                 await asyncio.sleep(5)
             except Exception as e:
-                self.logger.error(f"خطای ناشناخته در _process_messages_polling: {e}")
+                self.logger.error(f"خطای ناشناخته در _process_messages_polling: {e}", exc_info=True)
             await asyncio.sleep(self.poll_interval)
 
     async def _process_webhook_push(self, data: dict, endpoint_type: str):
@@ -2838,7 +2827,6 @@ class Client:
                                 continue
                             self._schedule_handler(handler, update)
                             if not is_edited and not is_deleted:
-                                self.messages.append(update)
                                 if self.keeper_messages_ram:
                                     self.messages.append(update)
                                 if self.keeper_messages_db:
