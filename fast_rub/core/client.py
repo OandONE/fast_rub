@@ -2539,7 +2539,7 @@ class Client:
                 for message in messages:
                     if message["type"] not in ("NewMessage", "UpdatedMessage", "RemoveMessage"):
                         continue
-                    if not message["new_message"]["time"] + 5 > now:
+                    if not int(message["new_message"]["time"]) + 5 > now:
                         continue
                     if not self._is_live:
                         await self._process_on_live()
