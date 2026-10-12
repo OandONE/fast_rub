@@ -760,7 +760,7 @@ class Client:
         self
     ) -> BotModel:
         """geting info accont bot / گرفتن اطلاعات اکانت ربات"""
-        self.logger.info("استفاده از متود get_me")
+        self.logger.debug("get_me called")
         if self.cache:
             cached = await self.cache.get("me")
             if cached:
@@ -776,7 +776,7 @@ class Client:
         chat_id: str
     ) -> ChatModel:
         """geting info chat id info / گرفتن اطلاعات های یک چت"""
-        self.logger.info("استفاده از متود get_chat")
+        self.logger.debug("get_chat called")
         Utils.check_id_raise(chat_id)
         if self.cache:
             cached = await self.cache.get(f"chat:{chat_id}")
@@ -873,7 +873,7 @@ class Client:
         description: str
     ) -> None:
         """add command to commands list / افزودن دستور به لیست دستورات"""
-        self.logger.info("استفاده از متود add_commands")
+        self.logger.debug("add_commands called")
         self.list_commands.append(
             {
                 "command": command.replace("/", ""),
@@ -886,7 +886,7 @@ class Client:
         list_commands: list | None = None
     ) -> dict:
         """set the commands for robot / تنظیم دستورات برای ربات"""
-        self.logger.info("استفاده از متود set_commands")
+        self.logger.debug("set_commands called")
         result = await self.network.send_request(
             "setCommands",
             {
@@ -899,7 +899,7 @@ class Client:
         self
     ) -> dict:
         """clear the commands list / پاکسازی لیست دستورات"""
-        self.logger.info("استفاده از متود delete_commands")
+        self.logger.debug("delete_commands called")
         self.list_commands = []
         result = await self.set_commands()
         return result
@@ -919,7 +919,7 @@ class Client:
         return_task: bool = False,
         max_retries: int | None = None
     ) -> bool:
-        self.logger.info("استفاده از متود download_me_profile")
+        self.logger.debug("download_me_profile called")
         bot = await self.get_me()
         avator_file_id = bot.avatar_file_id
         if avator_file_id:
@@ -941,7 +941,7 @@ class Client:
         id_file: str
     ) -> props:
         """getting info file / گرفتن اطلاعات فایل"""
-        self.logger.info("استفاده از متود get_file")
+        self.logger.debug("get_file called")
         result = await self.network.send_request("getFile", {"file_id": id_file})
         return props(result)
 
@@ -953,7 +953,7 @@ class Client:
         return_task: bool = False
     ) -> str | asyncio.Task[str]:
         """get download url file / گرفتن آدرس دانلود فایل"""
-        self.logger.info("استفاده از متود get_download_file_url")
+        self.logger.debug("get_download_file_url called")
         async def _active():
             if self.wait_manager and self.wait_manager.track_after_send:
                 self.wait_manager.add_traffic(channel="uploading")
@@ -1000,7 +1000,7 @@ class Client:
         max_retries: int | None = None,
     ) -> None:
         """download file / دانلود فایل"""
-        self.logger.info("استفاده از متود download_file")
+        self.logger.debug("download_file called")
         async def _active():
             if self.wait_manager and self.wait_manager.track_after_send:
                 self.wait_manager.add_traffic(channel="uploading")
@@ -1039,7 +1039,7 @@ class Client:
         auto_escape: bool = True,
     ) -> msg_update | asyncio.Task[msg_update]:
         """sending text to chat id"""
-        self.logger.info("استفاده از متود send_text")
+        self.logger.debug("send_text called")
         
         async def _active():
             _meta_data = meta_data if meta_data is not None else []
@@ -1231,7 +1231,7 @@ class Client:
         return_task: bool = False
     ) -> msg_update | asyncio.Task[msg_update]:
         """sending poll to chat id / ارسال نظرسنجی به یک چت آیدی"""
-        self.logger.info("استفاده از متود send_poll")
+        self.logger.debug("send_poll called")
 
         async def _active():
             if len(options) > 10:
@@ -1276,7 +1276,7 @@ class Client:
         return_task: bool = False
     ) -> msg_update | asyncio.Task[msg_update]:
         """sending location to chat id / ارسال لوکیشن(موقعیت مکانی) به یک چت آیدی"""
-        self.logger.info("استفاده از متود send_location")
+        self.logger.debug("send_location called")
 
         async def _active():
             data = {
@@ -1318,7 +1318,7 @@ class Client:
         return_task: bool = False
     ) -> msg_update | asyncio.Task[msg_update]:
         """sending contact to chat id / ارسال مخاطب به یک چت آیدی"""
-        self.logger.info("استفاده از متود send_contact")
+        self.logger.debug("send_contact called")
 
         async def _active():
             data = {
@@ -1356,7 +1356,7 @@ class Client:
         return_task: bool = False
     ) -> msg_update | asyncio.Task[msg_update]:
         """forwarding message to chat id / فوروارد پیام به یک چت آیدی"""
-        self.logger.info("استفاده از متود forward_message")
+        self.logger.debug("forward_message called")
 
         async def _active():
             data = {
@@ -1422,7 +1422,7 @@ class Client:
         auto_escape: bool = True,
     ) -> msg_update | asyncio.Task[msg_update]:
         """editing message text / ویرایش متن پیام"""
-        self.logger.info("استفاده از متود edit_message_text")
+        self.logger.debug("edit_message_text called")
 
         async def _active():
             _meta_data = meta_data if meta_data is not None else []
@@ -1504,7 +1504,7 @@ class Client:
         return_task: bool = False
     ) -> props | asyncio.Task[props]:
         """delete message / پاکسازی(حذف) یک پیام"""
-        self.logger.info("استفاده از متود delete_message")
+        self.logger.debug("delete_message called")
 
         async def _active():
             data = {
@@ -1558,7 +1558,7 @@ class Client:
         chunk_size: int = 1024 * 1024
     ) -> dict:
         """upload file to rubika server / آپلود فایل در سرور روبیکا"""
-        self.logger.info("استفاده از متود upload_file")
+        self.logger.debug("upload_file called")
         if not self.show_progress is None:
             show_progress = self.show_progress
         response = await self.network.upload(url, file, file_name, show_progress, chunk_size)
@@ -1584,7 +1584,7 @@ class Client:
         auto_escape: bool = True,
     ) -> msg_update | asyncio.Task[msg_update]:
         """sending file by file id / ارسال فایل با آیدی فایل"""
-        self.logger.info("استفاده از متود send_file_by_file_id")
+        self.logger.debug("send_file_by_id called")
 
         async def _active():
             _text = text
@@ -1655,7 +1655,7 @@ class Client:
         auto_escape: bool = True,
     ) -> msg_update | asyncio.Task[msg_update]:
         """sending file with types ['File', 'Image', 'Voice', 'Music', 'Gif' , 'Video'] / ارسال فایل با نوع های فایل و عکس و پیغام صوتی و موزیک و گیف و ویدیو"""
-        self.logger.info("استفاده از متود base_send_file")
+        self.logger.debug("base_send_file called")
 
         async def _active():
             request_file = await self.request_send_file(type_file)
@@ -1740,7 +1740,7 @@ class Client:
         auto_escape: bool = True,
     ) -> msg_update | asyncio.Task[msg_update]:
         "ارسال فایل / send file"
-        self.logger.info("استفاده از متود send_file")
+        self.logger.debug("send_file called")
         result = await self.base_send_file(
             chat_id=chat_id,
             file=file,
@@ -1790,7 +1790,7 @@ class Client:
         auto_escape: bool = True,
     ) -> msg_update | asyncio.Task[msg_update]:
         """sending image / ارسال تصویر"""
-        self.logger.info("استفاده از متود send_image")
+        self.logger.debug("send_image called")
         result = await self.base_send_file(
             chat_id=chat_id,
             file=image,
@@ -1841,7 +1841,7 @@ class Client:
         auto_escape: bool = True,
     ) -> msg_update | asyncio.Task[msg_update]:
         """sending video / ارسال ویدیو"""
-        self.logger.info("استفاده از متود send_video")
+        self.logger.debug("send_video called")
         result = await self.base_send_file(
             chat_id=chat_id,
             file=video,
@@ -1889,7 +1889,7 @@ class Client:
         auto_escape: bool = True,
     ) -> msg_update | asyncio.Task[msg_update]:
         """sending voice / ارسال ویس"""
-        self.logger.info("استفاده از متود send_voice")
+        self.logger.debug("send_voice called")
         result = await self.base_send_file(
             chat_id=chat_id,
             file=voice,
@@ -1937,7 +1937,7 @@ class Client:
         auto_escape: bool = True,
     ) -> msg_update | asyncio.Task[msg_update]:
         """sending music / ارسال موزیک"""
-        self.logger.info("استفاده از متود send_music")
+        self.logger.debug("send_music called")
         result = await self.base_send_file(
             chat_id=chat_id,
             file=music,
@@ -1985,7 +1985,7 @@ class Client:
         auto_escape: bool = True,
     ) -> msg_update | asyncio.Task[msg_update]:
         """sending gif / ارسال گیف"""
-        self.logger.info("استفاده از متود send_gif")
+        self.logger.debug("send_gif called")
         result = await self.base_send_file(
             chat_id=chat_id,
             file=gif,
@@ -2021,7 +2021,7 @@ class Client:
         return_task: bool = False
     ) -> msg_update | asyncio.Task[msg_update]:
         """sending sticker by id / ارسال استیکر با آیدی"""
-        self.logger.info("استفاده از متود send_sticker")
+        self.logger.debug("send_stiker called")
         
         async def _active():
             data = {
@@ -2059,7 +2059,7 @@ class Client:
         max_retries: int | None = None,
     ) -> msg_update | asyncio.Task[msg_update]:
         """re send message / ارسال مجدد پیام"""
-        self.logger.info("در حال استفاده از متود resend_message")
+        self.logger.debug("resend_message called")
         
         async def _active():
             msg = await self.get_message_by_id(from_chat_id, message_id)
@@ -3073,7 +3073,7 @@ class Client:
         offset_id : str | None = None
     ) -> props:
         """getting messages chats / گرفتن پیام های چت ها"""
-        self.logger.info("استفاده از متود get_updates")
+        self.logger.debug("get_updates called")
         data = {
             "offset_id": offset_id,
             "limit": limit
@@ -3099,8 +3099,8 @@ class Client:
         Utils.check_message_id_raise(message_id)
         if chat_id:
             Utils.check_id_raise(chat_id)
-        
-        self.logger.info("در حال استفاده از متود get_message .")
+
+        self.logger.debug("get_message called")
         
         if search_by in ("all", "messages"):
             self.logger.info("در حال جستجو پیام در بین پیام های ذخیره شده ...")
@@ -3128,7 +3128,7 @@ class Client:
             self.logger.info("در حال جستجو پیام با get_updates ...")
             attempts = 0
             
-            original_offset = self.next_offset_id_get_message
+            # original_offset = self.next_offset_id_get_message
             
             while attempts < max_attempts:
                 attempts += 1
@@ -3177,7 +3177,7 @@ class Client:
         max_attempts: int = 10
     ) -> list[Update] | None:
         """get messages / گرفتن پیام ها"""
-        self.logger.info("در حال استفاده از متود get_messages .")
+        self.logger.debug("get_messages called")
         Utils.check_id_raise(chat_id)
         Utils.check_message_id_raise(message_id)
         messages = deque(maxlen=get_befor)
@@ -3251,7 +3251,7 @@ class Client:
         ]
     ) -> props:
         """set endpoint url / تنظیم ادرس اند پوینت"""
-        self.logger.info("استفاده از متود set_endpoint")
+        self.logger.debug("set_endpoint called")
         result = await self.network.send_request(
             "updateBotEndpoints",
             {
