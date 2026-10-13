@@ -4,7 +4,8 @@ files = [
     "methods",
     "models",
     "features",
-    "pyrubi"
+    "pyrubi",
+    "prerequisites"
 ]
 
 def create_min(name_file: str):

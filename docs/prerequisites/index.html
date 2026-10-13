@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>فست روب · نکات قبل از نوشتن بات</title>
+  <meta name="description" content="نکات مهم و ضروری قبل از نوشتن بات روبیکا با کتابخانه فست‌روب (Fast Rub)">
+  <meta name="keywords" content="فست روب, Fast Rub, روبیکا, بات روبیکا, Rubika Bot, نکات بات روبیکا, Rubika API">
+  <meta name="author" content="Seyyed Mohamad Hosein Moosavi Raja">
+  <meta name="robots" content="index, follow">
+  <meta name="language" content="Persian">
+  <meta name="distribution" content="global">
+  <meta name="rating" content="general">
+
+  <meta property="og:title" content="فست‌روب · نکات قبل از نوشتن بات">
+  <meta property="og:description" content="نکات مهم و ضروری قبل از نوشتن بات روبیکا با کتابخانه Fast Rub">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://fast-rub.ParsSource.ir/prerequisites/index.html">
+  <meta property="og:locale" content="fa_IR">
+  <meta property="og:site_name" content="Fast Rub Documentation">
+
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="فست‌روب · نکات قبل از نوشتن بات">
+  <meta name="twitter:description" content="نکات مهم و ضروری قبل از نوشتن بات روبیکا با کتابخانه Fast Rub">
+
+  <link rel="canonical" href="https://fast-rub.ParsSource.ir/prerequisites/index.html">
+  <link rel="icon" type="image/png" href="../icon.jpg">
+  <link rel="apple-touch-icon" href="../icon.jpg">
+  <link rel="manifest" href="/manifest.json">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "TechArticle",
+    "headline": "نکات قبل از نوشتن بات روبیکا",
+    "description": "نکات مهم و ضروری قبل از نوشتن بات روبیکا با کتابخانه Fast Rub",
+    "author": {
+      "@type": "Organization",
+      "name": "Seyyed Mohamad Hosein Moosavi Raja"
+    },
+    "datePublished": "2025-01-01",
+    "dateModified": "2025-12-01",
+    "inLanguage": "fa",
+    "url": "https://fast-rub.ParsSource.ir/prerequisites/index.html"
+  }
+  </script>
+
+<style>
+    :root {
+      --bg: #fafafa;
+      --surface: #ffffff;
+      --text: #1e1e2f;
+      --text-secondary: #5a5a7a;
+      --brand: #7b1fa2;
+      --brand-dark: #4a148c;
+      --brand-light: #b39ddb;
+      --accent: #ffb300;
+      --border: #e0d0ea;
+      --sidebar-bg: #f5f0fa;
+      --code-bg: #1e1e2a;
+      --code-text: #cdd6f4;
+      --table-hover: #ede7f6;
+      --shadow: rgba(0,0,0,0.05);
+      --copy-btn-bg: #2d2d3f;
+      --copy-btn-text: #ffd54f;
+      --signature-bg: #f3e9fd;
+      --warn-bg: #fff8e1;
+      --warn-border: #ffb300;
+      --danger-bg: #ffebee;
+      --danger-border: #e53935;
+      --info-bg: #e3f2fd;
+      --info-border: #1e88e5;
+    }
+
+    [data-theme="dark"] {
+      --bg: #0a0a0f;
+      --surface: #13131a;
+      --text: #cdd6f4;
+      --text-secondary: #6c7086;
+      --brand: #89b4fa;
+      --brand-dark: #b4befe;
+      --brand-light: #45475a;
+      --accent: #f9e2af;
+      --border: #1e1e2a;
+      --sidebar-bg: #0f0f15;
+      --code-bg: #11111b;
+      --code-text: #cdd6f4;
+      --table-hover: #1a1a24;
+      --shadow: rgba(0,0,0,0.3);
+      --copy-btn-bg: #313244;
+      --copy-btn-text: #89b4fa;
+      --signature-bg: #1a1a24;
+      --warn-bg: #2a2410;
+      --warn-border: #f9e2af;
+      --danger-bg: #2a1010;
+      --danger-border: #f38ba8;
+      --info-bg: #10192a;
+      --info-border: #89b4fa;
+    }
+
+    .theme-toggle {
+      position: fixed;
+      bottom: 24px;
+      left: 24px;
+      z-index: 1000;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-size: 1.2rem;
+      cursor: pointer;
+      box-shadow: 0 2px 12px var(--shadow);
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .theme-toggle:hover {
+      transform: scale(1.1);
+      border-color: var(--brand);
+    }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: 'Vazirmatn', system-ui, -apple-system, 'Segoe UI', Roboto, Tahoma, Arial, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+    a {
+      text-decoration: none;
+      color: var(--brand);
+    }
+    a:hover {
+      text-decoration: underline;
+    }
+    .wrapper {
+      display: flex;
+      flex: 1;
+      max-width: 1440px;
+      margin: 0 auto;
+      width: 100%;
+      background: var(--surface);
+      box-shadow: 0 0 30px var(--shadow);
+      transition: background-color 0.3s ease;
+    }
+
+    .sidebar {
+      width: 280px;
+      background: var(--sidebar-bg);
+      border-left: 1px solid var(--border);
+      padding: 2rem 1.5rem;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+      transition: background-color 0.3s ease, border-color 0.3s ease;
+    }
+    .sidebar h1 {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: var(--brand-dark);
+      margin-bottom: 0.2rem;
+      line-height: 1.2;
+    }
+    .sidebar .sub {
+      color: var(--brand);
+      font-weight: 400;
+      font-size: 0.95rem;
+      margin-bottom: 2rem;
+      border-bottom: 2px solid var(--border);
+      padding-bottom: 1rem;
+    }
+    .nav-links {
+      list-style: none;
+      margin-bottom: 2.5rem;
+    }
+    .nav-links li {
+      margin-bottom: 0.6rem;
+    }
+    .nav-links a {
+      display: block;
+      padding: 0.4rem 0.8rem;
+      border-radius: 30px;
+      font-weight: 500;
+      color: var(--brand-dark);
+      transition: all 0.2s;
+    }
+    .nav-links a:hover {
+      background: var(--table-hover);
+      text-decoration: none;
+    }
+    .nav-links .active {
+      background: var(--brand-light);
+      color: white;
+    }
+    .toc-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--brand-dark);
+      margin: 1.5rem 0 0.8rem;
+      padding-top: 1rem;
+      border-top: 2px solid var(--border);
+    }
+    .toc-list {
+      list-style: none;
+      padding-right: 0;
+    }
+    .toc-list li {
+      margin-bottom: 0.4rem;
+      font-size: 0.9rem;
+    }
+    .toc-list a {
+      color: var(--text-secondary);
+      display: inline-block;
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+    }
+    .toc-list a:hover {
+      background: var(--table-hover);
+    }
+
+    .main {
+      flex: 1;
+      padding: 2.5rem 3rem;
+      background: var(--surface);
+      min-width: 0;
+      transition: background-color 0.3s ease;
+    }
+    .main-header {
+      margin-bottom: 2.5rem;
+    }
+    .main-header h1 {
+      font-size: 2.4rem;
+      font-weight: 700;
+      color: var(--brand-dark);
+      margin-bottom: 0.5rem;
+    }
+    .main-header p {
+      color: var(--text-secondary);
+      font-size: 1.1rem;
+    }
+
+    .note {
+      margin-bottom: 2.5rem;
+      scroll-margin-top: 1rem;
+      padding: 1.5rem 1.8rem;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      transition: background-color 0.3s ease, border-color 0.3s ease;
+    }
+    .note h2 {
+      font-size: 1.35rem;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 0.9rem;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+    .note h2 .badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: var(--brand-light);
+      color: white;
+      font-size: 1rem;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+    .note p {
+      color: var(--text-secondary);
+      font-size: 1rem;
+      line-height: 1.9;
+      margin-bottom: 0.8rem;
+    }
+    .note p:last-child {
+      margin-bottom: 0;
+    }
+    .note strong {
+      color: var(--text);
+      font-weight: 600;
+    }
+    .note code {
+      background: var(--signature-bg);
+      padding: 0.15rem 0.45rem;
+      border-radius: 6px;
+      font-size: 0.88rem;
+      font-family: 'Courier New', monospace;
+      direction: ltr;
+      color: var(--text);
+    }
+
+    .note.warn {
+      background: var(--warn-bg);
+      border-right: 4px solid var(--warn-border);
+    }
+    .note.warn h2 .badge {
+      background: var(--warn-border);
+      color: #1e1e2f;
+    }
+
+    .note.danger {
+      background: var(--danger-bg);
+      border-right: 4px solid var(--danger-border);
+    }
+    .note.danger h2 .badge {
+      background: var(--danger-border);
+      color: white;
+    }
+
+    .note.info {
+      background: var(--info-bg);
+      border-right: 4px solid var(--info-border);
+    }
+    .note.info h2 .badge {
+      background: var(--info-border);
+      color: white;
+    }
+
+    .note ul {
+      margin: 0.6rem 1.5rem 0.6rem 0;
+      color: var(--text-secondary);
+    }
+    .note ul li {
+      margin-bottom: 0.4rem;
+      line-height: 1.9;
+    }
+
+    .footer {
+      margin-top: 3rem;
+      padding-top: 2rem;
+      border-top: 2px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 1rem;
+      font-size: 0.95rem;
+    }
+    .footer a {
+      color: var(--brand);
+      font-weight: 600;
+    }
+
+    @media (max-width: 900px) {
+      .wrapper {
+        flex-direction: column;
+      }
+      .sidebar {
+        width: 100%;
+        height: auto;
+        position: relative;
+        border-left: none;
+        border-bottom: 1px solid var(--border);
+      }
+      .main {
+        padding: 1.8rem;
+      }
+      .theme-toggle {
+        bottom: 16px;
+        left: 16px;
+        width: 38px;
+        height: 38px;
+      }
+    }
+  </style>
+
+  <button class="theme-toggle" onclick="toggleTheme()" aria-label="تغییر تم" title="تغییر تم دارک/روشن">
+    <span id="theme-icon">🌙</span>
+  </button>
+
+  <script>
+    (function() {
+      var saved = localStorage.getItem('theme');
+      if (saved) {
+        document.documentElement.setAttribute('data-theme', saved);
+      }
+      updateIcon();
+    })();
+
+    function toggleTheme() {
+      var current = document.documentElement.getAttribute('data-theme');
+      var next = current === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next);
+      localStorage.setItem('theme', next);
+      updateIcon();
+    }
+
+    function updateIcon() {
+      var icon = document.getElementById('theme-icon');
+      var theme = document.documentElement.getAttribute('data-theme');
+      icon.textContent = theme === 'dark' ? '☀️' : '🌙';
+    }
+  </script>
+</head>
+<body>
+  <div class="wrapper">
+    <aside class="sidebar">
+      <h1>Fast Rub</h1>
+      <div class="sub">مستندات کتابخانه</div>
+
+      <ul class="nav-links">
+        <li><a href="../index.html">معرفی</a></li>
+        <li><a href="../methods/index.html">متد‌ها</a></li>
+        <li><a href="../models/index.html">مدل‌ها</a></li>
+        <li><a href="../features/index.html">قابلیت ها</a></li>
+        <li><a href="../pyrubi/index.html">یوزر بات</a></li>
+        <li><a href="#" class="active">نکات قبل از نوشتن بات</a></li>
+      </ul>
+
+      <div class="toc-title">📌 فهرست نکات</div>
+      <ul id="toc-list" class="toc-list">
+      </ul>
+    </aside>
+
+    <main class="main">
+      <div class="main-header">
+        <h1>نکات قبل از نوشتن بات</h1>
+        <p>پیش از شروع ساخت بات روبیکا، این نکات مهم و ضروری را با دقت مطالعه کنید.</p>
+      </div>
+      <div id="notes-container"></div>
+
+      <footer class="footer">
+        <a href="../index.html">→ معرفی</a>
+        <a href="../methods/index.html">→ متد ها</a>
+        <a href="../models/index.html">→ مدل ها</a>
+        <a href="../features/index.html">→ قابلیت ها</a>
+        <a href="../pyrubi/index.html">→ یوزر بات</a>
+      </footer>
+    </main>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+
+  <script>
+    const notesData = [
+      {
+        id: "no-keypad-in-groups",
+        type: "danger",
+        icon: "🚫",
+        title: "عدم امکان ارسال کیپد در گروه‌ها و کانال‌ها",
+        html: `<p>ربات‌های روبیکا در <strong>گروه‌ها</strong> و <strong>کانال‌ها</strong> امکان ارسال کیپد (دکمه‌های شیشه‌ای یا معمولی) <strong>ندارند</strong>. این قابلیت فقط در چت‌های خصوصی (PV) در دسترس است.</p>`
+      },
+      {
+        id: "protect-tokens",
+        type: "danger",
+        icon: "🔐",
+        title: "محافظت از توکن و سشن",
+        html: `<p>از توکن و سشن‌های بات خود به‌خوبی محافظت کنید. در اختیار گذاشتن توکن یا فایل سشن به دیگران، امکان کنترل کامل ربات شما را برای آن‌ها فراهم می‌کند. همچنین برای جلوگیری از نشت سشن در .gitignore پسوند سشن را قرار دهید.</p>`
+      },
+      {
+        id: "admin-in-group",
+        type: "warn",
+        icon: "⚠️",
+        title: "لزوم ادمین بودن ربات در گروه",
+        html: `<p>برای دریافت پیام‌های ربات در گروه، ربات باید حتماً در گروه <strong>ادمین</strong> باشد. همچنین در <strong>BotFather</strong> و در بخش «تنظیمات بات»، گزینه‌ی <strong>«دریافت همه پیام‌های کانال و گروه»</strong> باید فعال شود.</p>`
+      },
+      {
+        id: "polling-vs-webhook",
+        type: "warn",
+        icon: "🔔",
+        title: "تفاوت پولینگ و وبهوک برای دکمه‌های شیشه‌ای",
+        html: `<p>پیام‌های معمولی از دو روش <strong>پولینگ</strong> و <strong>وبهوک</strong> پشتیبانی می‌کنند، اما کلیک روی دکمه‌های شیشه‌ای <strong>فقط از طریق وبهوک</strong> قابل دریافت است. برای این کار باید یک آدرس به روبیکا معرفی کنید تا کلیک‌ها به همان آدرس ارسال شوند.</p><br>همچنین در حالت پولینگ، برای پیام‌های معمولی یک <code>offset_id</code> در نشست ربات ذخیره می‌شود تا پیام‌ها از آن زمان به بعد دریافت شوند.`
+      },
+      {
+        id: "error-502-unstable",
+        type: "warn",
+        icon: "💥",
+        title: "خطای 502 و ناپایداری سرورهای روبیکا",
+        html: `<p>سرورهای روبیکا <strong>بی‌ثبات</strong> هستن و مرتب خطای 502، Timeout و Connection Error می‌دن. این مشکل از کتابخونه نیست.</p>
+        <pre><code>bot = Client("my_bot", max_retries=5, max_retries_upload=10, max_retries_download=7)</code></pre>`
+      },
+      {
+        id: "no-official-botapi",
+        type: "info",
+        icon: "ℹ️",
+        title: "نبود پشتیبانی رسمی از BotAPI",
+        html: `<p>روبیکا پشتیبانی رسمی از BotAPI ندارد و متدهای آن نیز کامل نیست. تلاش‌های چندین توسعه‌دهنده در روبیکا نشان داده که انتقاد به تیم روبیکا عملاً بی‌نتیجه بوده است.</p>`
+      },
+      {
+        id: "report-issues",
+        type: "info",
+        icon: "🐛",
+        title: "نحوه گزارش باگ",
+        html: `<p>در صورت مشاهده‌ی باگ، پیش از ارسال Issue، ابتدا آن را بررسی کنید و سپس گزارش دهید تا به بهبود فریم‌ورک کمک شود.</p>`
+      },
+      {
+        id: "chat-id-vs-sender-id",
+        type: "info",
+        icon: "🆔",
+        title: "تفاوت Chat ID، Sender ID و GUID",
+        html: `<p><strong>شناسه‌ی چت (Chat ID)</strong> و <strong>شناسه‌ی فرستنده (Sender ID)</strong> با یکدیگر متفاوت‌اند. همچنین شناسه‌ی <code>GUID</code> که مربوط به یوزربات است، با شناسه‌های بات‌ها تفاوت دارد.</p>
+        <p>در واقع ساختار هر سه یکسان است، اما برای بات‌ها و یوزربات‌ها، این شناسه‌ها برای یک کاربر، گروه یا کانال یکسان نیستند و جداگانه محاسبه می‌شوند.</p>`
+      },
+      {
+        id: "python-version",
+        type: "info",
+        icon: "🐍",
+        title: "پایتون 3.10 یا بالاتر",
+        html: `<p>Fast Rub از تایپ‌هینت‌های جدید و قابلیت‌های <code>asyncio</code> استفاده می‌کنه که از <strong>پایتون 3.10+</strong> پشتیبانی می‌شن.</p>
+        <p>نسخه پیشنهادی: <strong>Python 3.11</strong>، <strong>3.12</strong> یا <strong>3.13</strong>. نسخه <strong>3.14</strong> هم بدون مشکل پشتیبانی می‌شه، اما نسخه <strong>3.15</strong> هنوز تست نشده.</p>`
+      },
+      {
+        id: "limit-upload",
+        type: "info",
+        icon: "📤",
+        title: "آپلود فایل",
+        html: `<p>روبیکا برای آپلود فایل در بات ها محدودیت هایی دارد اما ثبات مشخصی ندارد.</p>`
+      }
+    ];
+
+    function renderNotes() {
+      const container = document.getElementById('notes-container');
+      const tocList = document.getElementById('toc-list');
+      container.innerHTML = '';
+      tocList.innerHTML = '';
+
+      notesData.forEach((note) => {
+        const section = document.createElement('section');
+        section.className = 'note' + (note.type ? ' ' + note.type : '');
+        section.id = note.id;
+
+        const title = document.createElement('h2');
+        title.innerHTML = `<span class="badge">${note.icon}</span><span>${note.title}</span>`;
+        section.appendChild(title);
+
+        const body = document.createElement('div');
+        body.innerHTML = note.html;
+        section.appendChild(body);
+
+        container.appendChild(section);
+
+        const tocItem = document.createElement('li');
+        const tocLink = document.createElement('a');
+        tocLink.href = `#${note.id}`;
+        tocLink.textContent = note.title;
+        tocItem.appendChild(tocLink);
+        tocList.appendChild(tocItem);
+      });
+    }
+
+    window.addEventListener('DOMContentLoaded', renderNotes);
+  </script>
+</body>
+</html>

@@ -660,6 +660,7 @@ fast_rub
 ├── pyrubi # UserBot - Pyrubi(Forked)
 │   ├── client # core client
 │   │   ├── client.py # core client - API to fast_rub/methods
+│   │   ├── plugins.py # plugin client
 │   │   └── __init__.py
 │   ├── crypto # Cryper
 │   │   ├── crypto.py # De/En cryper Conect UserBot rubika
@@ -774,7 +775,8 @@ fast_rub
 - [قابلیت ها مینیفای](/docs/features.min.json)
 - [یوزربات(پایروبی)](/docs/pyrubi.json)
 - [یوزربات(پایروبی) مینیفای](/docs/pyrubi.min.json)
-- [نکات قبل از شروع نوشتن ربات](/docs/prerequisites.txt)
+- [نکات قبل از شروع نوشتن ربات](/docs/prerequisites.json)
+- [نکات قبل از شروع نوشتن ربات مینیفای](/docs/prerequisites.min.json)
 
 [⬆ بازگشت به فهرست](#-فهرست-مطالب)
 
