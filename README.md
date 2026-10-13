@@ -777,6 +777,8 @@ fast_rub
 - [یوزربات(پایروبی) مینیفای](/docs/pyrubi.min.json)
 - [نکات قبل از شروع نوشتن ربات](/docs/prerequisites.json)
 - [نکات قبل از شروع نوشتن ربات مینیفای](/docs/prerequisites.min.json)
+- [کل داکیومنت یکپارچه](/docs/all.json)
+- [کل داکیومنت یکپارچه مینیفای](/docs/all.min.json)
 
 [⬆ بازگشت به فهرست](#-فهرست-مطالب)
 
@@ -824,4 +826,4 @@ fast_rub
 
 ---
 
-<p align="center">ساخته‌شده با ❤️ توسط <strong>سید محمد حسین موسوی رجا — OandONE</strong></p>
+<p align="center">ساخته‌شده با ❤️ توسط <strong>سید محمد حسین موسوی رجا | OandONE</strong></p>
