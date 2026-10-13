@@ -784,7 +784,6 @@ fast_rub
 | قابلیت / باگ |
 |---------|
 | پشتیبانی از logger در یوزربات(پایروبی) |
-| wait_manager & defult_wait در یوزربات(پایروبی) |
 | config در یوزربات(پایروبی) |
 | DataForm & Classic Conversion در یوزربات(پایروبی) |
 | پشتیبانی از middleware در یوزربات(پایروبی) |

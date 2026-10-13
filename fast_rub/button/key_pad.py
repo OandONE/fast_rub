@@ -1,6 +1,8 @@
 from collections.abc import Iterator
 import json
 
+from ..utils import Utils
+
 
 class RowBuilder:
     """سازنده یک ردیف از دکمه‌ها"""
@@ -47,10 +49,12 @@ class KeyPad:
     def clear(self):
         self.list_KeyPads.clear()
 
-    def get(self) -> list:
+    def build(self) -> list:
         return self.list_KeyPads
 
-    build = get
+    def get(self) -> list:
+        Utils.deprecated_property("get", "build")
+        return self.list_KeyPads
 
     def get_data_by_id(self, id: str) -> dict:
         for buttons in self.list_KeyPads:

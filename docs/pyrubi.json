@@ -76,6 +76,16 @@
         "max_retries_upload / max_retries_download",
         "int | None = None",
         "حداکثر تلاش آپلود/دانلود"
+      ],
+      [
+        "wait_manager",
+        "<a href='../features/index.html#WaitManager'>WaitManager</a> | None = None",
+        "مدیریت کننده انتظار"
+      ],
+      [
+        "defult_wait",
+        "float | None = None",
+        "مقدار پیش‌فرض تأخیر بین درخواست‌ها"
       ]
     ],
     "properties": [
