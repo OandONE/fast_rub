@@ -162,7 +162,7 @@ class Utils:
 
     @staticmethod
     def check_id(id: str) -> bool:
-        st = id.startswith("b") or id.startswith("u") or id.startswith("g")
+        st = id.startswith(("b", "u", "g", "c"))
         if st:
             if len(id) == 32:
                 for chr in id:
@@ -174,7 +174,7 @@ class Utils:
     def check_id_raise(id: str):
         if not Utils.check_id(id=id):
             from ..types.errors import InvalidID
-            raise InvalidID('Invalid Id. The ID must be 32 characters long and must also start with one of the letters "b", "u", or "g".')
+            raise InvalidID('Invalid Id. The ID must be 32 characters long and must also start with one of the letters "b", "u", "c" or "g".')
     
     @staticmethod
     def check_message_id(id: str) -> bool:

@@ -774,6 +774,7 @@ fast_rub
 - [قابلیت ها مینیفای](/docs/features.min.json)
 - [یوزربات(پایروبی)](/docs/pyrubi.json)
 - [یوزربات(پایروبی) مینیفای](/docs/pyrubi.min.json)
+- [نکات قبل از شروع نوشتن ربات](/docs/prerequisites.txt)
 
 [⬆ بازگشت به فهرست](#-فهرست-مطالب)
 
