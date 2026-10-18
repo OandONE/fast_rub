@@ -236,7 +236,7 @@
       ],
       [
         "disable_notification",
-        "bool = False",
+        "bool | None = None",
         "غیرفعال کردن اعلان (notification)"
       ],
       [
@@ -337,8 +337,8 @@
       ],
       [
         "disable_notification",
-        "bool = False",
-        "غیرفعال کردن اعلان"
+        "bool | None = None",
+        "غیرفعال کردن اعلان (notification)"
       ],
       [
         "reply_to_message_id",
@@ -398,8 +398,8 @@
       ],
       [
         "disable_notification",
-        "bool = False",
-        "غیرفعال کردن اعلان"
+        "bool | None = None",
+        "غیرفعال کردن اعلان (notification)"
       ],
       [
         "reply_to_message_id",
@@ -484,8 +484,8 @@
       ],
       [
         "disable_notification",
-        "bool = False",
-        "غیرفعال کردن اعلان"
+        "bool | None = None",
+        "غیرفعال کردن اعلان (notification)"
       ],
       [
         "auto_delete",
@@ -628,8 +628,8 @@
       ],
       [
         "disable_notification",
-        "bool = False",
-        "غیرفعال کردن اعلان"
+        "bool | None = None",
+        "غیرفعال کردن اعلان (notification)"
       ],
       [
         "auto_delete",
@@ -679,8 +679,8 @@
       ],
       [
         "disable_notification",
-        "bool = False",
-        "غیرفعال کردن اعلان"
+        "bool | None = None",
+        "غیرفعال کردن اعلان (notification)"
       ],
       [
         "auto_delete",
@@ -877,8 +877,8 @@
       ],
       [
         "disable_notification",
-        "bool = False",
-        "غیرفعال کردن اعلان"
+        "bool | None = None",
+        "غیرفعال کردن اعلان (notification)"
       ],
       [
         "auto_delete",
@@ -993,8 +993,8 @@
       ],
       [
         "disable_notification",
-        "bool | None = False",
-        "غیرفعال کردن اعلان"
+        "bool | None = None",
+        "غیرفعال کردن اعلان (notification)"
       ],
       [
         "auto_delete",
@@ -1161,8 +1161,8 @@
       ],
       [
         "disable_notification",
-        "bool = False",
-        "غیرفعال کردن اعلان"
+        "bool | None = None",
+        "غیرفعال کردن اعلان (notification)"
       ],
       [
         "auto_delete",
@@ -1253,7 +1253,7 @@
       [
         "disable_notification",
         "bool | None = None",
-        "اعلان"
+        "غیرفعال کردن اعلان (notification)"
       ],
       [
         "auto_delete",
@@ -1903,8 +1903,8 @@
       ],
       [
         "disable_notification",
-        "bool = False",
-        "غیرفعال کردن اعلان"
+        "bool | None = None",
+        "غیرفعال کردن اعلان (notification)"
       ],
       [
         "reply_to_message_id",
