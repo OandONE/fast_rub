@@ -381,6 +381,11 @@
         height: 38px;
       }
     }
+    .table-responsive { overflow-x:auto; margin:1rem 0; border-radius:12px; border:1px solid var(--border); }
+    .note table { width:100%; border-collapse:collapse; font-size:0.86rem; }
+    .note th { background:linear-gradient(135deg,var(--brand),var(--brand-dark)); color:#fff; padding:0.65rem 0.9rem; text-align:right; }
+    .note td { padding:0.6rem 0.9rem; border-bottom:1px solid var(--border); }
+    .note tr:hover td { background:var(--table-hover); }
   </style>
 
   <button class="theme-toggle" onclick="toggleTheme()" aria-label="تغییر تم" title="تغییر تم دارک/روشن">
@@ -525,7 +530,53 @@
         icon: "📤",
         title: "آپلود فایل",
         html: `<p>روبیکا برای آپلود فایل در بات ها محدودیت هایی دارد اما ثبات مشخصی ندارد.</p>`
-      }
+      },
+      {
+        id: "lite",
+        type: "info",
+        icon: "🪶",
+        title: "سبک بودن",
+        html: `<p>روی 256 مگابایت رم DDR1 بدون مشکل اجرا می شود(Alpine Liunx)</p>`
+      },
+      {
+        id: "speed",
+        type: "info",
+        icon: "⚡",
+        title: "سرعت بالا",
+        html: `<p>httpx/HTTP/2 , async-native , استخر اتصال پایدار</p>`
+      },
+      {
+        id: "install",
+        type: "info",
+        icon: "📦",
+        title: "نصب",
+        html: `<code>pip install fastrub</code><br><code>pip install fastrub -i https://mirror-pypi.runflare.com/simple # میرور جایگزین</code><br><code>pip install fastrub -i https://mirror.abrha.net/repository/pypi/simple # میرور جایگزین</code><br><code>pip install fastrub -i https://package-mirror.liara.ir/repository/pypi/simple # میرور جایگزین</code>`
+      },
+      {
+        id: "extras",
+        type: "info",
+        icon: "🧩",
+        title: "نصب اختیاری",
+        html: `
+          <div class="table-responsive">
+            <table>
+              <thead><tr><th>Extra</th><th>نصب</th><th>کاربرد</th></tr></thead>
+              <tbody>
+                <tr><td><code>fastapi</code></td><td><code>pip install fastrub[fastapi]</code></td><td>داشبورد و وب‌سرور با FastAPI</td></tr>
+                <tr><td><code>flask</code></td><td><code>pip install fastrub[flask]</code></td><td>داشبورد و وب‌سرور با Flask</td></tr>
+                <tr><td><code>hotreload</code></td><td><code>pip install fastrub[hotreload]</code></td><td>Hot Reload</td></tr>
+                <tr><td><code>jalali</code></td><td><code>pip install fastrub[jalali]</code></td><td>تاریخ شمسی Scheduler</td></tr>
+                <tr><td><code>progress</code></td><td><code>pip install fastrub[progress]</code></td><td>نوار پیشرفت (tqdm)</td></tr>
+                <tr><td><code>pillow</code></td><td><code>pip install fastrub[pillow]</code></td><td>پردازش تصویر در یوزربات</td></tr>
+                <tr><td><code>moviepy</code></td><td><code>pip install fastrub[moviepy]</code></td><td>پردازش ویدیو در یوزربات</td></tr>
+                <tr><td><code>aiortc</code></td><td><code>pip install fastrub[aiortc]</code></td><td>تماس صوتی/تصویری</td></tr>
+                <tr><td><code>userbot</code></td><td><code>pip install fastrub[userbot]</code></td><td>یوزربات</td></tr>
+                <tr><td><code>userbot-full</code></td><td><code>pip install fastrub[userbot-full]</code></td><td>یوزربات کامل</td></tr>
+                <tr><td><code>full</code></td><td><code>pip install fastrub[full]</code></td><td>همه چیز یک‌جا</td></tr>
+              </tbody>
+            </table>
+          </div>`
+      },
     ];
 
     function renderNotes() {
