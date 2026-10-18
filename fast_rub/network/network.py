@@ -311,6 +311,12 @@ class Network:
             url = f"{base_url}v3/{self.token}/{method}"
             try:
                 if data:
+                    if (
+                        self._core_client.default_disable_notification is not None and
+                        "disable_notification" in data and
+                        data["disable_notification"] is None
+                    ):
+                        data["disable_notification"] = self._core_client.default_disable_notification
                     data = Utils.clean_dict(data)
                 response = await self.request(url, data, "POST")
             except Exception as e:

@@ -188,6 +188,9 @@ class Client:
     network_limits: httpx.Limits | None = None
         لیمیت نتورک برای ارسال درخواست ها
         در صورت تنظیم نشدن به صورت پیشفرض بهترین انتخاب برای ربات های بزرگ تنظیم میشود
+    
+    default_disable_notification: bool | None = None
+        غیرفعال کردن اعلان به صورت پیشفرض
     """
     # ═══════════════════════════════════
     # region 🚀 Start & Stop | شروع و توقف
@@ -230,7 +233,8 @@ class Client:
         stats_db_path: str | None = None,
         dry_run: bool = False,
         http2: bool = True,
-        network_limits: httpx.Limits | None = None
+        network_limits: httpx.Limits | None = None,
+        default_disable_notification: bool | None = None,
     ):
         """Client for login and setting robot / کلاینت برای لوگین و تنظیمات ربات"""
         self.name_session = name_session
@@ -295,6 +299,7 @@ class Client:
         self.http2 = http2
         self.network_limits = network_limits
         self._pending_tasks: set[asyncio.Task] = set()
+        self.default_disable_notification = default_disable_notification
         if logger:
             self.logger = logger
         else:
@@ -386,7 +391,7 @@ class Client:
                 ssl_verify=self.ssl_verify,
                 max_retries_upload=self.max_retries_upload,
                 max_retries_download=self.max_retries_download,
-                http2=self.http2,
+                http2=self.http2
             )
             await self.network.start(
                 start_worker=True,
@@ -1350,7 +1355,7 @@ class Client:
         from_chat_id: str,
         message_id: str,
         to_chat_id: str,
-        disable_notification : bool | None = False,
+        disable_notification : bool | None = None,
         auto_delete: int | None = None,
         wait_send: float | None = None,
         return_task: bool = False
@@ -1639,7 +1644,7 @@ class Client:
         text : str | None = None,
         reply_to_message_id : str | None = None,
         type_file: Literal["File", "Image", "Voice", "Music", "Gif" , "Video"] = "File",
-        disable_notification : bool | None = False,
+        disable_notification : bool | None = None,
         auto_delete: int | None = None,
         parse_mode: Literal["Markdown", "HTML", None] = "Markdown",
         meta_data: list | None = None,
@@ -1825,7 +1830,7 @@ class Client:
         name_file: str | None = None,
         text : str | None = None,
         reply_to_message_id : str | None = None,
-        disable_notification : bool | None = False,
+        disable_notification : bool | None = None,
         auto_delete: int | None = None,
         parse_mode: Literal["Markdown", "HTML", None] = "Markdown",
         meta_data: list | None = None,
@@ -1969,7 +1974,7 @@ class Client:
         name_file: str | None = None,
         text : str | None = None,
         reply_to_message_id : str | None = None,
-        disable_notification : bool | None = False,
+        disable_notification : bool | None = None,
         auto_delete: int | None = None,
         parse_mode: Literal["Markdown", "HTML", None] = "Markdown",
         meta_data: list | None = None,
