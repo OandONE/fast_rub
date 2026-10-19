@@ -6,7 +6,6 @@ import asyncio
 from .colors import cprint, Colors
 import time
 import re
-from ..button import KeyPad
 import inspect
 import warnings
 
@@ -15,6 +14,7 @@ if TYPE_CHECKING:
     from .filters import Filter
     from .inline_filters import InlineFilter
     from ..types import Update, UpdateButton
+    from ..button import KeyPad
 
 DATA_SUFFIXS = {
     "Image": ("png", "jpg", "gif", "jpeg", "webp", "svg", "ico"),
@@ -74,6 +74,7 @@ class Utils:
         metadata: list | None = None,
         meta_data: list | None = None
     ) -> dict:
+        from ..button import KeyPad
         if isinstance(inline_keypad, KeyPad):
             inline_keypad = inline_keypad.build()
         if isinstance(keypad, KeyPad):

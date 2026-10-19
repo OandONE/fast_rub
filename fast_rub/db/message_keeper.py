@@ -90,7 +90,7 @@ class MessageKeeper:
         db = await self._get_db()
         chat_id = message.chat_id
         message_id = message.message_id
-        raw_data = self._make_json_serializable(message.raw_data_)
+        raw_data = self._make_json_serializable(message.raw_data)
         json_data = json.dumps(raw_data, ensure_ascii=False, separators=(',', ':'))
 
         await db.write("message_storage", {

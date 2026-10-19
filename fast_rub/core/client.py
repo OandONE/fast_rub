@@ -4,6 +4,7 @@ import time
 import os
 import sys
 import json
+import hashlib
 from functools import wraps
 from pathlib import Path
 from collections import deque
@@ -36,7 +37,7 @@ from ..types import Update, UpdateButton, msg_update
 from ..types.errors import PollInvalid
 from ..types.props import props
 from ..types.models import Bot as BotModel, Chat as ChatModel
-from ..types import WebhookConfig
+from ..types import WebhookConfig, AutoFailoverConfig
 from ..utils.colors import Colors
 from ..utils.logger import logging, set_log_callback, setup_logging
 from ..utils.utils import Utils
@@ -146,6 +147,9 @@ class Client:
     
     webhook: Optional[WebhookConfig] = None
         تنظیمات وبهوک
+
+    auto_failover: AutoFailoverConfig | None = None
+        Failover timing settings; enable handlers with @bot.failover_on_message(). / تنظیمات زمانی؛ فعال‌سازی با دکوراتور اختصاصی.
     
     poll_interval: float = 0.0
         زمان ایستادن بین گرفتن پیام ها
@@ -235,8 +239,9 @@ class Client:
         http2: bool = True,
         network_limits: httpx.Limits | None = None,
         default_disable_notification: bool | None = None,
+        auto_failover: AutoFailoverConfig | None = None,
     ):
-        """Client for login and setting robot / کلاینت برای لوگین و تنظیمات ربات"""
+        """Create a client / ساخت کلاینت ربات"""
         self.name_session = name_session
         self.token = token # pyright: ignore[reportAttributeAccessIssue]
         self.save_logs = save_logs
@@ -263,6 +268,17 @@ class Client:
         self._cache_max_size = cache_max_size
         self._cache_ttl = cache_ttl
         self.webhook = webhook
+        self.auto_failover = auto_failover
+        self._auto_failover_defaults = {
+            "check_interval": 5.0,
+            "failure_timeout": 15.0,
+            "recovery_successes": 5,
+        }
+        self._auto_failover_pipeline_keys: set[str] = set()
+        self._auto_failover_pipeline_order = deque()
+        self._auto_failover_conversation_keys: set[str] = set()
+        self._auto_failover_conversation_order = deque()
+        self._auto_failover_polling_failure_since: float | None = None
         self.poll_interval = poll_interval
         self.ssl_verify = ssl_verify
         self.state = {}
@@ -276,6 +292,7 @@ class Client:
         self._before_run_handlers = []
         self._after_run_handlers = []
         self._message_handlers_polling = []
+        self._message_handlers_failover = []
         self._button_handlers = []
         self._button_handlers_url = []
         self._webhook_handlers_url = []
@@ -308,14 +325,209 @@ class Client:
         if run_start: # Remove in V7
             asyncio.run(self.start())
 
+    def _resolve_auto_failover_config(
+        self,
+        decorator_config: AutoFailoverConfig | None = None,
+    ) -> dict[str, Any]:
+        """Merge failover options / تنظیمات Failover را ادغام می‌کند"""
+        resolved = dict(self._auto_failover_defaults)
+        # Client options provide defaults; decorator options override them.
+        for config in (self.auto_failover, decorator_config):
+            if config is None:
+                continue
+            if not isinstance(config, AutoFailoverConfig):
+                raise TypeError("auto_failover باید از نوع AutoFailoverConfig یا None باشد")
+            for name in resolved:
+                value = getattr(config, name)
+                if value is not None:
+                    resolved[name] = value
+        return resolved
+
+    def _auto_failover_infos(self) -> list[dict[str, Any]]:
+        """Return dedicated failover handlers / هندلرهای اختصاصی Failover را برمی‌گرداند"""
+        return self._message_handlers_failover
+
+    def _auto_failover_enabled(self) -> bool:
+        """Check whether failover handlers exist / فعال بودن هندلرهای Failover را بررسی می‌کند"""
+        return bool(self._message_handlers_failover)
+
+    @staticmethod
+    def _auto_failover_update_key(message: dict[str, Any]) -> str:
+        """Build a stable event key / شناسه‌ای پایدار برای آپدیت می‌سازد"""
+        # Normalize deletion names so Polling and Webhook identify the same event.
+        normalized = dict(message)
+        event_type = normalized.get("type", "")
+        if event_type in ("RemoveMessage", "RemovedMessage"):
+            event_type = "RemovedMessage"
+        normalized["type"] = event_type
+        payload = json.dumps(
+            normalized,
+            sort_keys=True,
+            ensure_ascii=False,
+            default=str,
+            separators=(",", ":"),
+        )
+        digest = hashlib.sha256(payload.encode("utf-8", errors="replace")).hexdigest()
+        return f"{event_type}:{digest}"
+
+    @staticmethod
+    def _remember_handler_update(handler_info: dict[str, Any], key: str) -> bool:
+        """Reject duplicate deliveries / دریافت تکراری آپدیت را رد می‌کند"""
+        seen = handler_info.setdefault("_auto_failover_seen", set())
+        order = handler_info.setdefault("_auto_failover_seen_order", deque())
+        if key in seen:
+            return False
+        seen.add(key)
+        order.append(key)
+        # Bound memory usage while retaining a useful recent deduplication window.
+        while len(order) > 2048:
+            seen.discard(order.popleft())
+        return True
+
+    def _remember_pipeline_update(self, key: str) -> bool:
+        """Track updates already passed through the shared pipeline / عبور قبلی آپدیت از مسیر مشترک را ثبت می‌کند"""
+        if key in self._auto_failover_pipeline_keys:
+            return False
+        self._auto_failover_pipeline_keys.add(key)
+        self._auto_failover_pipeline_order.append(key)
+        while len(self._auto_failover_pipeline_order) > 4096:
+            self._auto_failover_pipeline_keys.discard(self._auto_failover_pipeline_order.popleft())
+        return True
+
+    def _auto_failover_check_interval(self) -> float:
+        """Get the fastest configured monitor interval / کمترین فاصله بررسی را می‌گیرد"""
+        values = [
+            info["auto_failover_config"]["check_interval"]
+            for info in self._auto_failover_infos()
+        ]
+        return min(values) if values else 5.0
+
+    def _remember_conversation_consumed(self, key: str) -> None:
+        """Remember updates consumed by Conversation / آپدیت مصرف‌شده توسط Conversation را ثبت می‌کند"""
+        if key in self._auto_failover_conversation_keys:
+            return
+        self._auto_failover_conversation_keys.add(key)
+        self._auto_failover_conversation_order.append(key)
+        while len(self._auto_failover_conversation_order) > 4096:
+            self._auto_failover_conversation_keys.discard(self._auto_failover_conversation_order.popleft())
+
+    async def _dispatch_auto_failover_update(
+        self,
+        message: dict[str, Any],
+        handler_infos: list[dict[str, Any]],
+        source: str,
+        normal_pipeline_ran: bool = False,
+    ) -> bool:
+        """Dispatch one update once / آپدیت را فقط یک‌بار توزیع می‌کند"""
+        if not handler_infos:
+            return False
+        key = self._auto_failover_update_key(message)
+        # Conversations take precedence over message callbacks on both transports.
+        if key in self._auto_failover_conversation_keys:
+            return True
+        fresh_infos = []
+        for info in handler_infos:
+            if self._remember_handler_update(info, key):
+                fresh_infos.append(info)
+        if not fresh_infos:
+            return False
+
+        first_pipeline_delivery = self._remember_pipeline_update(key)
+        deleted_type = message.get("type")
+        if deleted_type not in ("RemoveMessage", "RemovedMessage"):
+            deleted_type = "RemoveMessage" if source == "polling" else "RemovedMessage"
+        consumed = await self._process_message_update(
+            message=message,
+            handler_infos=fresh_infos,
+            deleted_message_type=deleted_type,
+            handle_conversation=first_pipeline_delivery and not normal_pipeline_ran,
+            store_message=first_pipeline_delivery and not normal_pipeline_ran,
+        )
+        if consumed:
+            self._remember_conversation_consumed(key)
+        return consumed
+
+    async def _queue_or_dispatch_polling_update(self, message: dict[str, Any]) -> None:
+        """Queue webhook-missing updates or dispatch polling fallback / آپدیت‌های مفقود وب‌هوک را صف یا با Polling ارسال می‌کند"""
+        key = self._auto_failover_update_key(message)
+        now = time.monotonic()
+        normal_pipeline_ran = bool(self._message_handlers_polling)
+
+        for info in self._auto_failover_infos():
+            if info.get("active_source") == "polling":
+                await self._dispatch_auto_failover_update(
+                    message, [info], "polling", normal_pipeline_ran=normal_pipeline_ran
+                )
+            elif key not in info.get("_auto_failover_seen", set()):
+                # The timer is created only once; repeated polling batches must not reset it.
+                info.setdefault("_auto_failover_pending", {}).setdefault(
+                    key, (now, message, normal_pipeline_ran)
+                )
+        await self._flush_auto_failover_pending()
+
+    async def _flush_auto_failover_pending(self) -> None:
+        """Switch to Polling when Webhook misses an update / در صورت مفقودی آپدیت، به Polling سوییچ می‌کند"""
+        now = time.monotonic()
+        for info in self._auto_failover_infos():
+            if info.get("active_source") != "webhook":
+                continue
+            pending = info.get("_auto_failover_pending", {})
+            timeout = info["auto_failover_config"]["failure_timeout"]
+            ready = [
+                (key, created, message, normal_ran)
+                for key, (created, message, normal_ran) in list(pending.items())
+                if key not in info.get("_auto_failover_seen", set())
+                and now - created >= timeout
+            ]
+            # Webhook may have delivered queued updates while we were waiting.
+            for key in list(pending):
+                if key in info.get("_auto_failover_seen", set()):
+                    pending.pop(key, None)
+            if not ready:
+                continue
+
+            info["active_source"] = "polling"
+            info["_auto_failover_recovery_streak"] = 0
+            self.logger.warning("Auto Failover: Webhook missed an update; switched to Polling.")
+            # Deliver the entire pending queue after the switch to avoid dropping newer events.
+            for key, (_created, message, normal_ran) in list(pending.items()):
+                pending.pop(key, None)
+                await self._dispatch_auto_failover_update(
+                    message, [info], "polling", normal_pipeline_ran=normal_ran
+                )
+
+    def _on_polling_success(self) -> None:
+        """Reset Polling failure timer / شمارنده خطای Polling را پاک می‌کند"""
+        self._auto_failover_polling_failure_since = None
+
+    def _on_polling_failure(self) -> None:
+        """Return to Webhook if fallback Polling stays unavailable / هنگام خرابی طولانی Polling به وب‌هوک برمی‌گردد"""
+        now = time.monotonic()
+        if self._auto_failover_polling_failure_since is None:
+            self._auto_failover_polling_failure_since = now
+        elapsed = now - self._auto_failover_polling_failure_since
+        for info in self._auto_failover_infos():
+            if info.get("active_source") != "polling":
+                continue
+            if elapsed >= info["auto_failover_config"]["failure_timeout"]:
+                info["active_source"] = "webhook"
+                info["_auto_failover_recovery_streak"] = 0
+                self.logger.warning("Auto Failover: Polling is unavailable; switched back to Webhook.")
+
     async def start(self):
-        """تنظیمات شروع کردن ربات"""
+        """Initialize Client runtime resources / آماده‌سازی منابع کلاینت"""
         self._is_started = True
         self._running = False
-        self._fetch_messages_webhook = False
-        self._fetch_messages_polling = False
-        self._fetch_buttons = False
-        self._fetch_edit = False
+        # Rebuild these flags from registered handlers. Resetting them here made
+        # handlers registered before run() disappear from run-time validation.
+        failover_enabled = bool(self._message_handlers_failover)
+        self._fetch_messages_webhook = bool(self._message_handlers_webhook or failover_enabled)
+        self._fetch_messages_polling = bool(self._message_handlers_polling or failover_enabled)
+        self._fetch_buttons = bool(self._button_handlers)
+        self._fetch_edit = any(
+            info.get("edited_messages") for info in
+            (self._message_handlers_polling + self._message_handlers_webhook + self._message_handlers_failover)
+        )
         self.next_offset_id_get_message = None
         self.geted_u = 0
         self.list_commands = []
@@ -436,12 +648,19 @@ class Client:
         self.logger.info("سشن اماده است")
 
     async def _run_all(self):
+        """Start configured receiver tasks / راه‌اندازی مسیرهای دریافت آپدیت"""
         tasks = []
         
-        if self._webhook_server and (self._message_handlers_webhook or self._button_handlers):
+        auto_failover_enabled = bool(self._message_handlers_failover)
+        if auto_failover_enabled and self._webhook_server is None:
+            raise ValueError("failover_on_message() requires webhook=WebhookConfig(...)")
+
+        if self._webhook_server and (
+            self._message_handlers_webhook or self._button_handlers or auto_failover_enabled
+        ):
             tasks.append(self._webhook_server.start())
-        
-        if self._fetch_messages_polling and self._message_handlers_polling:
+
+        if self._fetch_messages_polling and (self._message_handlers_polling or auto_failover_enabled):
             tasks.append(self._process_messages_polling())
         
         if not tasks:
@@ -489,10 +708,11 @@ class Client:
             ):
                 raise ValueError("No update types selected. Use decorator first.")
 
+            has_failover_handlers = bool(self._message_handlers_failover)
             if (
-                self._fetch_messages_webhook and not self._message_handlers_webhook
+                self._fetch_messages_webhook and not (self._message_handlers_webhook or has_failover_handlers)
             ) or (
-                self._fetch_messages_polling and not self._message_handlers_polling
+                self._fetch_messages_polling and not (self._message_handlers_polling or has_failover_handlers)
             ):
                 raise ValueError(
                     "Message handlers registered but no message callbacks defined."
@@ -504,7 +724,7 @@ class Client:
                 )
 
             if self._fetch_edit and not (
-                self._message_handlers_polling or self._message_handlers_webhook
+                self._message_handlers_polling or self._message_handlers_webhook or self._message_handlers_failover
             ):
                 raise ValueError(
                     "Edit handlers registered but no message callbacks defined."
@@ -2140,16 +2360,16 @@ class Client:
     def on_message(self,
         filters: Filter | None = None,
         edited_messages: Literal[False, True, "both"] = False,
-        deleted_messages: Literal[False, True, "both"] = False
+        deleted_messages: Literal[False, True, "both"] = False,
     ):
-        """برای دریافت پیام‌های معمولی به صورت پولینگ"""
+        """Receive new Polling messages / دریافت پیام جدید با Polling"""
         def decorator(handler):
             self.add_handler(
                 handler=handler,
                 type_handler="polling",
                 filters=filters,
                 edited_messages=edited_messages,
-                deleted_messages=deleted_messages
+                deleted_messages=deleted_messages,
             )
             return handler
         return decorator
@@ -2158,16 +2378,16 @@ class Client:
         self,
         filters: Filter | None = None,
         edited_messages: Literal[False, True, "both"] = False,
-        deleted_messages: Literal[False, True, "both"] = False
+        deleted_messages: Literal[False, True, "both"] = False,
     ):
-        """گرفتن پیام ها با وبهوک"""
+        """Receive messages through Webhook / دریافت پیام از وب‌هوک"""
         def decorator(handler):
             self.add_handler(
                 handler=handler,
                 type_handler="webhook",
                 filters=filters,
                 edited_messages=edited_messages,
-                deleted_messages=deleted_messages
+                deleted_messages=deleted_messages,
             )
             return handler
         return decorator
@@ -2210,29 +2430,77 @@ class Client:
     on_glass_inline = on_button
     
     def on_edit_updates(self, filters: Filter | None = None):
-        """برای دریافت ویرایش شدن پیام ها"""
+        """Receive edited Webhook messages / دریافت ویرایش پیام از وب‌هوک"""
         return self.on_message_updates(filters=filters, edited_messages=True)
-    
+
     def on_delete_updates(self, filters: Filter | None = None):
-        """برای دریافت پیام های حذف شده"""
+        """Receive deleted Webhook messages / دریافت حذف پیام از وب‌هوک"""
         return self.on_message_updates(filters=filters, deleted_messages=True)
 
     def on_all_message_updates(self, filters: Filter | None = None):
-        """گرفتن تمامی پیام ها(ارسال شده/ویرایش شده/حذف شده)"""
-        return self.on_message_updates(filters=filters, edited_messages="both", deleted_messages="both")
-    
+        """Receive all Webhook message events / دریافت همه رویدادهای پیام وب‌هوک"""
+        return self.on_message_updates(
+            filters=filters, edited_messages="both", deleted_messages="both"
+        )
 
     def on_edit(self, filters: Filter | None = None):
-        """برای دریافت ویرایش شدن پیام ها"""
+        """Receive edited Polling messages / دریافت ویرایش پیام با Polling"""
         return self.on_message(filters=filters, edited_messages=True)
-    
+
     def on_delete(self, filters: Filter | None = None):
-        """برای دریافت پیام های حذف شده"""
+        """Receive deleted Polling messages / دریافت حذف پیام با Polling"""
         return self.on_message(filters=filters, deleted_messages=True)
 
     def on_all_message(self, filters: Filter | None = None):
-        """گرفتن تمامی پیام ها(ارسال شده/ویرایش شده/حذف شده)"""
-        return self.on_message(filters=filters, edited_messages="both", deleted_messages="both")
+        """Receive all Polling message events / دریافت همه رویدادهای پیام Polling"""
+        return self.on_message(
+            filters=filters, edited_messages="both", deleted_messages="both"
+        )
+
+    def failover_on_message(
+        self,
+        filters: Filter | None = None,
+        edited_messages: Literal[False, True, "both"] = False,
+        deleted_messages: Literal[False, True, "both"] = False,
+        config: AutoFailoverConfig | None = None,
+    ):
+        """Register a Webhook<->Polling handler / ثبت هندلر با جابه‌جایی خودکار"""
+        # This decorator is the opt-in; normal message decorators stay unchanged.
+        def decorator(handler):
+            self.add_handler(
+                handler=handler,
+                type_handler="failover",
+                filters=filters,
+                edited_messages=edited_messages,
+                deleted_messages=deleted_messages,
+                failover_config=config,
+            )
+            return handler
+        return decorator
+
+    def failover_on_delete(
+        self,
+        filters: Filter | None = None,
+        config: AutoFailoverConfig | None = None
+    ):
+        """Register a Webhook<->Polling handler (But Message Delete) / ثبت هندلر با جابه‌جایی خودکار (فقط حذف پیام)"""
+        return self.failover_on_message(
+            filters=filters,
+            deleted_messages=True,
+            config=config
+        )
+    
+    def failover_on_edit(
+        self,
+        filters: Filter | None = None,
+        config: AutoFailoverConfig | None = None
+    ):
+        """Register a Webhook<->Polling handler (But Message Edit) / ثبت هندلر با جابه‌جایی خودکار (فقط ویرایش پیام)"""
+        return self.failover_on_message(
+            filters=filters,
+            edited_messages=True,
+            config=config
+        )
 
     on_message_webhook = on_message_updates
     on_message_webhook_delete = on_delete_updates
@@ -2242,6 +2510,9 @@ class Client:
     on_message_polling_delete = on_delete
     on_message_polling_edit = on_edit
     on_message_polling_all = on_all_message
+    failover_on_message_updates = failover_on_message
+    failover_on_delete_updates = failover_on_delete
+    failover_on_edit_updates = failover_on_edit
 
     
     def on_ready(self):
@@ -2392,6 +2663,7 @@ class Client:
         type_handler: Literal[
             "polling",
             "webhook",
+            "failover",
             "button",
             "start",
             "ready",
@@ -2412,15 +2684,17 @@ class Client:
         filters: Filter | InlineFilter | None = None,
         edited_messages: Literal[False, True, "both"] = False,
         deleted_messages: Literal[False, True, "both"] = False,
+        failover_config: AutoFailoverConfig | None = None,
         **values
     ):
+        """Register a callback / ثبت هندلر"""
         if isinstance(handler, Callable):
-            if type_handler in ("polling", "webhook"):
+            if type_handler in ("polling", "webhook", "failover"):
                 self._fetch_messages = True
                 @wraps(handler)
                 async def wrapped(update):
                     try:
-                        # The message filter is executed only in the shared processor so that it does not run twice
+                        # Run filters only in the shared pipeline to avoid duplicate filter calls.
                         return await Utils.run_handler(
                             handler,
                             update
@@ -2435,16 +2709,33 @@ class Client:
                     "handler": wrapped,
                     "filters": filters,
                     "edited_messages": edited_messages,
-                    "deleted_messages": deleted_messages
+                    "deleted_messages": deleted_messages,
+                    "source": type_handler,
                 }
                 if edited_messages:
                     self._fetch_edit = True
                 if type_handler == "polling":
                     self._fetch_messages_polling = True
                     self._message_handlers_polling.append(handler_info)
-                else:
+                elif type_handler == "webhook":
                     self._fetch_messages_webhook = True
                     self._message_handlers_webhook.append(handler_info)
+                else:
+                    # Store one logical handler shared by both transports; start with Webhook
+                    # The seen set handles duplicate payloads, pending stores candidates, and
+                    # the recovery streak controls when Webhook becomes preferred again
+                    handler_info.update({
+                        "source": "failover",
+                        "active_source": "webhook",
+                        "auto_failover_config": self._resolve_auto_failover_config(failover_config),
+                        "_auto_failover_recovery_streak": 0,
+                        "_auto_failover_seen": set(),
+                        "_auto_failover_seen_order": deque(),
+                        "_auto_failover_pending": {},
+                    })
+                    self._fetch_messages_polling = True
+                    self._fetch_messages_webhook = True
+                    self._message_handlers_failover.append(handler_info)
                 return wrapped
             elif type_handler == "button":
                 self._fetch_buttons = True
@@ -2518,22 +2809,19 @@ class Client:
         message: dict[str, Any],
         handler_infos: list[dict[str, Any]],
         deleted_message_type: Literal["RemoveMessage", "RemovedMessage"],
-    ) -> None:
-        """پردازش مشترک یک آپدیت پیام برای Polling و Webhook.
-
-        دریافت آپدیت، بررسی زمان‌بندی Polling و مدیریت Offset در پردازشگر
-        مربوط به هر منبع باقی می‌ماند. این متد فقط منطق مشترک پس از دریافت
-        آپدیت را اجرا می‌کند.
-        """
-        if self.wait_manager and self.wait_manager.auto_track:
+        handle_conversation: bool = True,
+        store_message: bool = True,
+    ) -> bool:
+        """Process shared message logic / پردازش مشترک پیام"""
+        if handle_conversation and self.wait_manager and self.wait_manager.auto_track:
             self.wait_manager.track()
 
         update = Update(message, self)
         is_edited = message["type"] == "UpdatedMessage"
         is_deleted = message["type"] == deleted_message_type
 
-        if await self._conversation_manager.handle(update, self):
-            return
+        if handle_conversation and await self._conversation_manager.handle(update, self):
+            return True
 
         for handler_info in handler_infos:
             handler = handler_info["handler"]
@@ -2557,21 +2845,26 @@ class Client:
 
             self._schedule_handler(handler, update)
 
-        if not is_edited and not is_deleted:
+        if store_message and not is_edited and not is_deleted:
             if self.enable_stats and self.stats:
                 await self.stats.track(update)
             if self.keeper_messages_ram:
                 self.messages.append(update)
             if self.keeper_messages_db:
                 await self.messages_db.append(update)
+        return False
 
     async def _process_messages_polling(self):
+        """Poll updates and monitor Webhook delivery / دریافت Polling و پایش وب‌هوک"""
         while self._running:
+            auto_failover_enabled = self._auto_failover_enabled() and bool(self._webhook_server)
             try:
                 messages = await self.get_updates(
                     limit=100,
                     offset_id=self.next_offset_id
                 )
+                updates = messages["updates"]
+                self._on_polling_success() if auto_failover_enabled else None
                 try:
                     self.next_offset_id = messages["next_offset_id"]
                     if self.save_offset_id:
@@ -2581,45 +2874,104 @@ class Client:
                     pass
 
                 now = time.time()
-                messages = messages["updates"]
-                for message in messages:
-                    if message["type"] not in ("NewMessage", "UpdatedMessage", "RemoveMessage"):
+                for message in updates:
+                    if message.get("type") not in ("NewMessage", "UpdatedMessage", "RemoveMessage"):
                         continue
-
-                    # This limitation is specific to Polling; Webhook should not apply it
-                    if not int(message["new_message"]["time"]) + 5 > now:
+                    # Keep existing Polling behavior: discard updates older than five seconds.
+                    try:
+                        if not int(message["new_message"]["time"]) + 5 > now:
+                            continue
+                    except (KeyError, TypeError, ValueError):
                         continue
 
                     if not self._is_live:
                         await self._process_on_live()
                         self._is_live = True
 
-                    await self._process_message_update(
-                        message=message,
-                        handler_infos=self._message_handlers_polling,
-                        deleted_message_type="RemoveMessage",
-                    )
+                    normal_pipeline_ran = bool(self._message_handlers_polling)
+                    if normal_pipeline_ran:
+                        consumed = await self._process_message_update(
+                            message=message,
+                            handler_infos=self._message_handlers_polling,
+                            deleted_message_type="RemoveMessage",
+                        )
+                        if consumed:
+                            self._remember_conversation_consumed(self._auto_failover_update_key(message))
+                    if auto_failover_enabled:
+                        await self._queue_or_dispatch_polling_update(message)
+                    elif not normal_pipeline_ran:
+                        continue
+                if auto_failover_enabled:
+                    await self._flush_auto_failover_pending()
 
             except (httpx.ReadError, httpx.ConnectError) as e:
-                self.logger.warning(f"خطای شبکه در _process_messages_polling: {e} - انتظار 5 ثانیه...")
-                await asyncio.sleep(5)
+                if auto_failover_enabled:
+                    self._on_polling_failure()
+                    self.logger.warning(f"Auto Failover monitor: polling network error: {e}")
+                else:
+                    self.logger.warning(f"خطای شبکه در _process_messages_polling: {e} - انتظار 5 ثانیه...")
+                    await asyncio.sleep(5)
             except Exception as e:
+                if auto_failover_enabled:
+                    self._on_polling_failure()
                 self.logger.error(f"خطای ناشناخته در _process_messages_polling: {e}", exc_info=True)
-            await asyncio.sleep(self.poll_interval)
+
+            if auto_failover_enabled:
+                await asyncio.sleep(self._auto_failover_check_interval())
+            else:
+                await asyncio.sleep(self.poll_interval)
 
     async def _process_webhook_push(self, data: dict, endpoint_type: str):
-        """پردازش وب‌هوک Push برای پیام‌های معمولی"""
+        """Route Webhook updates to normal and failover handlers / آپدیت وب‌هوک را به هندلرها می‌رساند"""
         updates = data if isinstance(data, list) else [data]
-        for result in updates:
-            if result.get("type") not in ["NewMessage", "UpdatedMessage", "RemovedMessage"]:
-                continue
+        failover_infos = self._auto_failover_infos()
+        # Recovery is counted per Webhook request, not per item in a batch.
+        recovering_infos = [
+            info for info in failover_infos if info.get("active_source") == "polling"
+        ]
+        supported_updates = []
 
-            # Webhook is processed the moment the request arrives; it does not have Polling's 5-second limitation
-            await self._process_message_update(
-                message=result,
-                handler_infos=self._message_handlers_webhook,
-                deleted_message_type="RemovedMessage",
-            )
+        for result in updates:
+            if not isinstance(result, dict) or result.get("type") not in (
+                "NewMessage", "UpdatedMessage", "RemovedMessage"
+            ):
+                continue
+            supported_updates.append(result)
+
+            normal_pipeline_ran = bool(self._message_handlers_webhook)
+            if normal_pipeline_ran:
+                consumed = await self._process_message_update(
+                    message=result,
+                    handler_infos=self._message_handlers_webhook,
+                    deleted_message_type="RemovedMessage",
+                )
+                if consumed:
+                    self._remember_conversation_consumed(self._auto_failover_update_key(result))
+
+            # Always accept Webhook deliveries; deduplication rejects anything Polling handled already.
+            if failover_infos:
+                await self._dispatch_auto_failover_update(
+                    result,
+                    failover_infos,
+                    "webhook",
+                    normal_pipeline_ran=normal_pipeline_ran,
+                )
+
+        if not supported_updates:
+            # An empty/unsupported request does not count as a consecutive recovery success.
+            for info in recovering_infos:
+                info["_auto_failover_recovery_streak"] = 0
+            return
+
+        for info in recovering_infos:
+            # Each supported Webhook request advances one consecutive recovery step.
+            info["_auto_failover_recovery_streak"] += 1
+            required = info["auto_failover_config"]["recovery_successes"]
+            if info["_auto_failover_recovery_streak"] >= required:
+                info["active_source"] = "webhook"
+                info["_auto_failover_recovery_streak"] = 0
+                info.get("_auto_failover_pending", {}).clear()
+                self.logger.info("Auto Failover: Webhook recovered; switched back to Webhook.")
 
     async def _process_button_push(self, data: dict):
         """پردازش وب‌هوک Push برای کلیک دکمه‌های اینلاین"""
@@ -2653,7 +3005,7 @@ class Client:
         is_edited = update_data.get("type") == "UpdatedMessage"
         is_deleted = update_data.get("type") in ("RemoveMessage", "RemovedMessage")
 
-        handlers = self._message_handlers_polling + self._message_handlers_webhook
+        handlers = self._message_handlers_polling + self._message_handlers_webhook + self._message_handlers_failover
 
         async def _run_handler(upd: Update, _handler):
             try:

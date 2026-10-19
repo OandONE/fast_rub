@@ -5,3 +5,4 @@ from .errors import *
 from .prop_update import msg_update
 from .webhook import WebhookConfig
 from .forms import *
+from .auto_failover import AutoFailoverConfig
