@@ -2420,19 +2420,7 @@ class Client:
                 @wraps(handler)
                 async def wrapped(update):
                     try:
-                        if filters is not None:
-                            try:
-                                if not await Utils.run_filter(
-                                    filters,
-                                    update
-                                ):
-                                    return
-                            except Exception as e:
-                                await self._process_on_error(
-                                    e=e
-                                )
-                                return
-
+                        # The message filter is executed only in the shared processor so that it does not run twice
                         return await Utils.run_handler(
                             handler,
                             update
@@ -2525,6 +2513,58 @@ class Client:
     # region ⚙️ Processs | فرایند ها
     # ═══════════════════════════════════
 
+    async def _process_message_update(
+        self,
+        message: dict[str, Any],
+        handler_infos: list[dict[str, Any]],
+        deleted_message_type: Literal["RemoveMessage", "RemovedMessage"],
+    ) -> None:
+        """پردازش مشترک یک آپدیت پیام برای Polling و Webhook.
+
+        دریافت آپدیت، بررسی زمان‌بندی Polling و مدیریت Offset در پردازشگر
+        مربوط به هر منبع باقی می‌ماند. این متد فقط منطق مشترک پس از دریافت
+        آپدیت را اجرا می‌کند.
+        """
+        if self.wait_manager and self.wait_manager.auto_track:
+            self.wait_manager.track()
+
+        update = Update(message, self)
+        is_edited = message["type"] == "UpdatedMessage"
+        is_deleted = message["type"] == deleted_message_type
+
+        if await self._conversation_manager.handle(update, self):
+            return
+
+        for handler_info in handler_infos:
+            handler = handler_info["handler"]
+            edited_messages_option = handler_info["edited_messages"]
+            deleted_messages_option = handler_info["deleted_messages"]
+
+            if edited_messages_option == False and is_edited:
+                continue
+            elif edited_messages_option == True and not is_edited:
+                continue
+
+            if deleted_messages_option == False and is_deleted:
+                continue
+            elif deleted_messages_option == True and not is_deleted:
+                continue
+
+            filters: Filter | None = handler_info["filters"]
+            status_filter = await Utils.run_filter(filters, update)
+            if not status_filter:
+                continue
+
+            self._schedule_handler(handler, update)
+
+        if not is_edited and not is_deleted:
+            if self.enable_stats and self.stats:
+                await self.stats.track(update)
+            if self.keeper_messages_ram:
+                self.messages.append(update)
+            if self.keeper_messages_db:
+                await self.messages_db.append(update)
+
     async def _process_messages_polling(self):
         while self._running:
             try:
@@ -2539,51 +2579,27 @@ class Client:
                         await self.session.save()
                 except KeyError:
                     pass
+
                 now = time.time()
                 messages = messages["updates"]
                 for message in messages:
                     if message["type"] not in ("NewMessage", "UpdatedMessage", "RemoveMessage"):
                         continue
+
+                    # This limitation is specific to Polling; Webhook should not apply it
                     if not int(message["new_message"]["time"]) + 5 > now:
                         continue
+
                     if not self._is_live:
                         await self._process_on_live()
                         self._is_live = True
-                    if self.wait_manager and self.wait_manager.auto_track:
-                        self.wait_manager.track()
-                    update = Update(message, self)
-                    if await self._conversation_manager.handle(update, self):
-                        continue
-                    is_edited = message["type"] == "UpdatedMessage"
-                    is_deleted = message["type"] == "RemoveMessage"
-                    for handler_info in self._message_handlers_polling:
-                        handler = handler_info["handler"]
-                        edited_messages_option = handler_info["edited_messages"]
-                        deleted_messages_option = handler_info["deleted_messages"]
-                        if edited_messages_option == False and is_edited:
-                            continue
-                        elif edited_messages_option == True and not is_edited:
-                            continue
-                        if deleted_messages_option == False and is_deleted:
-                            continue
-                        elif deleted_messages_option == True and not is_deleted:
-                            continue
-                        filters: Filter | None = handler_info["filters"]
-                        
-                        status_filter = await Utils.run_filter(
-                            filters,
-                            update
-                        )
-                        if not status_filter:
-                            continue
-                        self._schedule_handler(handler, update)
-                    if not is_edited and not is_deleted:
-                        if self.enable_stats and self.stats:
-                            await self.stats.track(update)
-                        if self.keeper_messages_ram:
-                            self.messages.append(update)
-                        if self.keeper_messages_db:
-                            await self.messages_db.append(update)
+
+                    await self._process_message_update(
+                        message=message,
+                        handler_infos=self._message_handlers_polling,
+                        deleted_message_type="RemoveMessage",
+                    )
+
             except (httpx.ReadError, httpx.ConnectError) as e:
                 self.logger.warning(f"خطای شبکه در _process_messages_polling: {e} - انتظار 5 ثانیه...")
                 await asyncio.sleep(5)
@@ -2597,41 +2613,13 @@ class Client:
         for result in updates:
             if result.get("type") not in ["NewMessage", "UpdatedMessage", "RemovedMessage"]:
                 continue
-            if self.wait_manager and self.wait_manager.auto_track:
-                self.wait_manager.track()
-            update = Update(result, self)
-            if await self._conversation_manager.handle(update, self):
-                continue
-            is_edited = result["type"] == "UpdatedMessage"
-            is_deleted = result["type"] == "RemovedMessage"
-            for handler_info in self._message_handlers_webhook:
-                handler = handler_info["handler"]
-                edited_messages_option = handler_info["edited_messages"]
-                deleted_messages_option = handler_info["deleted_messages"]
-                if edited_messages_option == False and is_edited:
-                    continue
-                elif edited_messages_option == True and not is_edited:
-                    continue
-                if deleted_messages_option == False and is_deleted:
-                    continue
-                elif deleted_messages_option == True and not is_deleted:
-                    continue
-                filters: Filter | None = handler_info["filters"]
-                
-                status_filter = await Utils.run_filter(
-                    filters,
-                    update
-                )
-                if not status_filter:
-                    continue
-                self._schedule_handler(handler, update)
-            if not is_edited and not is_deleted:
-                if self.enable_stats and self.stats:
-                    await self.stats.track(update)
-                if self.keeper_messages_ram:
-                    self.messages.append(update)
-                if self.keeper_messages_db:
-                    await self.messages_db.append(update)
+
+            # Webhook is processed the moment the request arrives; it does not have Polling's 5-second limitation
+            await self._process_message_update(
+                message=result,
+                handler_infos=self._message_handlers_webhook,
+                deleted_message_type="RemovedMessage",
+            )
 
     async def _process_button_push(self, data: dict):
         """پردازش وب‌هوک Push برای کلیک دکمه‌های اینلاین"""
@@ -3301,4 +3289,3 @@ Robot = Client
 Bot = Client
 BotApi = Client
 BotApiClient = Client
-
