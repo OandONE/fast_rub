@@ -494,7 +494,8 @@
           ["stats_db_path", "str | None = None", "دیتابیس آمار"],
           ["dry_run", "bool = False", "حالت شبیه‌سازی (Dry Run) ربات بدون توکن و بدون اینترنت"],
           ["network_limits", "httpx.Limits | None = None", "لیمیت نتورک برای ارسال درخواست ها"],
-          ["default_disable_notification","bool | None = None", "غیرفعال کردن اعلان به صورت پیشفرض"]
+          ["default_disable_notification","bool | None = None", "غیرفعال کردن اعلان به صورت پیشفرض"],
+          ["auto_failover", "<a href='../models/index.html#auto_failover'>AutoFailoverConfig</a> | None = None", "تنظیمات زمانی برای جابه‌جایی خودکار Webhook ↔ Polling (نیازمند تنظیم <code>webhook=WebhookConfig(...)</code> در سازنده)"],
         ],
         returns: null,
         example: `from fast_rub import Client\n\nbot = Client("my_session")\n# یا با توکن\nbot = Client("my_session", token="BGDISBC...")`
@@ -651,6 +652,33 @@
               ["UpdateButton", "<a href='../models/index.html#updatebutton'>UpdateButton</a>", "اطلاعات کلیک"],
           ],
           example: `@bot.on_button()\nasync def button_click(upd: UpdateButton):\n    print(upd)\n    await upd.send_text("دکمه کلیک شد!")`
+      },
+      // ===== 9. failover decorators =====
+      {
+        id: "failover_decorators",
+        title: "دکوراتورهای Auto Failover (جابه‌جایی خودکار Webhook ↔ Polling)",
+        signature: "@bot.failover_on_message(filters=None, edited_messages=False, deleted_messages=False, config=None)",
+        desc: "هندلری که هنگام اختلال، خودکار بین Webhook و Polling جابه‌جا می‌شود و از پردازش تکراری جلوگیری می‌کند (نیازمند webhook=WebhookConfig در Client).",
+        params: [
+          ["filters", "<a href='../models/index.html#filters'>filters</a> | None", "فیلتر پیام"],
+          ["edited_messages", "bool | 'both' = False", "دریافت ویرایش‌شده‌ها"],
+          ["deleted_messages", "bool | 'both' = False", "دریافت حذف‌شده‌ها"],
+          ["config", "<a href='../models/index.html#auto_failover'>AutoFailoverConfig</a> | None", "تنظیمات زمانی مخصوص این هندلر"],
+        ],
+        returns: [
+          ["Message", "<a href='../models/index.html#update'>Message</a>", "شی اطلاعات پیام"],
+        ],
+        example: `from fast_rub import Client
+from fast_rub.types import WebhookConfig
+
+bot = Client(
+    "my_bot",
+    webhook=WebhookConfig(url="https://my.site", path_prefix="/webhook"),
+)
+
+@bot.failover_on_message() # دکوراتورهای اختصاصی: failover_on_edit (فقط ویرایش)، failover_on_delete (فقط حذف)
+async def handler(msg):
+    await msg.reply("پاسخ ⚡")`
       },
       // ===== 9. run =====
       {

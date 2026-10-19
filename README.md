@@ -698,6 +698,7 @@ fast_rub
 │   ├── exceptions.py # Alias errors.py
 │   ├── forms.py # Alias fast_rub/core/forms
 │   ├── get_type.py # Utils for Update Class
+│   ├── auto_failover.py # Auto Failover handlers
 │   ├── __init__.py
 │   ├── metadata.py # Utils for Update Class - MetaData Message
 │   ├── models # Models client

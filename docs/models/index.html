@@ -2052,6 +2052,53 @@ await Utils.when(
 # --- اجرای sync/async با هم ---
 await Utils.run_handler(my_maybe_async_func, arg1, kwarg=value)`
       },
+
+      // ============ AutoFailoverConfig ============
+      {
+        id: "auto_failover",
+        title: "🔄 AutoFailoverConfig",
+        description: "تنظیمات زمانی Auto Failover — جابه‌جایی خودکار Webhook ↔ Polling هنگام اختلال.",
+        note: "import: from fast_rub.types import AutoFailoverConfig",
+        class_signature: "@dataclass(frozen=True)\nclass AutoFailoverConfig",
+        init_params: [
+          ["check_interval", "float | None = None", "فاصلهٔ بین هر بررسی (ثانیه) — پیش‌فرض: 5.0"],
+          ["failure_timeout", "float | None = None", "آستانهٔ سکوت برای سوییچ (ثانیه) — پیش‌فرض: 15.0"],
+          ["recovery_successes", "int | None = None", "تعداد موفقیت پیاپی برای بازگشت — پیش‌فرض: 5"],
+        ],
+        properties: [
+          { name: "check_interval", type: "float | None", description: "فاصلهٔ بررسی (ثانیه)" },
+          { name: "failure_timeout", type: "float | None", description: "آستانهٔ سکوت (ثانیه)" },
+          { name: "recovery_successes", type: "int | None", description: "موفقیت پیاپی برای بازگشت" },
+        ],
+        methods: [
+          {
+            name: "__post_init__",
+            params: [],
+            returns: "None",
+            description: "اعتبارسنجی مقادیر؛ در صورت نامعتبر بودن ValueError می‌اندازد."
+          }
+        ],
+        example: `from fast_rub import Client
+from fast_rub.types import AutoFailoverConfig, WebhookConfig
+
+bot = Client(
+    "my_bot",
+    webhook=WebhookConfig(url="https://my.site", path_prefix="/webhook"),
+    auto_failover=AutoFailoverConfig(
+        check_interval=5.0,
+        failure_timeout=15.0,
+        recovery_successes=5,
+    ),
+)
+
+# override برای یک هندلر
+fast = AutoFailoverConfig(failure_timeout=3.0)
+
+@bot.failover_on_message(config=fast)
+async def handler(msg):
+    await msg.reply("سلام ⚡")`
+      },
+
     ];
 
     function renderModels() {

@@ -175,6 +175,11 @@
                     "default_disable_notification",
                     "bool | None = None",
                     "غیرفعال کردن اعلان به صورت پیشفرض"
+                ],
+                [
+                    "auto_failover",
+                    "<a href='../models/index.html#auto_failover'>AutoFailoverConfig</a> | None = None",
+                    "تنظیمات زمانی برای جابه‌جایی خودکار Webhook ↔ Polling (نیازمند تنظیم <code>webhook=WebhookConfig(...)</code> در سازنده)"
                 ]
             ],
             "returns": null,
@@ -569,6 +574,42 @@
                 ]
             ],
             "example": "@bot.on_button()\nasync def button_click(upd: UpdateButton):\n    print(upd)\n    await upd.send_text(\"دکمه کلیک شد!\")"
+        },
+        {
+            "id": "failover_decorators",
+            "title": "دکوراتورهای Auto Failover (جابه‌جایی خودکار Webhook ↔ Polling)",
+            "signature": "@bot.failover_on_message(filters=None, edited_messages=False, deleted_messages=False, config=None)",
+            "desc": "هندلری که هنگام اختلال، خودکار بین Webhook و Polling جابه‌جا می‌شود و از پردازش تکراری جلوگیری می‌کند (نیازمند webhook=WebhookConfig در Client).",
+            "params": [
+                [
+                    "filters",
+                    "<a href='../models/index.html#filters'>filters</a> | None",
+                    "فیلتر پیام"
+                ],
+                [
+                    "edited_messages",
+                    "bool | 'both' = False",
+                    "دریافت ویرایش‌شده‌ها"
+                ],
+                [
+                    "deleted_messages",
+                    "bool | 'both' = False",
+                    "دریافت حذف‌شده‌ها"
+                ],
+                [
+                    "config",
+                    "<a href='../models/index.html#auto_failover'>AutoFailoverConfig</a> | None",
+                    "تنظیمات زمانی مخصوص این هندلر"
+                ]
+            ],
+            "returns": [
+                [
+                    "Message",
+                    "<a href='../models/index.html#update'>Message</a>",
+                    "شی اطلاعات پیام"
+                ]
+            ],
+            "example": "from fast_rub import Client\nfrom fast_rub.types import WebhookConfig\n\nbot = Client(\n    \"my_bot\",\n    webhook=WebhookConfig(url=\"https://my.site\", path_prefix=\"/webhook\"),\n)\n\n@bot.failover_on_message() # دکوراتورهای اختصاصی: failover_on_edit (فقط ویرایش)، failover_on_delete (فقط حذف)\nasync def handler(msg):\n    await msg.reply(\"پاسخ ⚡\")"
         },
         {
             "id": "run",
@@ -7351,6 +7392,56 @@
                 }
             ],
             "example": "from fast_rub.utils import Utils\n\n# --- اعتبارسنجی ---\nif Utils.check_id(\"b1234567890123456789012345678901\"):\n    print(\"ID معتبر است\")\n\n# --- پردازش متن ---\nclean = Utils.trim_text(\"  سلام\\n\\n\\n  \")\n# \"سلام\"\n\n# --- تشخیص نوع فایل ---\ntp = Utils.type_file(\"photo.png\")   # \"Image\"\n\n# --- منطق شرطی (مثال Warn System) ---\nasync def has_3_warns():\n    return await db.count(\"warns\", {\"user_id\": user_id}) >= 3\n\nasync def ban_user():\n    await bot.ban(chat_id, user_id)\n\nawait Utils.when(\n    condition=has_3_warns,\n    action=ban_user,\n    sleep=10,          # هر ۱۰ ثانیه چک کن\n    timeout=600,       # حداکثر ۱۰ دقیقه\n    error_message=\"کاربر به ۳ اخطار نرسید\",\n    raise_on_error=True,\n)\n\n# --- اجرای sync/async با هم ---\nawait Utils.run_handler(my_maybe_async_func, arg1, kwarg=value)"
+        },
+        {
+            "id": "auto_failover",
+            "title": "🔄 AutoFailoverConfig",
+            "description": "تنظیمات زمانی Auto Failover — جابه‌جایی خودکار Webhook ↔ Polling هنگام اختلال.",
+            "note": "import: from fast_rub.types import AutoFailoverConfig",
+            "class_signature": "@dataclass(frozen=True)\nclass AutoFailoverConfig",
+            "init_params": [
+                [
+                    "check_interval",
+                    "float | None = None",
+                    "فاصلهٔ بین هر بررسی (ثانیه) — پیش‌فرض: 5.0"
+                ],
+                [
+                    "failure_timeout",
+                    "float | None = None",
+                    "آستانهٔ سکوت برای سوییچ (ثانیه) — پیش‌فرض: 15.0"
+                ],
+                [
+                    "recovery_successes",
+                    "int | None = None",
+                    "تعداد موفقیت پیاپی برای بازگشت — پیش‌فرض: 5"
+                ]
+            ],
+            "properties": [
+                {
+                    "name": "check_interval",
+                    "type": "float | None",
+                    "description": "فاصلهٔ بررسی (ثانیه)"
+                },
+                {
+                    "name": "failure_timeout",
+                    "type": "float | None",
+                    "description": "آستانهٔ سکوت (ثانیه)"
+                },
+                {
+                    "name": "recovery_successes",
+                    "type": "int | None",
+                    "description": "موفقیت پیاپی برای بازگشت"
+                }
+            ],
+            "methods": [
+                {
+                    "name": "__post_init__",
+                    "params": [],
+                    "returns": "None",
+                    "description": "اعتبارسنجی مقادیر؛ در صورت نامعتبر بودن ValueError می‌اندازد."
+                }
+            ],
+            "example": "from fast_rub import Client\nfrom fast_rub.types import AutoFailoverConfig, WebhookConfig\n\nbot = Client(\n    \"my_bot\",\n    webhook=WebhookConfig(url=\"https://my.site\", path_prefix=\"/webhook\"),\n    auto_failover=AutoFailoverConfig(\n        check_interval=5.0,\n        failure_timeout=15.0,\n        recovery_successes=5,\n    ),\n)\n\n# override برای یک هندلر\nfast = AutoFailoverConfig(failure_timeout=3.0)\n\n@bot.failover_on_message(config=fast)\nasync def handler(msg):\n    await msg.reply(\"سلام ⚡\")"
         }
     ],
     "features": [
