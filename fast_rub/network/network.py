@@ -21,20 +21,20 @@ if TYPE_CHECKING:
 class Network:
     def __init__(
         self,
-        token: str,
+        token: str, # Delete in V7 (Dynamc getting from client. Live)
         client: "Client",
         logger: logging.Logger | None = None,
-        max_retries: int = 3,
+        max_retries: int = 3, # Delete in V7 (Dynamc getting from client. Live)
         user_agent: str | None = None,
         base_urls: list = [
             "https://botapi.rubika.ir/",
             # "https://messengerg2b1.iranlms.ir/"
-        ],
+        ], # Delete in V7 (Dynamc getting from client. Live)
         proxy: str | None = None,
         rate_limit: int = 20,
         ssl_verify: bool = True,
-        max_retries_upload: int | None = None,
-        max_retries_download: int | None = None,
+        max_retries_upload: int | None = None, # Delete in V7 (Dynamc getting from client. Live)
+        max_retries_download: int | None = None, # Delete in V7 (Dynamc getting from client. Live)
         http2: bool = True,
     ):
         self.logger = logger or logging.getLogger("fast_rub.network")
@@ -191,7 +191,7 @@ class Network:
             raise RuntimeError("Network is closed")
 
         overrides = {
-            "max_retries": max_retries or self.max_retries,
+            "max_retries": max_retries or self._core_client.max_retries,
             "timeout": timeout or 30.0
         }
 
@@ -306,9 +306,9 @@ class Network:
     ) -> dict:
         self.logger.debug(f"method {method}")
         last_exception = None
-        for base_url in self.base_urls:
+        for base_url in self._core_client.base_urls:
             self.logger.debug(f"Base Url » {base_url}")
-            url = f"{base_url}v3/{self.token}/{method}"
+            url = f"{base_url}v3/{self._core_client.token}/{method}"
             try:
                 if data:
                     if (
@@ -342,7 +342,9 @@ class Network:
         show_progress: bool = False,
         max_retries: int | None = None
     ) -> bool:
-        retries = max_retries if max_retries is not None else self.max_retries_download
+        retries = max_retries if max_retries is not None else (
+            self._core_client.max_retries_download if self._core_client.max_retries_download else self.max_retries_download
+        )
         last_exception = None
         
         for attempt in range(1, retries + 1):
@@ -428,7 +430,9 @@ class Network:
             content_length = len(header) + total_size + len(footer)
             
             last_exception = None
-            retries = max_retries if max_retries is not None else self.max_retries_upload
+            retries = max_retries if max_retries is not None else (
+                self._core_client.max_retries_upload if self._core_client.max_retries_upload else self.max_retries_upload
+            )
             for attempt in range(1, retries + 1):
                 try:
                     async def body_stream():
@@ -486,9 +490,9 @@ class Network:
                     
                 except (httpx.HTTPError, OSError) as e:
                     last_exception = e
-                    if attempt < self.max_retries:
+                    if attempt < self._core_client.max_retries:
                         wait_time = 2 ** (attempt - 1)
-                        self.logger.warning(f"خطای شبکه - تلاش {attempt}/{self.max_retries}")
+                        self.logger.warning(f"خطای شبکه - تلاش {attempt}/{self._core_client.max_retries}")
                         await asyncio.sleep(wait_time)
                         continue
                     raise

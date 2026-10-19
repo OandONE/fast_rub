@@ -195,6 +195,9 @@ class Client:
     
     default_disable_notification: bool | None = None
         غیرفعال کردن اعلان به صورت پیشفرض
+    
+    network_rate_limit: int = 20
+        محدودیت تعداد تسک همزمان در شبکه(نتورک)
     """
     # ═══════════════════════════════════
     # region 🚀 Start & Stop | شروع و توقف
@@ -240,6 +243,7 @@ class Client:
         network_limits: httpx.Limits | None = None,
         default_disable_notification: bool | None = None,
         auto_failover: AutoFailoverConfig | None = None,
+        network_rate_limit: int = 20,
     ):
         """Create a client / ساخت کلاینت ربات"""
         self.name_session = name_session
@@ -256,7 +260,8 @@ class Client:
         self.max_retries_upload = max_retries_upload
         self.max_retries_download = max_retries_download
         self.keeper_messages_ram = keeper_messages_ram
-        self.urls: list[str] = base_urls
+        # self.urls: list[str] = base_urls
+        self.base_urls: list[str] = base_urls
         self.offset_id = offset_id
         self.save_offset_id = save_offset_id
         self.keeper_messages_db = keeper_messages_db
@@ -317,6 +322,7 @@ class Client:
         self.network_limits = network_limits
         self._pending_tasks: set[asyncio.Task] = set()
         self.default_disable_notification = default_disable_notification
+        self.network_rate_limit = network_rate_limit
         if logger:
             self.logger = logger
         else:
@@ -585,8 +591,8 @@ class Client:
             log_to_file=self.log_to_file
         )
         self.exists_wait_manager = bool(self.wait_manager)
-        self.main_url = self.urls[0]
-        self.urls = Utils.format_url(self.urls)
+        self.main_url = self.base_urls[0]
+        self.base_urls = Utils.format_url(self.base_urls)
         self.next_offset_id = self.session.offset_id
         self.save_offset_id = self.session.save_offset_id
         if self.dry_run:
@@ -599,11 +605,12 @@ class Client:
                 max_retries=self.max_retries,
                 user_agent=self.user_agent,
                 proxy=self.proxy,
-                base_urls=self.urls,
+                base_urls=self.base_urls,
                 ssl_verify=self.ssl_verify,
                 max_retries_upload=self.max_retries_upload,
                 max_retries_download=self.max_retries_download,
-                http2=self.http2
+                http2=self.http2,
+                rate_limit=self.network_rate_limit,
             )
             await self.network.start(
                 start_worker=True,
@@ -815,7 +822,7 @@ class Client:
             del self.token
             del self.name_session
             del self.logger
-            del self.urls
+            del self.base_urls
             del self.main_url
             await self._process_on_shutdown()
 
