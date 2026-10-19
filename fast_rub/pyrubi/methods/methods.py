@@ -236,7 +236,7 @@ class Methods:
         context: dict[str, Any] | None = None,
         auto_escape: bool = True,
     ) -> tuple[list[dict[str, Any]], str]:
-        """آماده‌سازی متن پیام: قالب {{ }} با محافظت تزریق + پارس مود — خروجی (metadata, text)
+        """آماده‌سازی متن پیام: قالب {{ }} با محافظت تزریق + پارس مود - خروجی (metadata, text)
 
         با context، مارک‌داونِ خودِ قالب فعال می‌ماند ولی مقادیر context خنثی می‌شوند
         (auto_escape=True) یا آزادانه پارس می‌شوند (auto_escape=False).
@@ -259,7 +259,7 @@ class Methods:
         auto_escape: bool = True,
         **kwargs: Any
     ) -> tuple[str, list[dict[str, Any]]]:
-        """رندر قالب {{ placeholder }} — خروجی (text, metadata)"""
+        """رندر قالب {{ placeholder }} - خروجی (text, metadata)"""
         return self.template.render(template, auto_escape=auto_escape, **kwargs)
 
     async def set_main_parse_mode(

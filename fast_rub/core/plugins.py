@@ -7,7 +7,7 @@ if TYPE_CHECKING:
     from .client import Client
 
 class PluginManager:
-    """مدیریت پلاگین‌ها — لود خودکار پلاگین‌ها از پوشه"""
+    """مدیریت پلاگین‌ها - لود خودکار پلاگین‌ها از پوشه"""
     @staticmethod
     def load(
         client: "Client",

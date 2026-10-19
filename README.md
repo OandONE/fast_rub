@@ -50,30 +50,31 @@
 
 ## ✨ ویژگی‌های کلیدی
 
-- ⚡ **HTTP/2 + Async-First** — سریع‌ترین فریم‌ورک روبیکا با `httpx & h2`
-- 🧠 **WaitManager** — مدیریت هوشمند Rate Limit (فقط به Client بدهید — بقیه خودکار)
-- 📋 **DataForm** — فرم‌های هوشمند با اعتبارسنجی، کیبورد و callbackهای شرطی
-- 💬 **Conversation** — مکالمات چندمرحله‌ای با State Machine داخلی (کلاسیک + مدرن)
-- 🔍 **۲۰۰+ فیلتر** — فیلترهای آماده و ترکیبی (AND/OR/NOT) + Inline Filters
-- 🔄 **Hot Reload** — توسعهٔ سریع بدون توقف ربات
-- ⏰ **Scheduler** — زمان‌بندی کارها (interval + daily at)
-- 📡 **Signals** — سیستم Event-driven برای ارتباط ماژول‌ها
-- 🔌 **Plugins** — سیستم پلاگین با لود خودکار از پوشه
-- 🗄️ **ORM داخلی** — دیتابیس SQLite با API ساده و SQL پارامتری
-- 📸 **Snapshots** — Version Control برای تنظیمات ربات
-- 🌐 **Webhook Server** — سرور داخلی (FastAPI/Flask)
-- 💻 **CLI** — ابزار خط فرمان (`fastrub new`, `fastrub run --reload`)
-- 🛡️ **AntiSpam** — سیستم ضد اسپم پیشرفته
-- 🧪 **Dry Run** — شبیه‌سازی و تست ربات بدون توکن و بدون اینترنت (`dry_run=True`)
-- 🛡️ **پنل ادمین** — پنل وب با احراز هویت داخلی: لاگ لحظه‌ای، تنظیمات زنده، آمار و ابزارها
+- ⚡ **HTTP/2 + Async-First** - سریع‌ترین فریم‌ورک روبیکا با `httpx & h2`
+- 🧠 **WaitManager** - مدیریت هوشمند Rate Limit (فقط به Client بدهید - بقیه خودکار)
+- 📋 **DataForm** - فرم‌های هوشمند با اعتبارسنجی، کیبورد و callbackهای شرطی
+- 💬 **Conversation** - مکالمات چندمرحله‌ای با State Machine داخلی (کلاسیک + مدرن)
+- 🔍 **۲۰۰+ فیلتر** - فیلترهای آماده و ترکیبی (AND/OR/NOT) + Inline Filters
+- 🔄 **Hot Reload** - توسعهٔ سریع بدون توقف ربات
+- ⏰ **Scheduler** - زمان‌بندی کارها (interval + daily at)
+- 📡 **Signals** - سیستم Event-driven برای ارتباط ماژول‌ها
+- 🔌 **Plugins** - سیستم پلاگین با لود خودکار از پوشه
+- 🗄️ **ORM داخلی** - دیتابیس SQLite با API ساده و SQL پارامتری
+- 📸 **Snapshots** - Version Control برای تنظیمات ربات
+- 🌐 **Webhook Server** - سرور داخلی (FastAPI/Flask)
+- 💻 **CLI** - ابزار خط فرمان (`fastrub new`, `fastrub run --reload`)
+- 🛡️ **AntiSpam** - سیستم ضد اسپم پیشرفته
+- 🧪 **Dry Run** - شبیه‌سازی و تست ربات بدون توکن و بدون اینترنت (`dry_run=True`)
+- 🛡️ **پنل ادمین** - پنل وب با احراز هویت داخلی: لاگ لحظه‌ای، تنظیمات زنده، آمار و ابزارها
 - 🚀 **Middleware, Cache, BackGround-Task** هم ابزاری که فکر بکنید
-- 📊 **Dashboard HTML** — پنل وب آماده برای آمار پیام‌ها با رتبه‌بندی، جستجو، خروجی JSON و پشتیبانی FastAPI/Flask
+- 📊 **Dashboard HTML** - پنل وب آماده برای آمار پیام‌ها با رتبه‌بندی، جستجو، خروجی JSON و پشتیبانی FastAPI/Flask
 - 📈 **قدرت انتخاب** انتخاب با شماست هوشمند یا دستی. تنظیم poll_interval, ssl_verify, keeper_messages, ...
-- 📌 **تایپ‌هینت کامل** — تایپ‌هینت قوی و سراسری روی تمام متودها؛ بدون حذف یا مخدوش‌کردن امضای (signature) متودهای کلاس‌هایی مثل `Message` و غیره، همراه با پشتیبانی کامل از Autocomplete در IDE
-- 🪶 **فوق‌العاده سبک** — تست شده روی ۲۵۶MB RAM DDR1 با Alpine Linux
-- 🔒 **امنیت** — SQL پارامتری، sanitize خودکار، middleware امنیتی و همچنین Markdown/HTML Injection Protection
-- ⚙️ **سادگی** — بدون نیاز به یادگیری یا درگیری با قسمت هایی از فریمورک که نیاز به استفاده از آن ندارید
-- 👥 **یوزربات** — پشتیبانی از یوزربات با فورکی از کتابخانه معروف پایروبی
+- 📌 **تایپ‌هینت کامل** - تایپ‌هینت قوی و سراسری روی تمام متودها؛ بدون حذف یا مخدوش‌کردن امضای (signature) متودهای کلاس‌هایی مثل `Message` و غیره، همراه با پشتیبانی کامل از Autocomplete در IDE
+- 🪶 **فوق‌العاده سبک** - تست شده روی ۲۵۶MB RAM DDR1 با Alpine Linux
+- 🔒 **امنیت** - SQL پارامتری، sanitize خودکار، middleware امنیتی و همچنین Markdown/HTML Injection Protection
+- ⚙️ **سادگی** - بدون نیاز به یادگیری یا درگیری با قسمت هایی از فریمورک که نیاز به استفاده از آن ندارید
+- 👥 **یوزربات** - پشتیبانی از یوزربات با فورکی از کتابخانه معروف پایروبی
+- 🔄 **Auto Failover** - جابه‌جایی خودکار بین Webhook و Polling هنگام اختلال، با تلاش برای بازیابی و جلوگیری از پردازش تکراری آپدیت‌ها
 
 ---
 
@@ -145,7 +146,7 @@ asyncio.run(main())
 
 ## 🧠 WaitManager
 
-مدیریت هوشمند ترافیک — قوی‌ترین سیستم مدیریت Rate Limit در بین تمام فریم‌ورک‌های روبیکا. کافی است به Client بدهید — بقیه خودکار انجام می‌شود.
+مدیریت هوشمند ترافیک - قوی‌ترین سیستم مدیریت Rate Limit در بین تمام فریم‌ورک‌های روبیکا. کافی است به Client بدهید - بقیه خودکار انجام می‌شود.
 
 ```python
 from fast_rub import Client, WaitManager
@@ -187,7 +188,7 @@ await bot.run()
 
 ## 📋 DataForm
 
-فرم‌های هوشمند — فقط بگویید «چی می‌خواهید» — اعتبارسنجی، کیبورد، و حرکت بین فیلدها خودکار است.
+فرم‌های هوشمند - فقط بگویید «چی می‌خواهید» - اعتبارسنجی، کیبورد، و حرکت بین فیلدها خودکار است.
 
 ```python
 from fast_rub import Client, Conversation
@@ -222,7 +223,7 @@ class AdvancedForm(DataForm):
 
 ## 💬 Conversation
 
-مکالمات چندمرحله‌ای — روش کلاسیک (Entry + State)
+مکالمات چندمرحله‌ای - روش کلاسیک (Entry + State)
 
 ```python
 register = Conversation(name="register")
@@ -264,7 +265,7 @@ from fast_rub import filters
 # NOT
 @bot.on_message(~filters.is_group)  # فقط PV
 
-# Async — چک دیتابیس
+# Async - چک دیتابیس
 @bot.on_message(filters.db_exists("users", lambda u: {"chat_id": u.chat_id}, db=my_db))
 
 # Inline Filters (دکمه‌های شیشه‌ای)
@@ -407,7 +408,7 @@ user = await db.find("users", "*", {"chat_id": "123"})
 
 ## 📊 داشبورد آمار HTML
 
-پنل وب آماده با نمایش لحظه‌ای آمار پیام‌ها — تعداد پیام‌های هر گروه/کانال/کاربر، رتبه‌بندی، جستجو و ریست. خروجی HTML زیبا + API JSON.
+پنل وب آماده با نمایش لحظه‌ای آمار پیام‌ها - تعداد پیام‌های هر گروه/کانال/کاربر، رتبه‌بندی، جستجو و ریست. خروجی HTML زیبا + API JSON.
 
 ```python
 import asyncio
@@ -454,8 +455,8 @@ asyncio.run(main())
 
 **بک‌اندها:**
 
-- `backend="fastapi"` — سریع‌تر، پیشنهادی (`pip install fastrub[fastapi]`)
-- `backend="flask"` — سبک‌تر (`pip install fastrub[flask]`)
+- `backend="fastapi"` - سریع‌تر، پیشنهادی (`pip install fastrub[fastapi]`)
+- `backend="flask"` - سبک‌تر (`pip install fastrub[flask]`)
 
 **نکات امنیتی:**
 
@@ -469,7 +470,7 @@ asyncio.run(main())
 
 ## 🧪 شبیه‌سازی ربات (Dry Run)
 
-ربات را **بدون توکن واقعی و بدون اینترنت** اجرا و تست کنید. یک `MockNetwork` جای شبکهٔ واقعی می‌نشیند؛ آپدیت‌ها را شما شبیه‌سازی می‌کنید، همه‌چیز (فیلترها، کانورسیشن، middleware، آمار) از خط لولهٔ واقعی رد می‌شود و ارسال‌های ربات ثبت می‌گردد — عالی برای تست و CI.
+ربات را **بدون توکن واقعی و بدون اینترنت** اجرا و تست کنید. یک `MockNetwork` جای شبکهٔ واقعی می‌نشیند؛ آپدیت‌ها را شما شبیه‌سازی می‌کنید، همه‌چیز (فیلترها، کانورسیشن، middleware، آمار) از خط لولهٔ واقعی رد می‌شود و ارسال‌های ربات ثبت می‌گردد - عالی برای تست و CI.
 
 ```python
 import asyncio
@@ -508,12 +509,12 @@ asyncio.run(main())
 | `receive_edit(chat_id, message_id, new_text)` | شبیه‌سازی ویرایش پیام |
 | `receive_deleted(chat_id, message_id)` | شبیه‌سازی حذف پیام |
 | `receive_raw(update_dict)` | تزریق آپدیت خام Bot API |
-| `enqueue_text / enqueue_button / ...` | افزودن به صف — با `bot.run()` و `get_updates` دریافت می‌شود |
+| `enqueue_text / enqueue_button / ...` | افزودن به صف - با `bot.run()` و `get_updates` دریافت می‌شود |
 | `bot.mock.sent` | لیست پیام‌های ارسال‌شدهٔ ربات (`method` + `data`) |
 | `bot.mock.requests` | لیست همهٔ درخواست‌های Bot API |
 | `bot.mock.last_sent` | آخرین ارسال |
-| `bot.mock.responses` | پاسخ دستی برای هر متود — `bot.mock.responses["getMe"] = {...}` |
-| `bot.mock.fail_methods` | متودهایی که باید عمداً خطا بدهند — تست مدیریت خطا |
+| `bot.mock.responses` | پاسخ دستی برای هر متود - `bot.mock.responses["getMe"] = {...}` |
+| `bot.mock.fail_methods` | متودهایی که باید عمداً خطا بدهند - تست مدیریت خطا |
 | `bot.mock.chats` / `add_chat(...)` | چت‌های شبیه‌سازی‌شده برای `get_chat` |
 | `bot.mock.clear()` | پاک‌سازی ثبت‌ها بین تست‌ها |
 
@@ -527,7 +528,7 @@ asyncio.run(main())
 
 ## 🛡️ پنل ادمین
 
-پنل وب مدیریت ربات با **احراز هویت داخلی** (بدون کتابخانهٔ جداگانه) — لاگ لحظه‌ای، تغییر زندهٔ تنظیمات، آمار و ابزارهای مدیریتی. مثل داشبورد، با هر دو بک‌اند FastAPI/Flask.
+پنل وب مدیریت ربات با **احراز هویت داخلی** (بدون کتابخانهٔ جداگانه) - لاگ لحظه‌ای، تغییر زندهٔ تنظیمات، آمار و ابزارهای مدیریتی. مثل داشبورد، با هر دو بک‌اند FastAPI/Flask.
 
 ```python
 import asyncio
@@ -562,17 +563,17 @@ asyncio.run(main())
 | 📜 لاگ‌ها | لاگ لحظه‌ای با فیلتر سطح و اسکرول خودکار (۱۳۰۰ لاگ آخر در حافظه) |
 | ⚙️ تنظیمات | تغییر زندهٔ parse mode، poll_interval، time_out، BotConfig، WaitManager و Cache |
 | 📈 آمار | آمار پیام‌ها با جستجو و مرتب‌سازی (نیازمند `enable_stats=True`) |
-| 💻 سیستم | پایتون، uptime، threadها و تسک‌های asyncio — رم/CPU با `pip install psutil` |
+| 💻 سیستم | پایتون، uptime، threadها و تسک‌های asyncio - رم/CPU با `pip install psutil` |
 | 🧰 ابزارها | ارسال پیام، جستجوی اطلاعات چت، پاک‌سازی کش |
 
 **امنیت داخلی:**
 
 - مقایسهٔ رمز با `hmac.compare_digest` (مقاوم به timing attack)
-- نشست با کوکی امضاشدهٔ HMAC-SHA256 (پیش‌فرض ۱۲ ساعت — با `session_hours` قابل تغییر)
+- نشست با کوکی امضاشدهٔ HMAC-SHA256 (پیش‌فرض ۱۲ ساعت - با `session_hours` قابل تغییر)
 - قفل خودکار IP بعد از ۵ تلاش ناموفق (۶۰ ثانیه)
 - توکن CSRF روی همهٔ درخواست‌های POST
 - توکن ربات هرگز در پنل نمایش داده نمی‌شود
-- پیش‌فرض روی `127.0.0.1` گوش می‌دهد — برای باز کردن روی شبکه حتماً از HTTPS/ریورس‌پروکسی استفاده کنید
+- پیش‌فرض روی `127.0.0.1` گوش می‌دهد - برای باز کردن روی شبکه حتماً از HTTPS/ریورس‌پروکسی استفاده کنید
 
 [⬆ بازگشت به فهرست](#-فهرست-مطالب)
 
@@ -610,7 +611,7 @@ fastrub docs            # مستندات
 | `userbot-full` | `pip install fastrub[userbot-full]` | یوزربات با تمام قابلیت‌ها |
 | `full` | `pip install fastrub[full]` | همه چیز یک‌جا نصب می‌شه |
 
-> 💡 **نکته:** همه extras دارای **alias** هستند — مثلاً `pyrubi`, `pyrubi-rtc`, `rtc` همه معادل `aiortc` هستن. برای دیدن لیست کامل: `pip show fastrub` یا فایل `pyproject.toml`.
+> 💡 **نکته:** همه extras دارای **alias** هستند - مثلاً `pyrubi`, `pyrubi-rtc`, `rtc` همه معادل `aiortc` هستن. برای دیدن لیست کامل: `pip show fastrub` یا فایل `pyproject.toml`.
 
 [⬆ بازگشت به فهرست](#-فهرست-مطالب)
 
@@ -799,7 +800,6 @@ fast_rub
 | antispam در یوزربات(پایروبی) |
 | filters بیشتر در یوزربات(پایروبی) |
 | ادغام client.py یوزربات و methods.py یوزربات به client.py یوزربات(پایروبی) |
-| Auto Failover گرفتن پیام ها |
 | Plunging Hub |
 | پل با تلگرام - FastTel |
 | افزودن دستورات CLI |

@@ -1065,7 +1065,7 @@ class Client:
         auto_escape: bool = True,
         **kwargs: Any
     ) -> tuple[str, list[dict[str, Any]]]:
-        """رندر قالب {{ placeholder }} با محافظت تزریق — خروجی (text, metadata)"""
+        """رندر قالب {{ placeholder }} با محافظت تزریق - خروجی (text, metadata)"""
         return TemplateEngine(None).render(template, auto_escape=auto_escape, **kwargs)
 
     def on_message(self, filters: list[Filter] | list[str] | Filter | None = None):

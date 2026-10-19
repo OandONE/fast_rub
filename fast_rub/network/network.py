@@ -274,7 +274,7 @@ class Network:
                             await self._client.aclose()
                         except RuntimeError as re:
                             if "Event loop is closed" in str(re):
-                                self.logger.debug("Event loop closed while closing client (during retry) — ignoring.")
+                                self.logger.debug("Event loop closed while closing client (during retry) - ignoring.")
                             else:
                                 self.logger.exception("RuntimeError when closing client (during retry)")
                         except Exception:

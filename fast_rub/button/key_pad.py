@@ -23,7 +23,7 @@ class RowBuilder:
 
 
 class KeyPad:
-    """کیپد روبیکا — Builder Pattern"""
+    """کیپد روبیکا - Builder Pattern"""
     
     def __init__(self):
         self.list_KeyPads: list[dict] = []

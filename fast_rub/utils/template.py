@@ -29,7 +29,7 @@ class TemplateEngine:
         self,
         client: "Client | None" = None
     ):
-        # client اختیاری است — یوزربات (پایروبی) بدون Client فست‌روب هم از آن استفاده می‌کند
+        # client اختیاری است - یوزربات (پایروبی) بدون Client فست‌روب هم از آن استفاده می‌کند
         self.client = client
 
     def render(
@@ -58,7 +58,7 @@ class TemplateEngine:
         # auto_escape=False
         if not auto_escape or not config_auto_escape:
             (logger or logging.getLogger("fast_rub")).warning(
-                "⚠️ auto_escape=False — ورودی کاربر بدون escape رندر میشه."
+                "⚠️ auto_escape=False - ورودی کاربر بدون escape رندر میشه."
             )
             result = template
             for match in placeholder_matches:

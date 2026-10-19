@@ -379,7 +379,7 @@ class Dashboard:
                 f"🌐 Dashboard (Flask) running at "
                 f"http://{self.host}:{self.port}{self.path_prefix}"
             )
-            # app.run بلاک‌کننده است — در thread جدا اجرا شود تا event loop ربات فریز نشود
+            # app.run بلاک‌کننده است - در thread جدا اجرا شود تا event loop ربات فریز نشود
             await asyncio.to_thread(
                 self._app.run,
                 host=self.host,

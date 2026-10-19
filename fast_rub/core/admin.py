@@ -1,6 +1,6 @@
 """
-پنل ادمین FastRub — نمایش لاگ لحظه‌ای، تنظیمات زندهٔ ربات و آمار از طریق وب.
-FastRub Admin Panel — real-time logs, live bot settings and stats over the web.
+پنل ادمین FastRub - نمایش لاگ لحظه‌ای، تنظیمات زندهٔ ربات و آمار از طریق وب.
+FastRub Admin Panel - real-time logs, live bot settings and stats over the web.
 
 - بک‌اند FastAPI یا Flask (هماهنگ با داشبورد)
 - احراز هویت داخلی بدون کتابخانهٔ جدا: رمز + کوکی امضاشده با HMAC + قفل تلاش ناموفق + توکن CSRF
@@ -31,7 +31,7 @@ LOCKOUT_TIME = 60.0        # مدت قفل (ثانیه)
 
 
 class _BufferLogHandler(logging.Handler):
-    """هندلر لاگ مستقل پنل ادمین — مستقیم به root logger وصل می‌شود"""
+    """هندلر لاگ مستقل پنل ادمین - مستقیم به root logger وصل می‌شود"""
 
     def __init__(self, on_entry) -> None:
         super().__init__(level=logging.INFO)
@@ -39,7 +39,7 @@ class _BufferLogHandler(logging.Handler):
 
     def emit(self, record: logging.LogRecord) -> None:
         try:
-            # نویزهای وب‌سرور/HTTP کلاینت ثبت نشوند — هر poll پنل خودش لاگ می‌سازد
+            # نویزهای وب‌سرور/HTTP کلاینت ثبت نشوند - هر poll پنل خودش لاگ می‌سازد
             # و لاگ httpx URL کامل (شامل توکن ربات) را نشان می‌دهد
             name = record.name
             if name.startswith(("uvicorn", "werkzeug", "httpx", "httpcore")):
@@ -840,7 +840,7 @@ class AdminPanel:
         }
 
     def _apply_settings(self, payload: dict[str, Any]) -> list[str]:
-        """اعمال تنظیمات با اعتبارسنجی نوع/محدوده — لیست موارد اعمال‌شده برمی‌گرداند"""
+        """اعمال تنظیمات با اعتبارسنجی نوع/محدوده - لیست موارد اعمال‌شده برمی‌گرداند"""
         applied: list[str] = []
         c = self.client
 
@@ -919,7 +919,7 @@ class AdminPanel:
 
     async def _stats_data(self, sort: str, search: str) -> dict[str, Any]:
         if not (self.client.enable_stats and self.client.stats):
-            raise RuntimeError("Stats not enabled — Client(enable_stats=True) لازم است")
+            raise RuntimeError("Stats not enabled - Client(enable_stats=True) لازم است")
         stats = self.client.stats
         summary = await stats.get_summary()  # pyright: ignore[reportOptionalMemberAccess]
         chats = await stats.get_chats(sort_by=sort, search=search)  # pyright: ignore[reportOptionalMemberAccess]
@@ -1088,7 +1088,7 @@ class AdminPanel:
             if not self._check_csrf(req.headers.get("x-csrf-token")):
                 return _forbidden("csrf token invalid")
             applied = self._apply_settings(await _json_body(req))
-            self.logger.info(f"پنل ادمین: تنظیمات اعمال شد — {applied}")
+            self.logger.info(f"پنل ادمین: تنظیمات اعمال شد - {applied}")
             return JSONResponse({"applied": applied})
 
         @app.get(f"{self.path_prefix}/api/stats")
@@ -1229,7 +1229,7 @@ class AdminPanel:
                 return jsonify({"error": "csrf token invalid"}), 403
             body = request.get_json(silent=True) or {}
             applied = self._apply_settings(body)
-            self.logger.info(f"پنل ادمین: تنظیمات اعمال شد — {applied}")
+            self.logger.info(f"پنل ادمین: تنظیمات اعمال شد - {applied}")
             return jsonify({"applied": applied})
 
         @app.route(f"{self.path_prefix}/api/stats")
@@ -1305,13 +1305,13 @@ class AdminPanel:
         self._loop = asyncio.get_running_loop()
 
         if self._password_generated:
-            # رمز تصادفی ساخته شده — حتماً باید به کاربر نشان داده شود
+            # رمز تصادفی ساخته شده - حتماً باید به کاربر نشان داده شود
             print(
-                f"\n🛡️ پنل ادمین FastRub — رمز ورود: {self._password}\n"
+                f"\n🛡️ پنل ادمین FastRub - رمز ورود: {self._password}\n"
                 f"   آدرس: http://{self.host}:{self.port}{self.path_prefix}\n"
             )
             self.logger.warning(
-                "رمز پنل ادمین به‌صورت تصادفی ساخته شد و در کنسول چاپ شد — "
+                "رمز پنل ادمین به‌صورت تصادفی ساخته شد و در کنسول چاپ شد - "
                 "برای رمز دلخواه: bot.start_admin(password='...')"
             )
 

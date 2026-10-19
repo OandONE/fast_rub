@@ -182,7 +182,7 @@ class Client:
         دیتابیس آمار
 
     dry_run: bool = False
-        حالت شبیه‌سازی (Dry Run) — ربات بدون توکن واقعی و بدون اینترنت اجرا می‌شود.
+        حالت شبیه‌سازی (Dry Run) - ربات بدون توکن واقعی و بدون اینترنت اجرا می‌شود.
         آپدیت‌ها را با bot.mock.receive_text(...) شبیه‌سازی کنید؛
         همهٔ ارسال‌های ربات در bot.mock.sent و همهٔ درخواست‌ها در bot.mock.requests ثبت می‌شوند.
     
@@ -542,7 +542,7 @@ class Client:
         self.scheduler = Scheduler(self.logger)
         self.snapshots = SnapshotManager(self)
         if self.dry_run:
-            # Try run — no session, database, valid token
+            # Try run - no session, database, valid token
             self.token = self.token or ("0" * 64)
             self.session = MockSession(
                 token=self.token,
@@ -554,7 +554,7 @@ class Client:
                 offset_id=self.offset_id,
                 save_offset_id=self.save_offset_id,
             )
-            self.logger.info("حالت Dry Run فعال است — اتصال واقعی به سرور روبیکا وجود ندارد")
+            self.logger.info("حالت Dry Run فعال است - اتصال واقعی به سرور روبیکا وجود ندارد")
         else:
             self.session = await Session.open(
                 name=self.name_session,
@@ -2609,7 +2609,7 @@ class Client:
     on_close = on_shutdown
 
     def before_send(self):
-        """دکوراتور — قبل از هر ارسال اجرا می‌شود. اگر False برگرداند، ارسال لغو می‌شود."""
+        """دکوراتور - قبل از هر ارسال اجرا می‌شود. اگر False برگرداند، ارسال لغو می‌شود"""
         def decorator(func: Callable):
             self.add_handler(
                 func,
@@ -2619,7 +2619,7 @@ class Client:
         return decorator
 
     def after_send(self):
-        """دکوراتور — بعد از هر ارسال اجرا می‌شود."""
+        """دکوراتور - بعد از هر ارسال اجرا می‌شود."""
         def decorator(func: Callable):
             self.add_handler(
                 func,
@@ -2994,7 +2994,7 @@ class Client:
     # ═══════════════════════════════════
 
     async def _mock_dispatch_message(self, update_data: dict) -> Update:
-        """اجرای آپدیت شبیه‌سازی‌شده در خط لولهٔ هندلرها (Dry Run) — برخلاف پولینگ، هندلرها همزمان(await) اجرا می‌شوند تا تست‌ها قطعی باشند"""
+        """اجرای آپدیت شبیه‌سازی‌شده در خط لولهٔ هندلرها (Dry Run) - برخلاف پولینگ، هندلرها همزمان(await) اجرا می‌شوند تا تست‌ها قطعی باشند"""
         update = Update(update_data, self)
         if self.wait_manager and self.wait_manager.auto_track:
             self.wait_manager.track()
@@ -3319,12 +3319,12 @@ class Client:
         password: str | None = None,
         session_hours: float = 12.0,
     ) -> str:
-        """راه‌اندازی پنل ادمین — لاگ لحظه‌ای، تنظیمات زنده، آمار و ابزارها با احراز هویت داخلی
+        """راه‌اندازی پنل ادمین - لاگ لحظه‌ای، تنظیمات زنده، آمار و ابزارها با احراز هویت داخلی
 
 پنل:
     http://{host}:{port}/admin
 اگر password ندهید یک رمز قوی تصادفی ساخته و در کنسول چاپ می‌شود.
-پنل به تغییر تنظیمات و ارسال پیام می‌تواند دست بزند — فقط روی شبکهٔ مطمئن بازش کنید."""
+پنل به تغییر تنظیمات و ارسال پیام می‌تواند دست بزند - فقط روی شبکهٔ مطمئن بازش کنید."""
         if self._admin_task is not None:
             self.logger.warning("پنل ادمین قبلاً اجرا شده است.")
             return f"http://{host}:{port}{path_prefix}"

@@ -42,11 +42,11 @@ def setup_logging(
         sh = logging.StreamHandler()
         sh.setFormatter(formatter)
         root_logger.addHandler(sh)
-    # httpx هر درخواست را با URL کامل در INFO لاگ می‌کند که توکن ربات داخل URL است —
+    # httpx هر درخواست را با URL کامل در INFO لاگ می‌کند که توکن ربات داخل URL است -
     # جلوگیری از نشت توکن در فایل لاگ
     logging.getLogger("httpx").setLevel(logging.WARNING)
     logging.getLogger("httpcore").setLevel(logging.WARNING)
-    # CallbackHandler همیشه باید بماند — وگرنه on_log بعد از start() کار نمی‌کند
+    # CallbackHandler همیشه باید بماند - وگرنه on_log بعد از start() کار نمی‌کند
     if _callback_handler not in root_logger.handlers:
         root_logger.addHandler(_callback_handler)
     return logging.getLogger("fast_rub")

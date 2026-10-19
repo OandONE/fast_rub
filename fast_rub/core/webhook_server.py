@@ -7,7 +7,7 @@ if TYPE_CHECKING:
 
 
 class WebhookServer:
-    """سرور وب‌هوک داخلی — پشتیبانی از FastAPI و Flask"""
+    """سرور وب‌هوک داخلی - پشتیبانی از FastAPI و Flask"""
     
     def __init__(
         self,
@@ -51,7 +51,7 @@ class WebhookServer:
     
     
     # ═══════════════════════════════════
-    # region 🛣️ مسیرها — FastAPI
+    # region 🛣️ مسیرها - FastAPI
     # ═══════════════════════════════════
     
     def _setup_fastapi_routes(self):
@@ -104,7 +104,7 @@ class WebhookServer:
     # endregion
     
     # ═══════════════════════════════════
-    # region 🛣️ مسیرها — Flask
+    # region 🛣️ مسیرها - Flask
     # ═══════════════════════════════════
     
     def _setup_flask_routes(self):
@@ -145,7 +145,7 @@ class WebhookServer:
     # ═══════════════════════════════════
     
     async def _handle_webhook(self, request, endpoint_type: str):
-        """پردازش وب‌هوک — نسخه FastAPI"""
+        """پردازش وب‌هوک - نسخه FastAPI"""
         from fastapi.responses import JSONResponse
         
         try:
@@ -170,7 +170,7 @@ class WebhookServer:
         return self._loop
     
     def _handle_webhook_flask(self, request, endpoint_type: str):
-        """پردازش وب‌هوک — نسخه Flask"""
+        """پردازش وب‌هوک - نسخه Flask"""
         from flask import jsonify
         
         try:

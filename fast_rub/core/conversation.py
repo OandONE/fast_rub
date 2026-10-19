@@ -233,7 +233,7 @@ class Conversation:
             }
 
             async def form_entry(update: Update, data: dict):
-                """نقطهٔ ورود فرم — اولین فیلد رو می‌پرسه"""
+                """نقطهٔ ورود فرم - اولین فیلد رو می‌پرسه"""
                 config = self._form_config
                 
                 if config["on_start"]:

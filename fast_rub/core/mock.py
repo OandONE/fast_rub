@@ -1,6 +1,6 @@
 """
 شبیه‌ساز ربات (Dry Run) برای FastRub.
-FastRub Dry Run simulator — run and test the bot without a real Rubika connection.
+FastRub Dry Run simulator - run and test the bot without a real Rubika connection.
 
 ربات با `Client(name, dry_run=True)` بدون توکن واقعی و بدون اینترنت اجرا می‌شود.
 آپدیت‌های ورودی با متدهای receive_* شبیه‌سازی می‌شوند و همهٔ ارسال‌های ربات
@@ -55,7 +55,7 @@ class MockResponse:
 
 
 class MockSession:
-    """سشن ساختگی — همان اینترفیس Session واقعی ولی بدون دیتابیس و بدون توکن واقعی"""
+    """سشن ساختگی - همان اینترفیس Session واقعی ولی بدون دیتابیس و بدون توکن واقعی"""
 
     def __init__(
         self,
@@ -122,7 +122,7 @@ class MockNetwork:
         self.requests: list[dict[str, Any]] = []
         self.sent: list[dict[str, Any]] = []
 
-        # پاسخ‌های دستی کاربر — {method: data} که جای پاسخ پیش‌فرض برمی‌گردد
+        # پاسخ‌های دستی کاربر - {method: data} که جای پاسخ پیش‌فرض برمی‌گردد
         self.responses: dict[str, dict] = {}
 
         # متودهایی که می‌خواهید عمداً خطا بدهند (تست خطا)
@@ -158,7 +158,7 @@ class MockNetwork:
         title: str | None = None,
         chat_type: Literal["User", "Group", "Channel"] | None = None,
     ) -> dict:
-        """ثبت یه چت شبیه‌سازی‌شده — برای جواب دادن به getChat"""
+        """ثبت یه چت شبیه‌سازی‌شده - برای جواب دادن به getChat"""
         if chat_id is None:
             chat_id = self.new_guid("b")
         if chat_id not in self.chats:
@@ -273,7 +273,7 @@ class MockNetwork:
         aux_data: dict | None = None,
         **extra: Any,
     ) -> "Update":
-        """شبیه‌سازی پیام کاربر — فوراً از فیلترها/هندلرها/کانورسیشن رد می‌شود"""
+        """شبیه‌سازی پیام کاربر - فوراً از فیلترها/هندلرها/کانورسیشن رد می‌شود"""
         update = self.build_text_update(
             chat_id=chat_id,
             text=text,
@@ -328,7 +328,7 @@ class MockNetwork:
         return await self.client._mock_dispatch_button(data)
 
     async def receive_raw(self, update_data: dict) -> "Update | UpdateButton":
-        """تزریق آپدیت خام (ساختار Bot API) — نوع آن خودکار تشخیص داده می‌شود"""
+        """تزریق آپدیت خام (ساختار Bot API) - نوع آن خودکار تشخیص داده می‌شود"""
         if "inline_message" in update_data:
             return await self.client._mock_dispatch_button(update_data)
         return await self.client._mock_dispatch_message(update_data)
@@ -342,16 +342,16 @@ class MockNetwork:
     # ═══════════════════════════════════
 
     def enqueue_raw(self, update_data: dict) -> dict:
-        """افزودن آپدیت خام به صف — با bot.run() از get_updates دریافت می‌شود"""
+        """افزودن آپدیت خام به صف - با bot.run() از get_updates دریافت می‌شود"""
         self._queue.append(update_data)
         return update_data
 
     def enqueue_text(self, **kwargs: Any) -> dict:
-        """افزودن پیام متنی به صف — همان ورودی‌های receive_text"""
+        """افزودن پیام متنی به صف - همان ورودی‌های receive_text"""
         return self.enqueue_raw(self.build_text_update(**kwargs))
 
     def enqueue_button(self, **kwargs: Any) -> dict:
-        """افزودن کلیک دکمه به صف — همان ورودی‌های receive_button"""
+        """افزودن کلیک دکمه به صف - همان ورودی‌های receive_button"""
         return self.enqueue_raw(self.build_button_update(**kwargs))
 
     def enqueue_deleted(self, chat_id: str, message_id: str) -> dict:
@@ -375,7 +375,7 @@ class MockNetwork:
         return self.sent[-1] if self.sent else None
 
     def get_sent(self, method: str | None = None) -> list[dict]:
-        """ارسال‌های ثبت‌شده — قابل فیلتر با نام متود"""
+        """ارسال‌های ثبت‌شده - قابل فیلتر با نام متود"""
         if method is None:
             return self.sent
         return [s for s in self.sent if s["method"] == method]

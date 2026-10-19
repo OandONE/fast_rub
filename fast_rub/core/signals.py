@@ -5,7 +5,7 @@ import logging
 from .async_sync import wrap_all_async_methods
 
 class SignalManager:
-    """مدیریت سیگنال‌ها — مثل Django Signals"""
+    """مدیریت سیگنال‌ها - مثل Django Signals"""
     
     def __init__(
         self,

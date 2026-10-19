@@ -1,5 +1,5 @@
 """
-pyrubi network layer — completely standalone, no inheritance from Fast Rub.
+pyrubi network layer - completely standalone, no inheritance from Fast Rub.
 Uses httpx + HTTP/2, with retry, rate limiting, and structured logging.
 """
 from __future__ import annotations

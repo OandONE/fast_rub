@@ -7,7 +7,7 @@ SUFFIX = "db.faru"
 
 
 class MessageKeeper:
-    """کلاس مدیریت ذخیره‌سازی و بازیابی پیام‌ها با محدودیت تعداد (Async) — با DataBase"""
+    """کلاس مدیریت ذخیره‌سازی و بازیابی پیام‌ها با محدودیت تعداد (Async) - با DataBase"""
 
     def __init__(self, db_path: str, number_keeper: int):
         self.db_path = self._make_path(db_path)
