@@ -179,6 +179,11 @@
         "auto_failover",
         "<a href='../models/index.html#auto_failover'>AutoFailoverConfig</a> | None = None",
         "تنظیمات زمانی برای جابه‌جایی خودکار Webhook ↔ Polling (نیازمند تنظیم <code>webhook=WebhookConfig(...)</code> در سازنده)"
+      ],
+      [
+        "network_rate_limit",
+        "int = 20",
+        "محدودیت تعداد تسک همزمان در شبکه(نتورک)"
       ]
     ],
     "returns": null,
