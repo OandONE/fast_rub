@@ -6,6 +6,7 @@ import sys
 import json
 import hashlib
 from functools import wraps
+from inspect import signature, Parameter
 from pathlib import Path
 from collections import deque
 from typing import Any, Literal, TYPE_CHECKING
@@ -21,7 +22,6 @@ from .plugins import PluginManager
 from .webhook_server import WebhookServer
 from .background import BackgroundManager
 from .hotreload import HotReload
-from .helpers import _send_helper
 from .signals import SignalManager
 from .stats import StatsTracker
 from .scheduler import Scheduler
@@ -49,6 +49,175 @@ from ..utils import TemplateEngine
 from ..db.session import Session
 from ..db.message_keeper import MessageKeeper
 from ..pyrubi import Client as PyrubiClient
+
+
+# These decorators are intentionally kept small: reflection runs once when the
+# class is defined, while each action uses one wrapper and no per-call closures.
+def _parameter_layout(func: Callable[..., Any]) -> tuple[dict[str, int], dict[str, Any]]:
+    """Cache positional slots and defaults once when a method is decorated."""
+    positions: dict[str, int] = {}
+    defaults: dict[str, Any] = {}
+    positional_index = 0
+    for parameter in signature(func).parameters.values():
+        if parameter.name == "self":
+            continue
+        if parameter.kind in (Parameter.POSITIONAL_ONLY, Parameter.POSITIONAL_OR_KEYWORD):
+            positions[parameter.name] = positional_index
+            positional_index += 1
+        if parameter.default is not Parameter.empty:
+            defaults[parameter.name] = parameter.default
+    return positions, defaults
+
+
+def _taskable(func: Callable[..., Any]) -> Callable[..., Any]:
+    """Return an asyncio.Task when requested; otherwise execute the coroutine normally."""
+    positions, defaults = _parameter_layout(func)
+    return_position = positions.get("return_task")
+
+    @wraps(func)
+    async def wrapper(self, *args: Any, **kwargs: Any) -> Any:
+        return_task = kwargs["return_task"] if "return_task" in kwargs else (
+            args[return_position] if return_position is not None and return_position < len(args)
+            else defaults.get("return_task", False)
+        )
+        if return_task:
+            if "return_task" in kwargs:
+                task_kwargs = dict(kwargs)
+                task_kwargs["return_task"] = False
+                return asyncio.create_task(wrapper(self, *args, **task_kwargs))
+            if return_position is not None and return_position < len(args):
+                task_args = args[:return_position] + (False,) + args[return_position + 1:]
+                return asyncio.create_task(wrapper(self, *task_args, **kwargs))
+            task_kwargs = dict(kwargs)
+            task_kwargs["return_task"] = False
+            return asyncio.create_task(wrapper(self, *args, **task_kwargs))
+        return await func(self, *args, **kwargs)
+
+    return wrapper
+
+
+def _managed_action(
+    *,
+    channel: Literal["sending", "banning", "forwarding", "uploading", "editing", "deleting"],
+    tracked: dict[str, str],
+    hooks: dict[str, str] | None = None,
+) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
+    """Manage shared send lifecycle without per-call nested functions or helper chains."""
+    def decorate(func: Callable[..., Any]) -> Callable[..., Any]:
+        positions, defaults = _parameter_layout(func)
+        return_position = positions.get("return_task")
+        wait_position = positions.get("wait_send")
+        wait_default = defaults.get("wait_send")
+
+        # Maps needed for the helper-compatible validation and WaitManager behavior.
+        tracked_slots = tuple(
+            (alias, name, positions.get(name), defaults.get(name))
+            for alias, name in tracked.items()
+        )
+        hook_slots = tuple(
+            (alias, name, positions.get(name), defaults.get(name))
+            for alias, name in (hooks or {}).items()
+        )
+        chat_slot = next((slot for slot in tracked_slots if slot[0] == "chat_id"), None)
+        to_chat_slot = next((slot for slot in tracked_slots if slot[0] == "to_chat_id"), None)
+
+        @wraps(func)
+        async def wrapper(self: Client, *args: Any, **kwargs: Any) -> Any:
+            # Keep the hot path lean. Only copy the call arguments when the caller
+            # explicitly requests a Task, and disable the flag in that scheduled call.
+            return_task = kwargs["return_task"] if "return_task" in kwargs else (
+                args[return_position] if return_position is not None and return_position < len(args)
+                else defaults.get("return_task", False)
+            )
+            if return_task:
+                if "return_task" in kwargs:
+                    task_kwargs = dict(kwargs)
+                    task_kwargs["return_task"] = False
+                    return asyncio.create_task(wrapper(self, *args, **task_kwargs))
+                if return_position is not None and return_position < len(args):
+                    task_args = args[:return_position] + (False,) + args[return_position + 1:]
+                    return asyncio.create_task(wrapper(self, *task_args, **kwargs))
+                task_kwargs = dict(kwargs)
+                task_kwargs["return_task"] = False
+                return asyncio.create_task(wrapper(self, *args, **task_kwargs))
+
+            # Resolve argument values from cached parameter slots, without binding a
+            # Signature or constructing a full argument dictionary on every call.
+            hook_values = None
+            if hook_slots:
+                hook_values = {}
+                for alias, name, position, default in hook_slots:
+                    value = (
+                        kwargs[name]
+                        if name in kwargs
+                        else args[position]
+                        if position is not None and position < len(args)
+                        else default
+                    )
+                    hook_values[alias] = value
+                if hook_values.get("text") is not None:
+                    if not await self._trigger_before_send(**hook_values):
+                        return None
+
+            if self.config.validate_chat_id:
+                for _alias, name, position, default in tracked_slots:
+                    value = (
+                        kwargs[name]
+                        if name in kwargs
+                        else args[position]
+                        if position is not None and position < len(args)
+                        else default
+                    )
+                    if value is not None:
+                        Utils.check_id_raise(value)
+
+            if self.wait_manager and self.wait_manager.track_after_send:
+                chat_id = None
+                to_chat_id = None
+                if chat_slot is not None:
+                    _alias, name, position, default = chat_slot
+                    chat_id = (
+                        kwargs[name]
+                        if name in kwargs
+                        else args[position]
+                        if position is not None and position < len(args)
+                        else default
+                    )
+                if to_chat_slot is not None:
+                    _alias, name, position, default = to_chat_slot
+                    to_chat_id = (
+                        kwargs[name]
+                        if name in kwargs
+                        else args[position]
+                        if position is not None and position < len(args)
+                        else default
+                    )
+                target_chat_id = chat_id or to_chat_id
+                self.wait_manager.add_traffic(
+                    channel=channel,
+                    chat_id=target_chat_id if self.wait_manager.per_chat else None,
+                )
+
+            wait = (
+                kwargs["wait_send"]
+                if "wait_send" in kwargs
+                else args[wait_position]
+                if wait_position is not None and wait_position < len(args)
+                else wait_default
+            )
+            wait = await self._wait(wait)
+            if wait:
+                await asyncio.sleep(wait)
+
+            result = await func(self, *args, **kwargs)
+
+            if hook_values is not None and hook_values.get("text") is not None:
+                await self._trigger_after_send(result=result, **hook_values)
+            return result
+
+        return wrapper
+
+    return decorate
 if TYPE_CHECKING:
     from .conversation import Conversation
 
@@ -1026,53 +1195,41 @@ class Client:
             await self.cache.set(f"chat:{chat_id}", chat)
         return ChatModel(data=chat)
 
+    @_managed_action(channel='banning', tracked={'chat_id': 'chat_id'}, hooks={})
     async def ban_chat_member(
         self,
         chat_id: str,
         user_id: str,
         wait_send: float | None = None,
-        return_task: bool = False
+        return_task: bool = False, # Delete in V7
     ) -> props | asyncio.Task[props]:
         """ban member in chat / بن کردن کاربر در چت"""
         self.logger.info("در حال استفاده از متئد ban_chat_member")
         
-        async def _active():
-            data = {
-                "chat_id": chat_id,
-                "user_id": user_id
-            }
-            result = await self.network.send_request("banChatMember", data)
-            return props(result)
-        
-        result = await _send_helper(
-            self, _active, channel="banning", return_task=return_task,
-            wait_send=wait_send, chat_id=chat_id
-        )
-        return result # type: ignore
+        data = {
+            "chat_id": chat_id,
+            "user_id": user_id
+        }
+        result = await self.network.send_request("banChatMember", data)
+        return props(result)
     
+    @_managed_action(channel='banning', tracked={'chat_id': 'chat_id'}, hooks={})
     async def unban_chat_member(
         self,
         chat_id: str,
         user_id: str,
         wait_send: float | None = None,
-        return_task: bool = False
+        return_task: bool = False, # Delete in V7
     ) -> props | asyncio.Task[props]:
         """un ban member in chat / آنبن کردن کاربر در چت"""
         self.logger.info("در حال استفاده از متئد unban_chat_member")
 
-        async def _active():
-            data = {
-                "chat_id": chat_id,
-                "user_id": user_id
-            }
-            result = await self.network.send_request("unbanChatMember", data)
-            return props(result)
-        
-        result = await _send_helper(
-            self, _active, channel="banning", return_task=return_task,
-            wait_send=wait_send, chat_id=chat_id
-        )
-        return result # type: ignore
+        data = {
+            "chat_id": chat_id,
+            "user_id": user_id
+        }
+        result = await self.network.send_request("unbanChatMember", data)
+        return props(result)
     
     ban_member = ban_chat_member
     unban_member = unban_chat_member
@@ -1148,7 +1305,7 @@ class Client:
         name_file: str = "bot_avatar.jpg",
         show_progress: bool = False,
         wait_send: float | None = None,
-        return_task: bool = False,
+        return_task: bool = False, # Delete in V7,
         max_retries: int | None = None
     ) -> bool:
         self.logger.debug("download_me_profile called")
@@ -1178,27 +1335,23 @@ class Client:
         return props(result)
 
     
+    @_taskable
     async def get_download_file_url(
         self,
         id_file: str,
         wait_send: float | None = None,
-        return_task: bool = False
+        return_task: bool = False, # Delete in V7
     ) -> str | asyncio.Task[str]:
         """get download url file / گرفتن آدرس دانلود فایل"""
         self.logger.debug("get_download_file_url called")
-        async def _active():
-            if self.wait_manager and self.wait_manager.track_after_send:
-                self.wait_manager.add_traffic(channel="uploading")
-            wait_manager = wait_send or (await self.wait_manager.get_time("uploading") if self.wait_manager else None)
-            if wait_manager:
-                await asyncio.sleep(wait_manager)
-            file = await self.get_file(id_file)
-            url = file["download_url"]
-            return url
-        if return_task:
-            return asyncio.create_task(_active())
-        else:
-            return await _active()
+        if self.wait_manager and self.wait_manager.track_after_send:
+            self.wait_manager.add_traffic(channel="uploading")
+        wait_manager = wait_send or (await self.wait_manager.get_time("uploading") if self.wait_manager else None)
+        if wait_manager:
+            await asyncio.sleep(wait_manager)
+        file = await self.get_file(id_file)
+        url = file["download_url"]
+        return url
 
     
     async def download_by_url(
@@ -1222,29 +1375,25 @@ class Client:
             self.logger.error("خطا در دانلود فایل !")
 
     
+    @_taskable
     async def download_file(
         self,
         id_file: str ,
         path: str = "file",
         show_progress: bool = False,
         wait_send: float | None = None,
-        return_task: bool = False,
+        return_task: bool = False, # Delete in V7,
         max_retries: int | None = None,
-    ) -> None:
+    ) -> None | asyncio.Task[None]:
         """download file / دانلود فایل"""
         self.logger.debug("download_file called")
-        async def _active():
-            if self.wait_manager and self.wait_manager.track_after_send:
-                self.wait_manager.add_traffic(channel="uploading")
-            wait_manager = wait_send or (await self.wait_manager.get_time("uploading") if self.wait_manager else None)
-            if wait_manager:
-                await asyncio.sleep(wait_manager)
-            url = await self.get_download_file_url(id_file)
-            await self.download_by_url(url, path, show_progress, max_retries) # type: ignore
-        if return_task:
-            asyncio.create_task(_active())
-        else:
-            await _active()
+        if self.wait_manager and self.wait_manager.track_after_send:
+            self.wait_manager.add_traffic(channel="uploading")
+        wait_manager = wait_send or (await self.wait_manager.get_time("uploading") if self.wait_manager else None)
+        if wait_manager:
+            await asyncio.sleep(wait_manager)
+        url = await self.get_download_file_url(id_file)
+        await self.download_by_url(url, path, show_progress, max_retries) # type: ignore
 
     # endregion
 
@@ -1252,6 +1401,7 @@ class Client:
     # region 📩 Sending Messages | ارسال پیام
     # ═══════════════════════════════════
     
+    @_managed_action(channel='sending', tracked={'chat_id': 'chat_id'}, hooks={'chat_id': 'chat_id', 'text': 'text'})
     async def send_text(
         self,
         text: str,
@@ -1266,42 +1416,35 @@ class Client:
         parse_mode: Literal["Markdown", "HTML", None] = "Markdown",
         meta_data: list | None = None,
         wait_send: float | None = None,
-        return_task: bool = False,
+        return_task: bool = False, # Delete in V7,
         context: dict | None = None,
         auto_escape: bool = True,
     ) -> msg_update | asyncio.Task[msg_update]:
         """sending text to chat id"""
         self.logger.debug("send_text called")
         
-        async def _active():
-            _meta_data = meta_data if meta_data is not None else []
-            _text = text
-            _parse_mode = parse_mode
+        _meta_data = meta_data if meta_data is not None else []
+        _text = text
+        _parse_mode = parse_mode
 
-            if context:
-                _text, extra_metadata = self.render(_text, parse_mode=_parse_mode, auto_escape=auto_escape, **context)
-                _meta_data = _meta_data + extra_metadata
-                if auto_escape:
-                    _parse_mode = None
+        if context:
+            _text, extra_metadata = self.render(_text, parse_mode=_parse_mode, auto_escape=auto_escape, **context)
+            _meta_data = _meta_data + extra_metadata
+            if auto_escape:
+                _parse_mode = None
 
-            metadata, _text = self._parse_mode_text(_text, _parse_mode)
-            data = {
-                "chat_id": chat_id,
-                "text": _text,
-                "disable_notification": disable_notification,
-                "reply_to_message_id": reply_to_message_id
-            }
-            data = Utils.data_format(data, inline_keypad, keypad, resize_keyboard, on_time_keyboard, metadata, _meta_data)
-            result = await self.network.send_request("sendMessage", data)
-            result["chat_id"] = chat_id
-            await self._manage_auto_delete(result, auto_delete)
-            return msg_update(result, self)
-
-        result = await _send_helper(
-            self, _active, channel="sending", return_task=return_task,
-            wait_send=wait_send, chat_id=chat_id, text=text
-        )
-        return result
+        metadata, _text = self._parse_mode_text(_text, _parse_mode)
+        data = {
+            "chat_id": chat_id,
+            "text": _text,
+            "disable_notification": disable_notification,
+            "reply_to_message_id": reply_to_message_id
+        }
+        data = Utils.data_format(data, inline_keypad, keypad, resize_keyboard, on_time_keyboard, metadata, _meta_data)
+        result = await self.network.send_request("sendMessage", data)
+        result["chat_id"] = chat_id
+        await self._manage_auto_delete(result, auto_delete)
+        return msg_update(result, self)
 
     async def send_message(
         self,
@@ -1317,7 +1460,7 @@ class Client:
         parse_mode: Literal["Markdown", "HTML", None] = "Markdown",
         meta_data: list | None = None,
         wait_send: float | None = None,
-        return_task: bool = False,
+        return_task: bool = False, # Delete in V7,
         context: dict | None = None,
         auto_escape: bool = True,
         # file
@@ -1446,6 +1589,7 @@ class Client:
             )
         raise ValueError("Please Write The Args !")
 
+    @_managed_action(channel='sending', tracked={'chat_id': 'chat_id'}, hooks={})
     async def send_poll(
         self,
         chat_id: str,
@@ -1460,40 +1604,34 @@ class Client:
         reply_to_message_id: str | None = None,
         auto_delete: int | None = None,
         wait_send: float | None = None,
-        return_task: bool = False
+        return_task: bool = False, # Delete in V7
     ) -> msg_update | asyncio.Task[msg_update]:
         """sending poll to chat id / ارسال نظرسنجی به یک چت آیدی"""
         self.logger.debug("send_poll called")
 
-        async def _active():
-            if len(options) > 10:
-                raise PollInvalid("len for options is logner from 10 option")
-            data = {
-                "chat_id": chat_id,
-                "question": question,
-                "options": options,
-                "type": type_poll,
-                "is_anonymous": is_anonymous,
-                "correct_option_index": correct_option_index,
-                "hint": hint,
-                "allows_multiple_answers": allows_multiple_answers,
-                "reply_to_message_id": reply_to_message_id,
-                "disable_notification": disable_notification
-            }
-            result = await self.network.send_request(
-                "sendPoll",
-                data,
-            )
-            result["chat_id"] = chat_id
-            await self._manage_auto_delete(result, auto_delete)
-            return msg_update(result, self)
-
-        result = await _send_helper(
-            self, _active, channel="sending", return_task=return_task,
-            wait_send=wait_send, chat_id=chat_id
+        if len(options) > 10:
+            raise PollInvalid("len for options is logner from 10 option")
+        data = {
+            "chat_id": chat_id,
+            "question": question,
+            "options": options,
+            "type": type_poll,
+            "is_anonymous": is_anonymous,
+            "correct_option_index": correct_option_index,
+            "hint": hint,
+            "allows_multiple_answers": allows_multiple_answers,
+            "reply_to_message_id": reply_to_message_id,
+            "disable_notification": disable_notification
+        }
+        result = await self.network.send_request(
+            "sendPoll",
+            data,
         )
-        return result
+        result["chat_id"] = chat_id
+        await self._manage_auto_delete(result, auto_delete)
+        return msg_update(result, self)
 
+    @_managed_action(channel='sending', tracked={'chat_id': 'chat_id'}, hooks={})
     async def send_location(
         self,
         chat_id: str,
@@ -1505,35 +1643,29 @@ class Client:
         chat_keypad_type: str | None = None,
         auto_delete: int | None = None,
         wait_send: float | None = None,
-        return_task: bool = False
+        return_task: bool = False, # Delete in V7
     ) -> msg_update | asyncio.Task[msg_update]:
         """sending location to chat id / ارسال لوکیشن(موقعیت مکانی) به یک چت آیدی"""
         self.logger.debug("send_location called")
 
-        async def _active():
-            data = {
-                "chat_id": chat_id,
-                "latitude": latitude,
-                "longitude": longitude,
-                "chat_keypad": chat_keypad,
-                "disable_notification": disable_notification,
-                "reply_to_message_id": reply_to_message_id,
-                "chat_keypad_type": chat_keypad_type,
-            }
-            result = await self.network.send_request(
-                "sendLocation",
-                data,
-            )
-            result["chat_id"] = chat_id
-            await self._manage_auto_delete(result, auto_delete)
-            return msg_update(result, self)
-        
-        result = await _send_helper(
-            self, _active, channel="sending", return_task=return_task,
-            wait_send=wait_send, chat_id=chat_id
+        data = {
+            "chat_id": chat_id,
+            "latitude": latitude,
+            "longitude": longitude,
+            "chat_keypad": chat_keypad,
+            "disable_notification": disable_notification,
+            "reply_to_message_id": reply_to_message_id,
+            "chat_keypad_type": chat_keypad_type,
+        }
+        result = await self.network.send_request(
+            "sendLocation",
+            data,
         )
-        return result
+        result["chat_id"] = chat_id
+        await self._manage_auto_delete(result, auto_delete)
+        return msg_update(result, self)
     
+    @_managed_action(channel='sending', tracked={'chat_id': 'chat_id'}, hooks={})
     async def send_contact(
         self,
         chat_id: str,
@@ -1547,36 +1679,31 @@ class Client:
         disable_notification: bool | None = None,
         auto_delete: int | None = None,
         wait_send: float | None = None,
-        return_task: bool = False
+        return_task: bool = False, # Delete in V7
     ) -> msg_update | asyncio.Task[msg_update]:
         """sending contact to chat id / ارسال مخاطب به یک چت آیدی"""
         self.logger.debug("send_contact called")
 
-        async def _active():
-            data = {
-                "chat_id": chat_id,
-                "first_name": first_name,
-                "last_name": last_name,
-                "phone_number": phone_number,
-                "chat_keypad": chat_keypad,
-                "disable_notification": disable_notification,
-                "chat_keypad_type": chat_keypad_type,
-                "inline_keypad": inline_keypad,
-                "reply_to_message_id": reply_to_message_id,
-            }
-            result = await self.network.send_request(
-                "sendContact",
-                data,
-            )
-            result["chat_id"] = chat_id
-            await self._manage_auto_delete(result, auto_delete)
-            return msg_update(result, self)
-        result = await _send_helper(
-            self, _active, channel="sending", return_task=return_task,
-            wait_send=wait_send, chat_id=chat_id
+        data = {
+            "chat_id": chat_id,
+            "first_name": first_name,
+            "last_name": last_name,
+            "phone_number": phone_number,
+            "chat_keypad": chat_keypad,
+            "disable_notification": disable_notification,
+            "chat_keypad_type": chat_keypad_type,
+            "inline_keypad": inline_keypad,
+            "reply_to_message_id": reply_to_message_id,
+        }
+        result = await self.network.send_request(
+            "sendContact",
+            data,
         )
-        return result
+        result["chat_id"] = chat_id
+        await self._manage_auto_delete(result, auto_delete)
+        return msg_update(result, self)
     
+    @_managed_action(channel='forwarding', tracked={'chat_id': 'from_chat_id', 'to_chat_id': 'to_chat_id'}, hooks={})
     async def forward_message(
         self,
         from_chat_id: str,
@@ -1585,31 +1712,24 @@ class Client:
         disable_notification : bool | None = None,
         auto_delete: int | None = None,
         wait_send: float | None = None,
-        return_task: bool = False
+        return_task: bool = False, # Delete in V7
     ) -> msg_update | asyncio.Task[msg_update]:
         """forwarding message to chat id / فوروارد پیام به یک چت آیدی"""
         self.logger.debug("forward_message called")
 
-        async def _active():
-            data = {
-                "from_chat_id": from_chat_id,
-                "message_id": message_id,
-                "to_chat_id": to_chat_id,
-                "disable_notification": disable_notification,
-            }
-            result = await self.network.send_request(
-                "forwardMessage",
-                data,
-            )
-            result["chat_id"] = to_chat_id
-            await self._manage_auto_delete(result, auto_delete)
-            return msg_update(result, self)
-        
-        result = await _send_helper(
-            self, _active, channel="forwarding", return_task=return_task,
-            wait_send=wait_send, chat_id=from_chat_id, to_chat_id=to_chat_id
+        data = {
+            "from_chat_id": from_chat_id,
+            "message_id": message_id,
+            "to_chat_id": to_chat_id,
+            "disable_notification": disable_notification,
+        }
+        result = await self.network.send_request(
+            "forwardMessage",
+            data,
         )
-        return result
+        result["chat_id"] = to_chat_id
+        await self._manage_auto_delete(result, auto_delete)
+        return msg_update(result, self)
 
     async def forward_messages(
         self,
@@ -1619,7 +1739,7 @@ class Client:
         disable_notification: bool | None = None,
         auto_delete: int | None = None,
         wait_send: float | None = None,
-        return_task: bool = False
+        return_task: bool = False, # Delete in V7
     ) -> list[msg_update] | list[asyncio.Task[msg_update]]:
         """forwarding messages to chat id / فوروارد چند پیام به یک چت آیدی"""
         tasks: list = [
@@ -1640,6 +1760,7 @@ class Client:
     # region ✏️ Messaging | ویرایش و مدیریت پیام
     # ═══════════════════════════════════
     
+    @_managed_action(channel='editing', tracked={'chat_id': 'chat_id'}, hooks={})
     async def edit_message_text(
         self,
         chat_id: str,
@@ -1649,39 +1770,32 @@ class Client:
         parse_mode: Literal["Markdown", "HTML", None] = "Markdown",
         meta_data: list | None = None,
         wait_send: float | None = None,
-        return_task: bool = False,
+        return_task: bool = False, # Delete in V7,
         context: dict | None = None,
         auto_escape: bool = True,
     ) -> msg_update | asyncio.Task[msg_update]:
         """editing message text / ویرایش متن پیام"""
         self.logger.debug("edit_message_text called")
 
-        async def _active():
-            _meta_data = meta_data if meta_data is not None else []
-            _text = text
-            _parse_mode = parse_mode
+        _meta_data = meta_data if meta_data is not None else []
+        _text = text
+        _parse_mode = parse_mode
 
-            if context:
-                _text, extra_metadata = self.render(_text, parse_mode=_parse_mode, auto_escape=auto_escape, **context)
-                _meta_data = _meta_data + extra_metadata
-                if auto_escape:
-                    _parse_mode = None
-            
-            metadata, _text  = self._parse_mode_text(_text, _parse_mode)
-            data = {"chat_id": chat_id, "message_id": message_id, "text": _text}
-            data = Utils.data_format(data, inline_keypad, metadata=metadata, meta_data=_meta_data)
-            result = await self.network.send_request(
-                "editMessageText",
-                data,
-            )
-            result["chat_id"] = chat_id
-            return msg_update(result, self)
-
-        result = await _send_helper(
-            self, _active, channel="editing", return_task=return_task,
-            wait_send=wait_send, chat_id=chat_id
+        if context:
+            _text, extra_metadata = self.render(_text, parse_mode=_parse_mode, auto_escape=auto_escape, **context)
+            _meta_data = _meta_data + extra_metadata
+            if auto_escape:
+                _parse_mode = None
+        
+        metadata, _text  = self._parse_mode_text(_text, _parse_mode)
+        data = {"chat_id": chat_id, "message_id": message_id, "text": _text}
+        data = Utils.data_format(data, inline_keypad, metadata=metadata, meta_data=_meta_data)
+        result = await self.network.send_request(
+            "editMessageText",
+            data,
         )
-        return result
+        result["chat_id"] = chat_id
+        return msg_update(result, self)
     
     edit_text = edit_message_text
     edit_message = edit_message_text
@@ -1728,32 +1842,26 @@ class Client:
     # ═══════════════════════════════════
 
     
+    @_managed_action(channel='deleting', tracked={'chat_id': 'chat_id'}, hooks={})
     async def delete_message(
         self,
         chat_id: str,
         message_id: str,
         wait_send: float | None = None,
-        return_task: bool = False
+        return_task: bool = False, # Delete in V7
     ) -> props | asyncio.Task[props]:
         """delete message / پاکسازی(حذف) یک پیام"""
         self.logger.debug("delete_message called")
 
-        async def _active():
-            data = {
-                "chat_id": chat_id,
-                "message_id": message_id
-            }
-            result = await self.network.send_request(
-                "deleteMessage",
-                data,
-            )
-            return props(result)
-
-        result = await _send_helper(
-            self, _active, channel="deleting", return_task=return_task,
-            wait_send=wait_send, chat_id=chat_id
+        data = {
+            "chat_id": chat_id,
+            "message_id": message_id
+        }
+        result = await self.network.send_request(
+            "deleteMessage",
+            data,
         )
-        return result # type: ignore
+        return props(result)
     
     async def auto_delete(
         self,
@@ -1796,6 +1904,7 @@ class Client:
         response = await self.network.upload(url, file, file_name, show_progress, chunk_size)
         return response
     
+    @_managed_action(channel='sending', tracked={'chat_id': 'chat_id'}, hooks={})
     async def send_file_by_file_id(
         self,
         chat_id: str,
@@ -1811,46 +1920,39 @@ class Client:
         resize_keyboard: bool | None = True,
         on_time_keyboard: bool | None = False,
         wait_send: float | None = None,
-        return_task: bool = False,
+        return_task: bool = False, # Delete in V7,
         context: dict | None = None,
         auto_escape: bool = True,
     ) -> msg_update | asyncio.Task[msg_update]:
         """sending file by file id / ارسال فایل با آیدی فایل"""
         self.logger.debug("send_file_by_id called")
 
-        async def _active():
-            _text = text
-            _meta_data = meta_data if meta_data is not None else []
-            _parse_mode = parse_mode
+        _text = text
+        _meta_data = meta_data if meta_data is not None else []
+        _parse_mode = parse_mode
 
-            if context and _text:
-                _text, extra_metadata = self.render(_text, parse_mode=_parse_mode, auto_escape=auto_escape, **context)
-                _meta_data = _meta_data + extra_metadata
-                if auto_escape:
-                    _parse_mode = None
-            
-            metadata = []
-            Utils.check_id_raise(chat_id)
-            if _text:
-                metadata, _text  = self._parse_mode_text(_text, _parse_mode)
-            data = {
-                "chat_id": chat_id,
-                "text": _text,
-                "file_id": file_id,
-                "reply_to_message_id": reply_to_message_id,
-                "disable_notification": disable_notification,
-            }
-            data = Utils.data_format(data, inline_keypad,keypad,resize_keyboard,on_time_keyboard, metadata=metadata, meta_data=_meta_data)
-            sending = await self.network.send_request("sendFile", data)
-            sending["chat_id"] = chat_id
-            await self._manage_auto_delete(sending, auto_delete)
-            return msg_update(sending, self)
+        if context and _text:
+            _text, extra_metadata = self.render(_text, parse_mode=_parse_mode, auto_escape=auto_escape, **context)
+            _meta_data = _meta_data + extra_metadata
+            if auto_escape:
+                _parse_mode = None
         
-        result = await _send_helper(
-            self, _active, channel="sending", return_task=return_task,
-            wait_send=wait_send, chat_id=chat_id
-        )
-        return result
+        metadata = []
+        Utils.check_id_raise(chat_id)
+        if _text:
+            metadata, _text  = self._parse_mode_text(_text, _parse_mode)
+        data = {
+            "chat_id": chat_id,
+            "text": _text,
+            "file_id": file_id,
+            "reply_to_message_id": reply_to_message_id,
+            "disable_notification": disable_notification,
+        }
+        data = Utils.data_format(data, inline_keypad,keypad,resize_keyboard,on_time_keyboard, metadata=metadata, meta_data=_meta_data)
+        sending = await self.network.send_request("sendFile", data)
+        sending["chat_id"] = chat_id
+        await self._manage_auto_delete(sending, auto_delete)
+        return msg_update(sending, self)
     
     async def request_send_file(
         self,
@@ -1863,6 +1965,7 @@ class Client:
             }
         )
 
+    @_managed_action(channel='sending', tracked={'chat_id': 'chat_id'}, hooks={})
     async def base_send_file(
         self,
         chat_id: str,
@@ -1882,72 +1985,65 @@ class Client:
         show_progress: bool = False,
         chunk_size: int = 1024 * 1024,
         wait_send: float | None = None,
-        return_task: bool = False,
+        return_task: bool = False, # Delete in V7,
         context: dict | None = None,
         auto_escape: bool = True,
     ) -> msg_update | asyncio.Task[msg_update]:
         """sending file with types ['File', 'Image', 'Voice', 'Music', 'Gif' , 'Video'] / ارسال فایل با نوع های فایل و عکس و پیغام صوتی و موزیک و گیف و ویدیو"""
         self.logger.debug("base_send_file called")
 
-        async def _active():
-            request_file = await self.request_send_file(type_file)
-            upload_url_file = request_file["upload_url"]
-            _name_file = name_file
-            if not _name_file:
-                _name_file = Utils.format_file(type_file)
-            if not _name_file:
-                raise ValueError("type file is invalud !")
-            upload_file = await self.upload_file(
-                url=upload_url_file,
-                file_name=_name_file,
-                file=file,
-                show_progress=show_progress,
-                chunk_size=chunk_size
-            )
-            file_id = upload_file["file_id"]
-            send = await self.send_file_by_file_id(
-                chat_id=chat_id,
-                file_id=file_id,
-                text=text,
-                reply_to_message_id=reply_to_message_id,
-                disable_notification=disable_notification,
-                parse_mode=parse_mode,
-                auto_delete=auto_delete,
-                meta_data=meta_data,
-                inline_keypad=inline_keypad,
-                keypad=keypad,
-                resize_keyboard=resize_keyboard,
-                on_time_keyboard=on_time_keyboard,
-                context=context,
-                auto_escape=auto_escape
-            )
-            sended = send.to_dict() # type: ignore
-            sended["file_id"] = file_id
-            sended["type_file"] = type_file
-            if isinstance(file, (bytes, bytearray, memoryview)):
-                size_file = len(file)
-            if isinstance(file, (str, Path)):
-                file_str = str(file)
-                if file_str.startswith("http://") or file_str.startswith("https://"):
-                    try:
-                        response = await self.network.request(file_str, type_send="HEAD")
-                        size_file = int(response.headers.get("content-length", 0))
-                    except:
-                        size_file = 0
-                else:
-                    size_file = os.path.getsize(file_str)
-            elif isinstance(file, (bytes, bytearray, memoryview)):
-                size_file = len(file)
-            else:
-                raise FileExistsError("file not found !")
-            sended["size_file"] = size_file
-            return msg_update(sended, self)
-        
-        result = await _send_helper(
-            self, _active, channel="sending", return_task=return_task,
-            wait_send=wait_send, chat_id=chat_id
+        request_file = await self.request_send_file(type_file)
+        upload_url_file = request_file["upload_url"]
+        _name_file = name_file
+        if not _name_file:
+            _name_file = Utils.format_file(type_file)
+        if not _name_file:
+            raise ValueError("type file is invalud !")
+        upload_file = await self.upload_file(
+            url=upload_url_file,
+            file_name=_name_file,
+            file=file,
+            show_progress=show_progress,
+            chunk_size=chunk_size
         )
-        return result
+        file_id = upload_file["file_id"]
+        send = await self.send_file_by_file_id(
+            chat_id=chat_id,
+            file_id=file_id,
+            text=text,
+            reply_to_message_id=reply_to_message_id,
+            disable_notification=disable_notification,
+            parse_mode=parse_mode,
+            auto_delete=auto_delete,
+            meta_data=meta_data,
+            inline_keypad=inline_keypad,
+            keypad=keypad,
+            resize_keyboard=resize_keyboard,
+            on_time_keyboard=on_time_keyboard,
+            context=context,
+            auto_escape=auto_escape
+        )
+        sended = send.to_dict() # type: ignore
+        sended["file_id"] = file_id
+        sended["type_file"] = type_file
+        if isinstance(file, (bytes, bytearray, memoryview)):
+            size_file = len(file)
+        if isinstance(file, (str, Path)):
+            file_str = str(file)
+            if file_str.startswith("http://") or file_str.startswith("https://"):
+                try:
+                    response = await self.network.request(file_str, type_send="HEAD")
+                    size_file = int(response.headers.get("content-length", 0))
+                except:
+                    size_file = 0
+            else:
+                size_file = os.path.getsize(file_str)
+        elif isinstance(file, (bytes, bytearray, memoryview)):
+            size_file = len(file)
+        else:
+            raise FileExistsError("file not found !")
+        sended["size_file"] = size_file
+        return msg_update(sended, self)
 
     async def send_file(
         self,
@@ -1967,7 +2063,7 @@ class Client:
         show_progress: bool = False,
         chunk_size: int = 1024 * 1024,
         wait_send: float | None = None,
-        return_task: bool = False,
+        return_task: bool = False, # Delete in V7,
         context: dict | None = None,
         auto_escape: bool = True,
     ) -> msg_update | asyncio.Task[msg_update]:
@@ -2017,7 +2113,7 @@ class Client:
         show_progress: bool = False,
         chunk_size: int = 1024 * 1024,
         wait_send: float | None = None,
-        return_task: bool = False,
+        return_task: bool = False, # Delete in V7,
         context: dict | None = None,
         auto_escape: bool = True,
     ) -> msg_update | asyncio.Task[msg_update]:
@@ -2068,7 +2164,7 @@ class Client:
         show_progress: bool = False,
         chunk_size: int = 1024 * 1024,
         wait_send: float | None = None,
-        return_task: bool = False,
+        return_task: bool = False, # Delete in V7,
         context: dict | None = None,
         auto_escape: bool = True,
     ) -> msg_update | asyncio.Task[msg_update]:
@@ -2116,7 +2212,7 @@ class Client:
         show_progress: bool = False,
         chunk_size: int = 1024 * 1024,
         wait_send: float | None = None,
-        return_task: bool = False,
+        return_task: bool = False, # Delete in V7,
         context: dict | None = None,
         auto_escape: bool = True,
     ) -> msg_update | asyncio.Task[msg_update]:
@@ -2164,7 +2260,7 @@ class Client:
         show_progress: bool = False,
         chunk_size: int = 1024 * 1024,
         wait_send: float | None = None,
-        return_task: bool = False,
+        return_task: bool = False, # Delete in V7,
         context: dict | None = None,
         auto_escape: bool = True,
     ) -> msg_update | asyncio.Task[msg_update]:
@@ -2212,7 +2308,7 @@ class Client:
         show_progress: bool = False,
         chunk_size: int = 1024 * 1024,
         wait_send: float | None = None,
-        return_task: bool = False,
+        return_task: bool = False, # Delete in V7,
         context: dict | None = None,
         auto_escape: bool = True,
     ) -> msg_update | asyncio.Task[msg_update]:
@@ -2242,6 +2338,7 @@ class Client:
         )
         return result
 
+    @_managed_action(channel='sending', tracked={'chat_id': 'chat_id'}, hooks={})
     async def send_sticker(
         self,
         chat_id: str,
@@ -2250,29 +2347,23 @@ class Client:
         disable_notification: bool | None = None,
         auto_delete: int | None = None,
         wait_send: float | None = None,
-        return_task: bool = False
+        return_task: bool = False, # Delete in V7
     ) -> msg_update | asyncio.Task[msg_update]:
         """sending sticker by id / ارسال استیکر با آیدی"""
         self.logger.debug("send_stiker called")
         
-        async def _active():
-            data = {
-                "chat_id": chat_id,
-                "sticker_id": id_sticker,
-                "reply_to_message_id": reply_to_message_id,
-                "disable_notification": disable_notification
-            }
-            sender = await self.network.send_request("sendSticker", data)
-            sender["chat_id"] = chat_id
-            await self._manage_auto_delete(sender, auto_delete)
-            return msg_update(sender, self)
-        
-        result = await _send_helper(
-            self, _active, channel="sending", return_task=return_task,
-            wait_send=wait_send, chat_id=chat_id
-        )
-        return result
+        data = {
+            "chat_id": chat_id,
+            "sticker_id": id_sticker,
+            "reply_to_message_id": reply_to_message_id,
+            "disable_notification": disable_notification
+        }
+        sender = await self.network.send_request("sendSticker", data)
+        sender["chat_id"] = chat_id
+        await self._manage_auto_delete(sender, auto_delete)
+        return msg_update(sender, self)
     
+    @_managed_action(channel='sending', tracked={'chat_id': 'from_chat_id', 'to_chat_id': 'to_chat_id'}, hooks={})
     async def resend_message(
         self,
         message_id: str,
@@ -2285,7 +2376,7 @@ class Client:
         show_progress: bool = False,
         chunk_size: int = 1024 * 1024,
         wait_send: float | None = None,
-        return_task: bool = False,
+        return_task: bool = False, # Delete in V7,
         context: dict | None = None,
         auto_escape: bool = True,
         max_retries: int | None = None,
@@ -2293,62 +2384,55 @@ class Client:
         """re send message / ارسال مجدد پیام"""
         self.logger.debug("resend_message called")
         
-        async def _active():
-            msg = await self.get_message_by_id(from_chat_id, message_id)
-            if msg:
-                text = msg.text
-                file_file_id = msg.file_id
-                file_file_name = str(msg.file_name)
+        msg = await self.get_message_by_id(from_chat_id, message_id)
+        if msg:
+            text = msg.text
+            file_file_id = msg.file_id
+            file_file_name = str(msg.file_name)
 
-                _text = text
-                _meta_data = meta_data if meta_data is not None else []
-                _parse_mode = parse_mode
-                if context and _text:
-                    _text, extra_metadata = self.render(_text, parse_mode=_parse_mode, auto_escape=auto_escape, **context)
-                    _meta_data = _meta_data + extra_metadata
-                    if auto_escape:
-                        _parse_mode = None
-                
-                if (not file_file_id) and _text:
-                    return await self.send_text(
-                        text=_text,
-                        chat_id=to_chat_id,
-                        auto_delete=auto_delete,
-                        parse_mode=_parse_mode,
-                        meta_data=_meta_data
-                    )
-                if file_file_id:
-                    download_name = name_save_file if name_save_file else file_file_name
-                    type_file = Utils.type_file(name_file=download_name)
-                    await self.download_file(
-                        file_file_id,
-                        download_name,
-                        show_progress,
-                        max_retries
-                    )
-                    return await self.base_send_file(
-                        chat_id=to_chat_id,
-                        file=download_name,
-                        name_file=download_name,
-                        text=_text,
-                        auto_delete=auto_delete,
-                        parse_mode=_parse_mode,
-                        meta_data=_meta_data,
-                        show_progress=show_progress,
-                        chunk_size=chunk_size,
-                        type_file=type_file
-                    )
-                self.logger.warning("Can't Find Message !")
-                raise KeyError("Can't Find Message !")
-            else:
-                self.logger.warning("Can't Find Message !")
-                raise KeyError("Can't Find Message !")
-        
-        result = await _send_helper(
-            self, _active, channel="sending", return_task=return_task,
-            wait_send=wait_send, chat_id=from_chat_id, to_chat_id=to_chat_id
-        )
-        return result
+            _text = text
+            _meta_data = meta_data if meta_data is not None else []
+            _parse_mode = parse_mode
+            if context and _text:
+                _text, extra_metadata = self.render(_text, parse_mode=_parse_mode, auto_escape=auto_escape, **context)
+                _meta_data = _meta_data + extra_metadata
+                if auto_escape:
+                    _parse_mode = None
+            
+            if (not file_file_id) and _text:
+                return await self.send_text(
+                    text=_text,
+                    chat_id=to_chat_id,
+                    auto_delete=auto_delete,
+                    parse_mode=_parse_mode,
+                    meta_data=_meta_data
+                )
+            if file_file_id:
+                download_name = name_save_file if name_save_file else file_file_name
+                type_file = Utils.type_file(name_file=download_name)
+                await self.download_file(
+                    file_file_id,
+                    download_name,
+                    show_progress,
+                    max_retries
+                )
+                return await self.base_send_file(
+                    chat_id=to_chat_id,
+                    file=download_name,
+                    name_file=download_name,
+                    text=_text,
+                    auto_delete=auto_delete,
+                    parse_mode=_parse_mode,
+                    meta_data=_meta_data,
+                    show_progress=show_progress,
+                    chunk_size=chunk_size,
+                    type_file=type_file
+                )
+            self.logger.warning("Can't Find Message !")
+            raise KeyError("Can't Find Message !")
+        else:
+            self.logger.warning("Can't Find Message !")
+            raise KeyError("Can't Find Message !")
 
     copy_message = resend_message
 

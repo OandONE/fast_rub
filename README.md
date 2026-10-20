@@ -802,7 +802,7 @@ fast_rub
 | antispam در یوزربات(پایروبی) |
 | filters بیشتر در یوزربات(پایروبی) |
 | ادغام client.py یوزربات و methods.py یوزربات به client.py یوزربات(پایروبی) |
-| Plunging Hub |
+| Plug Hub |
 | پل با تلگرام - FastTel |
 | افزودن دستورات CLI |
 
