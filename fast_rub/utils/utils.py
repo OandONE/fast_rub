@@ -288,11 +288,13 @@ class Utils:
         handler: Callable,
         *args,
         **values
-    ):
-        if inspect.iscoroutinefunction(handler):
-            return await handler(*args, **values)
-        else:
-            return handler(*args, **values)
+    ) -> Any:
+        result = handler(*args, **values)
+
+        if inspect.isawaitable(result):
+            result = await result
+
+        return result
     
     @staticmethod
     def deprecated_property(old_name: str, new_name: str):

@@ -3306,43 +3306,23 @@ class Client:
     
     async def _trigger_before_send(self, **kwargs) -> bool:
         for handler in self._before_send_handlers:
-            try:
-                result = handler(**kwargs)
-                if asyncio.iscoroutine(result):
-                    result = await result
-                if result is False:
-                    return False
-            except Exception:
-                pass
+            result = await Utils.run_handler(handler, **kwargs) # Exceptions intentionally propagate so handler errors remain visible to the developer
+            if result is False:
+                return False
         return True
 
     async def _trigger_after_send(self, result: Any, **kwargs):
         kwargs["result"] = result
         for handler in self._after_send_handlers:
-            try:
-                res = handler(**kwargs)
-                if asyncio.iscoroutine(res):
-                    await res
-            except Exception:
-                pass
+            result = await Utils.run_handler(handler, **kwargs) # Exceptions intentionally propagate so handler errors remain visible to the developer
 
     async def _process_before_run(self):
         for handler in self._before_run_handlers:
-            try:
-                result = handler()
-                if asyncio.iscoroutine(result):
-                    await result
-            except Exception as e:
-                self.logger.error(f"Error in before_run handler: {e}")
+            await Utils.run_handler(handler) # Exceptions intentionally propagate so handler errors remain visible to the developer
 
     async def _process_after_run(self):
         for handler in self._after_run_handlers:
-            try:
-                result = handler()
-                if asyncio.iscoroutine(result):
-                    await result
-            except Exception as e:
-                self.logger.error(f"Error in after_run handler: {e}")
+            await Utils.run_handler(handler) # Exceptions intentionally propagate so handler errors remain visible to the developer
 
     # endregion
 
