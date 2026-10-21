@@ -726,6 +726,7 @@ fast_rub
     ├── template.py # Anti-XSS in message text
     ├── text_parser.py # Text Parser MetaData for text message - Markdown | HTML
     ├── utils.py # More utils
+    ├── request_filter.py
     ├── version.py # Version fastrub
     └── wait_manager.py # Manager Waiting for sending request(send_message, ban, ...)
 ```

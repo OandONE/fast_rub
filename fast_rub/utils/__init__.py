@@ -6,3 +6,4 @@ from .snapshot import SnapshotManager
 from .template import FileOpen, TemplateEngine
 from .metadata import ParseMode, Style, MetaData
 from .fake_generator import FakeGenerator
+from .request_filter import RequestFilter

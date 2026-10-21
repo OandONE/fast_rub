@@ -32,6 +32,7 @@ from .mock import MockNetwork, MockSession
 from ..button import KeyPad
 from ..utils.filters import Filter
 from ..utils.inline_filters import InlineFilter
+from ..utils.request_filter import RequestFilter
 from ..network.network import Network
 from ..types import Update, UpdateButton, msg_update
 from ..types.errors import PollInvalid
@@ -2710,10 +2711,13 @@ class Client:
             return func
         return decorator
 
-    def before_send_request(self):
-        """دکوراتور قبل از ارسال درخواست(ریکوست)"""
+    def before_send_request(self, filters: RequestFilter | None = None):
+        """Register a pre-request hook, optionally limited by a RequestFilter."""
+        if filters is not None and not isinstance(filters, RequestFilter):
+            raise TypeError("filters باید از نوع RequestFilter یا None باشد")
+
         def decorator(func: Callable):
-            self.add_handler(func, "before_send_request")
+            self.add_handler(func, "before_send_request", filters=filters)
             return func
         return decorator
 
@@ -2781,7 +2785,7 @@ class Client:
             "after_run",
             "log",
         ],
-        filters: Filter | InlineFilter | None = None,
+        filters: Filter | InlineFilter | RequestFilter | None = None,
         edited_messages: Literal[False, True, "both"] = False,
         deleted_messages: Literal[False, True, "both"] = False,
         failover_config: AutoFailoverConfig | None = None,
@@ -2888,7 +2892,12 @@ class Client:
             elif type_handler == "before_send":
                 self._before_send_handlers.append(handler)
             elif type_handler == "before_send_request":
-                self._before_send_request_handlers.append(handler)
+                if filters is not None and not isinstance(filters, RequestFilter):
+                    raise TypeError("filters برای before_send_request باید از نوع RequestFilter باشد")
+                self._before_send_request_handlers.append({
+                    "handler": handler,
+                    "filters": filters,
+                })
             elif type_handler == "after_send":
                 self._after_send_handlers.append(handler)
             elif type_handler == "before_run":
@@ -3340,8 +3349,20 @@ class Client:
             "url": url,
             "client": self,
         }
-        for handler in self._before_send_request_handlers:
+        for handler_info in self._before_send_request_handlers:
+            # Keep compatibility with a raw handler in case code registered one
+            # directly against this private list before filters were introduced
+            if isinstance(handler_info, dict):
+                handler = handler_info["handler"]
+                request_filter = handler_info.get("filters")
+            else:
+                handler = handler_info
+                request_filter = None
+
             context["data"] = payload
+            if request_filter is not None and not request_filter.matches(**context):
+                continue
+
             # Pass only supported named arguments for simple handler signatures
             # (e.g. ``def hook(data)``), while preserving ``**kwargs`` support
             try:
