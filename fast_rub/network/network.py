@@ -181,14 +181,28 @@ class Network:
     async def request(
         self,
         url: str,
-        data_: dict[str, Any] | list[Any] | None = None,
+        data_: dict[str, Any] | None = None,
         type_send: Literal["POST", "GET", "HEAD"] = "POST",
         *,
         max_retries: int | None = None,
-        timeout: float | None = None
+        timeout: float | None = None,
+        _apply_before_send_request: bool = True,
     ) -> httpx.Response:
         if self._closed:
             raise RuntimeError("Network is closed")
+
+        # Apply the hook once before _do_request enters its retry loop. File
+        # transfers use their dedicated methods and never pass through here
+        if (
+            _apply_before_send_request
+            and type_send == "POST"
+            and isinstance(data_, (dict, list))
+        ):
+            data_ = await self._core_client._trigger_before_send_request(
+                method=type_send,
+                data=data_,
+                url=url,
+            )
 
         overrides = {
             "max_retries": max_retries or self._core_client.max_retries,
@@ -305,20 +319,42 @@ class Network:
         data: dict[str, Any] | None = None
     ) -> dict:
         self.logger.debug(f"method {method}")
+
+        # Prepare and intercept the logical request once, outside the base-URL
+        # failover loop. A hook exception must not be mistaken for a network
+        # failure or cause the same hook to run against every fallback URL
+        if data:
+            if (
+                self._core_client.default_disable_notification is not None and
+                "disable_notification" in data and
+                data["disable_notification"] is None
+            ):
+                data["disable_notification"] = self._core_client.default_disable_notification
+            data = Utils.clean_dict(data)
+
+        if isinstance(data, dict) and self._core_client.base_urls:
+            hook_url = (
+                f"{self._core_client.base_urls[0]}v3/"
+                f"{self._core_client.token}/{method}"
+            )
+            data = await self._core_client._trigger_before_send_request(
+                method="POST",
+                data=data,
+                url=hook_url,
+                api_method=method,
+            )
+
         last_exception = None
         for base_url in self._core_client.base_urls:
             self.logger.debug(f"Base Url » {base_url}")
             url = f"{base_url}v3/{self._core_client.token}/{method}"
             try:
-                if data:
-                    if (
-                        self._core_client.default_disable_notification is not None and
-                        "disable_notification" in data and
-                        data["disable_notification"] is None
-                    ):
-                        data["disable_notification"] = self._core_client.default_disable_notification
-                    data = Utils.clean_dict(data)
-                response = await self.request(url, data, "POST")
+                response = await self.request(
+                    url,
+                    data,
+                    "POST",
+                    _apply_before_send_request=False,
+                )
             except Exception as e:
                 last_exception = e
                 continue

@@ -474,6 +474,7 @@ class Client:
         self._edit_handlers_ = []
         self._message_handlers_webhook = []
         self._before_send_handlers = []
+        self._before_send_request_handlers = []
         self._after_send_handlers = []
         self._loaded_plugins = []
         self._log_handlers = []
@@ -2709,6 +2710,13 @@ class Client:
             return func
         return decorator
 
+    def before_send_request(self):
+        """دکوراتور قبل از ارسال درخواست(ریکوست)"""
+        def decorator(func: Callable):
+            self.add_handler(func, "before_send_request")
+            return func
+        return decorator
+
     def after_send(self):
         """دکوراتور - بعد از هر ارسال اجرا می‌شود."""
         def decorator(func: Callable):
@@ -2767,6 +2775,7 @@ class Client:
             "button_url",
             "webhook_url",
             "before_send",
+            "before_send_request",
             "after_send",
             "before_run",
             "after_run",
@@ -2878,6 +2887,8 @@ class Client:
                 self._log_handlers.append(handler)
             elif type_handler == "before_send":
                 self._before_send_handlers.append(handler)
+            elif type_handler == "before_send_request":
+                self._before_send_request_handlers.append(handler)
             elif type_handler == "after_send":
                 self._after_send_handlers.append(handler)
             elif type_handler == "before_run":
@@ -3310,6 +3321,55 @@ class Client:
             if result is False:
                 return False
         return True
+
+    async def _trigger_before_send_request(
+        self,
+        *,
+        method: str,
+        data: dict[str, Any],
+        url: str,
+        api_method: str | None = None,
+    ) -> dict[str, Any]:
+        """Run request-payload hooks in order and return the final payload"""
+        payload = data
+        context = {
+            "method": method,
+            "http_method": method,
+            "api_method": api_method,
+            "data": payload,
+            "url": url,
+            "client": self,
+        }
+        for handler in self._before_send_request_handlers:
+            context["data"] = payload
+            # Pass only supported named arguments for simple handler signatures
+            # (e.g. ``def hook(data)``), while preserving ``**kwargs`` support
+            try:
+                parameters = signature(handler).parameters
+            except (TypeError, ValueError):
+                handler_kwargs = context
+            else:
+                accepts_kwargs = any(
+                    parameter.kind is Parameter.VAR_KEYWORD
+                    for parameter in parameters.values()
+                )
+                handler_kwargs = context if accepts_kwargs else {
+                    name: value
+                    for name, value in context.items()
+                    if name in parameters and parameters[name].kind in (
+                        Parameter.POSITIONAL_OR_KEYWORD,
+                        Parameter.KEYWORD_ONLY,
+                    )
+                }
+            result = await Utils.run_handler(handler, **handler_kwargs)
+            if result is not None:
+                if not isinstance(result, dict):
+                    raise TypeError(
+                        "before_send_request handlers must return None, dict, or list; "
+                        f"got {type(result).__name__}"
+                    )
+                payload = result
+        return payload
 
     async def _trigger_after_send(self, result: Any, **kwargs):
         kwargs["result"] = result
