@@ -1,7 +1,7 @@
 from ..types.errors import ServerRubikaError
 from ..utils.utils import Utils
 from pathlib import Path
-from typing import Any, Literal, TYPE_CHECKING
+from typing import Any, Literal, TYPE_CHECKING, cast
 try:
     from tqdm.asyncio import tqdm
 except ImportError:
@@ -187,12 +187,13 @@ class Network:
         max_retries: int | None = None,
         timeout: float | None = None,
         _apply_before_send_request: bool = True,
+        _apply_after_send_request: bool = True,
     ) -> httpx.Response:
         if self._closed:
             raise RuntimeError("Network is closed")
 
-        # Apply the hook once before _do_request enters its retry loop. File
-        # transfers use their dedicated methods and never pass through here
+        # Apply hooks outside _do_request's retry loop, once per logical request
+        # File transfers use dedicated methods and do not pass through this path
         if (
             _apply_before_send_request
             and type_send == "POST"
@@ -209,7 +210,19 @@ class Network:
             "timeout": timeout or 30.0
         }
 
-        return await self._do_request(url, type_send, data_, None, **overrides)
+        response = await self._do_request(url, type_send, data_, None, **overrides)
+        if (
+            _apply_after_send_request
+            and type_send == "POST"
+            and isinstance(data_, dict)
+        ):
+            await self._core_client._trigger_after_send_request(
+                method=type_send,
+                data=data_,
+                url=url,
+                result=response,
+            )
+        return response
 
     # -------------------
     # Internal request with retry
@@ -332,14 +345,15 @@ class Network:
                 data["disable_notification"] = self._core_client.default_disable_notification
             data = Utils.clean_dict(data)
 
-        if isinstance(data, dict) and self._core_client.base_urls:
+        request_hooks_enabled = isinstance(data, dict) and bool(self._core_client.base_urls)
+        if request_hooks_enabled:
             hook_url = (
                 f"{self._core_client.base_urls[0]}v3/"
                 f"{self._core_client.token}/{method}"
             )
             data = await self._core_client._trigger_before_send_request(
                 method="POST",
-                data=data,
+                data=cast(dict[str, Any], data),
                 url=hook_url,
                 api_method=method,
             )
@@ -354,6 +368,7 @@ class Network:
                     data,
                     "POST",
                     _apply_before_send_request=False,
+                    _apply_after_send_request=False,
                 )
             except Exception as e:
                 last_exception = e
@@ -368,7 +383,19 @@ class Network:
                 self.logger.error(f"Server Response Error: {result}")
                 raise ServerRubikaError(result)
 
-            return result["data"]
+            response_data = result["data"]
+            if request_hooks_enabled:
+                # Run only after a valid API response and outside the network/failover
+                # exception handler, so hook errors never trigger a duplicate request.
+                await self._core_client._trigger_after_send_request(
+                    method="POST",
+                    data=cast(dict[str, Any], data),
+                    url=url,
+                    api_method=method,
+                    result=response_data,
+                )
+
+            return response_data
         raise last_exception or httpx.ConnectError("All Base Urls Sending Requests and Can't Get Response .")
 
     async def download(

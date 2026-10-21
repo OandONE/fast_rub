@@ -476,6 +476,7 @@ class Client:
         self._message_handlers_webhook = []
         self._before_send_handlers = []
         self._before_send_request_handlers = []
+        self._after_send_request_handlers = []
         self._after_send_handlers = []
         self._loaded_plugins = []
         self._log_handlers = []
@@ -2721,6 +2722,16 @@ class Client:
             return func
         return decorator
 
+    def after_send_request(self, filters: RequestFilter | None = None):
+        """Register a post-request hook, optionally limited by a RequestFilter."""
+        if filters is not None and not isinstance(filters, RequestFilter):
+            raise TypeError("filters باید از نوع RequestFilter یا None باشد")
+
+        def decorator(func: Callable):
+            self.add_handler(func, "after_send_request", filters=filters)
+            return func
+        return decorator
+
     def after_send(self):
         """دکوراتور - بعد از هر ارسال اجرا می‌شود."""
         def decorator(func: Callable):
@@ -2780,6 +2791,7 @@ class Client:
             "webhook_url",
             "before_send",
             "before_send_request",
+            "after_send_request",
             "after_send",
             "before_run",
             "after_run",
@@ -2895,6 +2907,13 @@ class Client:
                 if filters is not None and not isinstance(filters, RequestFilter):
                     raise TypeError("filters برای before_send_request باید از نوع RequestFilter باشد")
                 self._before_send_request_handlers.append({
+                    "handler": handler,
+                    "filters": filters,
+                })
+            elif type_handler == "after_send_request":
+                if filters is not None and not isinstance(filters, RequestFilter):
+                    raise TypeError("filters برای after_send_request باید از نوع RequestFilter باشد")
+                self._after_send_request_handlers.append({
                     "handler": handler,
                     "filters": filters,
                 })
@@ -3386,11 +3405,64 @@ class Client:
             if result is not None:
                 if not isinstance(result, dict):
                     raise TypeError(
-                        "before_send_request handlers must return None, dict, or list; "
+                        "before_send_request handlers must return None, dict; "
                         f"got {type(result).__name__}"
                     )
                 payload = result
         return payload
+
+    async def _trigger_after_send_request(
+        self,
+        *,
+        method: str,
+        data: dict,
+        url: str,
+        result: Any,
+        api_method: str | None = None,
+    ) -> None:
+        """Run matching post-request hooks after a successful API response"""
+        context = {
+            "method": method,
+            "http_method": method,
+            "api_method": api_method,
+            "data": data,
+            "url": url,
+            "result": result,
+            "client": self,
+        }
+
+        for handler_info in self._after_send_request_handlers:
+            # Also accept a raw handler for compatibility with private-list users.
+            if isinstance(handler_info, dict):
+                handler = handler_info["handler"]
+                request_filter = handler_info.get("filters")
+            else:
+                handler = handler_info
+                request_filter = None
+
+            if request_filter is not None and not request_filter.matches(**context):
+                continue
+
+            try:
+                parameters = signature(handler).parameters
+            except (TypeError, ValueError):
+                handler_kwargs = context
+            else:
+                accepts_kwargs = any(
+                    parameter.kind is Parameter.VAR_KEYWORD
+                    for parameter in parameters.values()
+                )
+                handler_kwargs = context if accepts_kwargs else {
+                    name: value
+                    for name, value in context.items()
+                    if name in parameters and parameters[name].kind in (
+                        Parameter.POSITIONAL_OR_KEYWORD,
+                        Parameter.KEYWORD_ONLY,
+                    )
+                }
+
+            # Hook exceptions intentionally propagate; return values are ignored.
+            await Utils.run_handler(handler, **handler_kwargs)
 
     async def _trigger_after_send(self, result: Any, **kwargs):
         kwargs["result"] = result
