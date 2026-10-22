@@ -2,13 +2,14 @@ from typing import Any, Literal
 
 from ...utils.template import TemplateEngine
 from ...utils.cache import Cache
-from ...utils.wait_manager import WaitManager  # ➕ اضافه شد
+from ...utils.wait_manager import WaitManager
 
 import aiofiles
 import json
 import os
+import asyncio
 
-from ...core.async_sync import *
+from ...core.async_sync import wrap_all_async_methods
 from ...utils.cache import Cache
 from ..filters import Filter
 from ..methods import Methods

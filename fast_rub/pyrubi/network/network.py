@@ -18,7 +18,6 @@ try:
 except ImportError:
     tqdm = None
 
-from ..exceptions import *
 from ..utils import Utils, Configs
 from ...utils import Utils as UtilsFastRub
 from .helper import Helper

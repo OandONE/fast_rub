@@ -58,7 +58,7 @@
 - 🔄 **Hot Reload** - توسعهٔ سریع بدون توقف ربات
 - ⏰ **Scheduler** - زمان‌بندی کارها (interval + daily at)
 - 📡 **Signals** - سیستم Event-driven برای ارتباط ماژول‌ها
-- 🔌 **Plugins** - سیستم پلاگین با لود خودکار از پوشه
+- 🔌 **Plugins** - سیستم پلاگین با لود خودکار از پوشه و انعطاف پذیری بالا
 - 🗄️ **ORM داخلی** - دیتابیس SQLite با API ساده و SQL پارامتری
 - 📸 **Snapshots** - Version Control برای تنظیمات ربات
 - 🌐 **Webhook Server** - سرور داخلی (FastAPI/Flask)
@@ -76,6 +76,7 @@
 - 👥 **یوزربات** - پشتیبانی از یوزربات با فورکی از کتابخانه معروف پایروبی
 - 🔄 **Auto Failover** - جابه‌جایی خودکار بین Webhook و Polling هنگام اختلال، با تلاش برای بازیابی و جلوگیری از پردازش تکراری آپدیت‌ها
 - 🔄 **داکیومنت کامل** - داکیومنت کامل و آپدیت شده مناسب انسان و AI
+- 🤸 **انعطاف پذیری** از کنترل دیتا قبل از ارسال درخواست تا مدیریت بخش های داخلی ربات
 
 ---
 
@@ -294,6 +295,46 @@ await msg.reply("سلام **{{ name }}**", context={"name": msg.new_message.text
 بدون این، یه کاربر می‌تونه با `**bold**` یا `[لینک](url)` ظاهر پیامت رو خراب کنه.
 
 [⬆ بازگشت به فهرست](#-فهرست-مطالب)
+
+---
+
+## 🧩 Template Engine
+
+قالب‌سازی پویا برای پیام‌های ربات با پشتیبانی از متغیرها، شرط‌ها، حلقه‌ها و فیلترها.
+
+```python
+template = """
+سلام {{ user.first_name | upper }}!
+
+{% if user.is_active %}
+وضعیت: فعال
+{% else %}
+وضعیت: غیرفعال
+{% endif %}
+
+مهارت‌ها:
+{% for skill in skills %}
+{{ loop.index }}. {{ skill }}
+{% endfor %}
+
+تعداد مهارت‌ها: {{ skills | length }}
+"""
+
+text, entities = bot.render(
+    template,
+    parse_mode="HTML",
+    user=user,
+    skills=["Python", "C#", "SQL"],
+)
+```
+
+**قابلیت‌ها:**
+- متغیرها و دسترسی به مقادیر تو‌در‌تو
+- شرط‌های `if`، `elif` و `else`
+- حلقه‌های `for` و اطلاعات حلقه مانند `loop.index`
+- فیلترهایی مانند `upper` و `length`
+- پشتیبانی از مقایسه‌ها و عملگر `not`
+- تعیین `parse_mode` و پردازش خروجی متناسب با آن
 
 ---
 
@@ -723,7 +764,16 @@ fast_rub
     ├── logger.py # Logger client
     ├── metadata.py # Creator text for format Markdown/HTML
     ├── snapshot.py # SnapShot JSON client
-    ├── template.py # Anti-XSS in message text
+    └── template # Template Engine
+        ├── __init__.py # Package initialization and public exports
+        ├── context.py # Template context and variable management
+        ├── engine.py # Core template rendering engine
+        ├── exceptions.py # Template-specific exceptions
+        ├── expressions.py # Expression evaluation and value resolution
+        ├── filters.py # Template filters and value transformations
+        ├── lexer.py # Tokenization of template source
+        ├── parser.py # Parsing tokens and template syntax
+        └── loader.py # Loading templates from different sources
     ├── text_parser.py # Text Parser MetaData for text message - Markdown | HTML
     ├── utils.py # More utils
     ├── request_filter.py

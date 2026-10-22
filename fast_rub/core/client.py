@@ -47,6 +47,7 @@ from ..utils import WaitManager
 from ..utils import Cache
 from ..utils import SnapshotManager
 from ..utils import TemplateEngine
+from ..utils.template import FileOpen
 from ..db.session import Session
 from ..db.message_keeper import MessageKeeper
 from ..pyrubi import Client as PyrubiClient
@@ -1063,7 +1064,7 @@ class Client:
         parse_mode: Literal["Markdown","HTML","Null",None] = "Markdown"
     ) -> tuple[list[dict[str, Any]], str]:
         """setting parse mode text / تنظیم پارس مود متن"""
-        if self.main_parse_mode != "Null":
+        if parse_mode is not None and self.main_parse_mode != "Null":
             parse_mode = self.main_parse_mode
         if self.config.strip_text:
             text = Utils.trim_text(text)
@@ -1430,11 +1431,12 @@ class Client:
         _text = text
         _parse_mode = parse_mode
 
-        if context:
+        if context is not None:
             _text, extra_metadata = self.render(_text, parse_mode=_parse_mode, auto_escape=auto_escape, **context)
             _meta_data = _meta_data + extra_metadata
-            if auto_escape:
-                _parse_mode = None
+            # TemplateEngine already parsed the rendered template and returned metadata
+            # Avoid parsing the cleaned text a second time; this also protects user values
+            _parse_mode = None
 
         metadata, _text = self._parse_mode_text(_text, _parse_mode)
         data = {
@@ -1784,11 +1786,12 @@ class Client:
         _text = text
         _parse_mode = parse_mode
 
-        if context:
+        if context is not None:
             _text, extra_metadata = self.render(_text, parse_mode=_parse_mode, auto_escape=auto_escape, **context)
             _meta_data = _meta_data + extra_metadata
-            if auto_escape:
-                _parse_mode = None
+            # TemplateEngine already parsed the rendered template and returned metadata
+            # Avoid parsing the cleaned text a second time; this also protects user values
+            _parse_mode = None
         
         metadata, _text  = self._parse_mode_text(_text, _parse_mode)
         data = {"chat_id": chat_id, "message_id": message_id, "text": _text}
@@ -1934,11 +1937,12 @@ class Client:
         _meta_data = meta_data if meta_data is not None else []
         _parse_mode = parse_mode
 
-        if context and _text:
+        if context is not None and _text:
             _text, extra_metadata = self.render(_text, parse_mode=_parse_mode, auto_escape=auto_escape, **context)
             _meta_data = _meta_data + extra_metadata
-            if auto_escape:
-                _parse_mode = None
+            # TemplateEngine already parsed the rendered template and returned metadata
+            # Avoid parsing the cleaned text a second time; this also protects user values
+            _parse_mode = None
         
         metadata = []
         Utils.check_id_raise(chat_id)
@@ -2396,11 +2400,11 @@ class Client:
             _text = text
             _meta_data = meta_data if meta_data is not None else []
             _parse_mode = parse_mode
-            if context and _text:
+            if context is not None and _text:
                 _text, extra_metadata = self.render(_text, parse_mode=_parse_mode, auto_escape=auto_escape, **context)
                 _meta_data = _meta_data + extra_metadata
-                if auto_escape:
-                    _parse_mode = None
+                # TemplateEngine already parsed the rendered template and returned metadata
+                _parse_mode = None
             
             if (not file_file_id) and _text:
                 return await self.send_text(
@@ -3606,7 +3610,7 @@ class Client:
 
     def render(
         self,
-        template: str,
+        template: str | Path | FileOpen,
         auto_escape: bool = True,
         **kwargs
     ) -> tuple[str, list[dict[str, Any]]]:

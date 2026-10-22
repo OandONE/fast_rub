@@ -5,13 +5,13 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Literal, Union
 
 from ..button import KeyPad
-from ..core.async_sync import *
+from ..core.async_sync import wrap_all_async_methods
 from ..utils import Utils
 
-from .get_type import *
+from .get_type import get_file_category
 from .metadata import MetaData as MetaDataProp
 from .models import Chat
-from .props import *
+from .props import props
 
 if TYPE_CHECKING:
     from ..core import Client

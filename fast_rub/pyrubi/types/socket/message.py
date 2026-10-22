@@ -1,4 +1,4 @@
-from ....core.async_sync import *
+from ....core.async_sync import wrap_all_async_methods
 from typing import (
     Any,
     TYPE_CHECKING,

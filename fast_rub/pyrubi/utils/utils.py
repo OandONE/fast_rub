@@ -28,7 +28,7 @@ from os import (
 )
 from .configs import Configs
 from .reacrions import REACTION_MAP
-from ..exceptions import *
+from ..exceptions import InvalidAuth, NotRegistered, InvalidInput, TooRequests
 
 
 

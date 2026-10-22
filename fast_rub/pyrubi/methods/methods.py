@@ -16,7 +16,6 @@ from ..exceptions import (
 import asyncio
 from typing import Literal
 
-from ...core.async_sync import *
 from ...core.background import BackgroundManager
 from ...utils.cache import Cache
 from ...utils.wait_manager import WaitManager
