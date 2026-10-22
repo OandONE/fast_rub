@@ -72,11 +72,14 @@ class TemplateEngine:
         template: str | Path | FileOpen,
         parse_mode: str | None | _AutoParseMode = _AUTO_PARSE_MODE,
         auto_escape: bool = True,
+        strict: bool = True,
         **kwargs: Any,
     ) -> tuple[str, list[dict[str, Any]]]:
-        """Render template syntax and convert Markdown/HTML into Rubika metadata.
+        """Render a template and convert its text markup into Rubika metadata.
 
-        The public return contract intentionally remains ``(clean_text, metadata)``.
+        When ``strict`` is True, undefined template values raise
+        ``TemplateUndefinedError``. Set it to False to render them as empty
+        The return contract remains ``(clean_text, metadata)``
         """
         source, template_name = self.loader.load(template)
         if isinstance(parse_mode, _AutoParseMode):
@@ -102,6 +105,7 @@ class TemplateEngine:
             source,
             template_name,
             include_stack=(),
+            strict=strict,
         )
         rendered_source = "".join(chunks)
 
@@ -130,10 +134,11 @@ class TemplateEngine:
         path: str | Path,
         parse_mode: str | None | _AutoParseMode = _AUTO_PARSE_MODE,
         auto_escape: bool = True,
+        strict: bool = True,
         **kwargs: Any,
     ) -> tuple[str, list[dict[str, Any]]]:
-        """Render a file; by default infer HTML, Markdown, or plain text from suffix"""
-        return self.render(Path(path), parse_mode=parse_mode, auto_escape=auto_escape, **kwargs)
+        """Render a file, with parse mode inferred from its suffix by default"""
+        return self.render(Path(path), parse_mode=parse_mode, auto_escape=auto_escape, strict=strict, **kwargs)
 
     @staticmethod
     def _infer_parse_mode(template: str | Path | FileOpen) -> str | None:
@@ -159,29 +164,30 @@ class TemplateEngine:
         source: str,
         template_name: str | None,
         include_stack: tuple[str, ...],
+        strict: bool,
     ) -> None:
         for node in nodes:
             if isinstance(node, TextNode):
                 chunks.append(node.text)
             elif isinstance(node, ExpressionNode):
-                value = evaluate(node.expression, context, self.filters)
+                value = evaluate(node.expression, context, self.filters, strict=strict)
                 rendered_value = "" if value is None else str(value)
                 marker = self._new_marker(source, chunks, replacements)
                 chunks.append(marker)
                 replacements.append((marker, rendered_value))
             elif isinstance(node, SetNode):
-                context.set(node.name, evaluate(node.expression, context, self.filters))
+                context.set(node.name, evaluate(node.expression, context, self.filters, strict=strict))
             elif isinstance(node, IfNode):
                 selected = False
                 for expression, branch in node.branches:
-                    if evaluate(expression, context, self.filters):
-                        self._render_nodes(branch, context, chunks, replacements, source, template_name, include_stack)
+                    if evaluate(expression, context, self.filters, strict=strict):
+                        self._render_nodes(branch, context, chunks, replacements, source, template_name, include_stack, strict)
                         selected = True
                         break
                 if not selected:
-                    self._render_nodes(node.else_body, context, chunks, replacements, source, template_name, include_stack)
+                    self._render_nodes(node.else_body, context, chunks, replacements, source, template_name, include_stack, strict)
             elif isinstance(node, ForNode):
-                iterable = evaluate(node.expression, context, self.filters)
+                iterable = evaluate(node.expression, context, self.filters, strict=strict)
                 if iterable is None or getattr(iterable, "is_undefined", False):
                     values: list[Any] = []
                 else:
@@ -209,7 +215,7 @@ class TemplateEngine:
                         raise TemplateExpressionError(f"Expression in for-loop is not iterable: {node.expression!r}") from error
 
                 if not values:
-                    self._render_nodes(node.else_body, context, chunks, replacements, source, template_name, include_stack)
+                    self._render_nodes(node.else_body, context, chunks, replacements, source, template_name, include_stack, strict)
                     continue
 
                 target_names = [part.strip() for part in node.target.split(",")]
@@ -243,9 +249,10 @@ class TemplateEngine:
                         source,
                         template_name,
                         include_stack,
+                        strict,
                     )
             elif isinstance(node, IncludeNode):
-                target = evaluate(node.expression, context, self.filters)
+                target = evaluate(node.expression, context, self.filters, strict=strict and not node.ignore_missing)
                 if target is None or getattr(target, "is_undefined", False):
                     if node.ignore_missing:
                         continue
@@ -271,6 +278,7 @@ class TemplateEngine:
                     included_source,
                     included_name,
                     include_stack + ((template_name,) if template_name else ()),
+                    strict,
                 )
 
     @staticmethod

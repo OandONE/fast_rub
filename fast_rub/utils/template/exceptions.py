@@ -35,3 +35,11 @@ class TemplateNotFound(TemplateError, FileNotFoundError):
 
 class TemplateExpressionError(TemplateError):
     """Raised when a template expression cannot be evaluated safely"""
+
+
+class TemplateUndefinedError(TemplateExpressionError):
+    """Raised when strict mode encounters an undefined template value"""
+
+    def __init__(self, name: str) -> None:
+        self.name = name
+        super().__init__(f"Undefined template variable: {name!r}")

@@ -6,7 +6,7 @@ import re
 from collections.abc import Mapping
 from typing import Any
 
-from .exceptions import TemplateExpressionError
+from .exceptions import TemplateExpressionError, TemplateUndefinedError
 from .filters import DEFAULT_FILTERS, split_arguments, split_filter_chain
 
 
@@ -78,13 +78,19 @@ _CMPOPS = {
 }
 
 
-def evaluate(expression: str, context: Mapping[str, Any], filters: Mapping[str, Any] | None = None) -> Any:
-    """Evaluate a restricted expression and a chain of registered filters"""
+def evaluate(
+    expression: str,
+    context: Mapping[str, Any],
+    filters: Mapping[str, Any] | None = None,
+    *,
+    strict: bool = False,
+) -> Any:
+    """Evaluate an expression; strict mode rejects unresolved template values"""
     pieces = split_filter_chain(expression)
     if not pieces or not pieces[0]:
         raise TemplateExpressionError("Empty template expression")
 
-    value = _evaluate_python_expression(pieces[0], context)
+    value = _evaluate_python_expression(pieces[0], context, strict=strict)
     filter_registry = dict(DEFAULT_FILTERS)
     if filters:
         filter_registry.update(filters)
@@ -97,28 +103,59 @@ def evaluate(expression: str, context: Mapping[str, Any], filters: Mapping[str, 
         function = filter_registry.get(name)
         if function is None:
             raise TemplateExpressionError(f"Unknown template filter: {name!r}")
-        args = [
-            _evaluate_python_expression(arg, context)
-            for arg in split_arguments(raw_args or "")
-        ]
+        if strict and getattr(value, "is_undefined", False) and name != "default":
+            _raise_if_undefined(value)
+        args = []
+        for arg in split_arguments(raw_args or ""):
+            argument = _evaluate_python_expression(arg, context, strict=strict)
+            if strict:
+                _raise_if_undefined(argument)
+            args.append(argument)
         try:
             value = function(value, *args)
+        except TemplateExpressionError:
+            raise
         except Exception as error:
             raise TemplateExpressionError(f"Filter {name!r} failed: {error}") from error
+    if strict:
+        _raise_if_undefined(value)
     return value
 
 
-def _evaluate_python_expression(expression: str, context: Mapping[str, Any]) -> Any:
+def _evaluate_python_expression(
+    expression: str,
+    context: Mapping[str, Any],
+    *,
+    strict: bool = False,
+) -> Any:
     try:
         tree = ast.parse(expression, mode="eval")
     except SyntaxError as error:
         raise TemplateExpressionError(f"Invalid expression {expression!r}: {error.msg}") from error
     try:
-        return _eval(tree.body, context)
+        return _eval(tree.body, context, strict=strict)
     except TemplateExpressionError:
         raise
     except Exception as error:
         raise TemplateExpressionError(f"Could not evaluate {expression!r}: {error}") from error
+
+
+def _raise_if_undefined(value: Any) -> None:
+    if getattr(value, "is_undefined", False):
+        name = getattr(value, "name", "") or "<unknown>"
+        raise TemplateUndefinedError(name)
+
+
+def _expression_path(node: ast.AST) -> str | None:
+    if isinstance(node, ast.Name):
+        return node.id
+    if isinstance(node, ast.Attribute):
+        parent = _expression_path(node.value)
+        return f"{parent}.{node.attr}" if parent else node.attr
+    if isinstance(node, ast.Subscript):
+        parent = _expression_path(node.value)
+        return f"{parent}[...]" if parent else None
+    return None
 
 
 def _lookup(context: Mapping[str, Any], name: str) -> Any:
@@ -141,6 +178,8 @@ def _lookup(context: Mapping[str, Any], name: str) -> Any:
 
 
 def _attribute(value: Any, name: str) -> Any:
+    if getattr(value, "is_undefined", False):
+        return Undefined(f"{value.name}.{name}".strip("."))
     if name.startswith("_"):
         return Undefined(name)
     if isinstance(value, Mapping):
@@ -151,28 +190,42 @@ def _attribute(value: Any, name: str) -> Any:
         return Undefined(name)
 
 
-def _eval(node: ast.AST, context: Mapping[str, Any]) -> Any:
+def _eval(node: ast.AST, context: Mapping[str, Any], *, strict: bool = False) -> Any:
     if isinstance(node, ast.Constant):
         return node.value
     if isinstance(node, ast.Name):
         return _lookup(context, node.id)
     if isinstance(node, ast.Attribute):
-        return _attribute(_eval(node.value, context), node.attr)
+        value = _eval(node.value, context, strict=strict)
+        result = _attribute(value, node.attr)
+        if getattr(result, "is_undefined", False):
+            path = _expression_path(node)
+            if path:
+                return Undefined(path)
+        return result
     if isinstance(node, ast.Subscript):
-        value = _eval(node.value, context)
-        key = _eval(node.slice, context)
+        value = _eval(node.value, context, strict=strict)
+        key = _eval(node.slice, context, strict=strict)
+        if strict:
+            _raise_if_undefined(key)
+        path = _expression_path(node)
+        if getattr(value, "is_undefined", False):
+            return Undefined(f"{value.name}[{key!r}]")
         try:
             return value[key]
         except (KeyError, IndexError, TypeError):
-            return Undefined(f"{value!s}[{key!r}]")
+            return Undefined(path or f"value[{key!r}]")
     if isinstance(node, ast.Slice):
         return slice(
-            _eval(node.lower, context) if node.lower is not None else None,
-            _eval(node.upper, context) if node.upper is not None else None,
-            _eval(node.step, context) if node.step is not None else None,
+            _eval(node.lower, context, strict=strict) if node.lower is not None else None,
+            _eval(node.upper, context, strict=strict) if node.upper is not None else None,
+            _eval(node.step, context, strict=strict) if node.step is not None else None,
         )
     if isinstance(node, (ast.List, ast.Tuple, ast.Set)):
-        values = [_eval(item, context) for item in node.elts]
+        values = [_eval(item, context, strict=strict) for item in node.elts]
+        if strict:
+            for value in values:
+                _raise_if_undefined(value)
         if isinstance(node, ast.List):
             return values
         if isinstance(node, ast.Tuple):
@@ -182,7 +235,9 @@ def _eval(node: ast.AST, context: Mapping[str, Any]) -> Any:
         dict_result: dict[Any, Any] = {}
         for key_node, value_node in zip(node.keys, node.values):
             if key_node is None:
-                unpacked = _eval(value_node, context)
+                unpacked = _eval(value_node, context, strict=strict)
+                if strict:
+                    _raise_if_undefined(unpacked)
                 if not isinstance(unpacked, Mapping):
                     raise TemplateExpressionError(
                         "Dictionary unpacking requires a mapping"
@@ -190,13 +245,24 @@ def _eval(node: ast.AST, context: Mapping[str, Any]) -> Any:
                 dict_result.update(unpacked)
                 continue
 
-            key = _eval(key_node, context)
-            dict_result[key] = _eval(value_node, context)
+            key = _eval(key_node, context, strict=strict)
+            item_value = _eval(value_node, context, strict=strict)
+            if strict:
+                _raise_if_undefined(key)
+                _raise_if_undefined(item_value)
+            dict_result[key] = item_value
         return dict_result
     if isinstance(node, ast.BinOp) and type(node.op) in _BINOPS:
-        return _BINOPS[type(node.op)](_eval(node.left, context), _eval(node.right, context))
+        left = _eval(node.left, context, strict=strict)
+        right = _eval(node.right, context, strict=strict)
+        if strict:
+            _raise_if_undefined(left)
+            _raise_if_undefined(right)
+        return _BINOPS[type(node.op)](left, right)
     if isinstance(node, ast.UnaryOp):
-        value = _eval(node.operand, context)
+        value = _eval(node.operand, context, strict=strict)
+        if strict:
+            _raise_if_undefined(value)
         if isinstance(node.op, ast.Not):
             return not value
         if isinstance(node.op, ast.USub):
@@ -207,39 +273,59 @@ def _eval(node: ast.AST, context: Mapping[str, Any]) -> Any:
         if isinstance(node.op, ast.And):
             result: Any = True
             for item in node.values:
-                result = _eval(item, context)
+                result = _eval(item, context, strict=strict)
+                if strict:
+                    _raise_if_undefined(result)
                 if not result:
                     return result
             return result
         if isinstance(node.op, ast.Or):
             result = False
             for item in node.values:
-                result = _eval(item, context)
+                result = _eval(item, context, strict=strict)
+                if strict:
+                    _raise_if_undefined(result)
                 if result:
                     return result
             return result
     if isinstance(node, ast.Compare):
-        left = _eval(node.left, context)
+        left = _eval(node.left, context, strict=strict)
         for operation, comparator in zip(node.ops, node.comparators):
-            if isinstance(operation, (ast.Is, ast.IsNot)) and isinstance(comparator, ast.Name) and comparator.id == "defined":
+            is_defined_check = (
+                isinstance(operation, (ast.Is, ast.IsNot))
+                and isinstance(comparator, ast.Name)
+                and comparator.id == "defined"
+            )
+            if is_defined_check:
                 is_defined = not getattr(left, "is_undefined", False)
                 result = (not is_defined) if isinstance(operation, ast.IsNot) else is_defined
             else:
-                right = _eval(comparator, context)
+                right = _eval(comparator, context, strict=strict)
+                if strict:
+                    _raise_if_undefined(left)
+                    _raise_if_undefined(right)
                 if type(operation) not in _CMPOPS:
                     raise TemplateExpressionError(f"Unsupported comparison: {type(operation).__name__}")
                 result = _CMPOPS[type(operation)](left, right)
             if not result:
                 return False
-            left = _eval(comparator, context)
+            left = _eval(comparator, context, strict=strict)
         return True
     if isinstance(node, ast.IfExp):
-        return _eval(node.body if _eval(node.test, context) else node.orelse, context)
+        test = _eval(node.test, context, strict=strict)
+        if strict:
+            _raise_if_undefined(test)
+        return _eval(node.body if test else node.orelse, context, strict=strict)
     if isinstance(node, ast.Call):
         if not isinstance(node.func, ast.Name) or node.func.id not in SAFE_FUNCTIONS:
             raise TemplateExpressionError("Function calls are limited to approved template helpers")
         function = SAFE_FUNCTIONS[node.func.id]
-        args = [_eval(item, context) for item in node.args]
-        kwargs = {item.arg: _eval(item.value, context) for item in node.keywords if item.arg is not None}
+        args = [_eval(item, context, strict=strict) for item in node.args]
+        kwargs = {item.arg: _eval(item.value, context, strict=strict) for item in node.keywords if item.arg is not None}
+        if strict:
+            for value in args:
+                _raise_if_undefined(value)
+            for value in kwargs.values():
+                _raise_if_undefined(value)
         return function(*args, **kwargs)
     raise TemplateExpressionError(f"Unsupported expression syntax: {type(node).__name__}")
