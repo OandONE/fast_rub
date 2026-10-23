@@ -369,6 +369,9 @@ class Client:
     
     network_rate_limit: int = 20
         محدودیت تعداد تسک همزمان در شبکه(نتورک)
+    
+    error_reporting: Literal["auto", "full", "quiet"] = "auto"
+        نحوه گزارش ارور
     """
     # ═══════════════════════════════════
     # region 🚀 Start & Stop | شروع و توقف
@@ -415,6 +418,7 @@ class Client:
         default_disable_notification: bool | None = None,
         auto_failover: AutoFailoverConfig | None = None,
         network_rate_limit: int = 20,
+        error_reporting: Literal["auto", "full", "quiet"] = "auto",
     ):
         """Create a client / ساخت کلاینت ربات"""
         self.name_session = name_session
@@ -496,6 +500,9 @@ class Client:
         self._pending_tasks: set[asyncio.Task] = set()
         self.default_disable_notification = default_disable_notification
         self.network_rate_limit = network_rate_limit
+        self.error_reporting = error_reporting
+        self._error_report_state: dict[str, dict[str, Any]] = {}
+        self._error_hint_shown = False
         if logger:
             self.logger = logger
         else:
@@ -1038,6 +1045,47 @@ class Client:
     # region ⚙️ Internal Utils | متدهای داخلی
     # ═══════════════════════════════════
 
+    def _report_handler_error(
+        self,
+        e: BaseException,
+        *,
+        force: bool = False
+    ) -> None:
+        """Always surface handler errors on stderr without flooding the terminal"""
+        mode = getattr(self, "error_reporting", "auto")
+        if mode == "quiet" and not force:
+            return
+        if mode == "auto" and self._on_error_handlers and not force:
+            return
+
+        now = time.monotonic()
+        key = f"{type(e).__module__}.{type(e).__qualname__}"
+        state = self._error_report_state.setdefault(
+            key, {"count": 0, "last_log": 0.0, "full_shown": False}
+        )
+        state["count"] += 1
+
+        if not state["full_shown"]:
+            state["full_shown"] = True
+            state["last_log"] = now
+            sys.stderr.write(f"\n[fast_rub] خطا در هندلر ({key}):\n{format_exc()}\n")
+            sys.stderr.flush()
+        elif now - state["last_log"] >= 60.0:
+            suppressed = state["count"] - 1
+            state["last_log"] = now
+            sys.stderr.write(
+                f"[fast_rub] {key}: {suppressed} بار دیگر رخ داد - "
+                f"آخرین: {type(e).__name__}: {e}\n"
+            )
+            sys.stderr.flush()
+
+        if not self._error_hint_shown:
+            self._error_hint_shown = True
+            sys.stderr.write(
+                "[fast_rub] نکته: برای مدیریت سفارشی خطاها از @bot.on_error() استفاده کنید، "
+                "یا با error_reporting='quiet' این پیام‌ها را خاموش کنید\n"
+            )
+            sys.stderr.flush()
     
     async def _auto_delete(
         self,
@@ -3243,7 +3291,7 @@ class Client:
         self,
         e: Exception,
         update: Update | UpdateButton | None = None
-    ):
+    ) -> None:
         if self._on_error_handlers:
             for handler_info in self._on_error_handlers:
                 try:
@@ -3261,8 +3309,10 @@ class Client:
                     await error_handler(error, update)
                 except Exception as exc:
                     self.logger.error(f"Error in on_error handler : {exc}")
+                    self._report_handler_error(exc, force=True)
         else:
             self.logger.error(f"Handler error : {e}", exc_info=True)
+            self._report_handler_error(e)
     
     async def _process_on_shutdown(self):
         for handler in self._on_shutdown_handlers:
