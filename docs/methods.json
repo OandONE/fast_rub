@@ -166,6 +166,11 @@
         "حالت شبیه‌سازی (Dry Run) ربات بدون توکن و بدون اینترنت"
       ],
       [
+        "http2",
+        "bool = True",
+        "فعال شدن http2 برای ارسال درخواست ها"
+      ],
+      [
         "network_limits",
         "httpx.Limits | None = None",
         "لیمیت نتورک برای ارسال درخواست ها"
@@ -184,6 +189,11 @@
         "network_rate_limit",
         "int = 20",
         "محدودیت تعداد تسک همزمان در شبکه(نتورک)"
+      ],
+      [
+        "error_reporting",
+        "Literal['auto', 'full', 'quiet'] = 'auto'",
+        "نحوه گزارش ارور"
       ]
     ],
     "returns": null,
@@ -1857,12 +1867,12 @@
       ],
       [
         "type_handler",
-        "'polling' | 'webhook' | 'button' | 'start' | 'ready' | 'run' | 'live' | 'error' | 'conversation' | 'middleware' | 'shutdown' | 'button_url' | 'webhook_url' | 'before_send' | 'after_send' | 'before_run' | 'after_run' | 'log'",
+        "'polling' | 'webhook' | 'failover' | 'button' | 'start' | 'ready' | 'run' | 'live' | 'error' | 'conversation' | 'middleware' | 'shutdown' | 'button_url' | 'webhook_url' | 'before_send' | 'before_send_request' | 'after_send_request' | 'after_send' | 'before_run' | 'after_run' | 'log'",
         "نوع هندلر"
       ],
       [
         "filters",
-        "Filter | InlineFilter | None",
+        "Filter | InlineFilter | RequestFilter | None",
         "فیلتر(ها) برای محدود کردن پیام‌های دریافتی"
       ],
       [
@@ -2359,6 +2369,52 @@
     "example": "from fast_rub import Client, filters\nfrom fast_rub.types import Update\n\nasync def main():\n    bot = Client(\n        \"my_bot\",\n        enable_stats=True,                                 # ✅ فعال‌سازی آمار\n        stats_db_path=\"messages_state-fastrub-my_bot.db\",  # اختیاری (پیش‌فرض: messages_state-fastrub-{name}.db)\n    )\n\n    @bot.on_message()\n    async def handler(msg: Update):\n        await msg.reply(\"دریافت شد ✅\")\n\n    @bot.on_run()\n    async def on_run():\n        # راه‌اندازی داشبورد (FastAPI)\n        url = await bot.start_dashboard(\n            host=\"127.0.0.1\",\n            port=8080,\n            backend=\"fastapi\",\n            path_prefix=\"/dashboard\",\n        )\n        bot.logger.info(f\"✅ داشبورد: {url}\")\n\n    await bot.run()\n\nasyncio.run(main())\n\n# یا با Flask:\n# await bot.start_dashboard(backend=\"flask\", port=8080)\n\n# سپس در مرورگر باز کن:\n# http://127.0.0.1:8080/dashboard"
   },
   {
+    "id": "start_admin",
+    "title": "راه‌اندازی پنل ادمین (لاگ زنده، تنظیمات، آمار و ابزارها)",
+    "signature": "async start_admin(host='127.0.0.1', port=8081, backend='fastapi', path_prefix='/admin', password=None, session_hours=12.0)",
+    "desc": "پنل ادمین HTML با احراز هویت داخلی، لاگ لحظه‌ای، تنظیمات زنده، آمار و ابزارهای ارسال پیام را روی یک سرور وب راه‌اندازی می‌کند. برخلاف داشبورد، پنل ادمین به تغییر تنظیمات و ارسال پیام دسترسی دارد؛ پس فقط روی شبکهٔ مطمئن بازش کنید. اگر password را None بگذارید، یک رمز قوی تصادفی ساخته و در کنسول چاپ می‌شود.",
+    "params": [
+      [
+        "host",
+        "str = '127.0.0.1'",
+        "آدرس گوش دادن سرور"
+      ],
+      [
+        "port",
+        "int = 8081",
+        "پورت سرور (پیش‌فرض 8081)"
+      ],
+      [
+        "backend",
+        "'fastapi' | 'flask' = 'fastapi'",
+        "کتابخانهٔ وب سرور (پیش‌فرض: fastapi). برای fastapi/uvicorn: `pip install fastrub[fastapi]` و برای flask: `pip install fastrub[flask]`"
+      ],
+      [
+        "path_prefix",
+        "str = '/admin'",
+        "پیشوند مسیر URL پنل ادمین"
+      ],
+      [
+        "password",
+        "str | None = None",
+        "رمز ورود به پنل. در صورت None بودن یک رمز تصادفی ساخته و در کنسول چاپ می‌شود"
+      ],
+      [
+        "session_hours",
+        "float = 12.0",
+        "مدت اعتبار نشست ورود (ساعت)"
+      ]
+    ],
+    "returns": [
+      [
+        "url",
+        "str",
+        "آدرس کامل پنل ادمین (مثلاً `http://127.0.0.1:8081/admin`) — در صورت اجرای قبلی همان URL قبلی برگردانده می‌شود"
+      ]
+    ],
+    "example": "from fast_rub import Client\n\nasync def main():\n    bot = Client(\"my_bot\")\n\n    @bot.on_message()\n    async def handler(msg):\n        await msg.reply(\"دریافت شد ✅\")\n\n    @bot.on_run()\n    async def on_run():\n        url = await bot.start_admin(\n            host=\"127.0.0.1\",\n            port=8081,\n            password=\"my-strong-pass\",  # یا None برای تولید تصادفی\n            session_hours=12.0,\n        )\n        bot.logger.info(f\"🛡️ پنل ادمین: {url}\")\n\n    await bot.run()\n\nasyncio.run(main())\n\n# در مرورگر:\n# http://127.0.0.1:8081/admin"
+  },
+  {
     "id": "render",
     "title": "رندر دستی قالب پیام (با جلوگیری از XSS)",
     "signature": "render(template, auto_escape=True, **kwargs)",
@@ -2512,6 +2568,40 @@
     "params": [],
     "returns": null,
     "example": "@bot.on_log()\nasync def log_handler(log_entry):\n    print(log_entry)"
+  },
+  {
+    "before_send_request": {
+      "id": "before_send_request",
+      "title": "هندلر پیش از ارسال درخواست HTTP (قابل تغییر داده)",
+      "signature": "@bot.before_send_request(filters=None)",
+      "desc": "هندلری که قبل از ارسال هر درخواست HTTP به Bot API اجرا می‌شود. خروجی None به معنی «بدون تغییر» و خروجی dict به عنوان data جدید استفاده می‌شود. اگر هندلر به هر دلیلی خطا بدهد، خطا propagate می‌شود و ارسال متوقف می‌گردد. آرگومان‌ها بر اساس امضای هندلر به او پاس داده می‌شوند (فقط پارامترهایی که تعریف می‌کنی).",
+      "params": [
+        [
+          "filters",
+          "<a href='../models/index.html#RequestFilter'>RequestFilter</a> | None",
+          "فیلتر(ها) برای محدود کردن درخواست‌هایی که این هندلر رویشان اجرا شود (در صورت None، برای همهٔ درخواست‌ها اجرا می‌شود)"
+        ]
+      ],
+      "returns": null,
+      "extra_note": "ورودی‌های قابل دریافت در هندلر: method، http_method، api_method، data، url، client. اگر فقط زیرمجموعه‌ای را در امضای هندلر تعریف کنی، همان‌ها پاس داده می‌شوند (نیازی به **kwargs نیست).",
+      "example": "from fast_rub import Client\nfrom fast_rub.utils import RequestFilter\n\nbot = Client(\"my_bot\")\n\n# ۱) تغییر دادهٔ درخواست برای متد خاص\n@bot.before_send_request(filters=RequestFilter(api_method=\"sendMessage\"))\nasync def silence_all(data, api_method):\n    data[\"disable_notification\"] = True\n    return data  # dict برگردانده شد → جایگزین data می‌شود\n\n# ۲) هندلر بدون تغییر — فقط مشاهده\n@bot.before_send_request()\nasync def observe(method, url, client):\n    client.logger.debug(f\"→ {method} {url}\")\n    # None برگرداند → داده‌ها دست‌نخورده می‌مانند"
+    },
+    "after_send_request": {
+      "id": "after_send_request",
+      "title": "هندلر پس از پاسخ موفق درخواست HTTP",
+      "signature": "@bot.after_send_request(filters=None)",
+      "desc": "هندلری که پس از دریافت پاسخ موفق از Bot API اجرا می‌شود. برای لاگ، آمارگیری و افکت‌های جانبی مناسب است. مقدار بازگشتی هندلر نادیده گرفته می‌شود (برخلاف before_send_request). خطاهای این هندلر هم propagate می‌شوند.",
+      "params": [
+        [
+          "filters",
+          "<a href='../models/index.html#RequestFilter'>RequestFilter</a> | None",
+          "فیلتر(ها) برای محدود کردن درخواست‌هایی که این هندلر رویشان اجرا شود"
+        ]
+      ],
+      "returns": null,
+      "extra_note": "ورودی‌های قابل دریافت در هندلر: method، http_method، api_method، data، url، result، client. فقط پارامترهایی که در امضای هندلر تعریف کنی پاس داده می‌شوند.",
+      "example": "from fast_rub import Client\nfrom fast_rub.utils import RequestFilter\n\nbot = Client(\"my_bot\")\n\n@bot.after_send_request()\nasync def log_sent(api_method, result):\n    bot.logger.info(f\"✅ {api_method} → ok={result.get('ok')}\")\n\n# فقط برای متدهای خاص + فیلتر درخواست\n@bot.after_send_request(filters=RequestFilter(api_method=[\"sendMessage\", \"sendFile\"]))\nasync def count_sends(api_method, client):\n    stats = client.state.setdefault(\"send_counts\", {})\n    stats[api_method] = stats.get(api_method, 0) + 1"
+    }
   },
   {
     "id": "helpers",

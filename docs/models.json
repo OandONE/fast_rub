@@ -4261,6 +4261,206 @@
     "example": "from fast_rub import filters  # inline filters هم از همین مسیر import می‌شوند\n\n# فیلتر ساده با button_id\n@bot.on_button(filters.button_id(\"home\"))\nasync def home_btn(upd: UpdateButton):\n    await upd.send_text(\"خانه 🏠\")\n\n# ترکیب فیلترها\n@bot.on_button(filters.button_id(\"delete\") & filters.sender_ids([\"admin_id\"]))\nasync def delete_btn(upd: UpdateButton):\n    await upd.send_text(\"حذف شد.\")\n\n# فیلتر با startswith\n@bot.on_button(filters.startswith_button_id(\"post_\"))\nasync def post_btn(upd: UpdateButton):\n    post_id = upd.button_id.replace(\"post_\", \"\")\n    await upd.send_text(f\"پست {post_id}\")\n\n# فیلتر Async با دیتابیس\n@bot.on_button(filters.db_exists(\"users\", lambda u: {\"chat_id\": u.chat_id}, db=my_db))\nasync def registered_click(upd: UpdateButton):\n    await upd.send_text(\"کاربر ثبت‌نام‌شده کلیک کرد.\")"
   },
   {
+    "id": "RequestFilter",
+    "title": "🌐 RequestFilter — فیلتر درخواست‌های HTTP",
+    "description": "فیلتر مخصوص هوک‌های before_send_request و after_send_request. روی درخواست‌های HTTP ارسالی به Bot API اعمال می‌شود تا فقط درخواست‌های موردنظر در هوک‌ها پردازش شوند. با & (AND)، | (OR) و ~ (NOT) قابل ترکیب است و همیشه فقط bool برمی‌گرداند؛ داده‌های درخواست را تغییر نمی‌دهد.",
+    "note": "مسیر import: `from fast_rub import RequestFilter` — فیلترهای آماده از طریق classmethod‌ها ساخته می‌شوند: <code>RequestFilter.api_method(...)</code>، <code>RequestFilter.http_method(...)</code>، <code>RequestFilter.url_contains(...)</code>، <code>RequestFilter.url_startswith(...)</code>، <code>RequestFilter.data_has(...)</code>، <code>RequestFilter.data_equals(...)</code>.",
+    "class_signature": "class RequestFilter(predicate, *, name=None)",
+    "init_params": [
+      [
+        "predicate",
+        "Callable[[Mapping[str, Any]], bool]",
+        "تابعی که یک context (دیکشنری) می‌گیرد و <code>bool</code> برمی‌گرداند. باید حتماً <code>bool</code> برگرداند، وگرنه <code>TypeError</code> می‌اندازد."
+      ],
+      [
+        "name",
+        "str | None = None",
+        "نام نمایشی فیلتر (برای debug/repr). در صورت None بودن از <code>predicate.__name__</code> یا <code>'custom'</code> استفاده می‌شود."
+      ]
+    ],
+    "properties": [
+      {
+        "name": "name",
+        "type": "str",
+        "description": "نام نمایشی فیلتر (در <code>__repr__</code> دیده می‌شود)"
+      },
+      {
+        "name": "_predicate",
+        "type": "Callable[[Mapping[str, Any]], bool]",
+        "description": "تابع داخلی predicate (privte)"
+      }
+    ],
+    "methods": [
+      {
+        "name": "api_method",
+        "signature": "RequestFilter.api_method(*methods: str) -> RequestFilter",
+        "params": [
+          [
+            "*methods",
+            "str",
+            "یک یا چند نام متد Bot API (برابری دقیق) — مثل <code>'sendMessage'</code>، <code>'getUpdates'</code>. حتماً حداقل یکی لازم است و همه باید <code>str</code> باشند."
+          ]
+        ],
+        "returns": "RequestFilter",
+        "description": "فیلتر بر اساس نام متد API (classmethod)."
+      },
+      {
+        "name": "http_method",
+        "signature": "RequestFilter.http_method(*methods: str) -> RequestFilter",
+        "params": [
+          [
+            "*methods",
+            "str",
+            "یک یا چند متد HTTP — <code>'GET'</code>، <code>'POST'</code>، <code>'HEAD'</code>، … (case-insensitive)"
+          ]
+        ],
+        "returns": "RequestFilter",
+        "description": "فیلتر بر اساس متد HTTP (classmethod، حساس به حروف بزرگ/کوچک نیست)."
+      },
+      {
+        "name": "url_contains",
+        "signature": "RequestFilter.url_contains(*parts: str) -> RequestFilter",
+        "params": [
+          [
+            "*parts",
+            "str",
+            "یک یا چند زیررشته — اگر URL شامل یکی از آن‌ها باشد تطابق می‌دهد"
+          ]
+        ],
+        "returns": "RequestFilter",
+        "description": "فیلتر بر اساس وجود زیررشته در URL (classmethod)."
+      },
+      {
+        "name": "url_startswith",
+        "signature": "RequestFilter.url_startswith(*prefixes: str) -> RequestFilter",
+        "params": [
+          [
+            "*prefixes",
+            "str",
+            "یک یا چند پیشوند — اگر URL با یکی شروع شود تطابق می‌دهد"
+          ]
+        ],
+        "returns": "RequestFilter",
+        "description": "فیلتر بر اساس پیشوند URL (classmethod)."
+      },
+      {
+        "name": "data_has",
+        "signature": "RequestFilter.data_has(*keys: str) -> RequestFilter",
+        "params": [
+          [
+            "*keys",
+            "str",
+            "کلیدهایی که همه باید در payload باشند"
+          ]
+        ],
+        "returns": "RequestFilter",
+        "description": "فیلتر بر اساس وجود همهٔ کلیدهای داده‌شده در payload (classmethod)."
+      },
+      {
+        "name": "data_equals",
+        "signature": "RequestFilter.data_equals(key: str, value: Any) -> RequestFilter",
+        "params": [
+          [
+            "key",
+            "str",
+            "کلید payload"
+          ],
+          [
+            "value",
+            "Any",
+            "مقدار مورد انتظار — برابری دقیق"
+          ]
+        ],
+        "returns": "RequestFilter",
+        "description": "فیلتر بر اساس برابری مقدار یک کلید خاص در payload (classmethod)."
+      },
+      {
+        "name": "matches",
+        "signature": "matches(*, method, data, url, api_method=None, http_method=None, client=None, **_) -> bool",
+        "params": [
+          [
+            "method",
+            "str",
+            "متد HTTP اصلی (از سمت فراخوان) — الزامی"
+          ],
+          [
+            "data",
+            "Any",
+            "payload درخواست — الزامی"
+          ],
+          [
+            "url",
+            "str",
+            "آدرس درخواست — الزامی"
+          ],
+          [
+            "api_method",
+            "str | None = None",
+            "نام متد Bot API (اختیاری)"
+          ],
+          [
+            "http_method",
+            "str | None = None",
+            "متد HTTP — اگر داده نشود از <code>method</code> استفاده می‌شود"
+          ],
+          [
+            "client",
+            "Any = None",
+            "کلاینت فست‌روب (اختیاری)"
+          ],
+          [
+            "**context",
+            "Any",
+            "کلیدهای اضافی (مثل <code>result</code> در after_send) — نادیده گرفته می‌شوند مگر predicate از آن‌ها استفاده کند"
+          ]
+        ],
+        "returns": "bool",
+        "description": "بررسی تطابق این درخواست با فیلتر."
+      },
+      {
+        "name": "__and__",
+        "signature": "filter1 & filter2",
+        "params": [
+          [
+            "other",
+            "RequestFilter",
+            "فیلتر دوم"
+          ]
+        ],
+        "returns": "RequestFilter",
+        "description": "ترکیب AND — هر دو فیلتر باید True باشند."
+      },
+      {
+        "name": "__or__",
+        "signature": "filter1 | filter2",
+        "params": [
+          [
+            "other",
+            "RequestFilter",
+            "فیلتر دوم"
+          ]
+        ],
+        "returns": "RequestFilter",
+        "description": "ترکیب OR — کافی است یکی True باشد."
+      },
+      {
+        "name": "__invert__",
+        "signature": "~filter",
+        "params": [],
+        "returns": "RequestFilter",
+        "description": "نقیض فیلتر (NOT)."
+      },
+      {
+        "name": "__repr__",
+        "signature": "__repr__() -> str",
+        "params": [],
+        "returns": "str",
+        "description": "نمایش خوانا مثل <code>RequestFilter(api_method(sendMessage))</code>."
+      }
+    ],
+    "example": "from fast_rub import Client\nfrom fast_rub.utils import RequestFilter\n\nbot = Client(\"my_bot\")\n\n# ۱) تغییر دادهٔ درخواست برای متد خاص\n@bot.before_send_request(filters=RequestFilter(api_method=\"sendMessage\"))\nasync def silence_all(data, api_method):\n    data[\"disable_notification\"] = True\n    return data  # dict برگردانده شد → جایگزین data می‌شود\n\n# ۲) هندلر بدون تغییر — فقط مشاهده\n@bot.before_send_request()\nasync def observe(method, url, client):\n    client.logger.debug(f\"→ {method} {url}\")\n    # None برگرداند → داده‌ها دست‌نخورده می‌مانند"
+  },
+  {
     "id": "Errors",
     "title": "⚠️ خطاها (Exceptions)",
     "description": "Fast Rub چندین Exception سفارشی دارد که می‌توانید از آن‌ها برای مدیریت خطاهای خاص استفاده کنید. همهٔ آن‌ها از `Exception` ارث‌بری می‌کنند.",

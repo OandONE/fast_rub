@@ -36,7 +36,6 @@
 - [📊 داشبورد آمار HTML](#-داشبورد-آمار-html)
 - [🧪 شبیه‌سازی ربات (Dry Run)](#-شبیهسازی-ربات-dry-run)
 - [🛡️ پنل ادمین](#️-پنل-ادمین)
-- [🧩 نصب اختیاری (Extras)](#-نصب-اختیاری-extras)
 - [💻 CLI](#-cli)
 - [📁 ساختار پروژه](#-ساختار-پروژه)
 - [⚠️ نکته درباره pyrubi](#️-نکته-درباره-pyrubi)
@@ -630,30 +629,6 @@ fastrub run --reload    # اجرا با Hot Reload
 fastrub version         # نسخه
 fastrub docs            # مستندات
 ```
-
-[⬆ بازگشت به فهرست](#-فهرست-مطالب)
-
----
-
-## 🧩 نصب اختیاری (Extras)
-
-کتابخانه به‌صورت پیش‌فرض سبک نصب می‌شه. برای قابلیت‌های خاص، از extras زیر استفاده کن:
-
-| Extra | نصب | کاربرد |
-|-------|-----|--------|
-| `fastapi` | `pip install fastrub[fastapi]` | داشبورد آمار و وب سرور با FastAPI (پیشنهادی) |
-| `flask` | `pip install fastrub[flask]` | داشبورد آمار و وب سرور با Flask |
-| `hotreload` | `pip install fastrub[hotreload]` | Hot Reload هنگام توسعه |
-| `jalali` | `pip install fastrub[jalali]` | تبدیل تاریخ شمسی Scheduler |
-| `progress` | `pip install fastrub[progress]` | نوار پیشرفت آپلود/دانلود (tqdm) |
-| `pillow` | `pip install fastrub[pillow]` | پردازش تصویر در یوزربات |
-| `moviepy` | `pip install fastrub[moviepy]` | پردازش ویدیو در یوزربات |
-| `aiortc` | `pip install fastrub[aiortc]` | تماس صوتی/تصویری در یوزربات |
-| `userbot` | `pip install fastrub[userbot]` | یوزربات (پایروبی + WebSocket + Crypto) |
-| `userbot-full` | `pip install fastrub[userbot-full]` | یوزربات با تمام قابلیت‌ها |
-| `full` | `pip install fastrub[full]` | همه چیز یک‌جا نصب می‌شه |
-
-> 💡 **نکته:** همه extras دارای **alias** هستند - مثلاً `pyrubi`, `pyrubi-rtc`, `rtc` همه معادل `aiortc` هستن. برای دیدن لیست کامل: `pip show fastrub` یا فایل `pyproject.toml`.
 
 [⬆ بازگشت به فهرست](#-فهرست-مطالب)
 

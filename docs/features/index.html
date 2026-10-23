@@ -1699,6 +1699,177 @@ async def handler(msg):
 await bot.run()`
 },
 {
+  id: "TemplateEngine",
+  title: "🧩 موتور قالب پیام (TemplateEngine)",
+  description: "موتور قالب‌بندی داخلی برای ساخت متن‌های داینامیک با سینتکس سبک Jinja. از جایگزینی متغیر {{ var }} و {{ user.name }}، فیلترهای pipe ({{ var | upper }}، {{ list | length }})، شرط‌ها ({% if %} / {% elif %} / {% else %} / {% endif %})، حلقه‌ها ({% for x in items %} / {% endfor %}) با متغیر loop.index، عملگرهای مقایسه (==، !=، >=، <=، >، <) و not پشتیبانی می‌کند. خروجی همیشه یک tuple (text, metadata) است و پارس‌مود (Markdown/HTML) از قبل روی متن اعمال می‌شود.",
+  class_signature: "class TemplateEngine(client) — از طریق bot.render(...) یا context= در متدهای ارسال",
+  init_params: [
+    ["client", "Client", "کلاینت ربات (خودکار توسط Client ساخته می‌شود)"],
+  ],
+  methods: [
+    {
+      name: "render",
+      params: [
+        ["template", "str | Path | FileOpen", "متن قالب یا مسیر فایل قالب"],
+        ["auto_escape", "bool = True", "فرار خودکار مقادیر {{ }} برای جلوگیری از XSS — خود متن قالب escape نمی‌شود"],
+        ["parse_mode", "'Markdown' | 'HTML' | None", "پارس‌مود متن خروجی (اختیاری — از kwargs مصرف می‌شود)"],
+        ["**kwargs", "dict", "متغیرهای قالب — می‌توانید مستقیم باز کنید (**data) یا به عنوان dict پاس دهید"],
+      ],
+      returns: "tuple[str, list[dict]] — (متن رندر‌شده, لیست متادیتا)",
+      description: "قالب را با متغیرهای داده‌شده رندر می‌کند و (متن آمادهٔ ارسال, متادیتا) برمی‌گرداند."
+    },
+  ],
+  properties: [
+    { name: "user.name / user.username", type: "dotted access", description: "دسترسی به کلیدهای تودرتو با نقطه — کلیدهای dict معمولی هم کار می‌کنند" },
+    { name: "{{ var | upper }}", type: "filter", description: "فیلترهای pipe — upper، lower، length، title، capitalize، trim، ..." },
+    { name: "{% if cond %}", type: "block", description: "شرط — {% if %} / {% elif %} / {% else %} / {% endif %}" },
+    { name: "{% for x in items %}", type: "block", description: "حلقه — {% for %} / {% endfor %} — با loop.index (۱-based) و loop.index0 (۰-based)" },
+    { name: "{% if not x %}", type: "logic", description: "not و عملگرهای مقایسه: == != >= <= > <" },
+  ],
+  note: "وقتی پارامتر context به متدهای ارسال (send_text، reply و ...) پاس می‌دهید، پارس‌مود به‌طور خودکار از قبل روی متن اعمال می‌شود و نیازی نیست دوباره parse_mode بدهید (در غیر این صورت متن دوبار پارس می‌شود). مقدار auto_escape فقط روی {{ }} اثر می‌گذارد، نه روی تگ‌های خود قالب — پس می‌توانید قالب را با <b>...</b> بنویسید و همچنان از XSS در ورودی‌های کاربر در امان باشید. اگر متغیری در قالب استفاده شود ولی در ورودی نباشد (مثل {{ jfjif }} در مثال)، رندر خطا می‌دهد — قبل از رندر، متغیرها را کامل کنید یا در قالب با {% if var %} چک کنید.",
+  example: `from fast_rub import Client
+
+import asyncio
+
+async def main():
+    bot = Client("my_bot")
+
+    await bot.start()
+
+    data = {
+        "user": {
+            "name": "Mohammad",
+            "username": "O_and_ONE_01",
+            "level": 12,
+            "active": True,
+            "score": 8750,
+            "bio": "Python & C# developer",
+        },
+        "stats": {"messages": 1240, "commands": 86, "errors": 3},
+        "skills": [
+            {"name": "Python", "level": 95},
+            {"name": "C#", "level": 80},
+            {"name": "Async Programming", "level": 75},
+            {"name": "SQL", "level": 69},
+        ],
+        "notifications": [
+            {"title": "نسخه جدید منتشر شد", "read": False},
+            {"title": "امتیاز جدید دریافت کردی", "read": True},
+            {"title": "یک پیام جدید داری", "read": False},
+        ],
+        "projects": [
+            {"name": "Fast Rub", "version": "6.17.2", "stars": 7, "status": "active"},
+            {"name": "dot", "version": "1.7", "stars": 2, "status": "active"},
+            {"name": "SharpThon", "version": "0.6.42-alpha", "stars": 2, "status": "alpha"},
+            {"name": "IfCrypt", "version": "0.1.0", "stars": 1, "status": "beta"},
+        ],
+        "settings": {"theme": "dark", "language": "fa", "show_email": False},
+    }
+
+    template = """
+<b>پنل کاربری</b>
+
+سلام <b>{{ user.name | upper }}</b>! 👋
+نام کاربری: @{{ user.username }}
+سطح کاربری: {{ user.level }}
+بیوگرافی: {{ user.bio }}
+
+{% if user.active %}
+وضعیت حساب: 🟢 فعال
+{% else %}
+وضعیت حساب: 🔴 غیرفعال
+{% endif %}
+
+<b>آمار فعالیت</b>
+تعداد پیام‌ها: {{ stats.messages }}
+تعداد دستورات: {{ stats.commands }}
+تعداد خطاها: {{ stats.errors }}
+
+{% if stats.errors == 0 %}
+وضعیت سیستم: بدون خطا ✅
+{% elif stats.errors < 5 %}
+وضعیت سیستم: قابل قبول 🟡
+{% else %}
+وضعیت سیستم: نیازمند بررسی 🔴
+{% endif %}
+
+<b>مهارت‌ها</b>
+{% for skill in skills %}
+<b>{{ loop.index }}. {{ skill.name }}</b>
+سطح مهارت: {{ skill.level }}%
+{% if skill.level >= 90 %}
+⭐ حرفه‌ای
+{% elif skill.level >= 70 %}
+✅ خوب
+{% else %}
+📘 در حال یادگیری
+{% endif %}
+{% endfor %}
+
+تعداد مهارت‌ها: {{ skills | length }}
+
+<b>پروژه‌ها</b>
+{% for project in projects %}
+<b>{{ loop.index }}. {{ project.name }}</b>
+نسخه: {{ project.version }}
+ستاره‌ها: {{ project.stars }}
+{% if project.status == "active" %}
+وضعیت: 🟢 فعال
+{% elif project.status == "beta" %}
+وضعیت: 🧪 آزمایشی
+{% else %}
+وضعیت: ⚪ نامشخص
+{% endif %}
+{% endfor %}
+
+<b>اعلان‌ها</b>
+{% for notification in notifications %}
+{% if not notification.read %}
+🔔 {{ notification.title }} — جدید
+{% else %}
+✓ {{ notification.title }} — خوانده‌شده
+{% endif %}
+{% endfor %}
+
+تعداد اعلان‌ها: {{ notifications | length }}
+
+<b>جمع‌بندی</b>
+امتیاز کل: {{ user.score }}
+تعداد پروژه‌ها: {{ projects | length }}
+
+{% if user.score >= 10000 %}
+🏆 رتبه: استاد
+{% elif user.score >= 5000 %}
+🥇 رتبه: پیشرفته
+{% elif user.score >= 1000 %}
+🥈 رتبه: متوسط
+{% else %}
+🥉 رتبه: تازه‌کار
+{% endif %}
+"""
+
+    # روش ۱: مستقیم در reply با context
+    @bot.on_message()
+    async def handler(msg):
+        await msg.reply(template, context=data, parse_mode="HTML")
+    # await bot.run()
+
+    # روش ۲: رندر دستی — گرفتن (متن, متادیتا)
+    async def handler2(msg):
+        text, metadata = bot.render(template, parse_mode="HTML", **data)
+        await msg.reply(text, meta_data=metadata)
+
+    # روش ۳: پاس دادن data به عنوان یک dict (بدون باز کردن)
+    async def handler3(msg):
+        text, metadata = bot.render(template, parse_mode="HTML", context=data)
+        await msg.send_message(text, meta_data=metadata)
+
+    # نکته: مقدار auto_escape=False فقط زمانی که به XSS اجازه می‌دهید
+    unsafe = bot.render("<b>{{ name }}</b>", auto_escape=False, name="<a href='https://example.com'>x</a>")
+
+asyncio.run(main())`
+},
+{
     id: "ContextManager",
     title: "🔁 استفاده از Client به‌عنوان Context Manager",
     description: "کلاس Client از پروتکل‌های Context Manager پایتون پشتیبانی می‌کند. می‌توانید از `async with` برای مدیریت خودکار چرخهٔ عمر ربات (شروع و بستن خودکار) استفاده کنید. هم‌چنین اگر از `with` معمولی (سینک) استفاده کنید، Fast Rub به‌طور خودکار تشخیص می‌دهد که در حالت سینک هستید و خودش رویداد‌لوپ را مدیریت می‌کند — یعنی نیازی به `await` کردن ندارید و می‌توانید مستقیم متدها را صدا بزنید.",
