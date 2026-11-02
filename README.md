@@ -26,6 +26,7 @@
 - [📋 DataForm](#-dataform)
 - [💬 Conversation](#-conversation)
 - [🔍 فیلترها](#-فیلترها)
+- [🛡️ AntiSpam یوزربات](#️-antispam-یوزربات)
 - [🛡️ محافظت از متن (Injection Protection)](#️-محافظت-از-متن-injection-protection)
 - [⌨️ ساختن کیبورد](#️-ساختن-کیبورد)
 - [🔄 Hot Reload](#-hot-reload)
@@ -62,7 +63,7 @@
 - 📸 **Snapshots** - Version Control برای تنظیمات ربات
 - 🌐 **Webhook Server** - سرور داخلی (FastAPI/Flask)
 - 💻 **CLI** - ابزار خط فرمان (`fastrub new`, `fastrub run --reload`)
-- 🛡️ **AntiSpam** - سیستم ضد اسپم پیشرفته
+- 🛡️ **AntiSpam** - سیستم ضد اسپم پیشرفته برای بات و یوزربات (حذف/اخطار/سکوت موقت/بن خودکار)
 - 🧪 **Dry Run** - شبیه‌سازی و تست ربات بدون توکن و بدون اینترنت (`dry_run=True`)
 - 🛡️ **پنل ادمین** - پنل وب با احراز هویت داخلی: لاگ لحظه‌ای، تنظیمات زنده، آمار و ابزارها
 - 🚀 **Middleware, Cache, BackGround-Task** هم ابزاری که فکر بکنید
@@ -272,6 +273,78 @@ from fast_rub import filters
 # Inline Filters (دکمه‌های شیشه‌ای)
 @bot.on_button(filters.button_id("home") & filters.sender_ids(["admin_id"]))
 ```
+
+[⬆ بازگشت به فهرست](#-فهرست-مطالب)
+
+---
+
+## 🛡️ AntiSpam یوزربات
+
+همان موتور ضد اسپم FastRub، این بار برای اکانت کاربری (Pyrubi). یک بار به `Client` بدهید؛ پیام‌ها **قبل از رسیدن به هندلرها** بررسی می‌شوند و در صورت اسپم، اکشن انتخاب‌شده اجرا می‌شود.
+
+```python
+from fast_rub.pyrubi import Client, AntiSpam, SpamViolation
+
+bot = Client(
+    session="my_account",
+    antispam=AntiSpam(
+        flood_max=5,
+        flood_window=3.0,
+        action="delete",                                  # پیش‌فرض
+        actions={SpamViolation.LINK_SPAM: "mute"},        # اکشن اختصاصی هر تخلف
+        mute_seconds=120,
+        ignore_admins=True,
+        warn_text="🚫 {reason}",
+    ),
+)
+
+@bot.on_message()
+async def handler(msg):
+    await msg.reply("پیام سالم ✅")
+
+bot.run()
+```
+
+**اکشن‌ها:**
+
+| اکشن | رفتار |
+|------|-------|
+| `ignore` | فقط جلوگیری از رسیدن پیام به هندلرها؛ بدون درخواست شبکه‌ای |
+| `delete` | حذف پیام اسپم (پیش‌فرض) |
+| `warn` | ارسال اخطار (`warn_text`) و سپس حذف پیام |
+| `mute` | حذف + اخراج موقت و آن‌بن خودکار بعد از `mute_seconds` |
+| `ban` | حذف + اخراج دائمی |
+
+> `mute` در یوزربات یعنی اخراج موقت، چون روبیکا متود «میوت عضو» در اختیار اکانت کاربری نمی‌گذارد. نام `kick` هم معادل `mute` است.
+
+**تنظیمات مهم:**
+
+| پارامتر | پیش‌فرض | توضیح |
+|---------|--------|-------|
+| `enabled` | `True` | فعال/غیرفعال کردن کل سیستم (در زمان اجرا: `enable()` / `disable()`) |
+| `action` | `"delete"` | اکشن پیش‌فرض |
+| `actions` | `None` | اکشن اختصاصی هر نوع تخلف، مثل `{SpamViolation.LINK_SPAM: "mute"}` |
+| `mute_seconds` | `None` | مدت اخراج موقت؛ `None` = `mute_duration` همان قانون |
+| `warn_text` | `"🚫 {reason}"` | متن اخطار؛ `{reason}`، `{user}` و `{chat}` |
+| `delete_on_action` | `True` | حذف پیام اسپم قبل از `warn`/`mute`/`ban` |
+| `delete_during_mute` | `True` | حذف پیام‌های بعدی کاربر در حالت سکوت |
+| `ignore_admins` | `True` | معاف کردن ادمین‌ها (لیست ادمین کش می‌شود) |
+| `ignore_bots` | `True` | نادیده گرفتن پیام ربات‌ها |
+| `check_private` | `False` | بررسی پیوی |
+| `check_channels` | `False` | بررسی پست‌های کانال |
+| `check_edited` | `False` | بررسی پیام‌های ویرایش‌شده |
+| `chats` / `ignore_chats` | `None` | لیست سفید/سیاه چت‌ها |
+| `admin_cache_ttl` | `300.0` | مدت کش لیست ادمین هر گروه (ثانیه) |
+
+پارامترهای تشخیص (`flood_max`، `flood_window`، `rate_max`، `rate_window`، `duplicate_window`، `max_message_length`، `link_max`، `link_window`، `mention_max`، `mention_window`، `mute_duration`، `auto_clear_interval`) همان پارامترهای `AntiSpam` پایه هستند.
+
+**نکات:**
+
+- پیش‌فرض فقط گروه‌ها بررسی می‌شوند؛ پیوی و کانال را با `check_private` / `check_channels` فعال کنید.
+- پیام خود اکانت، رویدادها (ورود/خروج/پین)، پیام‌های ویرایش‌شده و ربات‌ها نادیده گرفته می‌شوند.
+- اکشن‌ها در تسک جدا اجرا می‌شوند تا حلقهٔ سوکت بلاک نشود و از `WaitManager` هم استفاده می‌کنند.
+- هنگام قطع سوکت یا خاموشی، سکوت‌های موقت best-effort آن‌بن می‌شوند تا کسی بن‌شده نماند.
+- تست واقعی: [`BOTs/tests/userbot_antispam_live.py`](BOTs/tests/userbot_antispam_live.py:1) — با `--mode manual` پیام‌ها را از گوشی بفرستید.
 
 [⬆ بازگشت به فهرست](#-فهرست-مطالب)
 
@@ -704,6 +777,7 @@ fast_rub
 │   │       ├── __init__.py
 │   │       └── message.py # Message Class
 │   └── utils # Utils UserBot
+│       ├── antispam.py # AntiSpam یوزربات - حذف/اخطار/سکوت/بن
 │       ├── configs.py # Config client
 │       ├── __init__.py
 │       ├── reacrions.py # ReActions utils
@@ -825,7 +899,6 @@ fast_rub
 | add handler در یوزربات(پایروبی) |
 | add_background_task در یوزربات(پایروبی) |
 | hotreload در یوزربات(پایروبی) |
-| antispam در یوزربات(پایروبی) |
 | filters بیشتر در یوزربات(پایروبی) |
 | ادغام client.py یوزربات و methods.py یوزربات به client.py یوزربات(پایروبی) |
 | Plug Hub |

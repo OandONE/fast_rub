@@ -132,6 +132,7 @@ class Methods:
         max_retries_download: int | None = None,
         wait_manager: WaitManager | None = None,
         defult_wait: float | None = None,
+        antispam: Any = None,
     ) -> None:
         self.platform = platform.lower()
         if not self.platform in ["android", "web", "rubx", "rubikax", "rubino", "PWA"]:
@@ -149,6 +150,8 @@ class Methods:
 
         self.wait_manager = wait_manager
         self.defult_wait = defult_wait
+        # AntiSpam یوزربات - در Socket.on_message قبل از هندلرها بررسی می‌شود
+        self.antispam = antispam
 
         self._on_ready_handlers = []
         self._on_start_handlers = []

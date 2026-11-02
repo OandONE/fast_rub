@@ -22,6 +22,20 @@ if _missing:
 
 
 from .client import Client
+from .utils.antispam import (
+    AntiSpam,
+    AntiSpamRule,
+    SpamViolation,
+    UserBotAntiSpam,
+)
+
+__all__ = [
+    "Client",
+    "AntiSpam",
+    "AntiSpamRule",
+    "SpamViolation",
+    "UserBotAntiSpam",
+]
 
 __version__ = "3.6.0-fork"
 __author__ = "seyyed mohamad hosein moosavi raja"

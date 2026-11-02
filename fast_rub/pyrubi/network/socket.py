@@ -30,12 +30,29 @@ class Socket:
         if websockets is None:
             raise ImportError("The websockets library is not installed! for install: 'pip install fastrub[pyrubi]'")
         self._running = True
-        socket_server = await Helper.get_socket_server()
-        async with websockets.connect(socket_server) as ws:
-            self._ws = ws
-            await self.on_open(ws)
-            async for message in ws:
-                await self.on_message(message)
+        antispam = getattr(self.methods, "antispam", None)
+        if antispam is not None:
+            await antispam.start_auto_clear()
+        try:
+            socket_server = await Helper.get_socket_server()
+            async with websockets.connect(socket_server) as ws:
+                self._ws = ws
+                await self.on_open(ws)
+                async for message in ws:
+                    await self.on_message(message)
+        finally:
+            self._ws = None
+            if antispam is not None:
+                # When the socket loop ends, release temporary mutes too so a
+                # stopped userbot does not leave members banned forever.
+                shutdown = getattr(antispam, "shutdown", None)
+                if shutdown is not None:
+                    try:
+                        await shutdown()
+                    except Exception:
+                        pass
+                else:
+                    await antispam.stop_auto_clear()
     
     async def on_open(self, ws):
         await self.handshake(ws)
@@ -79,10 +96,24 @@ class Socket:
         
         if not data.get("message_updates"):
             return
+
+        msg_obj = Message(data, self.methods)
+
+        # AntiSpam قبل از هندلرها و فقط یک بار برای هر آپدیت بررسی می‌شود.
+        # اگر پیام اسپم تشخیص داده شود، هیچ هندلری اجرا نمی‌شود.
+        antispam = getattr(self.methods, "antispam", None)
+        if antispam is not None:
+            try:
+                is_spam = await antispam.inspect(msg_obj)
+            except Exception as e:
+                is_spam = False
+                await self.methods._process_on_error(e=e, update=msg_obj)
+            if is_spam:
+                return
         
         for handler, filters in self.handlers.items():
             msg_obj = Message(data, self.methods)
-            
+
             # run filter by management error
             try:
                 should_process = all(f(msg_obj) for f in filters)
@@ -127,5 +158,18 @@ class Socket:
     
     async def stop(self):
         self._running = False
+        antispam = getattr(self.methods, "antispam", None)
+        if antispam is not None:
+            shutdown = getattr(antispam, "shutdown", None)
+            if shutdown is not None:
+                try:
+                    await shutdown()
+                except Exception:
+                    pass
+            else:
+                try:
+                    await antispam.stop_auto_clear()
+                except Exception:
+                    pass
         if self._ws:
             await self._ws.close()

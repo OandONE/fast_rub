@@ -73,7 +73,11 @@ class AntiSpam:
         self.max_message_length = max_message_length
         self.mute_duration = mute_duration
         
-        self._messages: dict[str, deque] = defaultdict(lambda: deque(maxlen=max(rate_max, link_max, mention_max) * 2))
+        history_size = max(rate_max, link_max, mention_max) * 2
+        self._messages: dict[str, deque] = defaultdict(lambda: deque(maxlen=history_size))
+        # Keep the text of recent messages so LINK/MENTION rules can count
+        # links and mentions that were actually sent in the window.
+        self._texts: dict[str, deque] = defaultdict(lambda: deque(maxlen=history_size))
         self._muted: dict[str, float] = {}
         self._last_messages: dict[str, tuple[float, str]] = {}
         
@@ -108,6 +112,8 @@ class AntiSpam:
             (is_spam, reason, violation_type)
         """
         now = time.time()
+        if not isinstance(message, str):
+            message = "" if message is None else str(message)
         key = f"{chat_id}:{user_id}" if not is_private else f"private:{chat_id}"
 
         if key in self._muted:
@@ -120,12 +126,13 @@ class AntiSpam:
             self._mute(key, now, self.mute_duration)
             return True, f"📏 پیام بیش از حد طولانی است ({self.max_message_length} کاراکتر).", SpamViolation.LONG_MESSAGE
         
-        if key in self._last_messages:
+        if message and key in self._last_messages:
             last_time, last_msg = self._last_messages[key]
             if now - last_time <= self.duplicate_window and last_msg == message:
                 return True, "🔄 پیام تکراری.", SpamViolation.DUPLICATE
         
         self._messages[key].append(now)
+        self._texts[key].append((now, message))
         self._last_messages[key] = (now, message)
         
         for rule in self.rules:
@@ -140,23 +147,24 @@ class AntiSpam:
     def _count_violations(self, key: str, rule: AntiSpamRule) -> int:
         """شمارش تخلفات یه قانون خاص"""
         now = time.time()
-        
-        if rule.violation == SpamViolation.FLOOD:
+
+        if rule.violation in (SpamViolation.FLOOD, SpamViolation.RATE_LIMIT):
             return sum(1 for t in self._messages[key] if now - t <= rule.window)
-        
-        elif rule.violation == SpamViolation.RATE_LIMIT:
-            return sum(1 for t in self._messages[key] if now - t <= rule.window)
-        
+
         elif rule.violation == SpamViolation.LINK_SPAM:
-            return len(self.RUBIKA_LINK.findall(
-                " ".join([""] * len([t for t in self._messages[key] if now - t <= rule.window]))
-            ))
-        
+            return sum(
+                len(self.RUBIKA_LINK.findall(text))
+                for timestamp, text in self._texts.get(key, ())
+                if now - timestamp <= rule.window
+            )
+
         elif rule.violation == SpamViolation.MENTION_SPAM:
-            return len(self.MENTION.findall(
-                " ".join([""] * len([t for t in self._messages[key] if now - t <= rule.window]))
-            ))
-        
+            return sum(
+                len(self.MENTION.findall(text)) + len(self.USERNAME.findall(text))
+                for timestamp, text in self._texts.get(key, ())
+                if now - timestamp <= rule.window
+            )
+
         return 0
     
     def _mute(self, key: str, now: float, duration: float):
@@ -194,16 +202,25 @@ class AntiSpam:
         if chat_id and user_id:
             key = f"{chat_id}:{user_id}"
             self._messages.pop(key, None)
+            self._texts.pop(key, None)
             self._muted.pop(key, None)
             self._last_messages.pop(key, None)
         elif chat_id:
-            keys = [k for k in self._messages if k.startswith(f"{chat_id}:")]
+            keys = [
+                k for k in (
+                    set(self._messages) | set(self._texts)
+                    | set(self._muted) | set(self._last_messages)
+                )
+                if k.startswith(f"{chat_id}:") or k == f"private:{chat_id}"
+            ]
             for k in keys:
                 self._messages.pop(k, None)
+                self._texts.pop(k, None)
                 self._muted.pop(k, None)
                 self._last_messages.pop(k, None)
         else:
             self._messages.clear()
+            self._texts.clear()
             self._muted.clear()
             self._last_messages.clear()
     
@@ -227,6 +244,11 @@ class AntiSpam:
                 self._messages[key] = deque(
                     [t for t in self._messages[key] if now - t <= max_window],
                     maxlen=self._messages[key].maxlen
+                )
+            for key in list(self._texts.keys()):
+                self._texts[key] = deque(
+                    [(t, text) for t, text in self._texts[key] if now - t <= max_window],
+                    maxlen=self._texts[key].maxlen
                 )
     
     async def stop_auto_clear(self):

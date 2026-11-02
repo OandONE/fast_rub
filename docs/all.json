@@ -9334,6 +9334,280 @@
             "example": "from fast_rub.utils import AntiSpam\n\nantispam = AntiSpam(\n    flood_max=5,\n    flood_window=3.0,\n    mute_duration=120.0,\n)\n\n@bot.on_message()\nasync def handler(msg: Message):\n    is_spam, reason, violation = antispam.check(\n        msg.chat_id, msg.sender_id, msg.text\n    )\n    \n    if is_spam:\n        await msg.reply(f\"🚫 {reason}\")\n        await msg.delete()\n    else:\n        await msg.reply(\"✅ پیام شما پذیرفته شد.\")"
         },
         {
+            "id": "pyrubi_antispam",
+            "title": "🛡️ AntiSpam یوزربات — محافظت خودکار گروه",
+            "description": "نسخهٔ مخصوص یوزربات (Pyrubi) از AntiSpam. پیام‌های گروه را قبل از رسیدن به هندلرها بررسی می‌کند و در صورت اسپم، پیام را حذف/اخطار/سکوت موقت/بن می‌کند. تشخیص با همان قوانین AntiSpam پایه انجام می‌شود (Flood، Rate Limit، Duplicate، Long Message، Link و Mention) و این نسخه خودش Message یوزربات را می‌فهمد و اکشن‌ها را با API واقعی اجرا می‌کند. برای «سکوت» عضو، چون روبیکا میوتِ عضو ندارد، از اخراج موقت (ban) و آن‌بن خودکار استفاده می‌شود.",
+            "note": "مسیر import: `from fast_rub.pyrubi import AntiSpam, SpamViolation, AntiSpamRule`. کلاس را به `Client(antispam=...)` بدهید. نسخهٔ بات (`from fast_rub.utils import AntiSpam`) متد `inspect` ندارد و در Client یوزربات TypeError می‌دهد. پیش‌نیاز: `pip install fastrub[userbot]`.",
+            "class_signature": "class AntiSpam(enabled=True, action=\"delete\", actions=None, mute_seconds=None, warn_text=\"🚫 {reason}\", delete_on_action=True, delete_during_mute=True, ignore_admins=True, ignore_bots=True, check_private=False, check_channels=False, check_edited=False, chats=None, ignore_chats=None, admin_cache_ttl=300.0, max_admin_pages=100, shutdown_timeout=5.0, **base_kwargs)",
+            "init_params": [
+                [
+                    "enabled",
+                    "bool = True",
+                    "فعال بودن کل سیستم؛ در زمان اجرا با enable/disable هم قابل تغییر است"
+                ],
+                [
+                    "action",
+                    "\"ignore\" | \"delete\" | \"warn\" | \"mute\" | \"ban\" = \"delete\"",
+                    "اکشن پیش‌فرض هنگام تشخیص اسپم (kick نیز نام دیگر mute است)"
+                ],
+                [
+                    "actions",
+                    "dict[SpamViolation | str, str] | None",
+                    "اکشن اختصاصی هر نوع تخلف؛ کلید می‌تواند enum، value یا name باشد"
+                ],
+                [
+                    "mute_seconds",
+                    "float | None",
+                    "مدت اخراج موقت برای اکشن mute؛ None = استفاده از mute_duration همان قانون"
+                ],
+                [
+                    "warn_text",
+                    "str = \"🚫 {reason}\"",
+                    "متن اخطار؛ از {reason}، {user} و {chat} پشتیبانی می‌کند"
+                ],
+                [
+                    "delete_on_action",
+                    "bool = True",
+                    "پیام اسپم قبل از warn/mute/ban حذف شود"
+                ],
+                [
+                    "delete_during_mute",
+                    "bool = True",
+                    "پیام‌های بعدی کاربر سکوت‌شده هم حذف شوند (برای action=ignore خیر)"
+                ],
+                [
+                    "ignore_admins",
+                    "bool = True",
+                    "ادمین‌های گروه از بررسی معاف شوند؛ لیست ادمین‌ها کش می‌شود"
+                ],
+                [
+                    "ignore_bots",
+                    "bool = True",
+                    "پیام‌های ارسال‌شده توسط ربات‌ها بررسی نشوند"
+                ],
+                [
+                    "check_private",
+                    "bool = False",
+                    "پیام‌های پیوی هم بررسی شوند"
+                ],
+                [
+                    "check_channels",
+                    "bool = False",
+                    "پست‌های کانال هم بررسی شوند (اکشن ban برای کانال اجرا نمی‌شود)"
+                ],
+                [
+                    "check_edited",
+                    "bool = False",
+                    "پیام‌های ویرایش‌شده هم بررسی شوند"
+                ],
+                [
+                    "chats",
+                    "Iterable[str] | None",
+                    "اگر داده شود فقط همین چت‌ها بررسی می‌شوند"
+                ],
+                [
+                    "ignore_chats",
+                    "Iterable[str] | None",
+                    "این چت‌ها هرگز بررسی نمی‌شوند"
+                ],
+                [
+                    "admin_cache_ttl",
+                    "float = 300.0",
+                    "مدت کش لیست ادمین هر گروه (ثانیه)؛ صفر = بدون کش"
+                ],
+                [
+                    "max_admin_pages",
+                    "int = 100",
+                    "حداکثر تعداد صفحه برای دریافت لیست ادمین‌ها"
+                ],
+                [
+                    "shutdown_timeout",
+                    "float = 5.0",
+                    "حداکثر زمان تلاش برای آن‌بن سکوت‌های موقت هنگام خاموشی"
+                ],
+                [
+                    "**base_kwargs",
+                    "—",
+                    "همهٔ پارامترهای AntiSpam پایه: flood_max، flood_window، rate_max، rate_window، duplicate_window، max_message_length، link_max، link_window، mention_max، mention_window، mute_duration، auto_clear_interval"
+                ]
+            ],
+            "methods": [
+                {
+                    "name": "inspect",
+                    "signature": "await antispam.inspect(message)",
+                    "params": [
+                        [
+                            "message",
+                            "Message",
+                            "پیام دریافتی یوزربات"
+                        ]
+                    ],
+                    "returns": "bool",
+                    "description": "بررسی یک Message و اجرای اکشن در صورت اسپم؛ True یعنی پیام مصرف شد و نباید به هندلرها برسد"
+                },
+                {
+                    "name": "action_for",
+                    "signature": "antispam.action_for(violation)",
+                    "params": [
+                        [
+                            "violation",
+                            "SpamViolation | None",
+                            "نوع تخلف"
+                        ]
+                    ],
+                    "returns": "str",
+                    "description": "اکشن نهایی برای یک نوع تخلف با در نظر گرفتن actions"
+                },
+                {
+                    "name": "enable",
+                    "signature": "antispam.enable()",
+                    "params": [],
+                    "returns": "None",
+                    "description": "فعال کردن سیستم در زمان اجرا"
+                },
+                {
+                    "name": "disable",
+                    "signature": "antispam.disable()",
+                    "params": [],
+                    "returns": "None",
+                    "description": "غیرفعال کردن سیستم در زمان اجرا"
+                },
+                {
+                    "name": "pending_bans",
+                    "signature": "antispam.pending_bans",
+                    "params": [],
+                    "returns": "tuple[tuple[str, str], ...]",
+                    "description": "لیست (chat_id, user_id)هایی که در سکوت موقت هستند"
+                },
+                {
+                    "name": "reset",
+                    "signature": "antispam.reset(chat_id=None, user_id=None)",
+                    "params": [
+                        [
+                            "chat_id",
+                            "str | None = None",
+                            "چت آیدی (None = همه)"
+                        ],
+                        [
+                            "user_id",
+                            "str | None = None",
+                            "آیدی کاربر"
+                        ]
+                    ],
+                    "returns": "None",
+                    "description": "پاک‌سازی وضعیت و کش ادمین‌ها"
+                },
+                {
+                    "name": "shutdown",
+                    "signature": "await antispam.shutdown()",
+                    "params": [],
+                    "returns": "None",
+                    "description": "توقف auto-clear، لغو اکشن‌های در جریان و آن‌بن best-effort سکوت‌های موقت"
+                },
+                {
+                    "name": "check",
+                    "signature": "antispam.check(chat_id, user_id, message, is_private=False)",
+                    "params": [
+                        [
+                            "chat_id",
+                            "str",
+                            "چت آیدی"
+                        ],
+                        [
+                            "user_id",
+                            "str",
+                            "آیدی کاربر"
+                        ],
+                        [
+                            "message",
+                            "str",
+                            "متن پیام"
+                        ],
+                        [
+                            "is_private",
+                            "bool = False",
+                            "آیا پیوی است؟"
+                        ]
+                    ],
+                    "returns": "tuple[bool, str | None, SpamViolation | None]",
+                    "description": "بررسی خام یک پیام (بدون اجرای اکشن)؛ از کلاس پایه به ارث می‌رسد"
+                }
+            ],
+            "subsections": [
+                {
+                    "subtitle": "اکشن‌ها",
+                    "properties": [
+                        {
+                            "name": "ignore",
+                            "type": "Action",
+                            "description": "فقط جلوگیری از رسیدن پیام به هندلرها، بدون درخواست شبکه‌ای"
+                        },
+                        {
+                            "name": "delete",
+                            "type": "Action",
+                            "description": "حذف پیام با deleteMessages"
+                        },
+                        {
+                            "name": "warn",
+                            "type": "Action",
+                            "description": "ارسال اخطار با warn_text و سپس حذف پیام"
+                        },
+                        {
+                            "name": "mute",
+                            "type": "Action",
+                            "description": "حذف + اخراج موقت با banChatMember و آن‌بن خودکار پس از mute_seconds"
+                        },
+                        {
+                            "name": "ban",
+                            "type": "Action",
+                            "description": "حذف + اخراج دائمی"
+                        },
+                        {
+                            "name": "kick",
+                            "type": "Action",
+                            "description": "نام دیگر mute"
+                        }
+                    ]
+                },
+                {
+                    "subtitle": "قوانین (از AntiSpam پایه)",
+                    "properties": [
+                        {
+                            "name": "FLOOD",
+                            "type": "SpamViolation",
+                            "description": "پیام پشت سر هم"
+                        },
+                        {
+                            "name": "RATE_LIMIT",
+                            "type": "SpamViolation",
+                            "description": "تعداد بیش از حد در بازه"
+                        },
+                        {
+                            "name": "DUPLICATE",
+                            "type": "SpamViolation",
+                            "description": "پیام تکراری"
+                        },
+                        {
+                            "name": "LONG_MESSAGE",
+                            "type": "SpamViolation",
+                            "description": "پیام خیلی طولانی"
+                        },
+                        {
+                            "name": "LINK_SPAM",
+                            "type": "SpamViolation",
+                            "description": "تعداد زیاد لینک در بازه"
+                        },
+                        {
+                            "name": "MENTION_SPAM",
+                            "type": "SpamViolation",
+                            "description": "تعداد زیاد منشن در بازه"
+                        }
+                    ]
+                }
+            ],
+            "example": "from fast_rub.pyrubi import Client, AntiSpam, SpamViolation\n\nbot = Client(\n    session=\"my_account\",\n    antispam=AntiSpam(\n        flood_max=5,\n        flood_window=3.0,\n        action=\"delete\",\n        actions={SpamViolation.LINK_SPAM: \"mute\"},\n        mute_seconds=120,\n        ignore_admins=True,\n        warn_text=\"🚫 {reason}\",\n    ),\n)\n\n@bot.on_message()\nasync def handler(msg):\n    await msg.reply(\"پیام سالم ✅\")\n\nbot.run()"
+        },
+        {
             "id": "webhook_server",
             "title": "🌐 WebhookServer — سرور وب‌هوک داخلی",
             "description": "Fast Rub یک سرور Webhook داخلی دارد که از FastAPI و Flask پشتیبانی می‌کند. می‌توانید پیام‌ها و کلیک‌های دکمه را از طریق Webhook دریافت کنید. از توکن در URL یا بدنهٔ درخواست پشتیبانی می‌کند.",
@@ -13134,6 +13408,280 @@
                     ]
                 }
             ]
+        },
+        {
+            "id": "PyrubiAntiSpam",
+            "title": "🛡️ AntiSpam یوزربات",
+            "description": "نسخهٔ مخصوص یوزربات (Pyrubi) از AntiSpam. پیام‌های گروه را قبل از رسیدن به هندلرها بررسی می‌کند و در صورت اسپم، پیام را حذف/اخطار/سکوت موقت/بن می‌کند. تشخیص با همان قوانین AntiSpam پایه انجام می‌شود (Flood، Rate Limit، Duplicate، Long Message، Link و Mention) و این نسخه خودش Message یوزربات را می‌فهمد و اکشن‌ها را با API واقعی اجرا می‌کند. برای «سکوت» عضو، چون روبیکا میوتِ عضو ندارد، از اخراج موقت (ban) و آن‌بن خودکار استفاده می‌شود.",
+            "note": "مسیر import: `from fast_rub.pyrubi import AntiSpam, SpamViolation, AntiSpamRule`. کلاس را به `Client(antispam=...)` بدهید. نسخهٔ بات (`from fast_rub.utils import AntiSpam`) متد `inspect` ندارد و در Client یوزربات TypeError می‌دهد. پیش‌نیاز: `pip install fastrub[userbot]`.",
+            "class_signature": "class AntiSpam(enabled=True, action=\"delete\", actions=None, mute_seconds=None, warn_text=\"🚫 {reason}\", delete_on_action=True, delete_during_mute=True, ignore_admins=True, ignore_bots=True, check_private=False, check_channels=False, check_edited=False, chats=None, ignore_chats=None, admin_cache_ttl=300.0, max_admin_pages=100, shutdown_timeout=5.0, **base_kwargs)",
+            "init_params": [
+                [
+                    "enabled",
+                    "bool = True",
+                    "فعال بودن کل سیستم؛ در زمان اجرا با enable/disable هم قابل تغییر است"
+                ],
+                [
+                    "action",
+                    "\"ignore\" | \"delete\" | \"warn\" | \"mute\" | \"ban\" = \"delete\"",
+                    "اکشن پیش‌فرض هنگام تشخیص اسپم (kick نیز نام دیگر mute است)"
+                ],
+                [
+                    "actions",
+                    "dict[SpamViolation | str, str] | None",
+                    "اکشن اختصاصی هر نوع تخلف؛ کلید می‌تواند enum، value یا name باشد"
+                ],
+                [
+                    "mute_seconds",
+                    "float | None",
+                    "مدت اخراج موقت برای اکشن mute؛ None = استفاده از mute_duration همان قانون"
+                ],
+                [
+                    "warn_text",
+                    "str = \"🚫 {reason}\"",
+                    "متن اخطار؛ از {reason}، {user} و {chat} پشتیبانی می‌کند"
+                ],
+                [
+                    "delete_on_action",
+                    "bool = True",
+                    "پیام اسپم قبل از warn/mute/ban حذف شود"
+                ],
+                [
+                    "delete_during_mute",
+                    "bool = True",
+                    "پیام‌های بعدی کاربر سکوت‌شده هم حذف شوند (برای action=ignore خیر)"
+                ],
+                [
+                    "ignore_admins",
+                    "bool = True",
+                    "ادمین‌های گروه از بررسی معاف شوند؛ لیست ادمین‌ها کش می‌شود"
+                ],
+                [
+                    "ignore_bots",
+                    "bool = True",
+                    "پیام‌های ارسال‌شده توسط ربات‌ها بررسی نشوند"
+                ],
+                [
+                    "check_private",
+                    "bool = False",
+                    "پیام‌های پیوی هم بررسی شوند"
+                ],
+                [
+                    "check_channels",
+                    "bool = False",
+                    "پست‌های کانال هم بررسی شوند (اکشن ban برای کانال اجرا نمی‌شود)"
+                ],
+                [
+                    "check_edited",
+                    "bool = False",
+                    "پیام‌های ویرایش‌شده هم بررسی شوند"
+                ],
+                [
+                    "chats",
+                    "Iterable[str] | None",
+                    "اگر داده شود فقط همین چت‌ها بررسی می‌شوند"
+                ],
+                [
+                    "ignore_chats",
+                    "Iterable[str] | None",
+                    "این چت‌ها هرگز بررسی نمی‌شوند"
+                ],
+                [
+                    "admin_cache_ttl",
+                    "float = 300.0",
+                    "مدت کش لیست ادمین هر گروه (ثانیه)؛ صفر = بدون کش"
+                ],
+                [
+                    "max_admin_pages",
+                    "int = 100",
+                    "حداکثر تعداد صفحه برای دریافت لیست ادمین‌ها"
+                ],
+                [
+                    "shutdown_timeout",
+                    "float = 5.0",
+                    "حداکثر زمان تلاش برای آن‌بن سکوت‌های موقت هنگام خاموشی"
+                ],
+                [
+                    "**base_kwargs",
+                    "—",
+                    "همهٔ پارامترهای AntiSpam پایه: flood_max، flood_window، rate_max، rate_window، duplicate_window، max_message_length، link_max، link_window، mention_max، mention_window، mute_duration، auto_clear_interval"
+                ]
+            ],
+            "methods": [
+                {
+                    "name": "inspect",
+                    "signature": "await antispam.inspect(message)",
+                    "params": [
+                        [
+                            "message",
+                            "Message",
+                            "پیام دریافتی یوزربات"
+                        ]
+                    ],
+                    "returns": "bool",
+                    "description": "بررسی یک Message و اجرای اکشن در صورت اسپم؛ True یعنی پیام مصرف شد و نباید به هندلرها برسد"
+                },
+                {
+                    "name": "action_for",
+                    "signature": "antispam.action_for(violation)",
+                    "params": [
+                        [
+                            "violation",
+                            "SpamViolation | None",
+                            "نوع تخلف"
+                        ]
+                    ],
+                    "returns": "str",
+                    "description": "اکشن نهایی برای یک نوع تخلف با در نظر گرفتن actions"
+                },
+                {
+                    "name": "enable",
+                    "signature": "antispam.enable()",
+                    "params": [],
+                    "returns": "None",
+                    "description": "فعال کردن سیستم در زمان اجرا"
+                },
+                {
+                    "name": "disable",
+                    "signature": "antispam.disable()",
+                    "params": [],
+                    "returns": "None",
+                    "description": "غیرفعال کردن سیستم در زمان اجرا"
+                },
+                {
+                    "name": "pending_bans",
+                    "signature": "antispam.pending_bans",
+                    "params": [],
+                    "returns": "tuple[tuple[str, str], ...]",
+                    "description": "لیست (chat_id, user_id)هایی که در سکوت موقت هستند"
+                },
+                {
+                    "name": "reset",
+                    "signature": "antispam.reset(chat_id=None, user_id=None)",
+                    "params": [
+                        [
+                            "chat_id",
+                            "str | None = None",
+                            "چت آیدی (None = همه)"
+                        ],
+                        [
+                            "user_id",
+                            "str | None = None",
+                            "آیدی کاربر"
+                        ]
+                    ],
+                    "returns": "None",
+                    "description": "پاک‌سازی وضعیت و کش ادمین‌ها"
+                },
+                {
+                    "name": "shutdown",
+                    "signature": "await antispam.shutdown()",
+                    "params": [],
+                    "returns": "None",
+                    "description": "توقف auto-clear، لغو اکشن‌های در جریان و آن‌بن best-effort سکوت‌های موقت"
+                },
+                {
+                    "name": "check",
+                    "signature": "antispam.check(chat_id, user_id, message, is_private=False)",
+                    "params": [
+                        [
+                            "chat_id",
+                            "str",
+                            "چت آیدی"
+                        ],
+                        [
+                            "user_id",
+                            "str",
+                            "آیدی کاربر"
+                        ],
+                        [
+                            "message",
+                            "str",
+                            "متن پیام"
+                        ],
+                        [
+                            "is_private",
+                            "bool = False",
+                            "آیا پیوی است؟"
+                        ]
+                    ],
+                    "returns": "tuple[bool, str | None, SpamViolation | None]",
+                    "description": "بررسی خام یک پیام (بدون اجرای اکشن)؛ از کلاس پایه به ارث می‌رسد"
+                }
+            ],
+            "subsections": [
+                {
+                    "subtitle": "اکشن‌ها",
+                    "properties": [
+                        {
+                            "name": "ignore",
+                            "type": "Action",
+                            "description": "فقط جلوگیری از رسیدن پیام به هندلرها، بدون درخواست شبکه‌ای"
+                        },
+                        {
+                            "name": "delete",
+                            "type": "Action",
+                            "description": "حذف پیام با deleteMessages"
+                        },
+                        {
+                            "name": "warn",
+                            "type": "Action",
+                            "description": "ارسال اخطار با warn_text و سپس حذف پیام"
+                        },
+                        {
+                            "name": "mute",
+                            "type": "Action",
+                            "description": "حذف + اخراج موقت با banChatMember و آن‌بن خودکار پس از mute_seconds"
+                        },
+                        {
+                            "name": "ban",
+                            "type": "Action",
+                            "description": "حذف + اخراج دائمی"
+                        },
+                        {
+                            "name": "kick",
+                            "type": "Action",
+                            "description": "نام دیگر mute"
+                        }
+                    ]
+                },
+                {
+                    "subtitle": "قوانین (از AntiSpam پایه)",
+                    "properties": [
+                        {
+                            "name": "FLOOD",
+                            "type": "SpamViolation",
+                            "description": "پیام پشت سر هم"
+                        },
+                        {
+                            "name": "RATE_LIMIT",
+                            "type": "SpamViolation",
+                            "description": "تعداد بیش از حد در بازه"
+                        },
+                        {
+                            "name": "DUPLICATE",
+                            "type": "SpamViolation",
+                            "description": "پیام تکراری"
+                        },
+                        {
+                            "name": "LONG_MESSAGE",
+                            "type": "SpamViolation",
+                            "description": "پیام خیلی طولانی"
+                        },
+                        {
+                            "name": "LINK_SPAM",
+                            "type": "SpamViolation",
+                            "description": "تعداد زیاد لینک در بازه"
+                        },
+                        {
+                            "name": "MENTION_SPAM",
+                            "type": "SpamViolation",
+                            "description": "تعداد زیاد منشن در بازه"
+                        }
+                    ]
+                }
+            ],
+            "example": "from fast_rub.pyrubi import Client, AntiSpam, SpamViolation\n\nbot = Client(\n    session=\"my_account\",\n    antispam=AntiSpam(\n        flood_max=5,\n        flood_window=3.0,\n        action=\"delete\",\n        actions={SpamViolation.LINK_SPAM: \"mute\"},\n        mute_seconds=120,\n        ignore_admins=True,\n        warn_text=\"🚫 {reason}\",\n    ),\n)\n\n@bot.on_message()\nasync def handler(msg):\n    await msg.reply(\"پیام سالم ✅\")\n\nbot.run()"
         },
         {
             "id": "PyrubiFilters",

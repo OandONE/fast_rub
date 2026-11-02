@@ -1,4 +1,4 @@
-from typing import Any, Literal
+from typing import Any, Literal, TYPE_CHECKING
 
 from ...utils.template import TemplateEngine
 from ...utils.cache import Cache
@@ -15,6 +15,9 @@ from ..filters import Filter
 from ..methods import Methods
 from .plugins import PluginManager
 from collections.abc import Callable
+
+if TYPE_CHECKING:
+    from ..utils.antispam import AntiSpam
 
 
 class Client:
@@ -36,6 +39,7 @@ class Client:
         max_retries_download: int | None = None,
         wait_manager: WaitManager | None = None,
         defult_wait: float | None = None,
+        antispam: "AntiSpam | None" = None,
     ):
 
         self.session = session
@@ -55,6 +59,13 @@ class Client:
 
         self.wait_manager = wait_manager
         self.defult_wait = defult_wait
+        self.antispam = antispam
+        if antispam is not None and not hasattr(antispam, "inspect"):
+            raise TypeError(
+                "antispam باید نمونه‌ای از fast_rub.pyrubi.AntiSpam باشد "
+                "(نسخهٔ مخصوص یوزربات). برای یوزربات از "
+                "'from fast_rub.pyrubi import AntiSpam' استفاده کنید."
+            )
 
         self._loaded_plugins = []
         if run_start:
@@ -131,6 +142,7 @@ class Client:
             max_retries_download=self.max_retries_download,
             wait_manager=self.wait_manager,
             defult_wait=self.defult_wait,
+            antispam=self.antispam,
         )
         self.on_ready = self.methods.on_ready
         self.on_start = self.methods.on_start
