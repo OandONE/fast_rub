@@ -595,33 +595,33 @@
     "signature": "@bot.failover_on_message(filters=None, edited_messages=False, deleted_messages=False, config=None)",
     "desc": "هندلری که هنگام اختلال، خودکار بین Webhook و Polling جابه‌جا می‌شود و از پردازش تکراری جلوگیری می‌کند (نیازمند webhook=WebhookConfig در Client).",
     "params": [
-        [
-            "filters",
-            "<a href='../models/index.html#filters'>filters</a> | None",
-            "فیلتر پیام"
-        ],
-        [
-            "edited_messages",
-            "bool | 'both' = False",
-            "دریافت ویرایش‌شده‌ها"
-        ],
-        [
-            "deleted_messages",
-            "bool | 'both' = False",
-            "دریافت حذف‌شده‌ها"
-        ],
-        [
-            "config",
-            "<a href='../models/index.html#auto_failover'>AutoFailoverConfig</a> | None",
-            "تنظیمات زمانی مخصوص این هندلر"
-        ]
+      [
+        "filters",
+        "<a href='../models/index.html#filters'>filters</a> | None",
+        "فیلتر پیام"
+      ],
+      [
+        "edited_messages",
+        "bool | 'both' = False",
+        "دریافت ویرایش‌شده‌ها"
+      ],
+      [
+        "deleted_messages",
+        "bool | 'both' = False",
+        "دریافت حذف‌شده‌ها"
+      ],
+      [
+        "config",
+        "<a href='../models/index.html#auto_failover'>AutoFailoverConfig</a> | None",
+        "تنظیمات زمانی مخصوص این هندلر"
+      ]
     ],
     "returns": [
-        [
-            "Message",
-            "<a href='../models/index.html#update'>Message</a>",
-            "شی اطلاعات پیام"
-        ]
+      [
+        "Message",
+        "<a href='../models/index.html#update'>Message</a>",
+        "شی اطلاعات پیام"
+      ]
     ],
     "example": "from fast_rub import Client\nfrom fast_rub.types import WebhookConfig\n\nbot = Client(\n    \"my_bot\",\n    webhook=WebhookConfig(url=\"https://my.site\", path_prefix=\"/webhook\"),\n)\n\n@bot.failover_on_message() # دکوراتورهای اختصاصی: failover_on_edit (فقط ویرایش)، failover_on_delete (فقط حذف)\nasync def handler(msg):\n    await msg.reply(\"پاسخ ⚡\")"
   },
@@ -2338,33 +2338,33 @@
     "signature": "async start_dashboard(host='127.0.0.1', port=433, backend='fastapi', path_prefix='/dashboard')",
     "desc": "داشبورد HTML برای نمایش آمار پیام‌های دریافت‌شده از گروه‌ها و چت‌ها را روی یک سرور وب راه‌اندازی می‌کند. این داشبورد شامل خلاصه آمار (کل پیام‌ها، پیام‌های امروز، چت‌های فعال، مدت فعالیت) و جدول رتبه‌بندی چت‌ها بر اساس تعداد پیام است. برای استفاده ابتدا باید در سازندهٔ Client مقدار enable_stats=True قرار دهید.",
     "params": [
-        [
-            "host",
-            "str = '127.0.0.1'",
-            "آدرس گوش دادن سرور (پیش‌فرض: 127.0.0.1)"
-        ],
-        [
-            "port",
-            "int = 8080",
-            "پورت سرور (پیش‌فرض: 8080)"
-        ],
-        [
-            "backend",
-            "'fastapi' | 'flask' = 'fastapi'",
-            "کتابخانهٔ وب سرور (پیش‌فرض: fastapi). برای استفاده از fastapi/uvicorn دستور `pip install fastrub[fastapi]` و برای flask دستور `pip install fastrub[flask]` را اجرا کنید"
-        ],
-        [
-            "path_prefix",
-            "str = '/dashboard'",
-            "پیشوند مسیر URL داشبورد (پیش‌فرض: /dashboard)"
-        ]
+      [
+        "host",
+        "str = '127.0.0.1'",
+        "آدرس گوش دادن سرور (پیش‌فرض: 127.0.0.1)"
+      ],
+      [
+        "port",
+        "int = 8080",
+        "پورت سرور (پیش‌فرض: 8080)"
+      ],
+      [
+        "backend",
+        "'fastapi' | 'flask' = 'fastapi'",
+        "کتابخانهٔ وب سرور (پیش‌فرض: fastapi). برای استفاده از fastapi/uvicorn دستور `pip install fastrub[fastapi]` و برای flask دستور `pip install fastrub[flask]` را اجرا کنید"
+      ],
+      [
+        "path_prefix",
+        "str = '/dashboard'",
+        "پیشوند مسیر URL داشبورد (پیش‌فرض: /dashboard)"
+      ]
     ],
     "returns": [
-        [
-            "url",
-            "str",
-            "آدرس کامل داشبورد (مثلاً `http://127.0.0.1:8080/dashboard`) — در صورت اجرای قبلی، همان URL قبلی برگردانده می‌شود"
-        ]
+      [
+        "url",
+        "str",
+        "آدرس کامل داشبورد (مثلاً `http://127.0.0.1:8080/dashboard`) — در صورت اجرای قبلی، همان URL قبلی برگردانده می‌شود"
+      ]
     ],
     "example": "from fast_rub import Client, filters\nfrom fast_rub.types import Update\n\nasync def main():\n    bot = Client(\n        \"my_bot\",\n        enable_stats=True,                                 # ✅ فعال‌سازی آمار\n        stats_db_path=\"messages_state-fastrub-my_bot.db\",  # اختیاری (پیش‌فرض: messages_state-fastrub-{name}.db)\n    )\n\n    @bot.on_message()\n    async def handler(msg: Update):\n        await msg.reply(\"دریافت شد ✅\")\n\n    @bot.on_run()\n    async def on_run():\n        # راه‌اندازی داشبورد (FastAPI)\n        url = await bot.start_dashboard(\n            host=\"127.0.0.1\",\n            port=8080,\n            backend=\"fastapi\",\n            path_prefix=\"/dashboard\",\n        )\n        bot.logger.info(f\"✅ داشبورد: {url}\")\n\n    await bot.run()\n\nasyncio.run(main())\n\n# یا با Flask:\n# await bot.start_dashboard(backend=\"flask\", port=8080)\n\n# سپس در مرورگر باز کن:\n# http://127.0.0.1:8080/dashboard"
   },
@@ -2570,38 +2570,36 @@
     "example": "@bot.on_log()\nasync def log_handler(log_entry):\n    print(log_entry)"
   },
   {
-    "before_send_request": {
-      "id": "before_send_request",
-      "title": "هندلر پیش از ارسال درخواست HTTP (قابل تغییر داده)",
-      "signature": "@bot.before_send_request(filters=None)",
-      "desc": "هندلری که قبل از ارسال هر درخواست HTTP به Bot API اجرا می‌شود. خروجی None به معنی «بدون تغییر» و خروجی dict به عنوان data جدید استفاده می‌شود. اگر هندلر به هر دلیلی خطا بدهد، خطا propagate می‌شود و ارسال متوقف می‌گردد. آرگومان‌ها بر اساس امضای هندلر به او پاس داده می‌شوند (فقط پارامترهایی که تعریف می‌کنی).",
-      "params": [
-        [
-          "filters",
-          "<a href='../models/index.html#RequestFilter'>RequestFilter</a> | None",
-          "فیلتر(ها) برای محدود کردن درخواست‌هایی که این هندلر رویشان اجرا شود (در صورت None، برای همهٔ درخواست‌ها اجرا می‌شود)"
-        ]
-      ],
-      "returns": null,
-      "extra_note": "ورودی‌های قابل دریافت در هندلر: method، http_method، api_method، data، url، client. اگر فقط زیرمجموعه‌ای را در امضای هندلر تعریف کنی، همان‌ها پاس داده می‌شوند (نیازی به **kwargs نیست).",
-      "example": "from fast_rub import Client\nfrom fast_rub.utils import RequestFilter\n\nbot = Client(\"my_bot\")\n\n# ۱) تغییر دادهٔ درخواست برای متد خاص\n@bot.before_send_request(filters=RequestFilter(api_method=\"sendMessage\"))\nasync def silence_all(data, api_method):\n    data[\"disable_notification\"] = True\n    return data  # dict برگردانده شد → جایگزین data می‌شود\n\n# ۲) هندلر بدون تغییر — فقط مشاهده\n@bot.before_send_request()\nasync def observe(method, url, client):\n    client.logger.debug(f\"→ {method} {url}\")\n    # None برگرداند → داده‌ها دست‌نخورده می‌مانند"
-    },
-    "after_send_request": {
-      "id": "after_send_request",
-      "title": "هندلر پس از پاسخ موفق درخواست HTTP",
-      "signature": "@bot.after_send_request(filters=None)",
-      "desc": "هندلری که پس از دریافت پاسخ موفق از Bot API اجرا می‌شود. برای لاگ، آمارگیری و افکت‌های جانبی مناسب است. مقدار بازگشتی هندلر نادیده گرفته می‌شود (برخلاف before_send_request). خطاهای این هندلر هم propagate می‌شوند.",
-      "params": [
-        [
-          "filters",
-          "<a href='../models/index.html#RequestFilter'>RequestFilter</a> | None",
-          "فیلتر(ها) برای محدود کردن درخواست‌هایی که این هندلر رویشان اجرا شود"
-        ]
-      ],
-      "returns": null,
-      "extra_note": "ورودی‌های قابل دریافت در هندلر: method، http_method، api_method، data، url، result، client. فقط پارامترهایی که در امضای هندلر تعریف کنی پاس داده می‌شوند.",
-      "example": "from fast_rub import Client\nfrom fast_rub.utils import RequestFilter\n\nbot = Client(\"my_bot\")\n\n@bot.after_send_request()\nasync def log_sent(api_method, result):\n    bot.logger.info(f\"✅ {api_method} → ok={result.get('ok')}\")\n\n# فقط برای متدهای خاص + فیلتر درخواست\n@bot.after_send_request(filters=RequestFilter(api_method=[\"sendMessage\", \"sendFile\"]))\nasync def count_sends(api_method, client):\n    stats = client.state.setdefault(\"send_counts\", {})\n    stats[api_method] = stats.get(api_method, 0) + 1"
-    }
+    "id": "before_send_request",
+    "title": "هندلر پیش از ارسال درخواست HTTP (قابل تغییر داده)",
+    "signature": "@bot.before_send_request(filters=None)",
+    "desc": "هندلری که قبل از ارسال هر درخواست HTTP به Bot API اجرا می‌شود. خروجی None به معنی «بدون تغییر» و خروجی dict به عنوان data جدید استفاده می‌شود. اگر هندلر به هر دلیلی خطا بدهد، خطا propagate می‌شود و ارسال متوقف می‌گردد. آرگومان‌ها بر اساس امضای هندلر به او پاس داده می‌شوند (فقط پارامترهایی که تعریف می‌کنی).",
+    "params": [
+      [
+        "filters",
+        "<a href='../models/index.html#RequestFilter'>RequestFilter</a> | None",
+        "فیلتر(ها) برای محدود کردن درخواست‌هایی که این هندلر رویشان اجرا شود (در صورت None، برای همهٔ درخواست‌ها اجرا می‌شود)"
+      ]
+    ],
+    "returns": null,
+    "extra_note": "ورودی‌های قابل دریافت در هندلر: method، http_method، api_method، data، url، client. اگر فقط زیرمجموعه‌ای را در امضای هندلر تعریف کنی، همان‌ها پاس داده می‌شوند (نیازی به **kwargs نیست).",
+    "example": "from fast_rub import Client\nfrom fast_rub.utils import RequestFilter\n\nbot = Client(\"my_bot\")\n\n# ۱) تغییر دادهٔ درخواست برای متد خاص\n@bot.before_send_request(filters=RequestFilter(api_method=\"sendMessage\"))\nasync def silence_all(data, api_method):\n    data[\"disable_notification\"] = True\n    return data  # dict برگردانده شد → جایگزین data می‌شود\n\n# ۲) هندلر بدون تغییر — فقط مشاهده\n@bot.before_send_request()\nasync def observe(method, url, client):\n    client.logger.debug(f\"→ {method} {url}\")\n    # None برگرداند → داده‌ها دست‌نخورده می‌مانند"
+  },
+  {
+    "id": "after_send_request",
+    "title": "هندلر پس از پاسخ موفق درخواست HTTP",
+    "signature": "@bot.after_send_request(filters=None)",
+    "desc": "هندلری که پس از دریافت پاسخ موفق از Bot API اجرا می‌شود. برای لاگ، آمارگیری و افکت‌های جانبی مناسب است. مقدار بازگشتی هندلر نادیده گرفته می‌شود (برخلاف before_send_request). خطاهای این هندلر هم propagate می‌شوند.",
+    "params": [
+      [
+        "filters",
+        "<a href='../models/index.html#RequestFilter'>RequestFilter</a> | None",
+        "فیلتر(ها) برای محدود کردن درخواست‌هایی که این هندلر رویشان اجرا شود"
+      ]
+    ],
+    "returns": null,
+    "extra_note": "ورودی‌های قابل دریافت در هندلر: method، http_method، api_method، data، url، result، client. فقط پارامترهایی که در امضای هندلر تعریف کنی پاس داده می‌شوند.",
+    "example": "from fast_rub import Client\nfrom fast_rub.utils import RequestFilter\n\nbot = Client(\"my_bot\")\n\n@bot.after_send_request()\nasync def log_sent(api_method, result):\n    bot.logger.info(f\"✅ {api_method} → ok={result.get('ok')}\")\n\n# فقط برای متدهای خاص + فیلتر درخواست\n@bot.after_send_request(filters=RequestFilter(api_method=[\"sendMessage\", \"sendFile\"]))\nasync def count_sends(api_method, client):\n    stats = client.state.setdefault(\"send_counts\", {})\n    stats[api_method] = stats.get(api_method, 0) + 1"
   },
   {
     "id": "helpers",

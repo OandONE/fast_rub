@@ -74,27 +74,27 @@
         "type": "info",
         "icon": "🪶",
         "title": "سبک بودن",
-        "html": "<p>روی 256 مگابایت رم DDR1 بدون مشکل اجرا می شود(Alpine Liunx)</p>"
+        "markdown": "روی 256 مگابایت رم DDR1 بدون مشکل اجرا می شود(Alpine Liunx)"
     },
     {
         "id": "speed",
         "type": "info",
         "icon": "⚡",
         "title": "سرعت بالا",
-        "html": "<p>httpx/HTTP/2 , async-native , استخر اتصال پایدار</p>"
+        "markdown": "httpx/HTTP/2 , async-native , استخر اتصال پایدار"
     },
     {
         "id": "install",
         "type": "info",
         "icon": "📦",
         "title": "نصب",
-        "html": "<code>pip install fastrub</code><br><code>pip install fastrub -i https://mirror-pypi.runflare.com/simple # میرور جایگزین</code><br><code>pip install fastrub -i https://mirror.abrha.net/repository/pypi/simple # میرور جایگزین</code><br><code>pip install fastrub -i https://package-mirror.liara.ir/repository/pypi/simple # میرور جایگزین</code>"
+        "markdown": "`pip install fastrub`\n`pip install fastrub -i https://mirror-pypi.runflare.com/simple # میرور جایگزین`\n`pip install fastrub -i https://mirror.abrha.net/repository/pypi/simple # میرور جایگزین`\n`pip install fastrub -i https://package-mirror.liara.ir/repository/pypi/simple # میرور جایگزین`"
     },
     {
         "id": "extras",
         "type": "info",
         "icon": "🧩",
         "title": "نصب اختیاری",
-        "html": "\n          <div class=\"table-responsive\">\n            <table>\n              <thead><tr><th>Extra</th><th>نصب</th><th>کاربرد</th></tr></thead>\n              <tbody>\n                <tr><td><code>fastapi</code></td><td><code>pip install fastrub[fastapi]</code></td><td>داشبورد و وب‌سرور با FastAPI</td></tr>\n                <tr><td><code>flask</code></td><td><code>pip install fastrub[flask]</code></td><td>داشبورد و وب‌سرور با Flask</td></tr>\n                <tr><td><code>hotreload</code></td><td><code>pip install fastrub[hotreload]</code></td><td>Hot Reload</td></tr>\n                <tr><td><code>jalali</code></td><td><code>pip install fastrub[jalali]</code></td><td>تاریخ شمسی Scheduler</td></tr>\n                <tr><td><code>progress</code></td><td><code>pip install fastrub[progress]</code></td><td>نوار پیشرفت (tqdm)</td></tr>\n                <tr><td><code>pillow</code></td><td><code>pip install fastrub[pillow]</code></td><td>پردازش تصویر در یوزربات</td></tr>\n                <tr><td><code>moviepy</code></td><td><code>pip install fastrub[moviepy]</code></td><td>پردازش ویدیو در یوزربات</td></tr>\n                <tr><td><code>aiortc</code></td><td><code>pip install fastrub[aiortc]</code></td><td>تماس صوتی/تصویری</td></tr>\n                <tr><td><code>userbot</code></td><td><code>pip install fastrub[userbot]</code></td><td>یوزربات</td></tr>\n                <tr><td><code>userbot-full</code></td><td><code>pip install fastrub[userbot-full]</code></td><td>یوزربات کامل</td></tr>\n                <tr><td><code>full</code></td><td><code>pip install fastrub[full]</code></td><td>همه چیز یک‌جا</td></tr>\n              </tbody>\n            </table>\n          </div>"
+        "markdown": "| Extra | نصب | کاربرد |\n|---|---|---|\n| `fastapi` | `pip install fastrub[fastapi]` | داشبورد و وب‌سرور با FastAPI |\n| `flask` | `pip install fastrub[flask]` | داشبورد و وب‌سرور با Flask |\n| `hotreload` | `pip install fastrub[hotreload]` | Hot Reload |\n| `jalali` | `pip install fastrub[jalali]` | تاریخ شمسی Scheduler |\n| `progress` | `pip install fastrub[progress]` | نوار پیشرفت (tqdm) |\n| `pillow` | `pip install fastrub[pillow]` | پردازش تصویر در یوزربات |\n| `moviepy` | `pip install fastrub[moviepy]` | پردازش ویدیو در یوزربات |\n| `aiortc` | `pip install fastrub[aiortc]` | تماس صوتی/تصویری |\n| `userbot` | `pip install fastrub[userbot]` | یوزربات |\n| `userbot-full` | `pip install fastrub[userbot-full]` | یوزربات کامل |\n| `full` | `pip install fastrub[full]` | همه چیز یک‌جا |"
     }
 ]

@@ -27,3 +27,6 @@ v7.txt
 _*.jpg
 _*.png
 snapshots/
+
+# built docs output
+_site/

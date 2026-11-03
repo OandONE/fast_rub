@@ -1,0 +1,9 @@
+{
+  "name": "Fast Rub Docs",
+  "short_name": "FastRub",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#fafafa",
+  "theme_color": "#7b1fa2",
+  "icons": []
+}

@@ -883,6 +883,27 @@ fast_rub
 - [کل داکیومنت یکپارچه](/docs/all.json)
 - [کل داکیومنت یکپارچه مینیفای](/docs/all.min.json)
 
+### اجرای محلی مستندات
+
+صفحات HTML برای تزریق هش JSON به سرور یا build استاتیک نیاز دارند:
+
+```bash
+pip install fastapi uvicorn
+uvicorn docs_server.app:app --host 127.0.0.1 --port 8000
+```
+
+سپس `http://127.0.0.1:8000/features/index.html` را باز کنید.
+
+برای ساخت خروجی استاتیک (مثلاً GitHub Pages):
+
+```bash
+python -m docs_server.build --out _site
+```
+
+workflow آماده: [`.github/workflows/docs.yml`](.github/workflows/docs.yml:1).
+جزئیات معماری، کش، مینیفای و استقرار:
+[docs_server/README.md](docs_server/README.md:1)
+
 [⬆ بازگشت به فهرست](#-فهرست-مطالب)
 
 ---

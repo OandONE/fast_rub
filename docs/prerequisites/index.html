@@ -24,9 +24,10 @@
   <meta name="twitter:description" content="نکات مهم و ضروری قبل از نوشتن بات روبیکا با کتابخانه Fast Rub">
 
   <link rel="canonical" href="https://fast-rub.ParsSource.ir/prerequisites/index.html">
+  <meta name="docs-hash" content="__FASTRUB_DOCS_HASH__">
   <link rel="icon" type="image/png" href="../icon.jpg">
   <link rel="apple-touch-icon" href="../icon.jpg">
-  <link rel="manifest" href="/manifest.json">
+  <link rel="manifest" href="../manifest.json">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -456,128 +457,10 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
 
+  <script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js"></script>
+  <script src="../docs-data.js"></script>
   <script>
-    const notesData = [
-      {
-        id: "no-keypad-in-groups",
-        type: "danger",
-        icon: "🚫",
-        title: "عدم امکان ارسال کیپد در گروه‌ها و کانال‌ها",
-        html: `<p>ربات‌های روبیکا در <strong>گروه‌ها</strong> و <strong>کانال‌ها</strong> امکان ارسال کیپد (دکمه‌های شیشه‌ای یا معمولی) <strong>ندارند</strong>. این قابلیت فقط در چت‌های خصوصی (PV) در دسترس است.</p>`
-      },
-      {
-        id: "protect-tokens",
-        type: "danger",
-        icon: "🔐",
-        title: "محافظت از توکن و سشن",
-        html: `<p>از توکن و سشن‌های بات خود به‌خوبی محافظت کنید. در اختیار گذاشتن توکن یا فایل سشن به دیگران، امکان کنترل کامل ربات شما را برای آن‌ها فراهم می‌کند. همچنین برای جلوگیری از نشت سشن در .gitignore پسوند سشن را قرار دهید.</p>`
-      },
-      {
-        id: "admin-in-group",
-        type: "warn",
-        icon: "⚠️",
-        title: "لزوم ادمین بودن ربات در گروه",
-        html: `<p>برای دریافت پیام‌های ربات در گروه، ربات باید حتماً در گروه <strong>ادمین</strong> باشد. همچنین در <strong>BotFather</strong> و در بخش «تنظیمات بات»، گزینه‌ی <strong>«دریافت همه پیام‌های کانال و گروه»</strong> باید فعال شود.</p>`
-      },
-      {
-        id: "polling-vs-webhook",
-        type: "warn",
-        icon: "🔔",
-        title: "تفاوت پولینگ و وبهوک برای دکمه‌های شیشه‌ای",
-        html: `<p>پیام‌های معمولی از دو روش <strong>پولینگ</strong> و <strong>وبهوک</strong> پشتیبانی می‌کنند، اما کلیک روی دکمه‌های شیشه‌ای <strong>فقط از طریق وبهوک</strong> قابل دریافت است. برای این کار باید یک آدرس به روبیکا معرفی کنید تا کلیک‌ها به همان آدرس ارسال شوند.</p><br>همچنین در حالت پولینگ، برای پیام‌های معمولی یک <code>offset_id</code> در نشست ربات ذخیره می‌شود تا پیام‌ها از آن زمان به بعد دریافت شوند.`
-      },
-      {
-        id: "error-502-unstable",
-        type: "warn",
-        icon: "💥",
-        title: "خطای 502 و ناپایداری سرورهای روبیکا",
-        html: `<p>سرورهای روبیکا <strong>بی‌ثبات</strong> هستن و مرتب خطای 502، Timeout و Connection Error می‌دن. این مشکل از کتابخونه نیست.</p>
-        <code>bot = Client("my_bot", max_retries=5, max_retries_upload=10, max_retries_download=7)</code>`
-      },
-      {
-        id: "no-official-botapi",
-        type: "info",
-        icon: "ℹ️",
-        title: "نبود پشتیبانی رسمی از BotAPI",
-        html: `<p>روبیکا پشتیبانی رسمی از BotAPI ندارد و متدهای آن نیز کامل نیست. تلاش‌های چندین توسعه‌دهنده در روبیکا نشان داده که انتقاد به تیم روبیکا عملاً بی‌نتیجه بوده است.</p>`
-      },
-      {
-        id: "report-issues",
-        type: "info",
-        icon: "🐛",
-        title: "نحوه گزارش باگ",
-        html: `<p>در صورت مشاهده‌ی باگ، پیش از ارسال Issue، ابتدا آن را بررسی کنید و سپس گزارش دهید تا به بهبود فریم‌ورک کمک شود.</p>`
-      },
-      {
-        id: "chat-id-vs-sender-id",
-        type: "info",
-        icon: "🆔",
-        title: "تفاوت Chat ID، Sender ID و GUID",
-        html: `<p><strong>شناسه‌ی چت (Chat ID)</strong> و <strong>شناسه‌ی فرستنده (Sender ID)</strong> با یکدیگر متفاوت‌اند. همچنین شناسه‌ی <code>GUID</code> که مربوط به یوزربات است، با شناسه‌های بات‌ها تفاوت دارد.</p>
-        <p>در واقع ساختار هر سه یکسان است، اما برای بات‌ها و یوزربات‌ها، این شناسه‌ها برای یک کاربر، گروه یا کانال یکسان نیستند و جداگانه محاسبه می‌شوند.</p>`
-      },
-      {
-        id: "python-version",
-        type: "info",
-        icon: "🐍",
-        title: "پایتون 3.10 یا بالاتر",
-        html: `<p>Fast Rub از تایپ‌هینت‌های جدید و قابلیت‌های <code>asyncio</code> استفاده می‌کنه که از <strong>پایتون 3.10+</strong> پشتیبانی می‌شن.</p>
-        <p>نسخه پیشنهادی: <strong>Python 3.11</strong>، <strong>3.12</strong> یا <strong>3.13</strong>. نسخه <strong>3.14</strong> هم بدون مشکل پشتیبانی می‌شه، اما نسخه <strong>3.15</strong> هنوز تست نشده.</p>`
-      },
-      {
-        id: "limit-upload",
-        type: "info",
-        icon: "📤",
-        title: "آپلود فایل",
-        html: `<p>روبیکا برای آپلود فایل در بات ها محدودیت هایی دارد اما ثبات مشخصی ندارد.</p>`
-      },
-      {
-        id: "lite",
-        type: "info",
-        icon: "🪶",
-        title: "سبک بودن",
-        html: `<p>روی 256 مگابایت رم DDR1 بدون مشکل اجرا می شود(Alpine Liunx)</p>`
-      },
-      {
-        id: "speed",
-        type: "info",
-        icon: "⚡",
-        title: "سرعت بالا",
-        html: `<p>httpx/HTTP/2 , async-native , استخر اتصال پایدار</p>`
-      },
-      {
-        id: "install",
-        type: "info",
-        icon: "📦",
-        title: "نصب",
-        html: `<code>pip install fastrub</code><br><code>pip install fastrub -i https://mirror-pypi.runflare.com/simple # میرور جایگزین</code><br><code>pip install fastrub -i https://mirror.abrha.net/repository/pypi/simple # میرور جایگزین</code><br><code>pip install fastrub -i https://package-mirror.liara.ir/repository/pypi/simple # میرور جایگزین</code>`
-      },
-      {
-        id: "extras",
-        type: "info",
-        icon: "🧩",
-        title: "نصب اختیاری",
-        html: `
-          <div class="table-responsive">
-            <table>
-              <thead><tr><th>Extra</th><th>نصب</th><th>کاربرد</th></tr></thead>
-              <tbody>
-                <tr><td><code>fastapi</code></td><td><code>pip install fastrub[fastapi]</code></td><td>داشبورد و وب‌سرور با FastAPI</td></tr>
-                <tr><td><code>flask</code></td><td><code>pip install fastrub[flask]</code></td><td>داشبورد و وب‌سرور با Flask</td></tr>
-                <tr><td><code>hotreload</code></td><td><code>pip install fastrub[hotreload]</code></td><td>Hot Reload</td></tr>
-                <tr><td><code>jalali</code></td><td><code>pip install fastrub[jalali]</code></td><td>تاریخ شمسی Scheduler</td></tr>
-                <tr><td><code>progress</code></td><td><code>pip install fastrub[progress]</code></td><td>نوار پیشرفت (tqdm)</td></tr>
-                <tr><td><code>pillow</code></td><td><code>pip install fastrub[pillow]</code></td><td>پردازش تصویر در یوزربات</td></tr>
-                <tr><td><code>moviepy</code></td><td><code>pip install fastrub[moviepy]</code></td><td>پردازش ویدیو در یوزربات</td></tr>
-                <tr><td><code>aiortc</code></td><td><code>pip install fastrub[aiortc]</code></td><td>تماس صوتی/تصویری</td></tr>
-                <tr><td><code>userbot</code></td><td><code>pip install fastrub[userbot]</code></td><td>یوزربات</td></tr>
-                <tr><td><code>userbot-full</code></td><td><code>pip install fastrub[userbot-full]</code></td><td>یوزربات کامل</td></tr>
-                <tr><td><code>full</code></td><td><code>pip install fastrub[full]</code></td><td>همه چیز یک‌جا</td></tr>
-              </tbody>
-            </table>
-          </div>`
-      },
-    ];
+    let notesData = [];
 
     function renderNotes() {
       const container = document.getElementById('notes-container');
@@ -595,7 +478,9 @@
         section.appendChild(title);
 
         const body = document.createElement('div');
-        body.innerHTML = note.html;
+        body.innerHTML = note.markdown
+          ? (window.marked ? marked.parse(note.markdown) : note.markdown)
+          : '';
         section.appendChild(body);
 
         container.appendChild(section);
@@ -609,7 +494,14 @@
       });
     }
 
-    window.addEventListener('DOMContentLoaded', renderNotes);
+    window.addEventListener('DOMContentLoaded', async () => {
+      try {
+        notesData = await DocsData.load("prerequisites");
+        renderNotes();
+      } catch (error) {
+        DocsData.showError("notes-container", error);
+      }
+    });
   </script>
 </body>
 </html>
