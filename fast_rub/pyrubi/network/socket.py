@@ -30,7 +30,7 @@ class Socket:
         if websockets is None:
             raise ImportError("The websockets library is not installed! for install: 'pip install fastrub[pyrubi]'")
         self._running = True
-        antispam = getattr(self.methods, "antispam", None)
+        antispam = self.methods.antispam
         if antispam is not None:
             await antispam.start_auto_clear()
         try:
@@ -101,7 +101,7 @@ class Socket:
 
         # AntiSpam قبل از هندلرها و فقط یک بار برای هر آپدیت بررسی می‌شود.
         # اگر پیام اسپم تشخیص داده شود، هیچ هندلری اجرا نمی‌شود.
-        antispam = getattr(self.methods, "antispam", None)
+        antispam = self.methods.antispam
         if antispam is not None:
             try:
                 is_spam = await antispam.inspect(msg_obj)
@@ -158,7 +158,7 @@ class Socket:
     
     async def stop(self):
         self._running = False
-        antispam = getattr(self.methods, "antispam", None)
+        antispam = self.methods.antispam
         if antispam is not None:
             shutdown = getattr(antispam, "shutdown", None)
             if shutdown is not None:

@@ -405,8 +405,8 @@ class Client:
         poll_interval: float = 0.0,
         ssl_verify: bool = True,
         cache: Cache | None = None,
-        cache_max_size: int | None = None,
-        cache_ttl: float | None = None,
+        cache_max_size: int | None = None, # Remove in V7
+        cache_ttl: float | None = None, # Remove in V7
         max_retries_upload: int | None = None,
         max_retries_download: int | None = None,
         config: BotConfig | None = None,

@@ -33,11 +33,15 @@ from typing import (
     ParamSpec,
     TypeVar,
     Concatenate,
-    overload
+    overload,
+    TYPE_CHECKING
 )
 import functools
 
 import httpx
+
+if TYPE_CHECKING:
+    from ..utils.antispam import AntiSpam
 
 P = ParamSpec("P")
 R = TypeVar("R")
@@ -132,7 +136,7 @@ class Methods:
         max_retries_download: int | None = None,
         wait_manager: WaitManager | None = None,
         defult_wait: float | None = None,
-        antispam: Any = None,
+        antispam: AntiSpam | None = None,
     ) -> None:
         self.platform = platform.lower()
         if not self.platform in ["android", "web", "rubx", "rubikax", "rubino", "PWA"]:
