@@ -1,8 +1,9 @@
 import re as _re
 from .types import Message
 from .utils import Utils
+from ..db import DataBase
 
-from typing import Callable, Awaitable
+from typing import Callable, Awaitable, Literal, Any
 
 import inspect
 
@@ -10,6 +11,16 @@ class Filter:
     """Base filter class"""
     def __call__(self, message: Message) -> bool:
         raise NotImplementedError
+
+class AsyncFilter(Filter):
+    def __call__(self, message: 'Message') -> bool:
+        raise RuntimeError("The Class Is Async. Sync -> Filter class")
+    async def __acall__(self, message: 'Message') -> bool:
+        raise NotImplementedError
+    
+    @property
+    def type_filter(self) -> str:
+        return "async"
 
 class is_user(Filter):
     """filter by user / فیلتر با کاربر"""
@@ -417,6 +428,114 @@ class IsLink(Filter):
     def __call__(self, message: 'Message') -> bool:
         return is_metadata_type("link")(message)
 
+class db_exists(AsyncFilter):
+    """چک می‌کنه یه رکورد توی دیتابیس وجود داره یا نه"""
+    def __init__(
+        self,
+        tabel_name: str,
+        where_builder: Callable[['Message'], dict],
+        db: DataBase | None = None,
+        db_name: str | None = None,
+        timeout: float = 10,
+        journal_mode: Literal["DELETE", "TRUNCATE", "PERSIST", "MEMORY", "WAL", "OFF", "ROLLBACK"] = "WAL",
+        synchronous: Literal["OFF", "NORMAL", "FULL", "EXTRA"] = "NORMAL",
+    ) -> None:
+        if db:
+            self.db = db
+        elif db_name:
+            self.db = DataBase(db_name, timeout, journal_mode, synchronous)
+        else:
+            raise ValueError("db or db_name is required")
+        self.tabel_name = tabel_name
+        self.where_builder = where_builder
+    
+    async def __acall__(self, message: 'Message') -> bool:
+        where_values = self.where_builder(message)
+        return await self.db.exists(self.tabel_name, where_values)
+
+class db_not_exists(AsyncFilter):
+    """چک می‌کنه یه رکورد توی دیتابیس وجود نداره"""
+    def __init__(
+        self,
+        tabel_name: str,
+        where_builder: Callable[['Message'], dict],
+        db: DataBase | None = None,
+        db_name: str | None = None,
+        timeout: float = 10,
+        journal_mode: Literal["DELETE", "TRUNCATE", "PERSIST", "MEMORY", "WAL", "OFF", "ROLLBACK"] = "WAL",
+        synchronous: Literal["OFF", "NORMAL", "FULL", "EXTRA"] = "NORMAL",
+    ) -> None:
+        if db:
+            self.db = db
+        elif db_name:
+            self.db = DataBase(db_name, timeout, journal_mode, synchronous)
+        else:
+            raise ValueError("db or db_name is required")
+        self.tabel_name = tabel_name
+        self.where_builder = where_builder
+    
+    async def __acall__(self, message: 'Message') -> bool:
+        where_values = self.where_builder(message)
+        return not await self.db.exists(self.tabel_name, where_values)
+
+class db_count(AsyncFilter):
+    """چک می‌کنه تعداد رکوردها با شرط، بزرگتر از یه عدد باشه"""
+    def __init__(
+        self,
+        tabel_name: str,
+        where_builder: Callable[['Message'], dict],
+        min_count: int = 1,
+        db: DataBase | None = None,
+        db_name: str | None = None,
+        timeout: float = 10,
+        journal_mode: Literal["DELETE", "TRUNCATE", "PERSIST", "MEMORY", "WAL", "OFF", "ROLLBACK"] = "WAL",
+        synchronous: Literal["OFF", "NORMAL", "FULL", "EXTRA"] = "NORMAL",
+    ) -> None:
+        if db:
+            self.db = db
+        elif db_name:
+            self.db = DataBase(db_name, timeout, journal_mode, synchronous)
+        else:
+            raise ValueError("db or db_name is required")
+        self.tabel_name = tabel_name
+        self.where_builder = where_builder
+        self.min_count = min_count
+    
+    async def __acall__(self, message: 'Message') -> bool:
+        where_values = self.where_builder(message)
+        count = await self.db.len_rows(self.tabel_name, where_values)
+        return count >= self.min_count
+
+class db_value_equals(AsyncFilter):
+    """چک می‌کنه مقدار یه ستون برابر با یه مقدار باشه"""
+    def __init__(
+        self,
+        tabel_name: str,
+        column: str,
+        where_builder: Callable[['Message'], dict],
+        expected_value: Any,
+        db: DataBase | None = None,
+        db_name: str | None = None,
+        timeout: float = 10,
+        journal_mode: Literal["DELETE", "TRUNCATE", "PERSIST", "MEMORY", "WAL", "OFF", "ROLLBACK"] = "WAL",
+        synchronous: Literal["OFF", "NORMAL", "FULL", "EXTRA"] = "NORMAL",
+    ) -> None:
+        if db:
+            self.db = db
+        elif db_name:
+            self.db = DataBase(db_name, timeout, journal_mode, synchronous)
+        else:
+            raise ValueError("db or db_name is required")
+        self.tabel_name = tabel_name
+        self.column = column
+        self.where_builder = where_builder
+        self.expected_value = expected_value
+    
+    async def __acall__(self, message: 'Message') -> bool:
+        where_values = self.where_builder(message)
+        result = await self.db.find(self.tabel_name, self.column, where_values)
+        return result == self.expected_value
+
 class validate(Filter):
     """فیلتر اعتبارسنجی ورودی کاربر."""
     def __init__(
@@ -506,15 +625,6 @@ class check(Filter):
         return self.func(message) # type: ignore
 
 Check = check
-
-"""TODO:
-db :
-db_exists
-db_not_exists
-db_count
-db_value_equals
-"""
-
 re = regex
 is_forward = IsForward
 is_reply = IsReply

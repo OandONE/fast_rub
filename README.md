@@ -920,7 +920,6 @@ workflow آماده: [`.github/workflows/docs.yml`](.github/workflows/docs.yml:1
 | add handler در یوزربات(پایروبی) |
 | add_background_task در یوزربات(پایروبی) |
 | hotreload در یوزربات(پایروبی) |
-| filters بیشتر در یوزربات(پایروبی) |
 | ادغام client.py یوزربات و methods.py یوزربات به client.py یوزربات(پایروبی) |
 | Plug Hub |
 | پل با تلگرام - FastTel |
