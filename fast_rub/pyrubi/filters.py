@@ -283,6 +283,51 @@ class forward_from_object_guid(Filter):
     def __call__(self, message: 'Message') -> bool:
         return message.forward_object_guid == self.object_guid
 
+class contact_phone_number(Filter):
+    def __init__(
+        self,
+        phone_number: str
+    ) -> None:
+        self.phone_number = phone_number
+    def __call__(self, message: 'Message') -> bool:
+        return message.contact_phone_number == self.phone_number
+
+class contact_first_name(Filter):
+    def __init__(
+        self,
+        first_name: str
+    ) -> None:
+        self.first_name = first_name
+    def __call__(self, message: 'Message') -> bool:
+        return message.contact_first_name == self.first_name
+
+class contact_last_name(Filter):
+    def __init__(
+        self,
+        last_name: str
+    ) -> None:
+        self.last_name = last_name
+    def __call__(self, message: 'Message') -> bool:
+        return message.contact_last_name == self.last_name
+
+class sticker_emoji_character(Filter):
+    def __init__(
+        self,
+        emoji_character: str
+    ) -> None:
+        self.emoji_character = emoji_character
+    def __call__(self, message: 'Message') -> bool:
+        return message.sticker_emoji_character == self.emoji_character 
+
+class sticker_sticker_id(Filter):
+    def __init__(
+        self,
+        id_character: str
+    ) -> None:
+        self.id_character = id_character
+    def __call__(self, message: 'Message') -> bool:
+        return message.sticker_sticker_id == self.id_character 
+
 class validate(Filter):
     """فیلتر اعتبارسنجی ورودی کاربر."""
     def __init__(
