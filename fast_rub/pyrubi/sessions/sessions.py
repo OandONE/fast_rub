@@ -60,7 +60,8 @@ class Sessions:
                 'user': signInData['user'],
             }
 
-            open(f"{self.client.session}.pyrubi", "w", encoding="UTF-8").write(dumps(sessionData, indent=4))
+            with open(f"{self.client.session}.pyrubi", "w", encoding="UTF-8") as file:
+                file.write(dumps(sessionData, indent=4))
 
             save = Methods(
                 sessionData=sessionData,

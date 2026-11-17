@@ -25,7 +25,7 @@ class Message:
     def __init__(
         self,
         data: dict,
-        methods:'Methods'
+        methods: 'Methods'
     ) -> None:
         self.data = data
         self.methods = methods
