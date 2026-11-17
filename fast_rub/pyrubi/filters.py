@@ -1,4 +1,4 @@
-import re
+import re as _re
 from .types import Message
 from .utils import Utils
 
@@ -96,7 +96,7 @@ class text(Filter):
 class regex(Filter):
     """filter text message by regex pattern / فیلتر متن پیام با regex"""
     def __init__(self, pattern: str, flags=0):
-        self.pattern = re.compile(pattern, flags)
+        self.pattern = _re.compile(pattern, flags)
 
     def __call__(self, message: Message) -> bool:
         return bool(self.pattern.search(message.text or ""))
@@ -209,3 +209,69 @@ class legacy_filter(Filter):
                     return True
         return False
 
+class in_text(Filter):
+    """text in text message / وجود متن در متن آپدیت"""
+    def __init__(self, text: str) -> None:
+        self.text = text
+    def __call__(self, message: 'Message') -> bool:
+        if self.text in str(message.text):
+            return True
+        return False
+
+class text_length(Filter):
+    """filter by text length / فیلتر بر اساس طول متن"""
+    def __init__(self, min_len: int = 0, max_len: float = float('inf')):
+        self.min_len = min_len
+        self.max_len = max_len
+    def __call__(self, message: 'Message') -> bool:
+        if message.text:
+            return self.min_len <= len(message.text) <= self.max_len
+        return False
+
+class command(Filter):
+    """filter text message by command / فیلتر کردن متن پیام با دستور"""
+    def __init__(self, command: str):
+        self.command = command
+
+    def __call__(self, message: 'Message') -> bool:
+        return message.text == f"/{self.command}"
+
+# class file_name(Filter):
+#     """filter by name file / فیلتر با اسم فایل"""
+#     def __init__(self,name_file: str):
+#         self.name_file = name_file
+#     def __call__(self, message: 'Message') -> bool:
+#         return True if message.file_name == self.name_file else False # TODO: Test for why getting the file message list
+
+# class size_file(Filter):
+#     """filter by name file / فیلتر با اسم فایل"""
+#     def __init__(self,size: int):
+#         self.size = size
+#     def __call__(self, message: 'Message') -> bool:
+#         return True if message.size_file == self.size else False # TODO: Test for why getting the file message list
+
+class IsForward(Filter):
+    """message is forward / پیام فوروارد شده"""
+    def __call__(self, message: 'Message') -> bool:
+        return message.is_forward
+
+class IsReply(Filter):
+    """message has reply / پیام دارای ریپلای"""
+    def __call__(self, message: 'Message') -> bool:
+        return message.reply_message_id != None
+
+# class IsContact(Filter):
+#     """filter by contact / فیلتر مخاطب"""
+#     def __call__(self, message: 'Message') -> bool:
+#         return message.is_contact # TODO: Wait for add is_contact property
+
+class HasUserName(Filter):
+    """filter by has username in text / فیلتر داشتن نام کاربری(آیدی) در متن پیام"""
+    def __call__(self, message: 'Message') -> bool:
+        return bool(_re.compile(r"@[a-zA-Z0-9_]{2,32}").search(str(message.text)))
+
+re = regex
+is_forward = IsForward
+is_reply = IsReply
+
+has_username = HasUserName()

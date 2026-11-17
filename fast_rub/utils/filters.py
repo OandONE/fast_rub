@@ -45,7 +45,7 @@ class text(Filter):
         self.pattern = pattern
 
     def __call__(self, update: 'Update') -> bool:
-        return update.text == self.pattern
+        return update.new_message.text == self.pattern
 
 class sender_id(Filter):
     """filter guid message by guid / فیلتر کردن شناسه گوید پیام"""
@@ -72,81 +72,81 @@ class IsChannel(Filter):
 
 class IsFile(Filter):
     """filter by file / فیلتر با فایل"""
-    def __call__(self, update:'Update'):
+    def __call__(self, update: 'Update'):
         return True if update.file else False
 
 class file_name(Filter):
     """filter by name file / فیلتر با اسم فایل"""
     def __init__(self,name_file: str):
         self.name_file = name_file
-    def __call__(self, update:'Update'):
-        return True if update.file_name==self.name_file else False
+    def __call__(self, update: 'Update'):
+        return True if update.file_name == self.name_file else False
 
 class size_file(Filter):
     """filter by name file / فیلتر با اسم فایل"""
     def __init__(self,size: int):
         self.size = size
-    def __call__(self, update:'Update'):
-        return True if update.size_file==self.size else False
+    def __call__(self, update: 'Update'):
+        return True if update.size_file == self.size else False
 
 class IsVideo(Filter):
     """filter by video / فیلتر با ویدیو"""
-    def __call__(self, update:'Update'):
-        return True if update.type_file=="video" else False
+    def __call__(self, update: 'Update'):
+        return True if update.type_file == "video" else False
 
 class IsImage(Filter):
     """filter by image / فیلتر با عکس"""
-    def __call__(self, update:'Update'):
-        return True if update.type_file=="image" else False
+    def __call__(self, update: 'Update'):
+        return True if update.type_file == "image" else False
 
 class IsAudio(Filter):
     """filter by audio / فیلتر با آودیو"""
-    def __call__(self, update:'Update'):
-        return True if update.type_file=="audio" else False
+    def __call__(self, update: 'Update'):
+        return True if update.type_file == "audio" else False
 
 class IsVoice(Filter):
     """filter by voice / فیلتر با ویس"""
-    def __call__(self, update:'Update'):
-        return True if update.type_file=="voice" else False
+    def __call__(self, update: 'Update'):
+        return True if update.type_file == "voice" else False
 
 class IsDocument(Filter):
     """filter by document / فیلتر با داکیومنت"""
-    def __call__(self, update:'Update'):
-        return True if update.type_file=="document" else False
+    def __call__(self, update: 'Update'):
+        return True if update.type_file == "document" else False
 
 class IsWeb(Filter):
     """filter by web files / فیلتر با فایل های وب"""
-    def __call__(self, update:'Update'):
-        return True if update.type_file=="web" else False
+    def __call__(self, update: 'Update'):
+        return True if update.type_file == "web" else False
 
 class IsCode(Filter):
     """filter by code files / فیلتر با فایل های کد"""
-    def __call__(self, update:'Update'):
-        return True if update.type_file=="code" else False
+    def __call__(self, update: 'Update'):
+        return True if update.type_file == "code" else False
 
 class IsArchive(Filter):
     """filter by archive files / فیلتر با فایل های آرشیو"""
-    def __call__(self, update:'Update'):
-        return True if update.type_file=="archive" else False
+    def __call__(self, update: 'Update'):
+        return True if update.type_file == "archive" else False
 
 class IsExecutable(Filter):
     """filter by executable files / فیلتر با فایل های نصبی"""
-    def __call__(self, update:'Update'):
-        return True if update.type_file=="executable" else False
+    def __call__(self, update: 'Update'):
+        return True if update.type_file == "executable" else False
 
 class IsText(Filter):
     """filter by had text / فیلتر با داشتن متن"""
-    def __call__(self, update:'Update'):
-        return True if not update.text is None else False
+    def __call__(self, update: 'Update'):
+        return True if not update.new_message.text is None else False
 
 class regex(Filter):
     """filter text message by regex pattern / فیلتر متن پیام با regex"""
     def __init__(self, pattern: str, flags: int = 0):
         self.pattern = _re.compile(pattern, flags)
     def __call__(self, update: 'Update') -> bool:
-        if not hasattr(update, "text") or update.text is None:
+        if update.new_message.text is None:
             return False
-        return bool(self.pattern.search(update.text))
+        return bool(self.pattern.search(update.new_message.text))
 
 class time(Filter):
     """filter by time / فیلتر با زمان"""
@@ -169,7 +169,12 @@ class commands(Filter):
 
     def __call__(self, update: 'Update') -> bool:
         for command in self.commands:
-            if (update.text != None) and (update.text == command or update.text.replace("/","") == command):
+            if (
+                update.new_message.text != None
+            ) and (
+                update.new_message.text == command or
+                update.new_message.text.replace("/","") == command
+            ):
                 return True
         return False
 
@@ -302,7 +307,7 @@ class in_text(Filter):
     def __init__(self, text: str) -> None:
         self.text = text
     def __call__(self, update: 'Update') -> bool:
-        if self.text in str(update.text):
+        if self.text in str(update.new_message.text):
             return True
         return False
 
@@ -322,8 +327,8 @@ class text_length(Filter):
         self.min_len = min_len
         self.max_len = max_len
     def __call__(self, update: 'Update') -> bool:
-        if update.text:
-            return self.min_len <= len(update.text) <= self.max_len
+        if update.new_message.text:
+            return self.min_len <= len(update.new_message.text) <= self.max_len
         return False
 
 class starts_with(Filter):
@@ -334,14 +339,14 @@ class starts_with(Filter):
     ):
         self.prefix = prefix
     def __call__(self, update: 'Update') -> bool:
-        return update.text != None and update.text.startswith(self.prefix)
+        return update.new_message.text != None and update.new_message.text.startswith(self.prefix)
 
 class ends_with(Filter):
     """filter text ending with / فیلتر متن هایی که با این پایان میابند"""
     def __init__(self, suffix: str):
         self.suffix = suffix
     def __call__(self, update: 'Update') -> bool:
-        return update.text != None and update.text.endswith(self.suffix)
+        return update.new_message.text != None and update.new_message.text.endswith(self.suffix)
 
 class IsSticker(Filter):
     """filter by sticker / فیلتر استیکر"""
@@ -356,7 +361,7 @@ class IsContact(Filter):
 class HasUserName(Filter):
     """filter by has username in text / فیلتر داشتن نام کاربری(آیدی) در متن پیام"""
     def __call__(self, update: 'Update') -> bool:
-        return bool(_re.compile(r"@[a-zA-Z0-9_]{2,32}").search(str(update.text)))
+        return bool(_re.compile(r"@[a-zA-Z0-9_]{2,32}").search(str(update.new_message.text)))
 
 class where(Filter):
     """فیلتر با شرط دلخواه"""
@@ -600,10 +605,10 @@ class validate(Filter):
         self.max_length = max_length
     
     def __call__(self, update: 'Update') -> bool:
-        if not update.text:
+        if not update.new_message.text:
             return False
         
-        text = update.text
+        text = update.new_message.text
         
         if self.email:
             email_pattern = _re.compile(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$')
@@ -624,13 +629,13 @@ class validate(Filter):
 
 class CrashProtection(Filter):
     def __call__(self, update: "Update") -> bool:
-        if not update.text:
+        if not update.new_message.text:
             return True
         def check1(
             text: str
         ) -> bool:
             return not (bool(_re.match(r"^\d+(\.\d+)", text)))
-        if check1(update.text):
+        if check1(update.new_message.text):
             def check2(text: str):
                 if not text:
                     return True
@@ -644,7 +649,7 @@ class CrashProtection(Filter):
                 if len(text) > 100 and invisible / len(text) > 0.5:
                     return False
                 return True
-            return check2(update.text)
+            return check2(update.new_message.text)
         return False
 
 
