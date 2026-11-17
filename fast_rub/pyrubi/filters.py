@@ -328,6 +328,95 @@ class sticker_sticker_id(Filter):
     def __call__(self, message: 'Message') -> bool:
         return message.sticker_sticker_id == self.id_character 
 
+class has_metadata_type(Filter):
+    def __init__(self, type: str) -> None:
+        self.type = type
+    def __call__(self, message: 'Message') -> bool:
+        if message.metadata_meta_data_parts:
+            for mata_data in message.metadata_meta_data_parts:
+                if mata_data["type"].lower() == self.type.lower():
+                    return True
+        return False
+
+class is_metadata_type(Filter):
+    def __init__(self, type: str) -> None:
+        self.type = type
+    def __call__(self, message: 'Message') -> bool:
+        if message.metadata_meta_data_parts and len(message.metadata_meta_data_parts) != 1:
+            if message.metadata_meta_data_parts[0]["type"].lower() == self.type.lower():
+                return True
+        return False
+
+class HasBold(Filter):
+    """check for has bold text / چک وجود داشتن متن بولد"""
+    def __call__(self, message: 'Message') -> bool:
+        return has_metadata_type("bold")(message)
+
+class HasItalic(Filter):
+    """check for has italic text / چک وجود داشتن متن ایتالیک"""
+    def __call__(self, message: 'Message') -> bool:
+        return has_metadata_type("italic")(message)
+
+class HasUnderline(Filter):
+    """check for has underline text / چک وجود داشتن متن آندرلایبن"""
+    def __call__(self, message: 'Message') -> bool:
+        return has_metadata_type("underline")(message)
+
+class HasStrike(Filter):
+    """check for has strike text / چک وجود داشتن متن خط خورده"""
+    def __call__(self, message: 'Message') -> bool:
+        return has_metadata_type("strike")(message)
+
+class HasMono(Filter):
+    """check for has mono text / چک وجود داشتن متن کپی"""
+    def __call__(self, message: 'Message') -> bool:
+        return has_metadata_type("mono")(message)
+
+class HasSpoiler(Filter):
+    """check for has spoiler text / چک وجود داشتن متن اسپویلر"""
+    def __call__(self, message: 'Message') -> bool:
+        return has_metadata_type("spoiler")(message)
+
+class HasLink(Filter):
+    """check for has link text / چک وجود داشتن متن هایپر لینک"""
+    def __call__(self, message: 'Message') -> bool:
+        return has_metadata_type("link")(message)
+
+class IsBold(Filter):
+    """all text is bold / بولد بودن تمام متن"""
+    def __call__(self, message: 'Message') -> bool:
+        return is_metadata_type("bold")(message)
+
+class IsItalic(Filter):
+    """all text is italic / ایتالیک بودن تمام متن"""
+    def __call__(self, message: 'Message') -> bool:
+        return is_metadata_type("italic")(message)
+
+class IsUnderline(Filter):
+    """all text is underline / آندرلاین بودن تمام متن"""
+    def __call__(self, message: 'Message') -> bool:
+        return is_metadata_type("underline")(message)
+
+class IsStrike(Filter):
+    """all text is strike / خط خورده بودن تمام متن"""
+    def __call__(self, message: 'Message') -> bool:
+        return is_metadata_type("strike")(message)
+
+class IsMono(Filter):
+    """all text is mono / متن کپی بودن تمام متن"""
+    def __call__(self, message: 'Message') -> bool:
+        return is_metadata_type("mono")(message)
+
+class IsSpoiler(Filter):
+    """all text is spoiler / اسپویلر بودن تمام متن"""
+    def __call__(self, message: 'Message') -> bool:
+        return is_metadata_type("spoiler")(message)
+
+class IsLink(Filter):
+    """all text is link / هایپر لینک بودن تمام متن"""
+    def __call__(self, message: 'Message') -> bool:
+        return is_metadata_type("link")(message)
+
 class validate(Filter):
     """فیلتر اعتبارسنجی ورودی کاربر."""
     def __init__(
@@ -418,33 +507,7 @@ class check(Filter):
 
 Check = check
 
-"""TODO: metadata filters after test :
-has_metadata_type
-is_metadata_type
-HasBold
-HasItalic
-HasUnderline
-HasStrike
-HasMono
-HasSpoiler
-HasLink
-IsBold
-IsItalic
-IsUnderline
-IsStrike
-IsMono
-IsSpoiler
-IsLink
-
-contact :
-contact_phone_number
-contact_first_name
-contact_last_name
-
-stiker :
-sticker_emoji_character
-sticker_sticker_id
-
+"""TODO:
 db :
 db_exists
 db_not_exists
