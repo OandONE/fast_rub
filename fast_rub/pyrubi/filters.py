@@ -2,6 +2,10 @@ import re as _re
 from .types import Message
 from .utils import Utils
 
+from typing import Callable, Awaitable
+
+import inspect
+
 class Filter:
     """Base filter class"""
     def __call__(self, message: Message) -> bool:
@@ -270,8 +274,142 @@ class HasUserName(Filter):
     def __call__(self, message: 'Message') -> bool:
         return bool(_re.compile(r"@[a-zA-Z0-9_]{2,32}").search(str(message.text)))
 
+class forward_from_object_guid(Filter):
+    def __init__(
+        self,
+        object_guid: str
+    ) -> None:
+        self.object_guid = object_guid
+    def __call__(self, message: 'Message') -> bool:
+        return message.forward_object_guid == self.object_guid
+
+class validate(Filter):
+    """فیلتر اعتبارسنجی ورودی کاربر."""
+    def __init__(
+        self,
+        email: bool = False,
+        is_digit: bool = False,
+        min_length: int = 0,
+        max_length: int = -1,
+    ):
+        self.email = email
+        self.is_digit = is_digit
+        self.min_length = min_length
+        self.max_length = max_length
+    
+    def __call__(self, message: 'Message') -> bool:
+        if not message.text:
+            return False
+        
+        text = message.text
+        
+        if self.email:
+            email_pattern = _re.compile(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$')
+            if not email_pattern.search(text):
+                return False
+        
+        if self.is_digit:
+            if not text.isdigit():
+                return False
+        
+        if len(text) < self.min_length:
+            return False
+        
+        if self.max_length != float('inf') and len(text) > self.max_length:
+            return False
+        
+        return True
+
+class CrashProtection(Filter):
+    def __call__(self, message: 'Message') -> bool:
+        if not message.text:
+            return True
+        def check1(
+            text: str
+        ) -> bool:
+            return not (bool(_re.match(r"^\d+(\.\d+)", text)))
+        if check1(message.text):
+            def check2(text: str):
+                if not text:
+                    return True
+                if '\x00' in text:
+                    return False
+                zero_width = '\u200B\u200C\u200D\uFEFF'
+                count = sum(1 for c in text if c in zero_width)
+                if count > 50:
+                    return False
+                invisible = sum(1 for c in text if c in zero_width or c in '\u2060\u2061\u2062\u2063\u2064')
+                if len(text) > 100 and invisible / len(text) > 0.5:
+                    return False
+                return True
+            return check2(message.text)
+        return False
+
+class where(Filter):
+    """فیلتر با شرط دلخواه"""
+    def __init__(self, func: Callable[['Message'], bool]):
+        self.func = func
+    def __call__(self, message: 'Message') -> bool:
+        return self.func(message)
+
+Where = where
+
+class check(Filter):
+    """فیلتر با تابع شرط دلخواه (Sync یا Async)."""
+    def __init__(self, func: Callable[..., bool | Awaitable[bool]]):
+        self.func = func
+        self._is_async = inspect.iscoroutinefunction(func)
+    @property
+    def type_filter(self):
+        return "async" if self._is_async else "sync"
+    def __call__(self, message: 'Message') -> bool:
+        if self._is_async:
+            raise RuntimeError("This filter is async. Use __acall__ instead.")
+        return self.func(message) # type: ignore
+    async def __acall__(self, message: 'Message') -> bool:
+        if self._is_async:
+            return await self.func(message) # type: ignore
+        return self.func(message) # type: ignore
+
+Check = check
+
+"""TODO: metadata filters after test :
+has_metadata_type
+is_metadata_type
+HasBold
+HasItalic
+HasUnderline
+HasStrike
+HasMono
+HasSpoiler
+HasLink
+IsBold
+IsItalic
+IsUnderline
+IsStrike
+IsMono
+IsSpoiler
+IsLink
+
+contact :
+contact_phone_number
+contact_first_name
+contact_last_name
+
+stiker :
+sticker_emoji_character
+sticker_sticker_id
+
+db :
+db_exists
+db_not_exists
+db_count
+db_value_equals
+"""
+
 re = regex
 is_forward = IsForward
 is_reply = IsReply
+crash_protection = CrashProtection
 
 has_username = HasUserName()
