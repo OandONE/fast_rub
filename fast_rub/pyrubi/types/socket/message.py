@@ -181,6 +181,61 @@ class Message:
         return self.data["message_updates"][0]["message"].get("file_inline")
 
     @property
+    def contact(self) -> dict:
+        return self.data["message_updates"][0]["message"].get("contact_message")
+
+    contact_message = contact
+
+    @property
+    def contact_phone_number(self) -> str:
+        return self.contact["phone_number"]
+
+    @property
+    def contact_first_name(self) -> str:
+        return self.contact["first_name"]
+
+    @property
+    def contact_last_name(self) -> str:
+        return self.contact["last_name"]
+
+    @property
+    def sticker(self) -> dict:
+        return self.data["message_updates"][0]["message"].get("sticker")
+    
+    @property
+    def sticker_emoji_character(self) -> str:
+        return self.sticker["emoji_character"]
+    
+    @property
+    def sticker_sticker_id(self) -> str:
+        return self.sticker["sticker_id"]
+    
+    @property
+    def sticker_sticker_set_id(self) -> str:
+        return self.sticker["sticker_set_id"]
+    
+    @property
+    def sticker_file(self) -> dict:
+        return self.sticker["file"]
+    
+    @property
+    def sticker_file_file_id(self) -> str:
+        return self.sticker_file["file_id"]
+    
+    @property
+    def sticker_file_mime(self) -> str:
+        return self.sticker_file["mime"]
+    
+    @property
+    def sticker_file_file_name(self) -> str:
+        return self.sticker_file["file_name"]
+    
+    @property
+    def sticker_file_access_hash_rec(self) -> str:
+        return self.sticker_file["access_hash_rec"]
+
+
+    @property
     def has_link(self) -> bool:
         for link in ["http:/", "https:/", "www.", ".ir", ".com", ".net" "@"]:
             if link in self.text.lower():
