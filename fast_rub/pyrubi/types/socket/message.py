@@ -233,7 +233,14 @@ class Message:
     @property
     def sticker_file_access_hash_rec(self) -> str:
         return self.sticker_file["access_hash_rec"]
-
+    
+    @property
+    def metadata(self) -> dict:
+        return self.data["message_updates"][0]["message"].get("metadata")
+    
+    @property
+    def metadata_meta_data_parts(self) -> list:
+        return self.metadata["meta_data_parts"]
 
     @property
     def has_link(self) -> bool:
