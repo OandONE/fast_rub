@@ -11,7 +11,7 @@ authors = [
 description = "The fastest library for writing Rubika messenger bots both synchronously and asynchronously ⚡"
 readme = {file = "README.md", content-type = "text/markdown"}
 requires-python = ">=3.10"
-license = {text = "MIT"}
+license = "MIT"
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Programming Language :: Python :: 3",
@@ -23,7 +23,6 @@ classifiers = [
     "Intended Audience :: Developers",
     "Topic :: Communications :: Chat",
     "Topic :: Software Development :: Libraries",
-    "License :: OSI Approved :: MIT License",
     "Operating System :: Microsoft :: Windows",
     "Operating System :: POSIX :: Linux",
 ]
