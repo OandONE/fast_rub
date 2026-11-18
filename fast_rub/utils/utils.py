@@ -321,4 +321,8 @@ class Utils:
             except Exception as e:
                 return False
         return True
+    
+    @staticmethod
+    def _default_hotreload_filter(change, path: str) -> bool:
+        return path.endswith(".py") and "__pycache__" not in path
 

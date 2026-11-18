@@ -39,6 +39,7 @@ from ..types.errors import PollInvalid
 from ..types.props import props
 from ..types.models import Bot as BotModel, Chat as ChatModel
 from ..types import WebhookConfig, AutoFailoverConfig
+from ..types.hotreload_config import HotReloadConfig
 from ..utils.colors import Colors
 from ..utils.logger import logging, set_log_callback, setup_logging
 from ..utils.utils import Utils
@@ -867,16 +868,27 @@ class Client:
     async def run(
         self,
         poll_interval: float = 0.0,
-        reload: bool = False
+        reload: bool | HotReloadConfig = False
     ):
-        """اجرای اصلی بات - فقط اگر هندلرهای مربوطه ثبت شده باشند"""
+        """اجرای کلاینت؛ برای Hot Reload می‌توان True یا HotReloadConfig داد"""
 
-        if not reload and "--reload" in sys.argv:
-            reload = True
+        hotreload_config = reload if isinstance(reload, HotReloadConfig) else None
+        reload_enabled = (
+            hotreload_config.enabled
+            if hotreload_config is not None
+            else bool(reload)
+        )
 
-        if reload and not os.environ.get("FASTRUB_RELOAD_CHILD"):
+        if not reload_enabled and "--reload" in sys.argv:
+            reload_enabled = True
+            hotreload_config = None
+
+        if reload_enabled and not os.environ.get("FASTRUB_RELOAD_CHILD"):
             script_path = str(Path(sys.argv[0]).resolve())
-            self._hotreload = HotReload(self.logger)
+            self._hotreload = HotReload(
+                logger=self.logger,
+                config=hotreload_config,
+            )
             try:
                 await self._hotreload.run_async(script_path)
             except KeyboardInterrupt:

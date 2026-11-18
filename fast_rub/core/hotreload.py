@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import asyncio
 import contextlib
 import logging
@@ -5,78 +7,102 @@ import os
 import sys
 from pathlib import Path
 
+from ..types.hotreload_config import HotReloadConfig
+
 
 class HotReload:
-    """
-    Hot Reload async-native برای fast_rub.
-
-    در فرآیند والد اجرا می‌شود، یک فرآیند فرزند از اسکریپت اصلی می‌سازد،
-    تغییرات فایل‌های .py را در پوشه‌ی اسکریپت زیر نظر می‌گیرد و در صورت
-    تغییر، فرزند را تمیز terminate کرده و دوباره راه‌اندازی می‌کند.
-
-    ویژگی‌ها:
-    - event loop والد بلاک نمی‌شود
-    - فرزند روی cancel شدن یا خطا حتماً بسته می‌شود (بدون zombie)
-    - در برابر Ctrl+C دوباره و cancel هم‌زمان مقاوم است
-    """
+    """Run the entry-point script in a child process and restart it on changes"""
 
     def __init__(
         self,
         logger: logging.Logger | None = None,
-        shutdown_timeout: float = 5.0,
-        debounce_ms: int = 500,
-    ):
+        config: HotReloadConfig | None = None,
+    ) -> None:
         self.logger = logger or logging.getLogger("fast_rub.hotreload")
-        self.shutdown_timeout = shutdown_timeout
-        self.debounce_ms = debounce_ms
+        self.config = config if config is not None else HotReloadConfig()
         self._process: asyncio.subprocess.Process | None = None
-
-    # Public API
+        self._stop_event: asyncio.Event | None = None
 
     def run_sync(self, script_path: str) -> None:
-        """نگه‌داشته شده برای سازگاری عقب‌رو — از run_async استفاده کنید."""
+        """Synchronous wrapper; prefer run_async() inside async applications."""
         asyncio.run(self.run_async(script_path))
 
     async def run_async(self, script_path: str) -> None:
         try:
             import watchfiles
-        except ImportError as e:
+        except ImportError as exc:
             raise ImportError(
-                "کتابخانه 'watchfiles' نصب نیست. برای نصب: pip install watchfiles"
-            ) from e
+                "The 'watchfiles' package is required for hot reload. "
+                "Install it with: pip install watchfiles"
+            ) from exc
 
-        script_path = str(Path(script_path).resolve())
-        watch_dir = os.path.dirname(script_path)
-        self.logger.info(f"Hot Reload فعال شد. مسیر تحت نظر: {watch_dir}")
+        script = Path(script_path).expanduser().resolve()
+        if not script.is_file():
+            raise FileNotFoundError(f"Hot reload entry-point not found: {script}")
+        if self._process is not None:
+            raise RuntimeError("This HotReload instance is already running.")
 
+        watch_paths = self._resolve_watch_paths(script)
         env = os.environ.copy()
         env["FASTRUB_RELOAD_CHILD"] = "1"
+        self._stop_event = asyncio.Event()
 
-        await self._spawn(script_path, env)
+        self.logger.info(
+            "Hot Reload فعال شد. مسیرهای تحت نظر: %s",
+            ", ".join(watch_paths),
+        )
 
         try:
+            await self._spawn(str(script), env)
+
             async for changes in watchfiles.awatch(
-                watch_dir,
-                watch_filter=self._filter,
-                debounce=self.debounce_ms,
+                *watch_paths,
+                watch_filter=self.config.watch_filter,
+                debounce=self.config.debounce,
+                step=self.config.step,
+                stop_event=self._stop_event,
+                rust_timeout=self.config.rust_timeout,
+                debug=self.config.debug,
+                force_polling=self.config.force_polling,
+                poll_delay_ms=self.config.poll_delay_ms,
+                recursive=self.config.recursive,
+                ignore_permission_denied=self.config.ignore_permission_denied,
             ):
                 if not changes:
                     continue
+
                 changed = sorted({path for _, path in changes})
-                self.logger.info(f"تغییر در: {changed}")
-                await self._restart(script_path, env)
+                self.logger.info("تغییر در فایل‌ها: %s", changed)
+
+                # stop() may be called while awatch is yielding changes
+                if self._stop_event.is_set():
+                    break
+                await self._restart(str(script), env)
         finally:
+            self._stop_event.set()
             await self._shutdown_uninterruptible()
+            self._stop_event = None
 
     async def stop(self) -> None:
-        """توقف دستی hot reload (برای فراخوانی از بیرون)."""
+        """Request watcher shutdown and stop the child process"""
+        if self._stop_event is not None:
+            self._stop_event.set()
         await self._shutdown_uninterruptible()
 
-    # Internals
+    def _resolve_watch_paths(self, script: Path) -> tuple[str, ...]:
+        configured = self.config.watch_paths
+        if configured is None:
+            paths = (script.parent,)
+        else:
+            paths = tuple(Path(path).expanduser().resolve() for path in configured)
+            if not paths:
+                raise ValueError("watch_paths cannot be empty")
 
-    @staticmethod
-    def _filter(_change, path: str) -> bool:
-        return path.endswith(".py") and "__pycache__" not in path
+        for path in paths:
+            if not path.exists():
+                raise FileNotFoundError(f"Hot reload watch path not found: {path}")
+
+        return tuple(str(path) for path in paths)
 
     async def _spawn(self, script_path: str, env: dict[str, str]) -> None:
         self._process = await asyncio.create_subprocess_exec(
@@ -84,58 +110,54 @@ class HotReload:
             script_path,
             env=env,
         )
-        self.logger.info(f"ربات با PID {self._process.pid} شروع شد")
+        self.logger.info("ربات با PID %s شروع شد", self._process.pid)
 
     async def _restart(self, script_path: str, env: dict[str, str]) -> None:
         await self._terminate_child()
+        if self._stop_event is not None and self._stop_event.is_set():
+            return
         await self._spawn(script_path, env)
 
     async def _terminate_child(self) -> None:
-        proc = self._process
-        if proc is None or proc.returncode is not None:
-            self._process = None
+        process = self._process
+        self._process = None
+
+        if process is None or process.returncode is not None:
             return
 
         try:
-            proc.terminate()
+            process.terminate()
         except ProcessLookupError:
-            self._process = None
             return
 
         try:
             await asyncio.wait_for(
-                proc.wait(), timeout=self.shutdown_timeout
+                process.wait(),
+                timeout=self.config.shutdown_timeout,
             )
         except asyncio.TimeoutError:
             self.logger.warning(
-                f"فرآیند فرزند (PID {proc.pid}) در {self.shutdown_timeout}s "
-                f"پاسخ نداد، kill اجباری."
+                "فرآیند فرزند (PID %s) در %ss متوقف نشد؛ kill اجباری",
+                process.pid,
+                self.config.shutdown_timeout,
             )
             with contextlib.suppress(ProcessLookupError):
-                proc.kill()
-            await proc.wait()
-        finally:
-            self._process = None
+                process.kill()
+            await process.wait()
 
     async def _shutdown_uninterruptible(self) -> None:
-        """
-        فرزند رو می‌بنده، حتی اگر coroutine جاری یک یا چند بار cancel بشه.
-
-        الگو: cleanup رو به یه task مستقل تبدیل می‌کنیم و با shield منتظرش
-        می‌مونیم. اگر cancel برسه، shield خطا می‌ده ولی task پس‌زمینه ادامه
-        می‌ده. بعدش دوباره روی همون task await می‌کنیم تا واقعاً تموم شه،
-        و در نهایت CancelledError رو re-raise می‌کنیم.
-        """
-        cleanup_task = asyncio.ensure_future(self._terminate_child())
-
+        """Complete child cleanup even if the caller is cancelled"""
+        cleanup_task = asyncio.create_task(self._terminate_child())
         cancelled = False
+
         while not cleanup_task.done():
             try:
                 await asyncio.shield(cleanup_task)
             except asyncio.CancelledError:
                 cancelled = True
-                continue
+
+        # Surface cleanup errors instead of hiding them
+        cleanup_task.result()
 
         if cancelled:
             raise asyncio.CancelledError()
-
